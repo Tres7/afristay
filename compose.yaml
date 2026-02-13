@@ -1,32 +1,74 @@
 services:
- db:
-  image: postgres:16-bookworm
-  container_name: postgres
-  environment:
-   POSTGRES_DB: ${POSTGRES_DB}
-   POSTGRES_USER: ${POSTGRES_USER}
-   POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-  ports:
-   - "5433:5432" #You can change it according to your needs: "XXXX:YYYY": "XXXX" port on your machine and "YYYY" port on the container. Base image uses port 5432 for both
-  volumes:
-   - afristay_db:/var/lib/postgresql/data
-  healthcheck:
-   test: ["CMD-SHELL", "pg_isready -U afristay -d afristay"]
-   interval: 10s
-   timeout: 5s
-   retries: 20
+  # ========================
+  # Base de donnees
+  # ========================
+  db:
+    image: postgres:16-bookworm
+    container_name: afristay-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - afristay_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
 
- pgadmin:
-  image: dpage/pgadmin4:latest
-  container_name: pgadmin
-  environment:
-   PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL} #pay attention to the email format, it should be in the format of an email address
-   PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
-  ports:
-    - "5051:80" #You can change it according to your needs
-  depends_on:
-    db:
-      condition: service_healthy
+  # ========================
+  # pgAdmin
+  # ========================
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: afristay-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+    ports:
+      - "5051:80"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ========================
+  # Backend Django
+  # ========================
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: afristay-backend
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./server:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ========================
+  # Frontend Next.js
+  # ========================
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: afristay-frontend
+    command: npm run dev
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
 
 volumes:
-    afristay_db:
+  afristay_db:
