@@ -86,6 +86,7 @@ afristay/
 | `main`       | Production                |
 | `develop`    | Integration               |
 | `feature/*`  | Nouvelles fonctionnalites |
+| `fix/*`      | Corrections |
 | `hotfix/*`   | Corrections urgentes      |
 
 ## Commandes utiles
