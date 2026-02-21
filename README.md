@@ -41,10 +41,14 @@ Editez le fichier `.env` avec vos propres valeurs.
 docker compose up --build
 ```
 
-### 4. Initialiser la base de donnees
-
+### 4. Initialiser la base de donnees (Surtout la première fois)
 ```bash
 docker compose exec backend python manage.py migrate
+```
+
+#### Créer un compte admin Django (vous pouvez laisser l'adresse électronique vide)
+
+```bash
 docker compose exec backend python manage.py createsuperuser
 ```
 
@@ -114,4 +118,31 @@ docker compose exec backend pip install <package>
 
 # Installer un package npm
 docker compose exec frontend npm install <package>
+
+# Générer une secret Key pour DJANGO_SECRET_KEY
+python -c "import secrets; print(secrets.token_urlsafe(50))"
 ```
+
+## 5 Connexion à pgAdmin
+
+URL : http://localhost:5051
+
+| Champ       | Valeur   |
+|-------------|----------|
+| Email       | (voir .env → PGADMIN_EMAIL) |
+| Mot de passe | (voir .env → PGADMIN_PASSWORD) |
+
+### Configurer le serveur PostgreSQL
+
+Dans pgAdmin, lors de la création/édition du serveur :
+
+| Champ        | Valeur   |
+|--------------|----------|
+| Hôte         | `db`     |
+| Port         | `5432`   |
+| Base de données | `nom_db` |
+| Identifiant  | `votre_identifiant` |
+| Mot de passe | `votre_identifiant` |
+
+> ⚠️ Le nom d'hôte doit être `db` (nom du service Docker), pas `localhost` ni `postgres`.
+
