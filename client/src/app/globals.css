@@ -1,3 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html, body {
+    @apply bg-light text-dark font-body antialiased;
+    scroll-behavior: smooth;
+  }
+
+  ::selection {
+    @apply bg-primary/20 text-primary;
+  }
+
+  :root {
+    --background: #FFFDF8;
+    --foreground: #1E293B;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .glass {
+    @apply bg-white/70 backdrop-blur-lg border border-white/20 shadow-soft;
+  }
+  
+  .glass-dark {
+    @apply bg-primary/80 backdrop-blur-lg border border-white/10 shadow-soft;
+  }
+
+  .text-glow {
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+  }
+}
