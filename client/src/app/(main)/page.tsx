@@ -2,19 +2,47 @@
 
 import Link from "next/link";
 import { Search, MapPin, Calendar, Users, Heart, Star, ChevronRight, CheckCircle, Headphones, CreditCard, Cuboid as Cube } from "lucide-react";
+import { useState, useEffect } from "react";
+
+const heroImages = [
+  "/backgrounghome.jpg",
+  "/backgrounghome1.jpg",
+  "/backgroundhome2.jpg",
+  "/backgroundhome3.jpg",
+  "/backgroundhome4.jpg",
+  "/backgroundhome5.jpg",
+  "/backgroundhome6.jpg",
+  "/backgroundhome7.jpg",
+  "/backgroundhome8.jpg",
+  "/backrgroundhome9.jpg",
+];
 
 export default function HomePage() {
+  const [currentBg, setCurrentBg] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentBg((prev) => (prev + 1) % heroImages.length);
+    }, 20000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="bg-light min-h-screen pb-0">
       {/* Hero Section */}
       <section className="relative pt-32 pb-48 px-6 text-white min-h-[600px] flex items-center justify-center">
-        {/* Background Image */}
-        <div 
-          className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: "url('/backgrounghome.jpg')" }}
-        >
-          <div className="absolute inset-0 bg-dark/40"></div>
-        </div>
+        {/* Background Images Slideshow */}
+        {heroImages.map((img, i) => (
+          <div
+            key={img}
+            className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000"
+            style={{
+              backgroundImage: `url('${img}')`,
+              opacity: i === currentBg ? 1 : 0,
+            }}
+          />
+        ))}
+        <div className="absolute inset-0 z-[1] bg-dark/40" />
 
         <div className="w-full max-w-5xl mx-auto text-center relative z-10">
           <h1 className="font-heading font-bold text-5xl md:text-6xl lg:text-7xl leading-tight mb-4 drop-shadow-md">
