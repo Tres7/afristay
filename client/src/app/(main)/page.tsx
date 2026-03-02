@@ -11,7 +11,7 @@ export default function HomePage() {
         {/* Background Image */}
         <div 
           className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1547471080-7cb2acd47223?q=80&w=2070&auto=format&fit=crop')" }}
+          style={{ backgroundImage: "url('/backgrounghome.jpg')" }}
         >
           <div className="absolute inset-0 bg-dark/40"></div>
         </div>

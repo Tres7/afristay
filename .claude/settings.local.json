@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add client/src/app/layout.tsx)",
+      "Bash(git commit -m \"feat: update root layout with Poppins/Inter fonts and global providers\")"
+    ]
+  }
+}
