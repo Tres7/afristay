@@ -26,6 +26,7 @@ db.sqlite3-journal
 /server/staticfiles/
 /server/mediafiles/
 *.log
+server/.venv/
 
 # =========================
 # Node.js / Next.js
