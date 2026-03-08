@@ -12,7 +12,9 @@ from apps.users.application.dto.dto import (
     UpdateProfileDTO,
     UserResponseDTO
 )
-from server.apps.users.domain.value_objects import Email, PasswordHash
+from apps.users.application.events.UserRegistered import UserRegistered
+from apps.users.application.ports import EventBus
+from apps.users.domain.value_objects import Email, PasswordHash
 
 
 class UserService:
@@ -20,7 +22,7 @@ class UserService:
     def __init__(self, user_repository: UserRepository):
         self._repository = user_repository
 
-    def register(self, dto: RegisterDTO) -> UserResponseDTO:
+    def register(self, dto: RegisterDTO, event_bus: EventBus, code: str) -> UserResponseDTO:
         if self._repository.exists_by_email(dto.email):
             raise UserAlreadyExistsException(dto.email)
 
@@ -37,6 +39,15 @@ class UserService:
         )
 
         saved_user = self._repository.save(user)
+
+        event_bus.publish(UserRegistered(
+            event='users.email_verification_requested',
+            user_id=str(saved_user.id),
+            email=str(saved_user.email),
+            first_name=saved_user.first_name,
+            code=code,
+        ))
+
         return UserResponseDTO.from_entity(saved_user)
 
     def get_by_id(self, user_id: uuid.UUID) -> UserResponseDTO:

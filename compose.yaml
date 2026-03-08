@@ -70,5 +70,32 @@ services:
     depends_on:
       - backend
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"    # port AMQP (pika se connecte ici)
+      - "15672:15672"  # management web interface
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+  consumer:
+    build:
+      context: ./server
+    command: python manage.py consume_events
+    volumes:
+      - ./server:/app
+    env_file:
+      - .env
+    depends_on:
+      - rabbitmq
+      - db
+    restart: on-failure
+
+
+
 volumes:
   afristay_db:
+  rabbitmq_data:
