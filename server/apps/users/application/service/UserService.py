@@ -7,10 +7,12 @@ from apps.users.domain.exceptions import (
     UserNotFoundException
 )
 from apps.users.application.dto.dto import (
+    GoogleAuthDTO,
     RegisterDTO,
     UpdateProfileDTO,
     UserResponseDTO
 )
+from server.apps.users.domain.value_objects import Email, PasswordHash
 
 
 class UserService:
@@ -80,3 +82,25 @@ class UserService:
         if not user:
             raise UserNotFoundException(email)
         return user
+    
+
+def google_authenticate(self, dto: GoogleAuthDTO, verifier) -> UserResponseDTO:
+    from apps.users.application.ports.GoogleTokenVerifier import GoogleTokenVerifier
+    from django.contrib.auth.hashers import make_password
+
+    info = verifier.verify(dto.id_token)
+
+    user = self._repository.find_by_email(info.email)
+    if not user:
+        user = User(
+            email=Email(info.email),
+            first_name=info.first_name,
+            last_name=info.last_name,
+            password_hash=PasswordHash(make_password(None)),  # compte sans mot de passe
+            role=UserRole.VOYAGEUR,
+            is_verified=True, #because google had already verified the email
+            avatar_url=info.avatar_url,
+        )
+        user = self._repository.save(user)
+
+    return UserResponseDTO.from_entity(user)

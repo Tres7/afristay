@@ -48,3 +48,8 @@ class UserResponseDTO:
             is_verified=user.is_verified,
             is_active=user.is_active,
         )
+
+
+@dataclass
+class GoogleAuthDTO:
+    id_token: str

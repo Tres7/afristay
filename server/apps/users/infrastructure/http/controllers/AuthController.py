@@ -3,6 +3,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
+from apps.users.application.dto.dto import GoogleAuthDTO
+from apps.users.infrastructure.external.GoogleAPITokenVerifier import GoogleAPITokenVerifier
 
 from apps.users.application.dto.dto import RegisterDTO
 from apps.users.application.service.UserService import UserService
@@ -101,3 +103,32 @@ class LoginView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_403_FORBIDDEN)
         except UnverifiedUserException as e:
             return Response({'error': str(e)}, status=status.HTTP_403_FORBIDDEN)
+        
+
+class GoogleAuthView(APIView):
+
+    def post(self, request):
+        id_token = request.data.get('id_token')
+        if not id_token:
+            return Response({'error': 'id_token requis.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            dto = GoogleAuthDTO(id_token=id_token)
+            result = _service().google_authenticate(dto, GoogleAPITokenVerifier())
+
+            user_model = UserModel.objects.get(id=result.id)
+            refresh = RefreshToken.for_user(user_model)
+            return Response({
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+                'user': {
+                    'id': str(result.id),
+                    'email': str(result.email),
+                    'first_name': result.first_name,
+                    'last_name': result.last_name,
+                    'role': result.role,
+                }
+            })
+        except ValueError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
