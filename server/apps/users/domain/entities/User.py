@@ -14,18 +14,22 @@ class UserRole(Enum):
 
 @dataclass
 class User:
-    id: uuid.UUID = field(default_factory=uuid.uuid4)
     email: Email
     first_name: str
     last_name: str
     password_hash: PasswordHash
-    phone: Optional[PhoneNumber]
-    avatar_url: Optional[str] = None
     role: UserRole
-    is_verified: bool
-    is_active: bool
-    created_at: datetime = field(default_factory=datetime.datetime.now(datetime.timezone.utc))
-    updated_at: datetime = field(default_factory=datetime.datetime.now(datetime.timezone.utc))
+    is_verified: bool = False
+    is_active: bool = True
+    phone: Optional[PhoneNumber] = None
+    id: uuid.UUID = field(default_factory=uuid.uuid4)
+    avatar_url: Optional[str] = None
+    created_at: datetime.datetime = field(
+        default_factory=lambda: datetime.datetime.now(datetime.timezone.utc)
+    )
+    updated_at: datetime.datetime = field(
+        default_factory=lambda: datetime.datetime.now(datetime.timezone.utc)
+    )
     
 
     def full_name(self) -> str:
@@ -40,7 +44,7 @@ class User:
     def verify(self) -> None:
         """Valider le compte après confirmation email"""
         self.is_verified = True
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.datetime.now(datetime.timezone.utc)
 
     def deactivate(self) -> None:
         self.is_active = False
@@ -48,4 +52,4 @@ class User:
 
     def change_role(self, new_role: UserRole) -> None:
         self.role = new_role
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.datetime.now(datetime.timezone.utc)

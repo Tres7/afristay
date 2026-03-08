@@ -6,7 +6,7 @@ from apps.users.domain.entities.User import User, UserRole
 from apps.users.domain.repositories.UserRepository import UserRepository
 from apps.users.domain.exceptions import UserNotFoundException
 from apps.users.infrastructure.persistence.models import UserModel
-from server.apps.users.domain.value_objects import Email, PasswordHash, PhoneNumber
+from apps.users.domain.value_objects import Email, PasswordHash, PhoneNumber
 
 
 class DjangoUserRepository(UserRepository):
