@@ -6,6 +6,7 @@ from apps.users.domain.entities.User import User, UserRole
 from apps.users.domain.repositories.UserRepository import UserRepository
 from apps.users.domain.exceptions import UserNotFoundException
 from apps.users.infrastructure.persistence.models import UserModel
+from server.apps.users.domain.value_objects import Email, PasswordHash, PhoneNumber
 
 
 class DjangoUserRepository(UserRepository):
@@ -13,11 +14,11 @@ class DjangoUserRepository(UserRepository):
     def _to_entity(self, model: UserModel) -> User:
         return User(
             id=model.id,
-            email=model.email,
+            email=Email(model.email),
             first_name=model.first_name,
             last_name=model.last_name,
-            password_hash=model.password,
-            phone=model.phone,
+            password_hash=PasswordHash(model.password),
+            phone=PhoneNumber.of(model.phone),
             avatar_url=model.avatar.url if model.avatar else None,
             role=UserRole(model.role),
             is_verified=model.is_verified,
@@ -50,15 +51,15 @@ class DjangoUserRepository(UserRepository):
     def save(self, user: User) -> User:
         model = UserModel(
             id=user.id,
-            email=user.email,
+            email=str(user.email),
             first_name=user.first_name,
             last_name=user.last_name,
-            phone=user.phone,
+            phone=PhoneNumber.to_str(user.phone),
             role=user.role.value,
             is_verified=user.is_verified,
             is_active=user.is_active,
         )
-        model.password = user.password_hash
+        model.password = str(user.password_hash)
         model.save()
         return self._to_entity(model)
 
@@ -68,10 +69,10 @@ class DjangoUserRepository(UserRepository):
         except UserModel.DoesNotExist:
             raise UserNotFoundException(f"Utilisateur {user.id} introuvable.")
 
-        model.email = user.email
+        model.email = str(user.email)
         model.first_name = user.first_name
         model.last_name = user.last_name
-        model.phone = user.phone
+        model.phone = PhoneNumber.to_str(user.phone)
         model.role = user.role.value
         model.is_verified = user.is_verified
         model.is_active = user.is_active

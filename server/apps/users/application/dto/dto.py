@@ -2,34 +2,35 @@ from dataclasses import dataclass
 from typing import Optional
 import uuid
 from apps.users.domain.entities.User import User, UserRole
+from apps.users.domain.value_objects import Email, PasswordHash, PhoneNumber
 
 
 @dataclass
 class RegisterDTO:
-    email: str
+    email: Email
     first_name: str
     last_name: str
-    password_hash: str
+    password_hash: PasswordHash
     role: UserRole
-    phone: Optional[str] = None
+    phone: Optional[PhoneNumber]
 
 
 @dataclass
 class UpdateProfileDTO:
     first_name: Optional[str] = None
     last_name: Optional[str] = None
-    phone: Optional[str] = None
+    phone: Optional[PhoneNumber] = None
     avatar_url: Optional[str] = None
 
 
 @dataclass
 class UserResponseDTO:
     id: uuid.UUID
-    email: str
+    email: Email
     first_name: str
     last_name: str
     role: str
-    phone: Optional[str]
+    phone: Optional[PhoneNumber]
     avatar_url: Optional[str]
     is_verified: bool
     is_active: bool

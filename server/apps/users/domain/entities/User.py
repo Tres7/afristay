@@ -4,6 +4,8 @@ from enum import Enum
 from typing import Optional
 import uuid
 
+from apps.users.domain.value_objects import Email, PasswordHash, PhoneNumber
+
 
 class UserRole(Enum):
     VOYAGEUR = 'voyageur'
@@ -13,11 +15,11 @@ class UserRole(Enum):
 @dataclass
 class User:
     id: uuid.UUID = field(default_factory=uuid.uuid4)
-    email: str
+    email: Email
     first_name: str
     last_name: str
-    password_hash: str
-    phone: Optional[str] = None
+    password_hash: PasswordHash
+    phone: Optional[PhoneNumber]
     avatar_url: Optional[str] = None
     role: UserRole
     is_verified: bool
