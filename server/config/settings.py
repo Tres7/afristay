@@ -5,6 +5,7 @@ Django settings for AfriStay project.
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from datetime import timedelta
 
 load_dotenv()
 
@@ -32,6 +33,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     # Local
     'apps.users',
+    'apps.notifications.apps.NotificationsConfig'
 ]
 
 MIDDLEWARE = [
@@ -129,3 +131,13 @@ REST_FRAMEWORK = {
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
 ]
+
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+}
+
+# Email
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
