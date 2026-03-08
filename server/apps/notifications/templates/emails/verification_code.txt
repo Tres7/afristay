@@ -1,0 +1,11 @@
+Bonjour {{ first_name }},
+
+Votre code de vérification AfriStay est :
+
+    {{ code }}
+
+Il expire dans 10 minutes.
+
+Si vous n'avez pas créé de compte, ignorez cet email.
+
+L'équipe AfriStay
