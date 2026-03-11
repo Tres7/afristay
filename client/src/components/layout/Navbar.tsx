@@ -21,8 +21,33 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between gap-6">
         {/* Logo */}
-        <Link href="/" className="flex-shrink-0 flex items-center gap-2">
-          <img src="/logo.png" alt="AfriStay Logo" className="h-8 w-auto object-contain" onError={(e) => { e.currentTarget.src = 'https://i.ibb.co/3WfK91p/afristay.png' }} />
+        <Link href="/" className="flex-shrink-0 flex items-center gap-2 group">
+          {/* Marque géométrique Adinkra — diamonds imbriqués */}
+          <svg width="30" height="30" viewBox="0 0 30 30" fill="none" className="flex-shrink-0 transition-transform duration-500 group-hover:rotate-90">
+            <defs>
+              <linearGradient id="lg1" x1="0" y1="0" x2="30" y2="30">
+                <stop stopColor="#E67E22" />
+                <stop offset="1" stopColor="#F39C12" />
+              </linearGradient>
+            </defs>
+            {/* Outer diamond */}
+            <rect x="3" y="3" width="24" height="24" rx="3" transform="rotate(45 15 15)" fill="url(#lg1)" opacity="0.15" />
+            {/* Middle ring */}
+            <rect x="6" y="6" width="18" height="18" rx="2" transform="rotate(45 15 15)" stroke="url(#lg1)" strokeWidth="1.5" fill="none" />
+            {/* Inner solid */}
+            <rect x="10" y="10" width="10" height="10" rx="1.5" transform="rotate(45 15 15)" fill="url(#lg1)" />
+          </svg>
+
+          {/* Wordmark */}
+          <span className="font-heading font-black text-[22px] tracking-tight leading-none select-none">
+            <span
+              className="bg-clip-text text-transparent"
+              style={{ backgroundImage: "linear-gradient(135deg, #E67E22 0%, #F39C12 100%)" }}
+            >
+              Afri
+            </span>
+            <span className="text-[#2C3E50] group-hover:text-primary transition-colors duration-300">Stay</span>
+          </span>
         </Link>
 
         {/* Search Bar (Centered) */}
@@ -104,6 +129,24 @@ export default function Navbar() {
       {/* Menu mobile */}
       {mobileOpen && (
         <div className="md:hidden bg-white border-t border-gray-100 px-6 py-4 space-y-4 shadow-lg">
+          {/* Logo mobile */}
+          <div className="flex items-center gap-2 pb-2">
+            <svg width="24" height="24" viewBox="0 0 30 30" fill="none">
+              <defs>
+                <linearGradient id="lg2" x1="0" y1="0" x2="30" y2="30">
+                  <stop stopColor="#E67E22" />
+                  <stop offset="1" stopColor="#F39C12" />
+                </linearGradient>
+              </defs>
+              <rect x="3" y="3" width="24" height="24" rx="3" transform="rotate(45 15 15)" fill="url(#lg2)" opacity="0.15" />
+              <rect x="6" y="6" width="18" height="18" rx="2" transform="rotate(45 15 15)" stroke="url(#lg2)" strokeWidth="1.5" fill="none" />
+              <rect x="10" y="10" width="10" height="10" rx="1.5" transform="rotate(45 15 15)" fill="url(#lg2)" />
+            </svg>
+            <span className="font-heading font-black text-lg tracking-tight">
+              <span className="bg-clip-text text-transparent" style={{ backgroundImage: "linear-gradient(135deg, #E67E22 0%, #F39C12 100%)" }}>Afri</span>
+              <span className="text-[#2C3E50]">Stay</span>
+            </span>
+          </div>
           <div className="relative w-full flex items-center bg-gray-50 border border-gray-200 rounded-full py-2 pl-4 pr-2 mb-4">
             <Search size={18} className="text-gray-400 mr-2" />
             <input 

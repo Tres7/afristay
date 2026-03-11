@@ -3,6 +3,7 @@
 import { ChevronRight, User, CalendarCheck, Heart, CreditCard, Bell, Globe, HelpCircle, LogOut, Star } from "lucide-react";
 import { properties } from "@/lib/mockData";
 import Link from "next/link";
+import { signOut, useSession } from "next-auth/react";
 
 const menuSections = [
   {
@@ -30,7 +31,10 @@ const menuSections = [
 ];
 
 export default function ProfilPage() {
-  const user = { name: "Mende Fadel", since: "2025", initials: "MF" };
+  const { data: session } = useSession();
+  const fullName = session?.user?.name ?? "Utilisateur";
+  const initials = fullName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+  const user = { name: fullName, since: "2025", initials };
   const favorites = properties.filter((p) => p.isFavorite);
 
   return (
@@ -102,7 +106,7 @@ export default function ProfilPage() {
 
             {/* Déconnexion */}
             <div className="bg-white rounded-3xl shadow-soft border border-light overflow-hidden">
-              <button className="group w-full flex items-center gap-5 px-8 py-5 hover:bg-red-50/50 transition-all duration-300">
+              <button onClick={() => signOut({ callbackUrl: "/login" })} className="group w-full flex items-center gap-5 px-8 py-5 hover:bg-red-50/50 transition-all duration-300">
                 <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:bg-red-100 transition-colors">
                   <LogOut size={20} className="text-red-500" />
                 </div>

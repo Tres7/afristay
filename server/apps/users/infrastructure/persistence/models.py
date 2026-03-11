@@ -2,6 +2,7 @@
 import uuid
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
+from django.utils import timezone
 
 # user creation
 class UserModelManager(BaseUserManager):
@@ -49,3 +50,15 @@ class UserModel(AbstractUser):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} <{self.email}>"
+
+
+class VerificationCode(models.Model):
+    user       = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='verification_codes')
+    code       = models.CharField(max_length=6)
+    expires_at = models.DateTimeField()
+
+    class Meta:
+        db_table = 'users_verification_code'
+
+    def is_expired(self):
+        return timezone.now() > self.expires_at

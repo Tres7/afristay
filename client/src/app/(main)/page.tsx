@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Search, MapPin, Calendar, Users, Heart, Star, ChevronRight, CheckCircle, Headphones, CreditCard, Cuboid as Cube } from "lucide-react";
 import { useState, useEffect } from "react";
+import { motion, type Variants } from "framer-motion";
 
 const heroImages = [
   "/backgrounghome.jpg",
@@ -17,6 +18,16 @@ const heroImages = [
   "/backrgroundhome9.jpg",
 ];
 
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 24 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
+};
+
+const containerVariants: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.08 } },
+};
+
 export default function HomePage() {
   const [currentBg, setCurrentBg] = useState(0);
 
@@ -28,14 +39,16 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="bg-light min-h-screen pb-0">
+    <div className="bg-white min-h-screen pb-0">
       {/* Hero Section */}
-      <section className="relative pt-32 pb-48 px-6 text-white min-h-[600px] flex items-center justify-center">
-        {/* Background Images Slideshow */}
+      <section className="relative pt-32 pb-48 px-6 text-white min-h-[600px] flex items-center justify-center overflow-hidden">
+        {/* Background Images Slideshow avec Ken Burns */}
         {heroImages.map((img, i) => (
           <div
             key={img}
-            className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000"
+            className={`absolute inset-0 z-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ${
+              i === currentBg ? "animate-ken-burns" : ""
+            }`}
             style={{
               backgroundImage: `url('${img}')`,
               opacity: i === currentBg ? 1 : 0,
@@ -43,17 +56,19 @@ export default function HomePage() {
           />
         ))}
         <div className="absolute inset-0 z-[1] bg-dark/40" />
+        {/* Gradient transition hero → blanc */}
+        <div className="absolute bottom-0 left-0 right-0 h-52 bg-gradient-to-b from-transparent to-white z-[2]" />
 
         <div className="w-full max-w-5xl mx-auto text-center relative z-10">
-          <h1 className="font-heading font-bold text-5xl md:text-6xl lg:text-7xl leading-tight mb-4 drop-shadow-md">
+          <h1 className="animate-fade-up font-heading font-bold text-5xl md:text-6xl lg:text-7xl leading-tight mb-4 drop-shadow-md">
             Découvrez l'Afrique<br />autrement
           </h1>
-          <p className="text-white/90 text-lg md:text-xl mb-12 max-w-2xl mx-auto font-medium drop-shadow">
+          <p className="animate-fade-up-delay-1 text-white/90 text-lg md:text-xl mb-12 max-w-2xl mx-auto font-medium drop-shadow">
             Réservez des hébergements uniques et vivez des expériences authentiques.
           </p>
 
           {/* Search Bar Widget */}
-          <div className="bg-white rounded-full p-2 max-w-4xl mx-auto shadow-card flex flex-col md:flex-row items-center divide-y md:divide-y-0 md:divide-x divide-gray-200">
+          <div className="animate-fade-up-delay-2 bg-white rounded-full p-2 max-w-4xl mx-auto shadow-card flex flex-col md:flex-row items-center divide-y md:divide-y-0 md:divide-x divide-gray-200">
             <div className="flex-1 px-6 py-3 w-full text-left">
               <p className="text-[11px] font-bold text-dark uppercase tracking-wide">Destination</p>
               <div className="flex items-center gap-2 mt-1">
@@ -93,7 +108,7 @@ export default function HomePage() {
       </section>
 
       <div className="max-w-7xl mx-auto px-6 py-16 space-y-20 -mt-20 relative z-20">
-        
+
         {/* Destinations Populaires */}
         <section>
           <div className="flex items-end justify-between mb-8">
@@ -105,48 +120,72 @@ export default function HomePage() {
               Voir tout <ChevronRight size={16} />
             </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          <motion.div
+            className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-60px" }}
+          >
             {[
               { id: 1, name: "Lomé, Togo 🇹🇬", count: "120+", bg: "https://images.unsplash.com/photo-1518182170-4e36502ff7d8?q=80&w=600&auto=format&fit=crop" },
               { id: 2, name: "Dakar, Sénégal 🇸🇳", count: "240+", bg: "https://images.unsplash.com/photo-1546527581-22467d3dd10f?q=80&w=600&auto=format&fit=crop" },
               { id: 3, name: "Abidjan, CI 🇨🇮", count: "180+", bg: "https://images.unsplash.com/photo-1627448887968-3e58282f1eb8?q=80&w=600&auto=format&fit=crop" },
               { id: 4, name: "Marrakech, Maroc 🇲🇦", count: "300+", bg: "https://images.unsplash.com/photo-1539020140153-e479b8c22e70?q=80&w=600&auto=format&fit=crop" },
             ].map((dest) => (
-              <Link key={dest.id} href={`/recherche?dest=${dest.id}`} className="block relative h-48 md:h-64 rounded-[2rem] overflow-hidden group shadow-sm">
-                <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" style={{ backgroundImage: `url('${dest.bg}')` }} />
-                <div className="absolute inset-0 bg-gradient-to-t from-dark/80 via-dark/20 to-transparent" />
-                <div className="absolute bottom-6 left-6 right-6">
-                  <h3 className="text-white font-heading font-bold text-lg leading-tight">{dest.name}</h3>
-                  <p className="text-white/80 text-xs mt-1 font-medium">{dest.count} hébergements</p>
-                </div>
-              </Link>
+              <motion.div key={dest.id} variants={cardVariants}>
+                <Link href={`/recherche?dest=${dest.id}`} className="block relative h-48 md:h-64 rounded-[2rem] overflow-hidden group shadow-sm">
+                  <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" style={{ backgroundImage: `url('${dest.bg}')` }} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-dark/80 via-dark/20 to-transparent" />
+                  <div className="absolute bottom-6 left-6 right-6">
+                    <h3 className="text-white font-heading font-bold text-lg leading-tight">{dest.name}</h3>
+                    <p className="text-white/80 text-xs mt-1 font-medium">{dest.count} hébergements</p>
+                  </div>
+                </Link>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </section>
 
         {/* Categories / Tabs */}
-        <section className="flex flex-wrap items-center gap-4">
+        <motion.section
+          className="flex flex-wrap items-center gap-4"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-40px" }}
+        >
           {[
             { id: "hotels", label: "Hôtels", count: "400+ propriétés", icon: "h-6 w-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-xs", iconChar: "H" },
             { id: "apparts", label: "Appartements", count: "600+ propriétés", icon: "h-6 w-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-bold text-xs", iconChar: "A" },
             { id: "villas", label: "Villas", count: "150+ propriétés", icon: "h-6 w-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center font-bold text-xs", iconChar: "V" },
           ].map((cat) => (
-            <div key={cat.id} className="bg-white px-6 py-4 rounded-full border border-gray-100 shadow-sm flex items-center gap-4 cursor-pointer hover:border-primary/30 transition-colors">
+            <motion.div
+              key={cat.id}
+              variants={cardVariants}
+              className="bg-white px-6 py-4 rounded-full border border-gray-100 shadow-sm flex items-center gap-4 cursor-pointer hover:border-primary/30 transition-colors"
+            >
               <div className={cat.icon}>{cat.iconChar}</div>
               <div>
                 <p className="font-bold text-dark text-sm leading-none">{cat.label}</p>
                 <p className="text-xs text-gray-500 mt-1">{cat.count}</p>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </section>
+        </motion.section>
 
         {/* Hébergements recommandés */}
         <section>
           <div className="mb-8">
             <h2 className="font-heading font-bold text-dark text-2xl md:text-3xl">Hébergements recommandés</h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <motion.div
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-60px" }}
+          >
             {[
               { id: 1, name: "Villa Hibiscus", loc: "Assinie, Côte d'Ivoire", price: "125 000 XOF", rating: "4.8", img: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=800&auto=format&fit=crop", badge: "360°" },
               { id: 2, name: "Riad Jasmin", loc: "Marrakech, Maroc", price: "85 000 XOF", rating: "4.9", img: "https://images.unsplash.com/photo-1539020140153-e479b8c22e70?q=80&w=800&auto=format&fit=crop", badge: "Nouveau" },
@@ -157,35 +196,37 @@ export default function HomePage() {
               { id: 7, name: "Suite Océan", loc: "Cap Skirring, Sénégal", price: "90 000 XOF", rating: "4.8", img: "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?q=80&w=800&auto=format&fit=crop", badge: "" },
               { id: 8, name: "Bungalow Lagon", type: "Maison", loc: "Zanzibar", price: "180 000 XOF", rating: "4.9", img: "https://images.unsplash.com/photo-1590523277543-a94d2e4eb00b?q=80&w=800&auto=format&fit=crop", badge: "Superhôte" },
             ].map((prop) => (
-              <Link key={prop.id} href={`/hebergements/${prop.id}`} className="group block">
-                <div className="relative aspect-[4/3] rounded-3xl overflow-hidden mb-3">
-                  <img src={prop.img} alt={prop.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                  {prop.badge && (
-                    <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full text-dark shadow-sm">
-                      {prop.badge}
-                    </div>
-                  )}
-                  <button className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full text-gray-400 hover:text-red-500 hover:bg-white shadow-sm transition-colors">
-                    <Heart size={16} />
-                  </button>
-                </div>
-                <div>
-                  <div className="flex justify-between items-start">
-                    <h3 className="font-heading font-bold text-dark text-[15px]">{prop.name}</h3>
-                    <div className="flex items-center gap-1 text-dark">
-                      <Star size={12} className="fill-accent text-accent" />
-                      <span className="text-xs font-bold">{prop.rating}</span>
-                    </div>
+              <motion.div key={prop.id} variants={cardVariants}>
+                <Link href={`/hebergements/${prop.id}`} className="group block">
+                  <div className="relative aspect-[4/3] rounded-3xl overflow-hidden mb-3">
+                    <img src={prop.img} alt={prop.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    {prop.badge && (
+                      <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full text-dark shadow-sm">
+                        {prop.badge}
+                      </div>
+                    )}
+                    <button className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full text-gray-400 hover:text-red-500 hover:bg-white shadow-sm transition-colors">
+                      <Heart size={16} />
+                    </button>
                   </div>
-                  <p className="text-gray-500 text-xs mt-0.5">{prop.loc}</p>
-                  <p className="mt-2 text-sm">
-                    <span className="font-bold text-primary">{prop.price}</span>
-                    <span className="text-gray-400 text-xs"> / nuit</span>
-                  </p>
-                </div>
-              </Link>
+                  <div>
+                    <div className="flex justify-between items-start">
+                      <h3 className="font-heading font-bold text-dark text-[15px]">{prop.name}</h3>
+                      <div className="flex items-center gap-1 text-dark">
+                        <Star size={12} className="fill-accent text-accent" />
+                        <span className="text-xs font-bold">{prop.rating}</span>
+                      </div>
+                    </div>
+                    <p className="text-gray-500 text-xs mt-0.5">{prop.loc}</p>
+                    <p className="mt-2 text-sm">
+                      <span className="font-bold text-primary">{prop.price}</span>
+                      <span className="text-gray-400 text-xs"> / nuit</span>
+                    </p>
+                  </div>
+                </Link>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </section>
 
         {/* Pourquoi choisir AfriStay */}
@@ -195,22 +236,28 @@ export default function HomePage() {
             Nous nous engageons à rendre votre voyage en Afrique aussi simple et mémorable que possible.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-4 gap-8"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-40px" }}
+          >
             {[
               { title: "Paiement flexible", desc: "Payez par carte bancaire ou Mobile Money en toute sécurité.", icon: CreditCard, color: "text-orange-500", bg: "bg-orange-100" },
               { title: "Visite virtuelle 360°", desc: "Explorez les logements comme si vous y étiez avant de réserver.", icon: Cube, color: "text-blue-500", bg: "bg-blue-100" },
               { title: "Expériences complètes", desc: "Plus qu'un lit, découvrez des activités locales authentiques.", icon: CheckCircle, color: "text-green-500", bg: "bg-green-100" },
               { title: "Support 24/7", desc: "Une équipe dédiée disponible à tout moment pour vous aider.", icon: Headphones, color: "text-purple-500", bg: "bg-purple-100" },
             ].map((feat, i) => (
-              <div key={i} className="flex flex-col items-center text-center">
+              <motion.div key={i} variants={cardVariants} className="flex flex-col items-center text-center">
                 <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-6 shadow-sm ${feat.bg} ${feat.color}`}>
                   <feat.icon size={26} strokeWidth={2} />
                 </div>
                 <h3 className="font-bold text-dark text-lg mb-2">{feat.title}</h3>
                 <p className="text-gray-500 text-xs leading-relaxed max-w-[200px]">{feat.desc}</p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </section>
 
         {/* Témoignages */}
@@ -218,14 +265,24 @@ export default function HomePage() {
           <div className="text-center mb-12">
             <h2 className="font-heading font-bold text-dark text-3xl">Ce que disent nos voyageurs</h2>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10 mb-[-60px]">
+
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10 mb-[-60px]"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-40px" }}
+          >
             {[
               { name: "Sarah B.", loc: "France", quote: '"Une expérience incroyable à Abidjan. La plateforme est très intuitive et nous avons trouvé la villa idéale pour nos vacances en famille. Je recommande à 100%!"', rating: 5, avatar: "https://i.pravatar.cc/150?u=sarah" },
               { name: "Maxence D.", loc: "Belgique", quote: '"AfriStay m\'a permis de découvrir des endroits cachés au Sénégal que je n\'aurais jamais trouvés autrement. Le support est top !"', rating: 5, avatar: "https://i.pravatar.cc/150?u=max" },
               { name: "Aminata T.", loc: "Côte d'Ivoire", quote: '"Les paiements par mobile money nous ont sauvés ! C\'est ce qui manquait aux autres plateformes. Le service est rapide et très fiable."', rating: 5, avatar: "https://i.pravatar.cc/150?u=ami" },
             ].map((review, i) => (
-              <div key={i} className="bg-white rounded-3xl p-8 shadow-card border border-gray-100 flex flex-col justify-between">
+              <motion.div
+                key={i}
+                variants={cardVariants}
+                className="bg-white rounded-3xl p-8 shadow-card border border-gray-100 flex flex-col justify-between"
+              >
                 <div>
                   <div className="flex gap-1 mb-4">
                     {[1, 2, 3, 4, 5].map(star => <Star key={star} size={14} className="fill-accent text-accent" />)}
@@ -241,9 +298,9 @@ export default function HomePage() {
                     <p className="text-xs text-gray-500">{review.loc}</p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </section>
 
       </div>
@@ -261,8 +318,7 @@ export default function HomePage() {
             Commencer maintenant
           </button>
         </div>
-        
-        {/* Simple Footer directly integrated or relies on Layout, but mockups show links here */}
+
         <div className="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/20 grid grid-cols-2 md:grid-cols-4 gap-8 text-sm text-white/80">
           <div>
             <img src="/logo.png" alt="AfriStay" className="h-8 w-auto object-contain brightness-0 invert mb-4" onError={(e) => { e.currentTarget.src = 'https://i.ibb.co/3WfK91p/afristay.png' }} />

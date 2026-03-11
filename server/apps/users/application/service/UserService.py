@@ -1,5 +1,7 @@
 import uuid
 
+from django.contrib.auth.hashers import make_password
+
 from apps.users.domain.entities.User import User, UserRole
 from apps.users.domain.repositories.UserRepository import UserRepository
 from apps.users.domain.exceptions import (
@@ -14,7 +16,7 @@ from apps.users.application.dto.dto import (
 )
 from apps.users.application.events.UserRegistered import UserRegistered
 from apps.users.application.ports import EventBus
-from apps.users.domain.value_objects import Email, PasswordHash
+from apps.users.domain.value_objects import Email, PasswordHash, PhoneNumber
 
 
 class UserService:
@@ -35,18 +37,21 @@ class UserService:
             last_name=dto.last_name,
             password_hash=dto.password_hash,
             role=dto.role,
-            phone=dto.phone,
+            phone=PhoneNumber.of(dto.phone) if isinstance(dto.phone, str) else dto.phone,
         )
 
         saved_user = self._repository.save(user)
 
-        event_bus.publish(UserRegistered(
-            event='users.email_verification_requested',
-            user_id=str(saved_user.id),
-            email=str(saved_user.email),
-            first_name=saved_user.first_name,
-            code=code,
-        ))
+        try:
+            event_bus.publish(UserRegistered(
+                event='users.email_verification_requested',
+                user_id=str(saved_user.id),
+                email=str(saved_user.email),
+                first_name=saved_user.first_name,
+                code=code,
+            ))
+        except Exception:
+            pass  # RabbitMQ indisponible : l'inscription reste valide
 
         return UserResponseDTO.from_entity(saved_user)
 
@@ -93,25 +98,21 @@ class UserService:
         if not user:
             raise UserNotFoundException(email)
         return user
-    
 
-def google_authenticate(self, dto: GoogleAuthDTO, verifier) -> UserResponseDTO:
-    from apps.users.application.ports.GoogleTokenVerifier import GoogleTokenVerifier
-    from django.contrib.auth.hashers import make_password
+    def google_authenticate(self, dto: GoogleAuthDTO, verifier) -> UserResponseDTO:
+        info = verifier.verify(dto.id_token)
 
-    info = verifier.verify(dto.id_token)
+        user = self._repository.find_by_email(info.email)
+        if not user:
+            user = User(
+                email=Email(info.email),
+                first_name=info.first_name,
+                last_name=info.last_name,
+                password_hash=PasswordHash(make_password(None)),  # compte sans mot de passe
+                role=UserRole.VOYAGEUR,
+                is_verified=True,
+                avatar_url=info.avatar_url,
+            )
+            user = self._repository.save(user)
 
-    user = self._repository.find_by_email(info.email)
-    if not user:
-        user = User(
-            email=Email(info.email),
-            first_name=info.first_name,
-            last_name=info.last_name,
-            password_hash=PasswordHash(make_password(None)),  # compte sans mot de passe
-            role=UserRole.VOYAGEUR,
-            is_verified=True, #because google had already verified the email
-            avatar_url=info.avatar_url,
-        )
-        user = self._repository.save(user)
-
-    return UserResponseDTO.from_entity(user)
+        return UserResponseDTO.from_entity(user)

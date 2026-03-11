@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { Mail, Lock, User, Phone, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -13,30 +14,68 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [role, setRole] = useState<"voyageur" | "hote">("voyageur");
   const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
 
-    console.log("Compte créé pour : ", { firstName, lastName, email, phone });
-
-    const res = await signIn("credentials", {
-      redirect: false,
-      email,
-      password,
-    });
-
-    if (res?.error) {
-      setError("Erreur lors de la connexion automatique");
-      setLoading(false);
-    } else {
-      router.push("/profil");
-      router.refresh();
+    if (password !== passwordConfirm) {
+      setError("Les mots de passe ne correspondent pas.");
+      return;
     }
+    if (password.length < 8) {
+      setError("Le mot de passe doit contenir au moins 8 caractères.");
+      return;
+    }
+
+    setLoading(true);
+
+    // Étape 1 — Créer le compte via l'API Django
+    try {
+      const res = await fetch(`${API_URL}/v1/auth/register/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          first_name: firstName,
+          last_name: lastName,
+          password,
+          password_confirm: passwordConfirm,
+          role,
+          phone: phone || undefined,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        if (res.status === 409) {
+          setError("Cette adresse email est déjà utilisée.");
+        } else if (res.status === 400) {
+          const firstKey = Object.keys(data)[0];
+          const firstMsg = data[firstKey];
+          setError(Array.isArray(firstMsg) ? firstMsg[0] : String(firstMsg));
+        } else {
+          setError("Une erreur est survenue. Veuillez réessayer.");
+        }
+        setLoading(false);
+        return;
+      }
+    } catch {
+      setError("Impossible de contacter le serveur.");
+      setLoading(false);
+      return;
+    }
+
+    // Étape 2 — Rediriger vers la page de vérification email
+    sessionStorage.setItem("verify_email", email);
+    sessionStorage.setItem("verify_password", password);
+    router.push(`/verify?email=${encodeURIComponent(email)}`);
   };
 
   return (
@@ -50,14 +89,12 @@ export default function RegisterPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-orange-700/80 via-primary/60 to-orange-900/70" />
 
         <div className="relative z-10 flex flex-col justify-between p-12 h-full w-full">
-          {/* Logo top */}
           <div className="flex justify-end">
             <Link href="/">
               <img src="/logo.png" alt="AfriStay" className="h-10 w-auto brightness-0 invert" onError={(e) => { e.currentTarget.src = 'https://i.ibb.co/3WfK91p/afristay.png' }} />
             </Link>
           </div>
 
-          {/* Text bottom */}
           <div className="text-white max-w-md">
             <h2 className="font-heading font-bold text-4xl leading-tight mb-4">
               Rejoignez la communauté AfriStay
@@ -66,7 +103,6 @@ export default function RegisterPage() {
               Créez votre compte pour réserver des hébergements uniques, sauvegarder vos favoris et profiter d&apos;offres sur mesure.
             </p>
 
-            {/* Testimonial */}
             <div className="mt-8 bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10">
               <p className="text-white/90 text-sm italic leading-relaxed mb-3">
                 &ldquo;AfriStay m&apos;a permis de découvrir des endroits incroyables que je n&apos;aurais jamais trouvés autrement. Service exceptionnel !&rdquo;
@@ -84,10 +120,9 @@ export default function RegisterPage() {
       </div>
 
       {/* Left Panel — Form */}
-      <div className="w-full lg:w-1/2 bg-light flex items-center justify-center p-8 sm:p-12 overflow-y-auto">
+      <div className="w-full lg:w-1/2 bg-white flex items-center justify-center p-8 sm:p-12 overflow-y-auto">
         <div className="w-full max-w-[420px]">
 
-          {/* Mobile logo */}
           <Link href="/" className="inline-block mb-8 lg:hidden">
             <img src="/logo.png" alt="AfriStay" className="h-10 w-auto" onError={(e) => { e.currentTarget.src = 'https://i.ibb.co/3WfK91p/afristay.png' }} />
           </Link>
@@ -111,20 +146,39 @@ export default function RegisterPage() {
             S&apos;inscrire avec Google
           </button>
 
-          {/* Divider */}
           <div className="flex items-center gap-4 mb-6">
             <div className="flex-1 h-px bg-gray-200" />
             <span className="text-gray-400 text-xs font-medium">ou par e-mail</span>
             <div className="flex-1 h-px bg-gray-200" />
           </div>
 
-          {/* Form */}
           <form className="space-y-4" onSubmit={handleSubmit}>
             {error && (
               <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl text-center font-medium">
                 {error}
               </div>
             )}
+
+            {/* Role toggle */}
+            <div>
+              <label className="block text-xs font-bold text-dark uppercase tracking-wide mb-2">Je suis</label>
+              <div className="grid grid-cols-2 gap-2">
+                {(["voyageur", "hote"] as const).map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => setRole(r)}
+                    className={`py-2.5 rounded-xl text-sm font-semibold border transition-all ${
+                      role === r
+                        ? "bg-primary text-white border-primary shadow-button"
+                        : "bg-white text-dark border-gray-200 hover:border-primary/40"
+                    }`}
+                  >
+                    {r === "voyageur" ? "✈️ Voyageur" : "🏠 Hôte"}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             {/* Name Row */}
             <div className="grid grid-cols-2 gap-3">
@@ -176,7 +230,9 @@ export default function RegisterPage() {
 
             {/* Phone */}
             <div>
-              <label className="block text-xs font-bold text-dark uppercase tracking-wide mb-2">Téléphone</label>
+              <label className="block text-xs font-bold text-dark uppercase tracking-wide mb-2">
+                Téléphone <span className="text-gray-400 normal-case font-normal">(optionnel)</span>
+              </label>
               <div className="relative">
                 <Phone size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
@@ -185,7 +241,6 @@ export default function RegisterPage() {
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+225 XX XX XX XX"
                   className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-dark placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                  required
                 />
               </div>
             </div>
@@ -212,6 +267,36 @@ export default function RegisterPage() {
                 </button>
               </div>
               <p className="text-xs text-gray-400 mt-1.5 ml-1">Minimum 8 caractères</p>
+            </div>
+
+            {/* Password confirm */}
+            <div>
+              <label className="block text-xs font-bold text-dark uppercase tracking-wide mb-2">Confirmer le mot de passe</label>
+              <div className="relative">
+                <Lock size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type={showPasswordConfirm ? "text" : "password"}
+                  value={passwordConfirm}
+                  onChange={(e) => setPasswordConfirm(e.target.value)}
+                  placeholder="••••••••"
+                  className={`w-full pl-10 pr-12 py-3 bg-white border rounded-xl text-sm text-dark placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                    passwordConfirm && password !== passwordConfirm
+                      ? "border-red-300 focus:border-red-400"
+                      : "border-gray-200 focus:border-primary"
+                  }`}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-dark transition-colors"
+                >
+                  {showPasswordConfirm ? <EyeOff size={14} /> : <Eye size={14} />}
+                </button>
+              </div>
+              {passwordConfirm && password !== passwordConfirm && (
+                <p className="text-xs text-red-500 mt-1.5 ml-1">Les mots de passe ne correspondent pas</p>
+              )}
             </div>
 
             {/* Terms */}

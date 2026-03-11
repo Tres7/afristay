@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Search, Heart, MessageCircle, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 const navItems = [
   { href: "/", label: "Accueil", icon: Home },
@@ -25,8 +26,15 @@ export default function BottomNav() {
             <Link
               key={href}
               href={href}
-              className="flex flex-col items-center gap-0.5 px-3 py-1 min-w-0"
+              className="relative flex flex-col items-center gap-0.5 px-3 py-1 min-w-0"
             >
+              {isActive && (
+                <motion.div
+                  layoutId="navIndicator"
+                  className="absolute -top-2 inset-x-0 mx-auto w-8 h-0.5 rounded-full bg-primary"
+                  transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                />
+              )}
               <Icon
                 size={22}
                 className={cn(

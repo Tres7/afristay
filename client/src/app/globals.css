@@ -6,7 +6,7 @@
 
 @layer base {
   html, body {
-    @apply bg-light text-dark font-body antialiased;
+    @apply bg-white text-dark font-body antialiased;
     scroll-behavior: smooth;
   }
 
@@ -15,7 +15,7 @@
   }
 
   :root {
-    --background: #FFFDF8;
+    --background: #ffffff;
     --foreground: #1E293B;
   }
 
@@ -29,6 +29,60 @@ body {
   color: var(--foreground);
 }
 
+/* ─── Keyframes ────────────────────────────────────────────── */
+@keyframes kenBurns {
+  0%   { transform: scale(1)    translateX(0)    translateY(0); }
+  50%  { transform: scale(1.06) translateX(-1%)  translateY(-0.5%); }
+  100% { transform: scale(1)    translateX(0)    translateY(0); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+@keyframes pulseRing {
+  0%   { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+/* ─── Animation utilities ──────────────────────────────────── */
+.animate-ken-burns {
+  animation: kenBurns 22s ease-in-out infinite;
+}
+
+.animate-fade-up {
+  opacity: 0;
+  animation: fadeUp 0.7s ease-out forwards;
+}
+
+.animate-fade-up-delay-1 {
+  opacity: 0;
+  animation: fadeUp 0.7s ease-out 0.25s forwards;
+}
+
+.animate-fade-up-delay-2 {
+  opacity: 0;
+  animation: fadeUp 0.7s ease-out 0.45s forwards;
+}
+
+/* ─── Skeleton loader ──────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e4e4e4 50%,
+    #f0f0f0 75%
+  );
+  background-size: 400px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
 @layer utilities {
   .scrollbar-hide {
     -ms-overflow-style: none;
@@ -37,11 +91,11 @@ body {
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
-  
+
   .glass {
     @apply bg-white/70 backdrop-blur-lg border border-white/20 shadow-soft;
   }
-  
+
   .glass-dark {
     @apply bg-primary/80 backdrop-blur-lg border border-white/10 shadow-soft;
   }
