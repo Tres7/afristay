@@ -29,7 +29,7 @@ db.sqlite3-journal
 server/.venv/
 
 # =========================
-# Node.js / Next.js
+# client
 # =========================
 node_modules/
 .next/
@@ -41,6 +41,7 @@ yarn-error.log*
 /client/.next/
 /client/out/
 /client/node_modules/
+/client/.env
 
 # =========================
 # Docker
@@ -81,4 +82,5 @@ htmlcov/
 generate-commits.ps1
 generate-commits.sh
 # =========================
+
 
