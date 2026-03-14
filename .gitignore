@@ -53,7 +53,7 @@ docker-compose.override.yml
 # IDE
 # =========================
 .idea/
-.vsco
+.vscode/
 .claude/
 *.swp
 *.swo

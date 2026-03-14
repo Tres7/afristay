@@ -1,7 +1,10 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import { getApiBaseUrl } from "@/lib/api-url";
 
-const API_URL = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+
+const API_URL = getApiBaseUrl();
+
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
