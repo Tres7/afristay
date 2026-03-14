@@ -1,10 +1,10 @@
 import json
 import pika
-from apps.users.application.ports.EventBus import EventBus
+from apps.users.application.ports.EventPublisher import EventPublisher
 from apps.users.application.events.DomainEvent import DomainEvent
 import os
 
-class RabbitMQEventBus(EventBus):
+class RabbitMQEventBus(EventPublisher):
 
     EXCHANGE = 'domain_events'
     ROUTING_KEY = 'users.email_verification_requested'

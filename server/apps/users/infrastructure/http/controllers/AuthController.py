@@ -10,7 +10,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from apps.users.application.dto.dto import GoogleAuthDTO, RegisterDTO, UserRole
 from apps.users.application.service.UserService import UserService
 from apps.users.application.events.UserRegistered import UserRegistered
-from apps.users.application.ports.EventBus import EventBus
+from apps.users.application.ports.EventPublisher import EventPublisher
 from apps.users.infrastructure.persistence.DjangoUserRepository import DjangoUserRepository
 from apps.users.infrastructure.messaging.RabbitMQEventBus import RabbitMQEventBus
 from apps.users.infrastructure.http.serializers.auth_serializers import RegisterSerializer, LoginSerializer
@@ -58,15 +58,15 @@ class RegisterView(APIView):
         )
 
         # Envoyer l'email directement
-        try:
-            DjangoEmailSender().send_verification_email(
-                to=str(result.email),
-                first_name=result.first_name,
-                code=code,
-            )
-        except Exception as e:
-            import logging
-            logging.getLogger(__name__).warning(f"[DEV] Email non envoyé — code pour {result.email}: {code} ({e})")
+        # try:
+        #     DjangoEmailSender().send_verification_email(
+        #         to=str(result.email),
+        #         first_name=result.first_name,
+        #         code=code,
+        #     )
+        # except Exception as e:
+        #     import logging
+        #     logging.getLogger(__name__).warning(f"[DEV] Email non envoyé — code pour {result.email}: {code} ({e})")
 
         return Response({
             'id': str(result.id),

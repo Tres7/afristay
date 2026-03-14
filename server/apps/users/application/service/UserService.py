@@ -15,7 +15,7 @@ from apps.users.application.dto.dto import (
     UserResponseDTO
 )
 from apps.users.application.events.UserRegistered import UserRegistered
-from apps.users.application.ports import EventBus
+from apps.users.application.ports import EventPublisher
 from apps.users.domain.value_objects import Email, PasswordHash, PhoneNumber
 
 
@@ -24,7 +24,7 @@ class UserService:
     def __init__(self, user_repository: UserRepository):
         self._repository = user_repository
 
-    def register(self, dto: RegisterDTO, event_bus: EventBus, code: str) -> UserResponseDTO:
+    def register(self, dto: RegisterDTO, event_bus: EventPublisher, code: str) -> UserResponseDTO:
         if self._repository.exists_by_email(dto.email):
             raise UserAlreadyExistsException(dto.email)
 
