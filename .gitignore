@@ -6,7 +6,7 @@
 !.env.example
 
 # =========================
-# Python / Django
+# Server
 # =========================
 __pycache__/
 *.py[cod]
@@ -27,6 +27,7 @@ db.sqlite3-journal
 /server/mediafiles/
 *.log
 server/.venv/
+server/.env
 
 # =========================
 # client
@@ -52,7 +53,8 @@ docker-compose.override.yml
 # IDE
 # =========================
 .idea/
-.vscode/
+.vsco
+.claude/
 *.swp
 *.swo
 *~

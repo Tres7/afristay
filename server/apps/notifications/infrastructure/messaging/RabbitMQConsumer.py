@@ -17,8 +17,8 @@ class RabbitMQConsumer:
 
     def start(self) -> None:
         credentials = pika.PlainCredentials(
-            username=os.environ.get('RABBITMQ_USER', 'guest'),
-            password=os.environ.get('RABBITMQ_PASS', 'guest'),
+            username=os.environ.get('RABBITMQ_DEFAULT_USER', 'guest'),
+            password=os.environ.get('RABBITMQ_DEFAULT_PASS', 'guest'),
         )
         connection = pika.BlockingConnection(
             pika.ConnectionParameters(host=self._host, credentials=credentials)
