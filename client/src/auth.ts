@@ -1,50 +1,14 @@
 import NextAuth from "next-auth";
-import Credentials from "next-auth/providers/credentials";
 import { getApiBaseUrl } from "@/lib/api-url";
+import { credentialsProvider } from "@/lib/providers/auth/credentials";
+import { backendSessionProvider } from "@/lib/providers/auth/backend-session";
 
 
 const API_URL = getApiBaseUrl();
 
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  providers: [
-    Credentials({
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
-
-        try {
-          const res = await fetch(`${API_URL}/v1/auth/login/`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email: credentials.email,
-              password: credentials.password,
-            }),
-          });
-
-          if (!res.ok) return null;
-
-          const data = await res.json();
-
-          return {
-            id: data.user.id,
-            name: `${data.user.first_name} ${data.user.last_name}`,
-            email: data.user.email,
-            image: data.user.avatar_url ?? null,
-            accessToken: data.access,
-            refreshToken: data.refresh,
-            role: data.user.role,
-          };
-        } catch {
-          return null;
-        }
-      },
-    }),
-  ],
+  providers: [credentialsProvider, backendSessionProvider],
 
   callbacks: {
     async jwt({ token, user }) {

@@ -10,8 +10,11 @@ export type AuthUser = {
   is_active: boolean;
 };
 
-export type GoogleAuthResponse = {
+export type BackendAuthResponse  = {
   access: string;
   refresh: string;
   user: AuthUser;
 };
+
+export type LoginResponse = BackendAuthResponse;
+export type GoogleAuthResponse = BackendAuthResponse;

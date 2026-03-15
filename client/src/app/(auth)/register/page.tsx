@@ -58,7 +58,6 @@ export default function RegisterPage() {
 
     setLoading(true);
 
-    // Étape 1 — Créer le compte via l'API Django
     try {
       const res = await fetch(`${API_URL}/v1/auth/register/`, {
         method: "POST",
@@ -119,6 +118,23 @@ export default function RegisterPage() {
 
         try {
           const data = await authenticateWithGoogle(response.credential);
+
+          const loginRes = await signIn("backend-session", {
+            redirect: false,
+            id: data.user.id,
+            name: `${data.user.first_name} ${data.user.last_name}`,
+            email: data.user.email,
+            image: data.user.avatar_url ?? "",
+            role: data.user.role,
+            accessToken: data.access,
+            refreshToken: data.refresh,
+          });
+
+            if (loginRes?.error) {
+              setError("Authentification Google réussie, mais ouverture de session impossible.");
+              return;
+            }
+
           router.push("/");
           router.refresh();
         } catch {
