@@ -20,6 +20,7 @@ class DjangoUserRepository(UserRepository):
             password_hash=PasswordHash(model.password),
             phone=PhoneNumber.of(model.phone),
             avatar_url=model.avatar.url if model.avatar else None,
+            google_id=model.google_id,
             role=UserRole(model.role),
             is_verified=model.is_verified,
             is_active=model.is_active,
@@ -52,6 +53,7 @@ class DjangoUserRepository(UserRepository):
         model = UserModel(
             id=user.id,
             email=str(user.email),
+            google_id=user.google_id,
             first_name=user.first_name,
             last_name=user.last_name,
             phone=PhoneNumber.to_str(user.phone),
@@ -70,6 +72,7 @@ class DjangoUserRepository(UserRepository):
             raise UserNotFoundException(f"Utilisateur {user.id} introuvable.")
 
         model.email = str(user.email)
+        model.google_id=user.google_id
         model.first_name = user.first_name
         model.last_name = user.last_name
         model.phone = PhoneNumber.to_str(user.phone)
@@ -78,6 +81,14 @@ class DjangoUserRepository(UserRepository):
         model.is_active = user.is_active
         model.save()
         return self._to_entity(model)
+    
+    def find_by_google_id(self, google_id: str) -> Optional[User]:
+        try:
+            model = UserModel.objects.get(google_id=google_id)
+            return self._to_entity(model)
+        except UserModel.DoesNotExist:
+            return None
+
 
     def delete(self, user_id: uuid.UUID) -> None:
         try:

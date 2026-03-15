@@ -35,6 +35,7 @@ class UserModel(AbstractUser):
     username    = None
     id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email       = models.EmailField(unique=True)
+    google_id   = models.CharField(max_length=255, unique=True, null=True, blank=True)
     phone       = models.CharField(max_length=20, unique=True, null=True, blank=True)
     avatar      = models.ImageField(upload_to='avatars/', null=True, blank=True)
     role        = models.CharField(max_length=20, choices=ROLE_CHOICES)
