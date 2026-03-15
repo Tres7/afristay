@@ -150,34 +150,23 @@ class GoogleAuthView(APIView):
 class VerifyEmailView(APIView):
 
     def post(self, request):
-        email = request.data.get('email', '').strip()
-        code  = request.data.get('code', '').strip()
+        email = request.data.get("email", "").strip()
+        code = request.data.get("code", "").strip()
 
         if not email or not code:
-            return Response({'detail': 'Email et code requis.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Email et code requis."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            user_model = UserModel.objects.get(email=email)
-        except UserModel.DoesNotExist:
-            return Response({'detail': 'Utilisateur non trouvé.'}, status=status.HTTP_404_NOT_FOUND)
+            _service().verify_email(email, code)
+        except UserNotFoundException:
+            return Response({"detail": "Utilisateur non trouvé."}, status=status.HTTP_404_NOT_FOUND)
+        except ValueError as e:
+            if str(e) == "Code invalide ou expiré.":
+                return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        if user_model.is_verified:
-            return Response({'detail': 'Compte déjà vérifié.'}, status=status.HTTP_200_OK)
+        return Response({"detail": "Compte vérifié avec succès."}, status=status.HTTP_200_OK)
 
-        try:
-            vc = VerificationCode.objects.filter(
-                user=user_model,
-                code=code,
-                expires_at__gt=timezone.now(),
-            ).latest('expires_at')
-        except VerificationCode.DoesNotExist:
-            return Response({'detail': 'Code invalide ou expiré.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        user_model.is_verified = True
-        user_model.save(update_fields=['is_verified'])
-        vc.delete()
-
-        return Response({'detail': 'Compte vérifié avec succès.'}, status=status.HTTP_200_OK)
 
 
 class ResendCodeView(APIView):

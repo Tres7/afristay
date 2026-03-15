@@ -8,6 +8,10 @@ from apps.users.domain.exceptions import (
     UserAlreadyExistsException,
     UserNotFoundException
 )
+from datetime import timedelta
+from django.utils import timezone
+from apps.users.infrastructure.persistence.models import UserModel, VerificationCode
+
 from apps.users.application.dto.dto import (
     GoogleAuthDTO,
     RegisterDTO,
@@ -129,3 +133,27 @@ class UserService:
                 user = self._repository.save(user)
 
         return UserResponseDTO.from_entity(user)
+    
+
+    def verify_email(self, email: str, code: str) -> None:
+        try:
+            user_model = UserModel.objects.get(email=email)
+        except UserModel.DoesNotExist:
+            raise UserNotFoundException(email)
+
+        if user_model.is_verified:
+            return
+
+        try:
+            vc = VerificationCode.objects.filter(
+                user=user_model,
+                code=code,
+                expires_at__gt=timezone.now(),
+            ).latest("expires_at")
+        except VerificationCode.DoesNotExist:
+            raise ValueError("Code invalide ou expiré.")
+
+        user_model.is_verified = True
+        user_model.save(update_fields=["is_verified"])
+        vc.delete()
+
