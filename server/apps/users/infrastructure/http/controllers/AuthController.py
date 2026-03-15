@@ -157,7 +157,7 @@ class VerifyEmailView(APIView):
             return Response({"detail": "Email et code requis."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            _service().verify_email(email, code)
+            _service().verify_email(email, code, RabbitMQEventBus())
         except UserNotFoundException:
             return Response({"detail": "Utilisateur non trouvé."}, status=status.HTTP_404_NOT_FOUND)
         except ValueError as e:

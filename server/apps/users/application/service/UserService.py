@@ -19,6 +19,7 @@ from apps.users.application.dto.dto import (
     UserResponseDTO
 )
 from apps.users.application.events.UserRegistered import UserRegistered
+from apps.users.application.events.WelcomeEmailRequested import WelcomeEmailRequested
 from apps.users.application.ports import EventPublisher
 from apps.users.domain.value_objects import Email, PasswordHash, PhoneNumber
 
@@ -135,7 +136,7 @@ class UserService:
         return UserResponseDTO.from_entity(user)
     
 
-    def verify_email(self, email: str, code: str) -> None:
+    def verify_email(self, email: str, code: str, event_bus: EventPublisher) -> None:
         try:
             user_model = UserModel.objects.get(email=email)
         except UserModel.DoesNotExist:
@@ -156,4 +157,14 @@ class UserService:
         user_model.is_verified = True
         user_model.save(update_fields=["is_verified"])
         vc.delete()
+        try:
+            event_bus.publish(WelcomeEmailRequested(
+                event="users.welcome_email_requested",
+                user_id=str(user_model.id),
+                email=user_model.email,
+                first_name=user_model.first_name,
+            ))
+        except Exception:
+            pass
+
 

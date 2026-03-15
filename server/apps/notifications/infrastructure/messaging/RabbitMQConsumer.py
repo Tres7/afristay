@@ -8,8 +8,11 @@ from apps.notifications.infrastructure.email.DjangoEmailSender import DjangoEmai
 class RabbitMQConsumer:
 
     EXCHANGE = 'domain_events'
-    QUEUE = 'notifications.email_verification'
-    ROUTING_KEY = 'users.email_verification_requested'
+    QUEUE = 'notifications.events'
+    ROUTING_KEYS = {
+        "users.email_verification_requested": "handle_verification_email",
+        "users.welcome_email_requested": "handle_welcome_email",
+    }
 
     def __init__(self, host: str = 'rabbitmq'):
         self._host = host
@@ -30,12 +33,16 @@ class RabbitMQConsumer:
             exchange_type='direct',
             durable=True,
         )
+
+        queue_name = "notifications.events"
         channel.queue_declare(queue=self.QUEUE, durable=True)
-        channel.queue_bind(
-            queue=self.QUEUE,
-            exchange=self.EXCHANGE,
-            routing_key=self.ROUTING_KEY,
-        )
+
+        for routing_key in self.ROUTING_KEYS:
+            channel.queue_bind(
+                queue=queue_name,
+                exchange=self.EXCHANGE,
+                routing_key=routing_key,
+            )
 
         channel.basic_qos(prefetch_count=1)
         channel.basic_consume(queue=self.QUEUE, on_message_callback=self._handle)
@@ -45,14 +52,33 @@ class RabbitMQConsumer:
 
     def _handle(self, ch, method, properties, body) -> None:
         data = json.loads(body)
+        handler_name = self.ROUTING_KEYS.get(method.routing_key)
+
+        if not handler_name:
+            ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
+            print(f"[✗] Routing key non gérée : {method.routing_key}")
+            return
+        
+        handler = getattr(self, handler_name)
+
         try:
-            self._service.send_verification_email(
-                to=data['email'],
-                first_name=data['first_name'],
-                code=data['code'],
-            )
+            handler(data)
             ch.basic_ack(delivery_tag=method.delivery_tag)
-            print(f"[✓] Email envoyé à {data['email']}")
         except Exception as e:
             ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
-            print(f"[✗] Erreur envoi email : {e}")
+            print(f"[✗] Erreur traitement {method.routing_key} : {e}")
+        
+    def handle_verification_email(self, data: dict) -> None:
+        self._service.send_verification_email(
+            to=data["email"],
+            first_name=data["first_name"],
+            code=data["code"],
+    )
+        print(f"[✓] Email de vérification envoyé à {data['email']}")
+
+    def handle_welcome_email(self, data: dict) -> None:
+        self._service.send_welcome_email(
+            to=data["email"],
+            first_name=data["first_name"],
+        )
+        print(f"[✓] Email de bienvenue envoyé à {data['email']}")
