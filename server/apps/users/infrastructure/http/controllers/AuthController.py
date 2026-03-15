@@ -16,7 +16,7 @@ from apps.users.infrastructure.messaging.RabbitMQEventBus import RabbitMQEventBu
 from apps.users.infrastructure.http.serializers.auth_serializers import RegisterSerializer, LoginSerializer
 from apps.users.domain.exceptions import UserAlreadyExistsException, UserNotFoundException
 from apps.users.infrastructure.persistence.models import UserModel, VerificationCode
-from apps.users.infrastructure.external import GoogleAPITokenVerifier
+from apps.users.infrastructure.external.GoogleAPITokenVerifier import GoogleAPITokenVerifier
 from apps.notifications.infrastructure.email.DjangoEmailSender import DjangoEmailSender
 
 
@@ -133,7 +133,17 @@ class GoogleAuthView(APIView):
         return Response({
             'access': str(refresh.access_token),
             'refresh': str(refresh),
-            'user': result.__dict__,
+            'user': {
+                'id': str(result.id),
+                'email': str(result.email),
+                'first_name': result.first_name,
+                'last_name': result.last_name,
+                'role': result.role,
+                'phone': str(result.phone) if result.phone else None,
+                'avatar_url': result.avatar_url,
+                'is_verified': result.is_verified,
+                'is_active': result.is_active,
+            }
         }, status=status.HTTP_200_OK)
 
 
