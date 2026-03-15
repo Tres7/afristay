@@ -102,17 +102,30 @@ class UserService:
     def google_authenticate(self, dto: GoogleAuthDTO, verifier) -> UserResponseDTO:
         info = verifier.verify(dto.id_token)
 
-        user = self._repository.find_by_email(info.email)
+        if not info.email_verified:
+            raise ValueError("L'adresse email Google n'est pas vérifiée.")
+
+        user = self._repository.find_by_google_id(info.google_id)
+
         if not user:
-            user = User(
-                email=Email(info.email),
-                first_name=info.first_name,
-                last_name=info.last_name,
-                password_hash=PasswordHash(make_password(None)),  # compte sans mot de passe
-                role=UserRole.VOYAGEUR,
-                is_verified=True,
-                avatar_url=info.avatar_url,
-            )
-            user = self._repository.save(user)
+            user = self._repository.find_by_email(info.email)
+            if user:
+                user.google_id = info.google_id
+                user.is_verified = True
+                if info.avatar_url and not user.avatar_url:
+                    user.avatar_url = info.avatar_url
+                user = self._repository.update(user)
+            else:
+                user = User(
+                    email=Email(info.email),
+                    first_name=info.first_name,
+                    last_name=info.last_name,
+                    password_hash=PasswordHash(make_password(None)),
+                    role=UserRole.VOYAGEUR,
+                    is_verified=True,
+                    avatar_url=info.avatar_url,
+                    google_id=info.google_id,
+                )
+                user = self._repository.save(user)
 
         return UserResponseDTO.from_entity(user)

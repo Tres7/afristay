@@ -11,6 +11,7 @@ class GoogleUserInfo:
     first_name: str
     last_name: str
     avatar_url: Optional[str] = None
+    email_verified: bool = False
 
 
 class GoogleTokenVerifier(ABC):

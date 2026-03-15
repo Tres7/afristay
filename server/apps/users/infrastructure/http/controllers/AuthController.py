@@ -56,18 +56,7 @@ class RegisterView(APIView):
             code=code,
             expires_at=timezone.now() + timedelta(minutes=10),
         )
-
-        # Envoyer l'email directement
-        # try:
-        #     DjangoEmailSender().send_verification_email(
-        #         to=str(result.email),
-        #         first_name=result.first_name,
-        #         code=code,
-        #     )
-        # except Exception as e:
-        #     import logging
-        #     logging.getLogger(__name__).warning(f"[DEV] Email non envoyé — code pour {result.email}: {code} ({e})")
-
+        
         return Response({
             'id': str(result.id),
             'email': str(result.email),
