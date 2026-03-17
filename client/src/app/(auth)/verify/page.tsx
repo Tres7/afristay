@@ -5,8 +5,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { Mail, RefreshCw } from "lucide-react";
+import { getApiBaseUrl } from "@/lib/api-url";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+const API_URL = getApiBaseUrl();
+
 
 export default function VerifyPage() {
   const router = useRouter();

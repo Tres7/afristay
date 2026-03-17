@@ -5,16 +5,14 @@ services:
   db:
     image: postgres:16-bookworm
     container_name: afristay-db
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    env_file:
+      - server/.env
     ports:
       - "5433:5432"
     volumes:
       - afristay_db:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
       timeout: 5s
       retries: 20
@@ -25,9 +23,11 @@ services:
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: afristay-pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+    env_file:
+      - server/.env
+    # environment:
+    #   PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+    #   PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
     ports:
       - "5051:80"
     depends_on:
@@ -48,7 +48,7 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - .env
+      - server/.env
     depends_on:
       db:
         condition: service_healthy
@@ -67,6 +67,8 @@ services:
       - /app/node_modules
     ports:
       - "3000:3000"
+    env_file:
+      - client/.env
     environment:
       - INTERNAL_API_URL=http://backend:8000/api
     depends_on:
@@ -74,12 +76,14 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management
+    env_file:
+      - server/.env
     ports:
-      - "5672:5672"    # port AMQP (pika se connecte ici)
-      - "15672:15672"  # management web interface
-    environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+      - "5672:5672"
+      - "15672:15672"
+    # environment:
+    #   RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+    #   RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
 
@@ -90,13 +94,11 @@ services:
     volumes:
       - ./server:/app
     env_file:
-      - .env
+      - server/.env
     depends_on:
       - rabbitmq
       - db
     restart: on-failure
-
-
 
 volumes:
   afristay_db:

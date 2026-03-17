@@ -10,13 +10,13 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from apps.users.application.dto.dto import GoogleAuthDTO, RegisterDTO, UserRole
 from apps.users.application.service.UserService import UserService
 from apps.users.application.events.UserRegistered import UserRegistered
-from apps.users.application.ports.EventBus import EventBus
+from apps.users.application.ports.EventPublisher import EventPublisher
 from apps.users.infrastructure.persistence.DjangoUserRepository import DjangoUserRepository
 from apps.users.infrastructure.messaging.RabbitMQEventBus import RabbitMQEventBus
 from apps.users.infrastructure.http.serializers.auth_serializers import RegisterSerializer, LoginSerializer
 from apps.users.domain.exceptions import UserAlreadyExistsException, UserNotFoundException
 from apps.users.infrastructure.persistence.models import UserModel, VerificationCode
-from apps.users.infrastructure.external import GoogleAPITokenVerifier
+from apps.users.infrastructure.external.GoogleAPITokenVerifier import GoogleAPITokenVerifier
 from apps.notifications.infrastructure.email.DjangoEmailSender import DjangoEmailSender
 
 
@@ -56,18 +56,7 @@ class RegisterView(APIView):
             code=code,
             expires_at=timezone.now() + timedelta(minutes=10),
         )
-
-        # Envoyer l'email directement
-        try:
-            DjangoEmailSender().send_verification_email(
-                to=str(result.email),
-                first_name=result.first_name,
-                code=code,
-            )
-        except Exception as e:
-            import logging
-            logging.getLogger(__name__).warning(f"[DEV] Email non envoyé — code pour {result.email}: {code} ({e})")
-
+        
         return Response({
             'id': str(result.id),
             'email': str(result.email),
@@ -144,41 +133,40 @@ class GoogleAuthView(APIView):
         return Response({
             'access': str(refresh.access_token),
             'refresh': str(refresh),
-            'user': result.__dict__,
+            'user': {
+                'id': str(result.id),
+                'email': str(result.email),
+                'first_name': result.first_name,
+                'last_name': result.last_name,
+                'role': result.role,
+                'phone': str(result.phone) if result.phone else None,
+                'avatar_url': result.avatar_url,
+                'is_verified': result.is_verified,
+                'is_active': result.is_active,
+            }
         }, status=status.HTTP_200_OK)
 
 
 class VerifyEmailView(APIView):
 
     def post(self, request):
-        email = request.data.get('email', '').strip()
-        code  = request.data.get('code', '').strip()
+        email = request.data.get("email", "").strip()
+        code = request.data.get("code", "").strip()
 
         if not email or not code:
-            return Response({'detail': 'Email et code requis.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Email et code requis."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            user_model = UserModel.objects.get(email=email)
-        except UserModel.DoesNotExist:
-            return Response({'detail': 'Utilisateur non trouvé.'}, status=status.HTTP_404_NOT_FOUND)
+            _service().verify_email(email, code, RabbitMQEventBus())
+        except UserNotFoundException:
+            return Response({"detail": "Utilisateur non trouvé."}, status=status.HTTP_404_NOT_FOUND)
+        except ValueError as e:
+            if str(e) == "Code invalide ou expiré.":
+                return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        if user_model.is_verified:
-            return Response({'detail': 'Compte déjà vérifié.'}, status=status.HTTP_200_OK)
+        return Response({"detail": "Compte vérifié avec succès."}, status=status.HTTP_200_OK)
 
-        try:
-            vc = VerificationCode.objects.filter(
-                user=user_model,
-                code=code,
-                expires_at__gt=timezone.now(),
-            ).latest('expires_at')
-        except VerificationCode.DoesNotExist:
-            return Response({'detail': 'Code invalide ou expiré.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        user_model.is_verified = True
-        user_model.save(update_fields=['is_verified'])
-        vc.delete()
-
-        return Response({'detail': 'Compte vérifié avec succès.'}, status=status.HTTP_200_OK)
 
 
 class ResendCodeView(APIView):

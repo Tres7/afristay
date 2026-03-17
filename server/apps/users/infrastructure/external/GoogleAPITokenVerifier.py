@@ -18,4 +18,5 @@ class GoogleAPITokenVerifier(GoogleTokenVerifier):
             first_name=data.get('given_name', ''),
             last_name=data.get('family_name', ''),
             avatar_url=data.get('picture'),
+            email_verified=str(data.get('email_verified', 'false')).lower() == 'true',
         )

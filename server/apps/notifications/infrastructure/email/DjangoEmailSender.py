@@ -17,3 +17,14 @@ class DjangoEmailSender(NotificationSender):
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[to],
         )
+
+    def send_welcome_email(self, to: str, first_name: str) -> None:
+        message = render_to_string('emails/welcome_email.txt', {
+            'first_name': first_name,
+        })
+        send_mail(
+            subject='Bienvenue sur AfriStay',
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[to],
+        )

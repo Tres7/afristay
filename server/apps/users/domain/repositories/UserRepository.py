@@ -30,6 +30,10 @@ class UserRepository(ABC):
         pass
 
     @abstractmethod
+    def find_by_google_id(self, google_id: str) -> Optional[User]:
+        pass
+
+    @abstractmethod
     def delete(self, user_id: uuid.UUID) -> None:
         pass
 
