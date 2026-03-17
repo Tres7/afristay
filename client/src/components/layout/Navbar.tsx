@@ -2,23 +2,25 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, Bell, Menu, X, ArrowRight, LogIn, UserPlus } from "lucide-react";
+import { Search, Bell, Menu, X, ArrowRight, LogIn, UserPlus, Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
+import { useTheme } from "next-themes";
 
 export default function Navbar() {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { data: session, status } = useSession();
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
+    <header className="sticky top-0 z-50 bg-white dark:bg-[#0f172a] border-b border-gray-100 dark:border-slate-800 shadow-sm">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between gap-6">
         {/* Logo */}
         <Link href="/" className="flex-shrink-0 flex items-center gap-2 group">
@@ -76,6 +78,17 @@ export default function Navbar() {
           <div className="w-px h-6 bg-gray-200"></div>
 
           <div className="flex items-center gap-3">
+            {/* Dark mode toggle */}
+            {mounted && (
+              <button
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="p-2 rounded-full text-gray-500 hover:text-primary hover:bg-primary/10 transition-colors"
+                aria-label="Basculer le thème"
+              >
+                {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+              </button>
+            )}
+
             {mounted && status === "authenticated" && session ? (
               <>
                 <button className="text-gray-500 hover:text-primary transition-colors relative">

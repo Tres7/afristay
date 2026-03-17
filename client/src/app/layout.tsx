@@ -3,6 +3,9 @@ import { Poppins, Inter } from "next/font/google";
 import "./globals.css";
 import Providers from "@/providers/Providers";
 import AuthProvider from "@/providers/AuthProvider";
+import ThemeProvider from "@/providers/ThemeProvider";
+import SplashScreen from "@/components/layout/SplashScreen";
+import { Toaster } from "sonner";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -28,13 +31,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr">
+    <html lang="fr" suppressHydrationWarning>
       <body className={`${poppins.variable} ${inter.variable} font-body`}>
-        <AuthProvider>
-          <Providers>
-            {children}
-          </Providers>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <Providers>
+              <SplashScreen />
+              {children}
+              <Toaster
+                position="top-center"
+                richColors
+                toastOptions={{
+                  style: { fontFamily: "var(--font-inter)" },
+                }}
+              />
+            </Providers>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

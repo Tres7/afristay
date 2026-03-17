@@ -19,6 +19,15 @@
     --foreground: #1E293B;
   }
 
+  .dark {
+    --background: #0f172a;
+    --foreground: #f8fafc;
+  }
+
+  .dark body {
+    @apply bg-[#0f172a] text-slate-100;
+  }
+
   * {
     box-sizing: border-box;
   }
@@ -78,6 +87,17 @@ body {
     #f0f0f0 25%,
     #e4e4e4 50%,
     #f0f0f0 75%
+  );
+  background-size: 400px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.dark .skeleton {
+  background: linear-gradient(
+    90deg,
+    #1e293b 25%,
+    #334155 50%,
+    #1e293b 75%
   );
   background-size: 400px 100%;
   animation: shimmer 1.4s ease-in-out infinite;
