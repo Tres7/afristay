@@ -2,6 +2,7 @@ from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 from apps.users.infrastructure.http.controllers.AuthController import (
     RegisterView, LoginView, GoogleAuthView, VerifyEmailView, ResendCodeView,
+    PasswordResetRequestView, PasswordResetConfirmView,
 )
 from apps.users.infrastructure.http.controllers.UserController import MeView
 
@@ -13,6 +14,8 @@ urlpatterns = [
     path('auth/resend-code/', ResendCodeView.as_view(),  name='auth-resend-code'),
     path('users/me/',         MeView.as_view(),          name='user-me'),
     path('auth/google/',      GoogleAuthView.as_view(),  name='auth-google'),
+    path('auth/password-reset/',         PasswordResetRequestView.as_view(), name='auth-password-reset'),
+    path('auth/password-reset/confirm/', PasswordResetConfirmView.as_view(), name='auth-password-reset-confirm'),
 ]
 
 

@@ -9,8 +9,8 @@ class RabbitMQEventBus(EventPublisher):
     EXCHANGE = 'domain_events'
     # ROUTING_KEY = 'users.email_verification_requested'
 
-    def __init__(self, host: str = 'rabbitmq'):
-        self._host = host
+    def __init__(self, host: str | None = None):
+        self._host = host or os.environ.get('RABBITMQ_HOST', 'rabbitmq')
 
     def publish(self, event: DomainEvent) -> None:
         credentials = pika.PlainCredentials(
@@ -18,7 +18,13 @@ class RabbitMQEventBus(EventPublisher):
             password=os.environ.get('RABBITMQ_DEFAULT_PASS', 'guest'),
         )
         connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host=self._host, credentials=credentials)
+            pika.ConnectionParameters(
+                host=self._host,
+                credentials=credentials,
+                connection_attempts=1,
+                socket_timeout=3,
+                blocked_connection_timeout=3,
+            )
         )
         channel = connection.channel()
 

@@ -11,3 +11,6 @@ class NotificationService:
     
     def send_welcome_email(self, to: str, first_name: str) -> None:
         self._sender.send_welcome_email(to, first_name)
+
+    def send_password_reset_email(self, to: str, first_name: str, code: str) -> None:
+        self._sender.send_password_reset_email(to, first_name, code)

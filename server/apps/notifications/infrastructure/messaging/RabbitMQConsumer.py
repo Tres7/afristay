@@ -12,10 +12,11 @@ class RabbitMQConsumer:
     ROUTING_KEYS = {
         "users.email_verification_requested": "handle_verification_email",
         "users.welcome_email_requested": "handle_welcome_email",
+        "users.password_reset_requested": "handle_password_reset_email",
     }
 
-    def __init__(self, host: str = 'rabbitmq'):
-        self._host = host
+    def __init__(self, host: str | None = None):
+        self._host = host or os.environ.get('RABBITMQ_HOST', 'rabbitmq')
         self._service = NotificationService(DjangoEmailSender())
 
     def start(self) -> None:
@@ -82,3 +83,11 @@ class RabbitMQConsumer:
             first_name=data["first_name"],
         )
         print(f"[✓] Email de bienvenue envoyé à {data['email']}")
+
+    def handle_password_reset_email(self, data: dict) -> None:
+        self._service.send_password_reset_email(
+            to=data["email"],
+            first_name=data["first_name"],
+            code=data["code"],
+        )
+        print(f"[✓] Email de réinitialisation envoyé à {data['email']}")
