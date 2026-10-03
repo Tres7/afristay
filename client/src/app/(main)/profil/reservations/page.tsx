@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Calendar, MapPin, CheckCircle, Clock, XCircle, User, CreditCard, Heart, Settings, HelpCircle, LogOut, Star, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSession, signOut } from "next-auth/react";
+import api from "@/lib/api";
 
 const tabs = [
   { id: "upcoming", label: "À venir" },
@@ -20,44 +22,32 @@ const profileLinks = [
   { href: "/profil/aide", label: "Aide", icon: HelpCircle },
 ];
 
-const reservations = [
-  {
-    id: "RES-AF2024-001",
-    propertyName: "Villa Hibiscus",
-    location: "Assinie, Côte d'Ivoire",
-    image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=600&auto=format&fit=crop",
-    checkIn: "15 Mai 2025",
-    checkOut: "20 Mai 2025",
-    guests: 4,
-    status: "confirmed",
-    price: "125 000 XOF",
-    tab: "upcoming",
-  },
-  {
-    id: "RES-AF2024-002",
-    propertyName: "Riad Jasmin",
-    location: "Marrakech, Maroc",
-    image: "https://images.unsplash.com/photo-1539020140153-e479b8c22e70?q=80&w=600&auto=format&fit=crop",
-    checkIn: "1 Juin 2025",
-    checkOut: "7 Juin 2025",
-    guests: 2,
-    status: "pending",
-    price: "85 000 XOF",
-    tab: "upcoming",
-  },
-  {
-    id: "RES-AF2024-003",
-    propertyName: "Serengeti Lodge",
-    location: "Serengeti, Tanzanie",
-    image: "https://images.unsplash.com/photo-1516426122078-c23e76319801?q=80&w=600&auto=format&fit=crop",
-    checkIn: "10 Fév 2025",
-    checkOut: "17 Fév 2025",
-    guests: 2,
-    status: "completed",
-    price: "250 000 XOF",
-    tab: "past",
-  },
-];
+interface Reservation {
+  id: string;
+  check_in: string;
+  check_out: string;
+  guests_count: number;
+  total_price: number;
+  status: "pending" | "confirmed" | "cancelled";
+  reference: string;
+  hebergement_detail: {
+    id: string;
+    name: string;
+    city: string;
+    location: string;
+    image_url: string;
+  };
+}
+
+function reservationTab(r: Reservation): "upcoming" | "past" | "cancelled" {
+  if (r.status === "cancelled") return "cancelled";
+  const today = new Date().toISOString().split("T")[0];
+  return r.check_out >= today ? "upcoming" : "past";
+}
+
+function formatDate(d: string) {
+  return new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+}
 
 const recommended = [
   { id: 1, name: "Loft Plateau", loc: "Dakar, Sénégal", price: "60 000 XOF", rating: "4.7", img: "https://images.unsplash.com/photo-1502672260266-1c1e55240c5f?q=80&w=400&auto=format&fit=crop" },
@@ -66,9 +56,33 @@ const recommended = [
 ];
 
 export default function ReservationsPage() {
+  const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState("upcoming");
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
 
-  const filtered = reservations.filter((r) => r.tab === activeTab);
+  useEffect(() => {
+    api.get("/v1/reservations/")
+      .then((res) => setReservations(res.data.results))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleCancel = async (id: string) => {
+    setCancellingId(id);
+    try {
+      await api.delete(`/v1/reservations/${id}/`);
+      setReservations((prev) =>
+        prev.map((r) => (r.id === id ? { ...r, status: "cancelled" } : r))
+      );
+    } finally {
+      setCancellingId(null);
+    }
+  };
+
+  const filtered = reservations.filter((r) => reservationTab(r) === activeTab);
+  const fullName = session?.user?.name ?? "Voyageur";
+  const avatarSrc = session?.user?.image || `https://i.pravatar.cc/150?u=${session?.user?.email ?? "afristay"}`;
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
@@ -80,10 +94,10 @@ export default function ReservationsPage() {
             {/* Avatar & Info */}
             <div className="flex flex-col items-center mb-6">
               <div className="w-20 h-20 rounded-full bg-gray-200 overflow-hidden border-2 border-primary/20 mb-3">
-                <img src="https://i.pravatar.cc/150?u=afristay" alt="Avatar" className="w-full h-full object-cover" />
+                <img src={avatarSrc} alt="Avatar" className="w-full h-full object-cover" />
               </div>
-              <h3 className="font-heading font-bold text-dark text-lg">Jean Dupont</h3>
-              <p className="text-gray-500 text-xs">Voyageur depuis 2024</p>
+              <h3 className="font-heading font-bold text-dark text-lg">{fullName}</h3>
+              <p className="text-gray-500 text-xs">Voyageur</p>
             </div>
 
             {/* Navigation */}
@@ -103,7 +117,10 @@ export default function ReservationsPage() {
                   {link.label}
                 </Link>
               ))}
-              <button className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-colors w-full">
+              <button
+                onClick={() => signOut({ callbackUrl: "/login" })}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-colors w-full"
+              >
                 <LogOut size={18} />
                 Déconnexion
               </button>
@@ -138,76 +155,88 @@ export default function ReservationsPage() {
 
           {/* Reservation Cards */}
           <div className="space-y-4">
-            {filtered.length === 0 ? (
+            {loading ? (
+              <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-16 text-center">
+                <p className="text-gray-400 font-medium">Chargement...</p>
+              </div>
+            ) : filtered.length === 0 ? (
               <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-16 text-center">
                 <p className="text-gray-400 font-medium">Aucune réservation dans cette catégorie.</p>
               </div>
             ) : (
-              filtered.map((res) => (
-                <div key={res.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col md:flex-row hover:shadow-card transition-shadow">
-                  {/* Image */}
-                  <div className="w-full md:w-56 h-48 md:h-auto flex-shrink-0 relative">
-                    <img src={res.image} alt={res.propertyName} className="w-full h-full object-cover" />
-                  </div>
-
-                  {/* Details */}
-                  <div className="flex-1 p-6 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-start justify-between gap-4 mb-3">
-                        <div>
-                          <h3 className="font-heading font-bold text-lg text-dark">{res.propertyName}</h3>
-                          <div className="flex items-center gap-1.5 text-gray-500 text-sm mt-1">
-                            <MapPin size={14} className="text-primary" />
-                            <span>{res.location}</span>
-                          </div>
-                        </div>
-                        {/* Status Badge */}
-                        {res.status === "confirmed" && (
-                          <span className="flex items-center gap-1.5 bg-green-100 text-green-700 text-xs font-bold px-3 py-1.5 rounded-full">
-                            <CheckCircle size={12} /> Confirmée
-                          </span>
-                        )}
-                        {res.status === "pending" && (
-                          <span className="flex items-center gap-1.5 bg-yellow-100 text-yellow-700 text-xs font-bold px-3 py-1.5 rounded-full">
-                            <Clock size={12} /> En attente
-                          </span>
-                        )}
-                        {res.status === "completed" && (
-                          <span className="flex items-center gap-1.5 bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1.5 rounded-full">
-                            <CheckCircle size={12} /> Terminée
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-6 text-sm text-gray-600 mt-4">
-                        <div className="flex items-center gap-2">
-                          <Calendar size={14} className="text-primary" />
-                          <span>{res.checkIn} → {res.checkOut}</span>
-                        </div>
-                        <span className="text-gray-300">|</span>
-                        <span>{res.guests} voyageurs</span>
-                      </div>
+              filtered.map((res) => {
+                const h = res.hebergement_detail;
+                const heroImage = h.image_url || "https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=600&auto=format&fit=crop";
+                return (
+                  <div key={res.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col md:flex-row hover:shadow-card transition-shadow">
+                    {/* Image */}
+                    <div className="w-full md:w-56 h-48 md:h-auto flex-shrink-0 relative">
+                      <img src={heroImage} alt={h.name} className="w-full h-full object-cover" />
                     </div>
 
-                    <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100">
+                    {/* Details */}
+                    <div className="flex-1 p-6 flex flex-col justify-between">
                       <div>
-                        <span className="text-xs text-gray-500">Total</span>
-                        <p className="font-heading font-bold text-lg text-dark">{res.price}</p>
+                        <div className="flex items-start justify-between gap-4 mb-3">
+                          <div>
+                            <h3 className="font-heading font-bold text-lg text-dark">{h.name}</h3>
+                            <div className="flex items-center gap-1.5 text-gray-500 text-sm mt-1">
+                              <MapPin size={14} className="text-primary" />
+                              <span>{h.location}, {h.city}</span>
+                            </div>
+                          </div>
+                          {/* Status Badge */}
+                          {res.status === "confirmed" && (
+                            <span className="flex items-center gap-1.5 bg-green-100 text-green-700 text-xs font-bold px-3 py-1.5 rounded-full">
+                              <CheckCircle size={12} /> Confirmée
+                            </span>
+                          )}
+                          {res.status === "pending" && (
+                            <span className="flex items-center gap-1.5 bg-yellow-100 text-yellow-700 text-xs font-bold px-3 py-1.5 rounded-full">
+                              <Clock size={12} /> En attente
+                            </span>
+                          )}
+                          {res.status === "cancelled" && (
+                            <span className="flex items-center gap-1.5 bg-red-100 text-red-700 text-xs font-bold px-3 py-1.5 rounded-full">
+                              <XCircle size={12} /> Annulée
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-6 text-sm text-gray-600 mt-4">
+                          <div className="flex items-center gap-2">
+                            <Calendar size={14} className="text-primary" />
+                            <span>{formatDate(res.check_in)} → {formatDate(res.check_out)}</span>
+                          </div>
+                          <span className="text-gray-300">|</span>
+                          <span>{res.guests_count} voyageur{res.guests_count > 1 ? "s" : ""}</span>
+                        </div>
                       </div>
-                      <div className="flex gap-3">
-                        <button className="px-5 py-2 bg-gray-100 text-dark text-sm font-medium rounded-full hover:bg-gray-200 transition-colors">
-                          Détails
-                        </button>
-                        {res.status === "confirmed" && (
-                          <button className="px-5 py-2 bg-primary text-white text-sm font-medium rounded-full hover:bg-primary-600 transition-colors shadow-button">
-                            Gérer
-                          </button>
-                        )}
+
+                      <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100">
+                        <div>
+                          <span className="text-xs text-gray-500">Total</span>
+                          <p className="font-heading font-bold text-lg text-dark">{Number(res.total_price).toLocaleString()} FCFA</p>
+                        </div>
+                        <div className="flex gap-3">
+                          <Link href={`/reservation/confirmation/${res.id}`} className="px-5 py-2 bg-gray-100 text-dark text-sm font-medium rounded-full hover:bg-gray-200 transition-colors">
+                            Détails
+                          </Link>
+                          {res.status === "confirmed" && (
+                            <button
+                              onClick={() => handleCancel(res.id)}
+                              disabled={cancellingId === res.id}
+                              className="px-5 py-2 bg-primary text-white text-sm font-medium rounded-full hover:bg-primary-600 transition-colors shadow-button disabled:opacity-60"
+                            >
+                              {cancellingId === res.id ? "Annulation..." : "Annuler"}
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
 
