@@ -1,404 +1,235 @@
 "use client";
 
 import Link from "next/link";
-import { Mail, Lock, User, Phone, Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Mail, Lock, User, Phone, Eye, EyeOff, Plane, Home } from "lucide-react";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { getApiBaseUrl } from "@/lib/api-url";
-import Script from "next/script";
-import { signIn } from "next-auth/react";
-import { authenticateWithGoogle } from "@/lib/api/auth/google";
+import { firstErrorMessage } from "@/lib/api";
+import { cn } from "@/lib/utils";
+import AuthShell from "@/components/auth/AuthShell";
+import GoogleButton from "@/components/auth/GoogleButton";
+import FormField from "@/components/ui/FormField";
 
-const API_URL = getApiBaseUrl();
+type Role = "voyageur" | "hote";
+type FieldErrors = Partial<Record<"email" | "first_name" | "last_name" | "phone" | "password" | "password_confirm" | "role", string>>;
 
-declare global {
-  interface Window {
-    google?: {
-      accounts: {
-        id: {
-          initialize: (config: {
-            client_id: string;
-            callback: (response: { credential?: string }) => void;
-          }) => void;
-          prompt: () => void;
-        };
-      };
-    };
-  }
+const ROLES: { id: Role; label: string; icon: typeof Plane }[] = [
+  { id: "voyageur", label: "Voyageur", icon: Plane },
+  { id: "hote", label: "Hôte", icon: Home },
+];
+
+function passwordStrength(pw: string): { score: number; label: string } {
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (pw.length >= 12) score++;
+  if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+  if (/\d/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  const labels = ["Trop court", "Faible", "Moyen", "Bon", "Fort", "Excellent"];
+  return { score, label: labels[score] };
 }
 
-
-
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [passwordConfirm, setPasswordConfirm] = useState("");
-  const [role, setRole] = useState<"voyageur" | "hote">("voyageur");
+  const searchParams = useSearchParams();
+  const [role, setRole] = useState<Role>(searchParams.get("role") === "hote" ? "hote" : "voyageur");
+  const [form, setForm] = useState({ first_name: "", last_name: "", email: "", phone: "", password: "", password_confirm: "" });
   const [showPassword, setShowPassword] = useState(false);
-  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [existingAccount, setExistingAccount] = useState(false);
+
+  const strength = passwordStrength(form.password);
+  const mismatch = form.password_confirm.length > 0 && form.password !== form.password_confirm;
+
+  const update = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    setFieldErrors((prev) => ({ ...prev, [name]: undefined }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setFieldErrors({});
+    setExistingAccount(false);
 
-    if (password !== passwordConfirm) {
-      setError("Les mots de passe ne correspondent pas.");
+    if (form.password.length < 8) {
+      setFieldErrors({ password: "Le mot de passe doit contenir au moins 8 caractères." });
       return;
     }
-    if (password.length < 8) {
-      setError("Le mot de passe doit contenir au moins 8 caractères.");
+    if (mismatch) {
+      setFieldErrors({ password_confirm: "Les mots de passe ne correspondent pas." });
       return;
     }
 
     setLoading(true);
+    const email = form.email.trim().toLowerCase();
 
     try {
-      const res = await fetch(`${API_URL}/v1/auth/register/`, {
+      const res = await fetch(`${getApiBaseUrl()}/v1/auth/register/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          first_name: firstName,
-          last_name: lastName,
-          password,
-          password_confirm: passwordConfirm,
-          role,
-          phone: phone || undefined,
-        }),
+        body: JSON.stringify({ ...form, email, role, phone: form.phone.trim() || null }),
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        if (res.status === 409) {
-          setError("Cette adresse email est déjà utilisée.");
-        } else if (res.status === 400) {
-          const firstKey = Object.keys(data)[0];
-          const firstMsg = data[firstKey];
-          setError(Array.isArray(firstMsg) ? firstMsg[0] : String(firstMsg));
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 400 || res.status === 409) {
+          const errs: FieldErrors = {};
+          for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
+            const msg = firstErrorMessage(value);
+            if (msg) errs[key as keyof FieldErrors] = msg;
+          }
+          setFieldErrors(errs);
+          if (res.status === 409 && errs.email) setExistingAccount(true);
+          if (!Object.keys(errs).length) setError(firstErrorMessage(data) ?? "Données invalides.");
         } else {
-          setError("Une erreur est survenue. Veuillez réessayer.");
+          setError("Une erreur est survenue côté serveur. Veuillez réessayer.");
         }
         setLoading(false);
         return;
       }
     } catch {
-      setError("Impossible de contacter le serveur.");
+      setError("Impossible de contacter le serveur. Vérifiez votre connexion.");
       setLoading(false);
       return;
     }
 
-    // Étape 2 — Rediriger vers la page de vérification email
     sessionStorage.setItem("verify_email", email);
-    sessionStorage.setItem("verify_password", password);
     router.push(`/verify?email=${encodeURIComponent(email)}`);
   };
 
-
-  const handleGoogleSignup = async () => {
-    setError("");
-
-    if (!window.google) {
-      setError("Google n'est pas disponible pour le moment.");
-      return;
-    }
-
-    window.google.accounts.id.initialize({
-      client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
-      callback: async (response) => {
-        if (!response.credential) {
-          setError("Impossible de récupérer le token Google.");
-          return;
-        }
-
-        try {
-          const data = await authenticateWithGoogle(response.credential);
-
-          const loginRes = await signIn("backend-session", {
-            redirect: false,
-            id: data.user.id,
-            name: `${data.user.first_name} ${data.user.last_name}`,
-            email: data.user.email,
-            image: data.user.avatar_url ?? "",
-            role: data.user.role,
-            accessToken: data.access,
-            refreshToken: data.refresh,
-          });
-
-            if (loginRes?.error) {
-              setError("Authentification Google réussie, mais ouverture de session impossible.");
-              return;
-            }
-
-          router.push("/");
-          router.refresh();
-        } catch {
-          setError("Impossible de contacter le serveur.");
-        }
-      },
-    });
-
-    window.google.accounts.id.prompt();
-  };
-
-
   return (
-      <>  
-        <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
+    <>
+      <h1 className="font-heading font-bold text-3xl text-dark mb-2">Créer un compte</h1>
+      <p className="text-gray-500 text-sm mb-8">Quelques informations pour commencer votre aventure.</p>
 
-        <div className="min-h-screen flex flex-row-reverse">
-        {/* Right Panel — Branding */}
-        <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: "url('https://images.unsplash.com/photo-1542314831-c6a4d27ce6a2?q=80&w=2000&auto=format&fit=crop')" }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-br from-orange-700/80 via-primary/60 to-orange-900/70" />
+      <GoogleButton label="S'inscrire avec Google" callbackUrl="/" onError={setError} />
 
-          <div className="relative z-10 flex flex-col justify-between p-12 h-full w-full">
-            <div className="flex justify-end">
-              <Link href="/">
-                <img src="/logo.png" alt="AfriStay" className="h-10 w-auto brightness-0 invert" onError={(e) => { e.currentTarget.src = 'https://i.ibb.co/3WfK91p/afristay.png' }} />
-              </Link>
-            </div>
-
-            <div className="text-white max-w-md">
-              <h2 className="font-heading font-bold text-4xl leading-tight mb-4">
-                Rejoignez la communauté AfriStay
-              </h2>
-              <p className="text-white/80 text-base leading-relaxed">
-                Créez votre compte pour réserver des hébergements uniques, sauvegarder vos favoris et profiter d&apos;offres sur mesure.
-              </p>
-
-              <div className="mt-8 bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10">
-                <p className="text-white/90 text-sm italic leading-relaxed mb-3">
-                  &ldquo;AfriStay m&apos;a permis de découvrir des endroits incroyables que je n&apos;aurais jamais trouvés autrement. Service exceptionnel !&rdquo;
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-white/20" />
-                  <div>
-                    <p className="text-white text-xs font-bold">Aminata Diallo</p>
-                    <p className="text-white/60 text-xs">Voyageuse depuis 2023</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+      <form className="space-y-4" onSubmit={handleSubmit}>
+        {error && (
+          <div role="alert" className="p-3 text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl text-center font-medium">
+            {error}
           </div>
-        </div>
+        )}
 
-        {/* Left Panel — Form */}
-        <div className="w-full lg:w-1/2 bg-white flex items-center justify-center p-8 sm:p-12 overflow-y-auto">
-          <div className="w-full max-w-[420px]">
-
-            <Link href="/" className="inline-block mb-8 lg:hidden">
-              <img src="/logo.png" alt="AfriStay" className="h-10 w-auto" onError={(e) => { e.currentTarget.src = 'https://i.ibb.co/3WfK91p/afristay.png' }} />
-            </Link>
-
-            <h1 className="font-heading font-bold text-3xl text-dark mb-2">Créer un compte</h1>
-            <p className="text-gray-500 text-sm mb-8">
-              Remplissez les informations ci-dessous pour commencer votre aventure.
-            </p>
-
-            {/* Social Signup */}
-            <button
-              type="button"
-              className="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 rounded-2xl py-3.5 text-sm font-medium text-dark hover:bg-gray-50 transition-colors shadow-sm mb-6"
-              onClick={handleGoogleSignup}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-              </svg>
-              S&apos;inscrire avec Google
-            </button>
-
-            <div className="flex items-center gap-4 mb-6">
-              <div className="flex-1 h-px bg-gray-200" />
-              <span className="text-gray-400 text-xs font-medium">ou par e-mail</span>
-              <div className="flex-1 h-px bg-gray-200" />
-            </div>
-
-            <form className="space-y-4" onSubmit={handleSubmit}>
-              {error && (
-                <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl text-center font-medium">
-                  {error}
-                </div>
-              )}
-
-              {/* Role toggle */}
-              <div>
-                <label className="block text-xs font-bold text-dark uppercase tracking-wide mb-2">Je suis</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {(["voyageur", "hote"] as const).map((r) => (
-                    <button
-                      key={r}
-                      type="button"
-                      onClick={() => setRole(r)}
-                      className={`py-2.5 rounded-xl text-sm font-semibold border transition-all ${
-                        role === r
-                          ? "bg-primary text-white border-primary shadow-button"
-                          : "bg-white text-dark border-gray-200 hover:border-primary/40"
-                      }`}
-                    >
-                      {r === "voyageur" ? "✈️ Voyageur" : "🏠 Hôte"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Name Row */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-dark uppercase tracking-wide mb-2">Prénom</label>
-                  <div className="relative">
-                    <User size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="text"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      placeholder="Jean"
-                      className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-dark placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                      required
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-dark uppercase tracking-wide mb-2">Nom</label>
-                  <div className="relative">
-                    <User size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="text"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      placeholder="Dupont"
-                      className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-dark placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Email */}
-              <div>
-                <label className="block text-xs font-bold text-dark uppercase tracking-wide mb-2">Adresse e-mail</label>
-                <div className="relative">
-                  <Mail size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="vous@exemple.com"
-                    className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-dark placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Phone */}
-              <div>
-                <label className="block text-xs font-bold text-dark uppercase tracking-wide mb-2">
-                  Téléphone <span className="text-gray-400 normal-case font-normal">(optionnel)</span>
-                </label>
-                <div className="relative">
-                  <Phone size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+225 XX XX XX XX"
-                    className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-dark placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                  />
-                </div>
-              </div>
-
-              {/* Password */}
-              <div>
-                <label className="block text-xs font-bold text-dark uppercase tracking-wide mb-2">Mot de passe</label>
-                <div className="relative">
-                  <Lock size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full pl-10 pr-12 py-3 bg-white border border-gray-200 rounded-xl text-sm text-dark placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-dark transition-colors"
-                  >
-                    {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
-                  </button>
-                </div>
-                <p className="text-xs text-gray-400 mt-1.5 ml-1">Minimum 8 caractères</p>
-              </div>
-
-              {/* Password confirm */}
-              <div>
-                <label className="block text-xs font-bold text-dark uppercase tracking-wide mb-2">Confirmer le mot de passe</label>
-                <div className="relative">
-                  <Lock size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input
-                    type={showPasswordConfirm ? "text" : "password"}
-                    value={passwordConfirm}
-                    onChange={(e) => setPasswordConfirm(e.target.value)}
-                    placeholder="••••••••"
-                    className={`w-full pl-10 pr-12 py-3 bg-white border rounded-xl text-sm text-dark placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
-                      passwordConfirm && password !== passwordConfirm
-                        ? "border-red-300 focus:border-red-400"
-                        : "border-gray-200 focus:border-primary"
-                    }`}
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-dark transition-colors"
-                  >
-                    {showPasswordConfirm ? <EyeOff size={14} /> : <Eye size={14} />}
-                  </button>
-                </div>
-                {passwordConfirm && password !== passwordConfirm && (
-                  <p className="text-xs text-red-500 mt-1.5 ml-1">Les mots de passe ne correspondent pas</p>
-                )}
-              </div>
-
-              {/* Terms */}
-              <div className="flex items-start gap-2 pt-1">
-                <input type="checkbox" id="terms" className="mt-1 accent-primary" required />
-                <label htmlFor="terms" className="text-xs text-gray-500 leading-relaxed">
-                  J&apos;accepte les <a href="#" className="text-primary font-medium">Conditions d&apos;utilisation</a> et la <a href="#" className="text-primary font-medium">Politique de confidentialité</a> d&apos;AfriStay.
-                </label>
-              </div>
-
-              {/* Submit */}
+        <fieldset>
+          <legend className="block text-xs font-bold text-dark uppercase tracking-wide mb-2">Je suis</legend>
+          <div className="grid grid-cols-2 gap-2">
+            {ROLES.map(({ id, label, icon: Icon }) => (
               <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-button hover:shadow-lg transform hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:transform-none text-sm mt-2"
+                key={id}
+                type="button"
+                onClick={() => setRole(id)}
+                aria-pressed={role === id}
+                className={cn(
+                  "flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold border transition-all",
+                  role === id ? "bg-primary text-white border-primary shadow-button" : "bg-white text-dark border-gray-200 hover:border-primary/40"
+                )}
               >
-                {loading ? "Création en cours..." : "Créer mon compte"}
+                <Icon size={15} /> {label}
               </button>
-            </form>
-
-            <p className="mt-6 text-center text-sm text-gray-500">
-              Déjà un compte ?{" "}
-              <Link href="/login" className="font-bold text-primary hover:underline">
-                Se connecter
-              </Link>
-            </p>
+            ))}
           </div>
+          <p className="text-xs text-gray-400 mt-1.5 ml-1">
+            {role === "hote" ? "Vous pourrez publier vos logements et aussi réserver." : "Vous pourrez devenir hôte plus tard depuis votre profil."}
+          </p>
+        </fieldset>
+
+        <div className="grid grid-cols-1 min-[380px]:grid-cols-2 gap-3">
+          <FormField label="Prénom" name="first_name" icon={User} value={form.first_name} onChange={update} placeholder="Ama" autoComplete="given-name" required error={fieldErrors.first_name} />
+          <FormField label="Nom" name="last_name" icon={User} value={form.last_name} onChange={update} placeholder="Koffi" autoComplete="family-name" required error={fieldErrors.last_name} />
         </div>
-      </div>
+
+        <div>
+          <FormField label="Adresse e-mail" name="email" type="email" icon={Mail} value={form.email} onChange={update} placeholder="vous@exemple.com" autoComplete="email" inputMode="email" required error={fieldErrors.email} />
+          {existingAccount && (
+            <p className="text-xs text-gray-500 mt-1.5 ml-1">
+              C&apos;est vous ?{" "}
+              <Link href={`/login?email=${encodeURIComponent(form.email)}`} className="text-primary font-bold hover:underline">Se connecter</Link>
+              {" "}ou{" "}
+              <Link href={`/verify?email=${encodeURIComponent(form.email.trim().toLowerCase())}`} className="text-primary font-bold hover:underline">vérifier le compte</Link>
+            </p>
+          )}
+        </div>
+
+        <FormField
+          label={<>Téléphone <span className="text-gray-400 normal-case font-normal">(optionnel)</span></>}
+          name="phone" type="tel" icon={Phone} value={form.phone} onChange={update}
+          placeholder="+228 90 00 00 00" autoComplete="tel" inputMode="tel"
+          hint="Format international avec indicatif pays."
+          error={fieldErrors.phone}
+        />
+
+        <div>
+          <FormField
+            label="Mot de passe" name="password" type={showPassword ? "text" : "password"} icon={Lock}
+            value={form.password} onChange={update} placeholder="••••••••" autoComplete="new-password" required
+            error={fieldErrors.password}
+            trailing={
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="p-1 text-gray-400 hover:text-dark" aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}>
+                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+              </button>
+            }
+          />
+          {form.password && !fieldErrors.password && (
+            <div className="mt-2 ml-1">
+              <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className={cn("h-1 flex-1 rounded-full", i <= strength.score ? (strength.score <= 2 ? "bg-red-400" : strength.score === 3 ? "bg-amber-400" : "bg-green-500") : "bg-gray-200")} />
+                ))}
+              </div>
+              <p className="text-xs text-gray-400 mt-1">{strength.label} — évitez les mots de passe courants ou uniquement numériques.</p>
+            </div>
+          )}
+        </div>
+
+        <FormField
+          label="Confirmer le mot de passe" name="password_confirm" type={showPassword ? "text" : "password"} icon={Lock}
+          value={form.password_confirm} onChange={update} placeholder="••••••••" autoComplete="new-password" required
+          error={fieldErrors.password_confirm ?? (mismatch ? "Les mots de passe ne correspondent pas." : undefined)}
+        />
+
+        <div className="flex items-start gap-2 pt-1">
+          <input type="checkbox" id="terms" className="mt-1 accent-primary w-4 h-4 flex-shrink-0" required />
+          <label htmlFor="terms" className="text-xs text-gray-500 leading-relaxed">
+            J&apos;accepte les{" "}
+            <Link href="/profil/aide#conditions" className="text-primary font-medium">Conditions d&apos;utilisation</Link> et la{" "}
+            <Link href="/profil/aide#confidentialite" className="text-primary font-medium">Politique de confidentialité</Link> d&apos;AfriStay.
+          </label>
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-button hover:shadow-lg transform hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:transform-none text-sm mt-2"
+        >
+          {loading ? "Création en cours..." : "Créer mon compte"}
+        </button>
+      </form>
+
+      <p className="mt-6 text-center text-sm text-gray-500">
+        Déjà un compte ?{" "}
+        <Link href="/login" className="font-bold text-primary hover:underline">Se connecter</Link>
+      </p>
     </>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <AuthShell
+      reverse
+      image="https://images.unsplash.com/photo-1542314831-c6a4d27ce6a2?q=80&w=2000&auto=format&fit=crop"
+      title="Rejoignez la communauté AfriStay"
+      subtitle="Réservez des hébergements vérifiés, sauvegardez vos coups de cœur et échangez directement avec les hôtes."
+    >
+      <Suspense>
+        <RegisterForm />
+      </Suspense>
+    </AuthShell>
   );
 }

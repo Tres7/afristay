@@ -14,7 +14,11 @@ export async function authenticateWithCredentials(
   const data = await res.json();
 
   if (!res.ok) {
-    throw new Error(data.detail ?? "Identifiants invalides.");
+    const error = new Error(data.detail ?? "Identifiants invalides.") as Error & {
+      code?: string;
+    };
+    error.code = data.code;
+    throw error;
   }
 
   return data;
