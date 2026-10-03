@@ -6,7 +6,7 @@
 !.env.example
 
 # =========================
-# Python / Django
+# Server
 # =========================
 __pycache__/
 *.py[cod]
@@ -26,9 +26,11 @@ db.sqlite3-journal
 /server/staticfiles/
 /server/mediafiles/
 *.log
+server/.venv/
+server/.env
 
 # =========================
-# Node.js / Next.js
+# client
 # =========================
 node_modules/
 .next/
@@ -40,6 +42,7 @@ yarn-error.log*
 /client/.next/
 /client/out/
 /client/node_modules/
+/client/.env
 
 # =========================
 # Docker
@@ -51,6 +54,7 @@ docker-compose.override.yml
 # =========================
 .idea/
 .vscode/
+.claude/
 *.swp
 *.swo
 *~
@@ -75,3 +79,10 @@ Desktop.ini
 coverage/
 .coverage
 htmlcov/
+
+# =========================
+generate-commits.ps1
+generate-commits.sh
+# =========================
+
+

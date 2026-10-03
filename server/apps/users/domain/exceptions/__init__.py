@@ -1,0 +1,6 @@
+# domain/exceptions/__init__.py
+from .UserAlreadyExistsException import UserAlreadyExistsException
+from .UserNotFoundException import UserNotFoundException
+from .InvalidRoleException import InvalidRoleException
+from .InactiveUserException import InactiveUserException
+from .UnverifiedUserException import UnverifiedUserException

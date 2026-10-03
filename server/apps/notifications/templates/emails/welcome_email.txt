@@ -1,0 +1,8 @@
+Bonjour {{ first_name }},
+
+Bienvenue sur AfriStay.
+Votre compte a bien été créé et vérifié.
+Vous êtes prêt(e) à découvrir l'Afrique dans toute sa splendeur!
+
+À très bientôt,
+L'équipe AfriStay
