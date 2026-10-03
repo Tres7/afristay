@@ -1,5 +1,7 @@
 import logging
 
+from django.conf import settings
+
 from apps.users.application.ports.EventPublisher import EventPublisher
 from apps.users.application.events.DomainEvent import DomainEvent
 from apps.users.infrastructure.messaging.RabbitMQEventBus import RabbitMQEventBus
@@ -18,6 +20,11 @@ class FallbackEventBus(EventPublisher):
         self._notifications = NotificationService(DjangoEmailSender())
 
     def publish(self, event: DomainEvent) -> None:
+        # En développement, le code reste récupérable dans les logs même si l'email n'arrive pas
+        code = getattr(event, 'code', None)
+        if settings.DEBUG and code:
+            logger.warning("[DEV] Code %s pour %s : %s", event.event, getattr(event, 'email', '?'), code)
+
         try:
             self._primary.publish(event)
             return
