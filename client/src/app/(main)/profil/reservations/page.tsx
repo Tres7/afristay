@@ -49,11 +49,15 @@ function formatDate(d: string) {
   return new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
 }
 
-const recommended = [
-  { id: 1, name: "Loft Plateau", loc: "Dakar, Sénégal", price: "60 000 XOF", rating: "4.7", img: "https://images.unsplash.com/photo-1502672260266-1c1e55240c5f?q=80&w=400&auto=format&fit=crop" },
-  { id: 2, name: "Suite Océan", loc: "Cap Skirring", price: "90 000 XOF", rating: "4.8", img: "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?q=80&w=400&auto=format&fit=crop" },
-  { id: 3, name: "Maison de Pierre", loc: "Kigali, Rwanda", price: "55 000 XOF", rating: "4.9", img: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=400&auto=format&fit=crop" },
-];
+interface RecommendedHebergement {
+  id: string;
+  name: string;
+  city: string;
+  location: string;
+  price_per_night: number;
+  rating: number;
+  image_url: string;
+}
 
 export default function ReservationsPage() {
   const { data: session } = useSession();
@@ -61,11 +65,16 @@ export default function ReservationsPage() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [recommended, setRecommended] = useState<RecommendedHebergement[]>([]);
 
   useEffect(() => {
     api.get("/v1/reservations/")
       .then((res) => setReservations(res.data.results))
       .finally(() => setLoading(false));
+
+    api.get("/v1/hebergements/", { params: { sort: "note" } })
+      .then((res) => setRecommended(res.data.results.slice(0, 3)))
+      .catch(() => setRecommended([]));
   }, []);
 
   const handleCancel = async (id: string) => {
@@ -241,30 +250,35 @@ export default function ReservationsPage() {
           </div>
 
           {/* Recommandé pour votre prochain voyage */}
-          <section className="pt-8">
-            <h2 className="font-heading font-bold text-xl text-dark mb-6">Recommandé pour votre prochain voyage</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-              {recommended.map((prop) => (
-                <Link key={prop.id} href={`/hebergements/${prop.id}`} className="group block">
-                  <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-3">
-                    <img src={prop.img} alt={prop.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                  </div>
-                  <div className="flex justify-between items-start">
-                    <h3 className="font-bold text-dark text-sm">{prop.name}</h3>
-                    <div className="flex items-center gap-1 text-dark">
-                      <Star size={10} className="fill-accent text-accent" />
-                      <span className="text-xs font-bold">{prop.rating}</span>
-                    </div>
-                  </div>
-                  <p className="text-gray-500 text-xs">{prop.loc}</p>
-                  <p className="mt-1 text-sm">
-                    <span className="font-bold text-primary">{prop.price}</span>
-                    <span className="text-gray-400 text-xs"> / nuit</span>
-                  </p>
-                </Link>
-              ))}
-            </div>
-          </section>
+          {recommended.length > 0 && (
+            <section className="pt-8">
+              <h2 className="font-heading font-bold text-xl text-dark mb-6">Recommandé pour votre prochain voyage</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                {recommended.map((h) => {
+                  const img = h.image_url || "https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=600&auto=format&fit=crop";
+                  return (
+                    <Link key={h.id} href={`/hebergements/${h.id}`} className="group block">
+                      <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-3">
+                        <img src={img} alt={h.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      </div>
+                      <div className="flex justify-between items-start">
+                        <h3 className="font-bold text-dark text-sm">{h.name}</h3>
+                        <div className="flex items-center gap-1 text-dark">
+                          <Star size={10} className="fill-accent text-accent" />
+                          <span className="text-xs font-bold">{h.rating.toFixed(1)}</span>
+                        </div>
+                      </div>
+                      <p className="text-gray-500 text-xs">{h.location}, {h.city}</p>
+                      <p className="mt-1 text-sm">
+                        <span className="font-bold text-primary">{h.price_per_night.toLocaleString()} FCFA</span>
+                        <span className="text-gray-400 text-xs"> / nuit</span>
+                      </p>
+                    </Link>
+                  );
+                })}
+              </div>
+            </section>
+          )}
         </main>
       </div>
     </div>
