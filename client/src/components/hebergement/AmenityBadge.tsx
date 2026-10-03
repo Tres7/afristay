@@ -1,26 +1,24 @@
-import type { AmenityType } from "@/types";
-
-const amenityConfig: Record<AmenityType, { label: string; emoji: string }> = {
+export const AMENITIES: Record<string, { label: string; emoji: string }> = {
   piscine: { label: "Piscine", emoji: "🏊" },
   wifi: { label: "WiFi", emoji: "📶" },
-  clim: { label: "Clim", emoji: "❄️" },
+  clim: { label: "Climatisation", emoji: "❄️" },
   parking: { label: "Parking", emoji: "🅿️" },
   cuisine: { label: "Cuisine", emoji: "🍳" },
   jardin: { label: "Jardin", emoji: "🌿" },
-  gym: { label: "Gym", emoji: "💪" },
+  gym: { label: "Salle de sport", emoji: "💪" },
   spa: { label: "Spa", emoji: "🛁" },
 };
 
 interface AmenityBadgeProps {
-  amenity: AmenityType;
+  amenity: string;
 }
 
 export default function AmenityBadge({ amenity }: AmenityBadgeProps) {
-  const { label, emoji } = amenityConfig[amenity];
+  const { label, emoji } = AMENITIES[amenity] ?? { label: amenity, emoji: "✓" };
   return (
-    <div className="flex flex-col items-center gap-1 bg-light rounded-[8px] px-4 py-2">
-      <span className="text-xl">{emoji}</span>
-      <span className="text-xs text-dark">{label}</span>
+    <div className="flex items-center gap-2 bg-light-muted rounded-xl px-4 py-2.5">
+      <span className="text-lg" aria-hidden>{emoji}</span>
+      <span className="text-sm text-dark">{label}</span>
     </div>
   );
 }

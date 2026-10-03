@@ -1,55 +1,69 @@
-import { Heart, Search } from "lucide-react";
-import PropertyCard from "@/components/hebergement/PropertyCard";
-import { properties } from "@/lib/mockData";
+"use client";
+
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Heart, Search, ArrowLeft } from "lucide-react";
+import api from "@/lib/api";
+import PropertyCard from "@/components/hebergement/PropertyCard";
+import type { Favori, Paginated } from "@/types/api/models";
 
 export default function FavorisPage() {
-  const favorites = properties.filter((p) => p.isFavorite);
+  const queryClient = useQueryClient();
+  const { data: favoris = [], isLoading, isError, refetch } = useQuery({
+    queryKey: ["favoris"],
+    queryFn: async () => (await api.get<Paginated<Favori>>("/v1/favoris/")).data.results,
+  });
+
+  const removeLocally = (hebergementId: string) =>
+    queryClient.setQueryData<Favori[]>(["favoris"], (prev) => prev?.filter((f) => f.hebergement !== hebergementId));
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12">
-      <div className="mb-10 flex items-center gap-4">
-        <Link 
-          href="/profil" 
-          className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-dark hover:bg-light transition-colors"
-        >
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-12">
+      <div className="mb-8 flex items-center gap-4">
+        <Link href="/profil" aria-label="Retour au profil" className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-dark hover:bg-light-muted transition-colors flex-shrink-0">
           <ArrowLeft size={20} />
         </Link>
         <div>
-          <h1 className="font-heading font-bold text-3xl text-dark">Mes Favoris</h1>
-          <p className="text-muted text-sm mt-1">Les hébergements que vous avez sauvegardés pour plus tard</p>
+          <h1 className="font-heading font-bold text-2xl sm:text-3xl text-dark">Mes favoris</h1>
+          <p className="text-muted text-sm mt-1">
+            {favoris.length > 0 ? `${favoris.length} hébergement${favoris.length > 1 ? "s" : ""} sauvegardé${favoris.length > 1 ? "s" : ""}` : "Les hébergements que vous avez sauvegardés"}
+          </p>
         </div>
       </div>
 
-      <div className="bg-white rounded-3xl shadow-card p-6 md:p-8 min-h-[50vh]">
-        {favorites.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full min-h-[40vh] gap-6">
-            <div className="w-24 h-24 bg-primary/5 rounded-full flex items-center justify-center text-primary/40">
-              <Heart size={40} />
-            </div>
-            <div className="text-center max-w-sm">
-              <h2 className="font-heading font-bold text-xl text-dark mb-2">Aucun favori pour l'instant</h2>
-              <p className="text-muted text-sm mb-8 leading-relaxed">
-                Explorez nos hébergements et cliquez sur l'icône cœur pour sauvegarder vos coups de cœur ici.
-              </p>
-              <Link
-                href="/recherche"
-                className="inline-flex items-center gap-2 bg-primary text-white font-medium px-8 py-3.5 rounded-xl shadow-md hover:bg-primary-600 hover:shadow-lg transition-all"
-              >
-                <Search size={18} />
-                Explorer les hébergements
-              </Link>
-            </div>
+      {isLoading ? (
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {[0, 1, 2, 3].map((i) => <div key={i} className="h-72 skeleton rounded-2xl" />)}
+        </div>
+      ) : isError ? (
+        <div className="bg-white rounded-3xl shadow-card p-12 text-center">
+          <p className="text-dark font-semibold mb-2">Impossible de charger vos favoris.</p>
+          <button onClick={() => refetch()} className="text-primary font-bold hover:underline">Réessayer</button>
+        </div>
+      ) : favoris.length === 0 ? (
+        <div className="bg-white rounded-3xl shadow-card p-8 sm:p-12 flex flex-col items-center gap-6 text-center">
+          <div className="w-24 h-24 bg-primary/5 rounded-full flex items-center justify-center text-primary/50">
+            <Heart size={40} />
           </div>
-        ) : (
-          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {favorites.map((property) => (
-              <PropertyCard key={property.id} property={property} />
-            ))}
+          <div className="max-w-sm">
+            <h2 className="font-heading font-bold text-xl text-dark mb-2">Aucun favori pour l&apos;instant</h2>
+            <p className="text-muted text-sm mb-8 leading-relaxed">Cliquez sur le cœur d&apos;un hébergement pour le retrouver ici.</p>
+            <Link href="/recherche" className="inline-flex items-center gap-2 bg-primary text-white font-medium px-8 py-3.5 rounded-xl shadow-md hover:bg-primary-600 transition-all">
+              <Search size={18} /> Explorer les hébergements
+            </Link>
           </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {favoris.map((f) => (
+            <PropertyCard
+              key={f.id}
+              property={{ ...f.hebergement_detail, is_favorite: true }}
+              onFavoriteChange={(fav) => { if (!fav) removeLocally(f.hebergement); }}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

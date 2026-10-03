@@ -32,6 +32,12 @@ const config: Config = {
           DEFAULT: '#FFFDF8', // Warm cream background from the mockup
           muted: '#F8F5F0',   // Slightly darker cream for cards/sections
         },
+        secondary: {
+          DEFAULT: '#27AE60',
+          600: '#219150',
+        },
+        accent: '#F39C12',
+        muted: '#7F8C8D',
         // Semantic Colors
         success: '#10B981', // Emerald 500
         warning: '#F59E0B', // Amber 500
