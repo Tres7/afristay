@@ -24,7 +24,7 @@ PGADMIN_PASSWORD=votre_password
 
 DJANGO_SECRET_KEY=votre-cle-secrete
 DJANGO_DEBUG=True
-DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0,backend
 ```
 
 ## Etape 2 : Lancer les services
