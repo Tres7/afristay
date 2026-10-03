@@ -71,6 +71,8 @@ services:
       - client/.env
     environment:
       - INTERNAL_API_URL=http://backend:8000/api
+      # Docker Desktop (Windows/macOS) ne propage pas les événements fichiers : polling
+      - WATCHPACK_POLLING=true
     depends_on:
       - backend
 
