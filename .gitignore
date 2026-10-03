@@ -86,3 +86,6 @@ generate-commits.sh
 # =========================
 
 
+
+# Cache de compilation TypeScript
+*.tsbuildinfo
