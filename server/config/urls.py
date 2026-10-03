@@ -9,4 +9,6 @@ urlpatterns = [
     path('api/v1/', include('apps.users.infrastructure.http.routes.urls')),
     path('api/v1/hebergements/', include('apps.hebergements.urls')),
     path('api/v1/reservations/', include('apps.reservations.urls')),
+    path('api/v1/favoris/', include('apps.favoris.urls')),
+    path('api/v1/conversations/', include('apps.messaging.urls')),
 ]

@@ -21,6 +21,8 @@ class HebergementModel(models.Model):
     rating = models.FloatField(default=0.0)
     review_count = models.IntegerField(default=0)
     image_url = models.URLField(blank=True)
+    images = models.JSONField(default=list, blank=True)
+    max_guests = models.PositiveIntegerField(default=4)
     amenities = models.JSONField(default=list)
     is_available = models.BooleanField(default=True)
     host = models.ForeignKey(
