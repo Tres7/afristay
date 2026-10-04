@@ -1,3 +1,4 @@
+import logging
 import uuid
 
 from django.contrib.auth.hashers import make_password
@@ -22,6 +23,8 @@ from apps.users.application.events.UserRegistered import UserRegistered
 from apps.users.application.events.WelcomeEmailRequested import WelcomeEmailRequested
 from apps.users.application.ports import EventPublisher
 from apps.users.domain.value_objects import Email, PasswordHash, PhoneNumber
+
+logger = logging.getLogger(__name__)
 
 
 class UserService:
@@ -57,7 +60,11 @@ class UserService:
                 code=code,
             ))
         except Exception:
-            pass  # RabbitMQ indisponible : l'inscription reste valide
+            # RabbitMQ indisponible : l'inscription reste valide, l'utilisateur peut redemander un code
+            logger.exception(
+                "Publication de users.email_verification_requested impossible (user_id=%s)",
+                saved_user.id,
+            )
 
         return UserResponseDTO.from_entity(saved_user)
 
@@ -183,6 +190,9 @@ class UserService:
                 first_name=user_model.first_name,
             ))
         except Exception:
-            pass
+            logger.exception(
+                "Publication de users.welcome_email_requested impossible (user_id=%s)",
+                user_model.id,
+            )
 
         return user_model.id

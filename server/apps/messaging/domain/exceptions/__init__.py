@@ -1,0 +1,7 @@
+# domain/exceptions/__init__.py
+from .ConversationNotFoundException import ConversationNotFoundException
+from .NotParticipantException import NotParticipantException
+from .InvalidMessageException import InvalidMessageException
+from .CannotContactOwnHebergementException import CannotContactOwnHebergementException
+from .HebergementNotFoundException import HebergementNotFoundException
+from .ConversationAlreadyExistsException import ConversationAlreadyExistsException

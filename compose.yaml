@@ -102,6 +102,22 @@ services:
       - db
     restart: on-failure
 
+  # Relais de l'outbox de messagerie : publie les notifications échues (une seule instance, voir ADR-016)
+  messaging-relay:
+    build:
+      context: ./server
+    command: python manage.py relay_messaging_outbox
+    volumes:
+      - ./server:/app
+    env_file:
+      - server/.env
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+    restart: on-failure
+
 volumes:
   afristay_db:
   rabbitmq_data:

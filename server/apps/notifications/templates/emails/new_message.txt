@@ -1,0 +1,12 @@
+{% autoescape off %}Bonjour {{ first_name }},
+
+{{ sender_first_name }} vous a envoyé un message à propos de « {{ hebergement_name }} » :
+
+« {{ message_preview }} »
+
+Pour lire la conversation et répondre :
+{{ conversation_url }}
+
+À très bientôt,
+L'équipe AfriStay
+{% endautoescape %}

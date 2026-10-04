@@ -12,5 +12,12 @@ class NotificationSender(ABC):
         pass
 
     @abstractmethod
+    def send_new_message_email(
+        self, to: str, first_name: str, sender_first_name: str,
+        hebergement_name: str, message_preview: str, conversation_url: str,
+    ) -> None:
+        pass
+
+    @abstractmethod
     def send_password_reset_email(self, to: str, first_name: str, code: str) -> None:
         pass

@@ -128,7 +128,36 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
     'COERCE_DECIMAL_TO_STRING': False,
+    # Throttles par scope (appliqués uniquement aux vues qui les déclarent)
+    'DEFAULT_THROTTLE_RATES': {
+        'messaging_conversation_create': '10/hour',
+        'messaging_message_send': '30/min',
+    },
 }
+
+
+# Cache partagé entre processus (compteurs des throttles), stocké dans PostgreSQL.
+# La table est créée par la migration messaging 0002 (createcachetable).
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'django_cache',
+    }
+}
+
+
+# Messagerie (voir documentation/modules/messaging.md)
+
+MESSAGING = {
+    'EMAIL_DELAY_SECONDS': int(os.getenv('MESSAGING_EMAIL_DELAY_SECONDS', '60')),
+    'EMAIL_HOURLY_CAP': int(os.getenv('MESSAGING_EMAIL_HOURLY_CAP', '5')),
+    'OUTBOX_RETENTION_DAYS': int(os.getenv('MESSAGING_OUTBOX_RETENTION_DAYS', '7')),
+    'RELAY_INTERVAL_SECONDS': int(os.getenv('MESSAGING_RELAY_INTERVAL_SECONDS', '10')),
+}
+
+# URL du frontend, utilisée dans les liens des emails
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
 
 
 # CORS
@@ -160,4 +189,20 @@ EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "False").lower() in ("true", "1", "ye
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
 SERVER_EMAIL = os.getenv("SERVER_EMAIL", DEFAULT_FROM_EMAIL)
 EMAIL_TIMEOUT = int(os.getenv("EMAIL_TIMEOUT", "20"))
+
+
+# Logging : affiche les logs INFO des modules métier (apps.*) dans la sortie des conteneurs
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'simple': {'format': '[{levelname}] {name}: {message}', 'style': '{'},
+    },
+    'handlers': {
+        'console': {'class': 'logging.StreamHandler', 'formatter': 'simple'},
+    },
+    'loggers': {
+        'apps': {'handlers': ['console'], 'level': 'INFO'},
+    },
+}
 

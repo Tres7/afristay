@@ -12,7 +12,8 @@ import AmenityBadge from "@/components/hebergement/AmenityBadge";
 import FavoriteButton from "@/components/hebergement/FavoriteButton";
 import api, { apiErrorMessage } from "@/lib/api";
 import { addDays, calculateNights, calculateServiceFee, FALLBACK_IMAGE, formatPrice, isoDate, TYPE_LABELS } from "@/lib/utils";
-import type { Conversation, Hebergement } from "@/types/api/models";
+import type { Hebergement } from "@/types/api/models";
+import type { MessagingConversation } from "@/types/api/messaging";
 
 function HebergementContent() {
   const params = useParams<{ id: string }>();
@@ -83,7 +84,8 @@ function HebergementContent() {
     }
     setContacting(true);
     try {
-      const res = await api.post<Conversation>("/v1/conversations/", { hebergement: hebergement.id });
+      // Idempotent : renvoie le fil existant si on a déjà contacté cet hôte pour ce logement
+      const res = await api.post<MessagingConversation>("/v1/messaging/conversations/", { hebergement_id: hebergement.id });
       router.push(`/messages/${res.data.id}`);
     } catch (err) {
       toast.error(apiErrorMessage(err));

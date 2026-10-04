@@ -54,33 +54,6 @@ export interface Favori {
   created_at: string;
 }
 
-export interface Participant {
-  id: string;
-  first_name: string;
-  last_name: string;
-  avatar_url: string | null;
-}
-
-export interface Conversation {
-  id: string;
-  hebergement_detail: Hebergement | null;
-  other_participant: Participant;
-  last_message: string | null;
-  last_message_at: string;
-  unread_count: number;
-  created_at: string;
-}
-
-export interface ChatMessage {
-  id: string;
-  conversation: string;
-  sender_id: string;
-  content: string;
-  is_read: boolean;
-  is_own: boolean;
-  created_at: string;
-}
-
 export interface Paginated<T> {
   results: T[];
   count: number;

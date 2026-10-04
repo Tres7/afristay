@@ -7,7 +7,8 @@ import { ArrowLeft, Calendar, MapPin, CheckCircle, Clock, XCircle, Users } from 
 import { toast } from "sonner";
 import api, { apiErrorMessage } from "@/lib/api";
 import { cn, FALLBACK_IMAGE, formatDate, formatPrice, isoDate } from "@/lib/utils";
-import type { Paginated, Reservation } from "@/types/api/models";
+import PropertyCard from "@/components/hebergement/PropertyCard";
+import type { Hebergement, Paginated, Reservation } from "@/types/api/models";
 
 const TABS = [
   { id: "upcoming", label: "À venir" },
@@ -37,6 +38,14 @@ export default function ReservationsPage() {
     queryKey: ["reservations"],
     queryFn: async () => (await api.get<Paginated<Reservation>>("/v1/reservations/")).data.results,
   });
+
+  // Recommandations : hébergements les mieux notés que l'on n'a pas déjà réservés
+  const { data: recommended = [] } = useQuery({
+    queryKey: ["hebergements", "recommandes-profil"],
+    queryFn: async () => (await api.get<Paginated<Hebergement>>("/v1/hebergements/", { params: { sort: "note", limit: 8 } })).data.results,
+  });
+  const reservedIds = new Set(reservations.map((r) => r.hebergement_detail.id));
+  const suggestions = recommended.filter((h) => !reservedIds.has(h.id)).slice(0, 3);
 
   const handleCancel = async (r: Reservation) => {
     if (!window.confirm(`Annuler votre séjour à « ${r.hebergement_detail.name} » ?`)) return;
@@ -143,6 +152,15 @@ export default function ReservationsPage() {
           })
         )}
       </div>
+
+      {suggestions.length > 0 && (
+        <section className="mt-12">
+          <h2 className="font-heading font-bold text-xl text-dark mb-6">Recommandé pour votre prochain voyage</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {suggestions.map((h) => <PropertyCard key={h.id} property={h} />)}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

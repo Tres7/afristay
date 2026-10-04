@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Search, Menu, X, ArrowRight, LogIn, UserPlus, MessageCircle, Heart, CalendarCheck, User, LogOut, Home } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
-import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
+import { usePolling } from "@/lib/usePolling";
 import { cn, initials, ROLE_LABELS } from "@/lib/utils";
 import Logo from "@/components/layout/Logo";
-import type { Conversation, Paginated } from "@/types/api/models";
+
+const UNREAD_POLL_INTERVAL_MS = 10_000;
 
 const NAV_LINKS = [
   { href: "/recherche", label: "Hébergements" },
@@ -53,15 +54,23 @@ export default function Navbar() {
   const { data: session, status } = useSession();
   const authenticated = status === "authenticated" && !!session && !session.error;
 
-  const { data: unread = 0 } = useQuery({
-    queryKey: ["conversations", "unread"],
-    queryFn: async () => {
-      const res = await api.get<Paginated<Conversation>>("/v1/conversations/");
-      return res.data.results.reduce((sum, c) => sum + c.unread_count, 0);
-    },
-    enabled: authenticated,
-    refetchInterval: 60_000,
-  });
+  const [unread, setUnread] = useState(0);
+  const fetchUnread = useCallback(async () => {
+    const res = await api.get<{ unread_count: number }>("/v1/messaging/unread-count/");
+    setUnread(res.data.unread_count);
+  }, []);
+
+  // Rafraîchi à chaque changement de page (le badge baisse dès qu'on a lu un fil),
+  // puis toutes les 10 s et au retour du focus sur la fenêtre
+  useEffect(() => {
+    if (!authenticated) {
+      setUnread(0);
+      return;
+    }
+    fetchUnread().catch(() => {});
+  }, [authenticated, pathname, fetchUnread]);
+
+  usePolling(fetchUnread, UNREAD_POLL_INTERVAL_MS, authenticated);
 
   // Ferme le menu mobile à chaque navigation et bloque le scroll quand il est ouvert
   useEffect(() => setMobileOpen(false), [pathname]);
