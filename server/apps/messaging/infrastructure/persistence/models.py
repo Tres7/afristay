@@ -1,0 +1,102 @@
+import uuid
+from django.conf import settings
+from django.db import models
+
+from apps.hebergements.models import HebergementModel
+
+
+class ConversationModel(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    hebergement = models.ForeignKey(
+        HebergementModel,
+        on_delete=models.CASCADE,
+        related_name='conversations',
+    )
+    guest = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='guest_conversations',
+    )
+    # Copie de l'hôte au moment de la création du fil
+    host = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='host_conversations',
+    )
+    # Curseurs de lecture : id du dernier message lu par chaque participant
+    guest_last_read_id = models.BigIntegerField(default=0)
+    host_last_read_id = models.BigIntegerField(default=0)
+    created_at = models.DateTimeField()
+    last_message_at = models.DateTimeField()
+
+    class Meta:
+        app_label = 'messaging'
+        db_table = 'messaging_conversation'
+        constraints = [
+            models.UniqueConstraint(fields=['hebergement', 'guest'], name='messaging_unique_hebergement_guest'),
+        ]
+        indexes = [
+            models.Index(fields=['guest', '-last_message_at'], name='messaging_conv_guest_idx'),
+            models.Index(fields=['host', '-last_message_at'], name='messaging_conv_host_idx'),
+        ]
+
+    def __str__(self):
+        return f"{self.guest_id} ↔ {self.host_id} ({self.hebergement_id})"
+
+
+class MessageModel(models.Model):
+    # Id séquentiel (et non UUID) : curseur monotone pour les lectures et le polling
+    id = models.BigAutoField(primary_key=True)
+    conversation = models.ForeignKey(
+        ConversationModel,
+        on_delete=models.CASCADE,
+        related_name='messages',
+    )
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='sent_messages',
+    )
+    content = models.TextField()
+    created_at = models.DateTimeField()
+
+    class Meta:
+        app_label = 'messaging'
+        db_table = 'messaging_message'
+        indexes = [
+            models.Index(fields=['conversation', 'id'], name='messaging_msg_conv_id_idx'),
+        ]
+
+
+class NotificationOutboxModel(models.Model):
+    STATUS_PENDING = 'pending'
+    STATUS_SENT = 'sent'
+    STATUS_SKIPPED = 'skipped'
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'À publier'),
+        (STATUS_SENT, 'Publiée'),
+        (STATUS_SKIPPED, 'Écartée'),
+    ]
+
+    id = models.BigAutoField(primary_key=True)
+    event_type = models.CharField(max_length=100)
+    # Pas de clés étrangères : l'outbox reste lisible même si le fil est supprimé
+    conversation_id = models.UUIDField()
+    message_id = models.BigIntegerField()
+    recipient_id = models.UUIDField()
+    payload = models.JSONField()
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    attempts = models.PositiveIntegerField(default=0)
+    last_error = models.TextField(blank=True)
+    skip_reason = models.CharField(max_length=200, blank=True)
+    available_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    processed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        app_label = 'messaging'
+        db_table = 'messaging_notification_outbox'
+        indexes = [
+            models.Index(fields=['status', 'available_at'], name='messaging_outbox_due_idx'),
+            models.Index(fields=['recipient_id', 'status', 'processed_at'], name='messaging_outbox_cap_idx'),
+        ]

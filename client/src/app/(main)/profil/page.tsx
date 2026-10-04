@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, User, CalendarCheck, Heart, CreditCard, Bell, Globe, HelpCircle, LogOut, Star } from "lucide-react";
+import { ChevronRight, User, CalendarCheck, Heart, CreditCard, Bell, Globe, HelpCircle, LogOut, Star, MessageCircle } from "lucide-react";
 import { properties } from "@/lib/mockData";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
@@ -11,6 +11,7 @@ const menuSections = [
     items: [
       { icon: User, label: "Mon profil", href: "/profil/edit", desc: "Modifier vos informations" },
       { icon: CalendarCheck, label: "Mes réservations", href: "/profil/reservations", desc: "Historique et à venir" },
+      { icon: MessageCircle, label: "Messages", href: "/messages", desc: "Conversations avec les hôtes et les voyageurs" },
       { icon: Heart, label: "Mes favoris", href: "/favoris", desc: "Hébergements sauvegardés" },
       { icon: CreditCard, label: "Moyens de paiement", href: "/profil/paiement", desc: "Cartes et Mobile Money" },
     ],

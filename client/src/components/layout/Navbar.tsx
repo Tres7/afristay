@@ -2,22 +2,69 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, Bell, Menu, X, ArrowRight, LogIn, UserPlus, Sun, Moon } from "lucide-react";
+import { Search, Bell, Menu, X, ArrowRight, LogIn, UserPlus, Sun, Moon, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
+import api from "@/lib/api";
+import { usePolling } from "@/lib/usePolling";
+
+const UNREAD_POLL_INTERVAL_MS = 10_000;
+
+const ROLE_LABELS: Record<string, string> = {
+  voyageur: "Voyageur",
+  hote: "Hôte",
+  admin: "Administrateur",
+};
+
+function MessagesLink({ unread, onClick, className }: { unread: number; onClick?: () => void; className?: string }) {
+  return (
+    <Link
+      href="/messages"
+      onClick={onClick}
+      aria-label={unread > 0 ? `Messages, ${unread} non lu(s)` : "Messages"}
+      className={cn("text-gray-500 hover:text-primary transition-colors relative", className)}
+    >
+      <MessageCircle size={20} />
+      {unread > 0 && (
+        <span className="absolute -top-2 -right-2.5 min-w-[18px] h-[18px] px-1 bg-primary text-white text-[10px] font-bold rounded-full border-2 border-white flex items-center justify-center">
+          {unread > 9 ? "9+" : unread}
+        </span>
+      )}
+    </Link>
+  );
+}
 
 export default function Navbar() {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [unread, setUnread] = useState(0);
   const { data: session, status } = useSession();
   const { theme, setTheme } = useTheme();
+  const authenticated = status === "authenticated";
+  const roleLabel = ROLE_LABELS[session?.user?.role ?? ""] ?? "Voyageur";
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const fetchUnread = useCallback(async () => {
+    const res = await api.get("/v1/messaging/unread-count/");
+    setUnread(res.data.unread_count);
+  }, []);
+
+  // Rafraîchi à chaque changement de page (le badge baisse dès qu'on a lu un fil), puis toutes les 10 s et au retour du focus sur la fenêtre
+  useEffect(() => {
+    if (!authenticated) {
+      setUnread(0);
+      return;
+    }
+    fetchUnread().catch(() => {});
+  }, [authenticated, pathname, fetchUnread]);
+
+  usePolling(fetchUnread, UNREAD_POLL_INTERVAL_MS, authenticated);
 
   return (
     <header className="sticky top-0 z-50 bg-white dark:bg-[#0f172a] border-b border-gray-100 dark:border-slate-800 shadow-sm">
@@ -91,14 +138,14 @@ export default function Navbar() {
 
             {mounted && status === "authenticated" && session ? (
               <>
+                <MessagesLink unread={unread} />
                 <button className="text-gray-500 hover:text-primary transition-colors relative">
                   <Bell size={20} />
-                  <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 border-2 border-white rounded-full"></span>
                 </button>
                 <Link href="/profil" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                   <div className="text-right hidden lg:block">
                     <p className="text-xs font-bold text-dark leading-tight">{session.user?.name ?? "Mon profil"}</p>
-                    <p className="text-[10px] text-gray-500">Voyageur</p>
+                    <p className="text-[10px] text-gray-500">{roleLabel}</p>
                   </div>
                   <div className="w-9 h-9 rounded-full bg-primary/10 overflow-hidden border border-primary/20 flex items-center justify-center">
                     {session.user?.image ? (
@@ -130,13 +177,20 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Burger — mobile */}
-        <button
-          className="md:hidden p-2 text-dark"
-          onClick={() => setMobileOpen(!mobileOpen)}
-        >
-          {mobileOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        {/* Mobile : Messages toujours visible (avec badge), puis burger */}
+        <div className="md:hidden flex items-center gap-1">
+          {mounted && authenticated && (
+            <div className="p-2 flex">
+              <MessagesLink unread={unread} onClick={() => setMobileOpen(false)} />
+            </div>
+          )}
+          <button
+            className="p-2 text-dark"
+            onClick={() => setMobileOpen(!mobileOpen)}
+          >
+            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
       {/* Menu mobile */}
@@ -186,7 +240,7 @@ export default function Navbar() {
                   </div>
                   <div>
                     <p className="text-sm font-bold text-dark">{session.user?.name ?? "Mon profil"}</p>
-                    <p className="text-xs text-gray-500">Voyageur</p>
+                    <p className="text-xs text-gray-500">{roleLabel}</p>
                   </div>
                 </Link>
                 <button className="p-2 text-gray-500 relative">

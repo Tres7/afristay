@@ -3,6 +3,7 @@ import logging
 import os
 
 import pika
+from django.conf import settings
 from pika.exceptions import ChannelClosedByBroker
 
 from apps.notifications.application.service.NotificationService import NotificationService
@@ -22,6 +23,7 @@ class RabbitMQConsumer:
     ROUTING_KEYS = {
         "users.email_verification_requested": "handle_verification_email",
         "users.welcome_email_requested": "handle_welcome_email",
+        "messaging.new_message_email_requested": "handle_new_message_email",
     }
 
     def __init__(self, host: str = 'rabbitmq'):
@@ -117,3 +119,19 @@ class RabbitMQConsumer:
             first_name=data["first_name"],
         )
         logger.info("Email de bienvenue envoyé (user_id=%s)", data.get("user_id"))
+
+    def handle_new_message_email(self, data: dict) -> None:
+        # L'événement est autosuffisant : aucune lecture des données de messaging
+        conversation_url = f"{settings.FRONTEND_URL.rstrip('/')}/messages/{data['conversation_id']}"
+        self._service.send_new_message_email(
+            to=data["recipient_email"],
+            first_name=data["recipient_first_name"],
+            sender_first_name=data["sender_first_name"],
+            hebergement_name=data["hebergement_name"],
+            message_preview=data["message_preview"],
+            conversation_url=conversation_url,
+        )
+        logger.info(
+            "Email de nouveau message envoyé (outbox_id=%s, conversation=%s)",
+            data.get("outbox_id"), data["conversation_id"],
+        )

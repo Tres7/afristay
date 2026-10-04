@@ -1,4 +1,4 @@
-import type { Property, Destination, Activity, Conversation, Booking } from "@/types";
+import type { Property, Destination, Activity, Booking } from "@/types";
 
 export const destinations: Destination[] = [
   { id: "1", name: "Lomé", country: "Togo", count: 120, color: "#27AE60" },
@@ -129,52 +129,6 @@ export const activities: Activity[] = [
     price: 25,
     description: "Cuisine africaine raffinée avec vue sur la mer",
     tags: ["Gastronomie", "Vue mer"],
-  },
-];
-
-export const conversations: Conversation[] = [
-  {
-    id: "1",
-    propertyId: "1",
-    propertyName: "Villa Sunset Beach",
-    hostName: "Kofi Mensah",
-    isOnline: true,
-    lastMessage: "Oui, elle est chauffée à 28°C toute l'année.",
-    lastMessageAt: "2025-01-10T14:30:00",
-    messages: [
-      {
-        id: "1",
-        senderId: "host",
-        senderName: "Kofi Mensah",
-        content: "Bonjour ! Comment puis-je vous aider ?",
-        createdAt: "2025-01-10T14:00:00",
-        isOwn: false,
-      },
-      {
-        id: "2",
-        senderId: "me",
-        senderName: "Moi",
-        content: "Bonjour, la piscine est-elle chauffée ?",
-        createdAt: "2025-01-10T14:15:00",
-        isOwn: true,
-      },
-      {
-        id: "3",
-        senderId: "host",
-        senderName: "Kofi Mensah",
-        content: "Oui, elle est chauffée à 28°C toute l'année.",
-        createdAt: "2025-01-10T14:30:00",
-        isOwn: false,
-      },
-      {
-        id: "4",
-        senderId: "me",
-        senderName: "Moi",
-        content: "Parfait, merci !",
-        createdAt: "2025-01-10T14:31:00",
-        isOwn: true,
-      },
-    ],
   },
 ];
 
