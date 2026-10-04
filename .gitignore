@@ -43,6 +43,7 @@ yarn-error.log*
 /client/out/
 /client/node_modules/
 /client/.env
+*.tsbuildinfo
 
 # =========================
 # Docker
