@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Heart, MapPin, Star, ChevronDown, ChevronUp, Share2, Calendar, Users } from "lucide-react";
+import { ArrowLeft, Heart, MapPin, Star, ChevronDown, ChevronUp, Share2, Calendar, Users, MessageCircle } from "lucide-react";
+import { useSession } from "next-auth/react";
 import Navbar from "@/components/layout/Navbar";
 import AmenityBadge from "@/components/hebergement/AmenityBadge";
 import { calculateServiceFee } from "@/lib/utils";
@@ -21,6 +22,7 @@ interface Hebergement {
   review_count: number;
   image_url: string;
   amenities: string[];
+  host_id: string;
 }
 
 function calculateNights(checkIn: string, checkOut: string): number {
@@ -32,8 +34,11 @@ function calculateNights(checkIn: string, checkOut: string): number {
 export default function HebergementPage() {
   const params = useParams();
   const router = useRouter();
+  const { data: session } = useSession();
   const [expanded, setExpanded] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [contacting, setContacting] = useState(false);
+  const [contactError, setContactError] = useState("");
 
   const today = new Date().toISOString().split("T")[0];
   const defaultOut = new Date(Date.now() + 5 * 86400000).toISOString().split("T")[0];
@@ -51,6 +56,24 @@ export default function HebergementPage() {
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
   }, [params.id]);
+
+  const handleContactHost = async () => {
+    if (!session) {
+      router.push("/login");
+      return;
+    }
+    setContacting(true);
+    setContactError("");
+    try {
+      // Idempotent : renvoie le fil existant si on a déjà contacté cet hôte pour ce logement
+      const res = await api.post("/v1/messaging/conversations/", { hebergement_id: params.id });
+      router.push(`/messages/${res.data.id}`);
+    } catch (err) {
+      const detail = (err as { response?: { data?: { detail?: string } } }).response?.data?.detail;
+      setContactError(detail ?? "Impossible de contacter l'hôte pour le moment.");
+      setContacting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -223,6 +246,22 @@ export default function HebergementPage() {
                 {nights > 0 ? "Réserver" : "Sélectionnez des dates"}
               </a>
               <p className="text-center text-muted text-xs mt-3">Aucun frais prélevé pour l&apos;instant</p>
+
+              {session?.user?.id !== hebergement.host_id && (
+                <div className="mt-6 pt-6 border-t border-light">
+                  <button
+                    onClick={handleContactHost}
+                    disabled={contacting}
+                    className="w-full flex items-center justify-center gap-2 border border-gray-200 text-dark font-heading font-semibold py-3.5 rounded-xl hover:bg-light hover:border-primary/30 transition-colors disabled:opacity-60"
+                  >
+                    <MessageCircle size={18} className="text-primary" />
+                    {contacting ? "Ouverture..." : "Contacter l'hôte"}
+                  </button>
+                  {contactError && (
+                    <p className="text-center text-red-600 text-xs mt-2">{contactError}</p>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
