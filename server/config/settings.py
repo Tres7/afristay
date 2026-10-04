@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'apps.notifications.apps.NotificationsConfig',
     'apps.hebergements.apps.HebergementsConfig',
     'apps.reservations.apps.ReservationsConfig',
+    'apps.messaging.apps.MessagingConfig',
 ]
 
 MIDDLEWARE = [
@@ -125,7 +126,36 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
+    # Throttles par scope (appliqués uniquement aux vues qui les déclarent)
+    'DEFAULT_THROTTLE_RATES': {
+        'messaging_conversation_create': '10/hour',
+        'messaging_message_send': '30/min',
+    },
 }
+
+
+# Cache partagé entre processus (compteurs des throttles), stocké dans PostgreSQL.
+# La table est créée par la migration messaging 0002 (createcachetable).
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'django_cache',
+    }
+}
+
+
+# Messagerie (voir documentation/modules/messaging.md)
+
+MESSAGING = {
+    'EMAIL_DELAY_SECONDS': int(os.getenv('MESSAGING_EMAIL_DELAY_SECONDS', '60')),
+    'EMAIL_HOURLY_CAP': int(os.getenv('MESSAGING_EMAIL_HOURLY_CAP', '5')),
+    'OUTBOX_RETENTION_DAYS': int(os.getenv('MESSAGING_OUTBOX_RETENTION_DAYS', '7')),
+    'RELAY_INTERVAL_SECONDS': int(os.getenv('MESSAGING_RELAY_INTERVAL_SECONDS', '10')),
+}
+
+# URL du frontend, utilisée dans les liens des emails
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
 
 
 # CORS
