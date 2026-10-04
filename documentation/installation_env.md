@@ -36,7 +36,9 @@ docker compose up --build
 Cela va :
 - Telecharger les images PostgreSQL et pgAdmin
 - Construire les images backend (Django) et frontend (Next.js)
-- Demarrer tous les services
+- Demarrer tous les services, dont deux processus en arrière-plan :
+  - `consumer` : envoie les emails à partir des événements RabbitMQ
+  - `messaging-relay` : publie les notifications de la messagerie (voir [modules/messaging.md](modules/messaging.md))
 
 ## Etape 3 : Initialiser la base de donnees
 
@@ -44,6 +46,10 @@ Cela va :
 docker compose exec backend python manage.py migrate
 docker compose exec backend python manage.py createsuperuser
 ```
+
+`migrate` crée aussi la table de cache `django_cache` utilisée par les limites de débit (throttles) de la messagerie : aucune commande supplémentaire n'est nécessaire.
+
+Sur un environnement existant, après avoir récupéré le module messagerie : lancer `migrate`, puis `docker compose up -d` pour démarrer le nouveau service `messaging-relay` et redémarrer `consumer` (qui doit écouter le nouvel événement).
 
 ## Acces aux services
 
