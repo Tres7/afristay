@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { Star, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
 import type { Hebergement } from "@/types/api/models";
 import FavoriteButton from "@/components/hebergement/FavoriteButton";
+import RatingBadge from "@/components/avis/RatingBadge";
 import { FALLBACK_IMAGE, TYPE_LABELS, formatPrice } from "@/lib/utils";
 
 interface PropertyCardProps {
@@ -37,10 +38,7 @@ export default function PropertyCard({ property, query = "", onFavoriteChange }:
       <div className="p-4 flex flex-col flex-1">
         <div className="flex justify-between items-start gap-2">
           <h3 className="font-heading font-semibold text-dark text-[15px] leading-snug line-clamp-1">{property.name}</h3>
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <Star size={12} className="fill-accent text-accent" />
-            <span className="text-xs font-bold text-dark">{property.rating.toFixed(1)}</span>
-          </div>
+          <RatingBadge rating={property.rating} count={property.review_count} className="flex-shrink-0" />
         </div>
         <div className="flex items-center gap-1 mt-1 text-gray-500">
           <MapPin size={11} className="flex-shrink-0" />

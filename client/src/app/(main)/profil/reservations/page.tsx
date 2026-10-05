@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Calendar, MapPin, CheckCircle, Clock, XCircle, Users } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, CheckCircle, Clock, XCircle, Users, Star } from "lucide-react";
 import { toast } from "sonner";
 import api, { apiErrorMessage } from "@/lib/api";
 import { cn, FALLBACK_IMAGE, formatDate, formatPrice, isoDate } from "@/lib/utils";
@@ -135,7 +135,17 @@ export default function ReservationsPage() {
                       <span className="text-xs text-gray-500">Total</span>
                       <p className="font-heading font-bold text-lg text-dark">{formatPrice(res.total_price)}</p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
+                      {res.peut_evaluer && (
+                        <Link href={`/profil/reservations/${res.id}/avis`} className="flex items-center gap-1.5 px-5 py-2 bg-primary text-white text-sm font-bold rounded-full hover:bg-primary-600 transition-colors">
+                          <Star size={14} className="fill-white" /> Laisser un avis
+                        </Link>
+                      )}
+                      {res.avis_id && (
+                        <Link href={`/hebergements/${res.hebergement_detail.id}#avis`} className="flex items-center gap-1.5 px-4 py-2 text-secondary text-sm font-semibold">
+                          <CheckCircle size={14} /> Avis publié
+                        </Link>
+                      )}
                       <Link href={`/reservation/confirmation/${res.id}`} className="px-5 py-2 bg-gray-100 text-dark text-sm font-medium rounded-full hover:bg-gray-200 transition-colors">
                         Détails
                       </Link>

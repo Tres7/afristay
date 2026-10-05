@@ -5,8 +5,9 @@ import Link from "next/link";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Check, Info, Smartphone, CreditCard, Wallet, MapPin, Star } from "lucide-react";
+import { ArrowLeft, Check, Info, Smartphone, CreditCard, Wallet, MapPin } from "lucide-react";
 import api, { apiErrorMessage } from "@/lib/api";
+import RatingBadge from "@/components/avis/RatingBadge";
 import { calculateNights, calculateServiceFee, cn, FALLBACK_IMAGE, formatDate, formatPrice, isoDate } from "@/lib/utils";
 import type { Hebergement, Reservation } from "@/types/api/models";
 
@@ -171,7 +172,7 @@ function ReservationContent() {
                 <div className="min-w-0">
                   <h3 className="font-bold text-dark text-sm line-clamp-2">{hebergement.name}</h3>
                   <p className="flex items-center gap-1 text-gray-500 text-xs mt-1"><MapPin size={12} className="text-primary flex-shrink-0" /><span className="truncate">{hebergement.city}</span></p>
-                  <p className="flex items-center gap-1 text-xs font-bold text-dark mt-1"><Star size={12} className="fill-accent text-accent" />{hebergement.rating.toFixed(1)}</p>
+                  <RatingBadge rating={hebergement.rating} count={hebergement.review_count} className="mt-1" />
                 </div>
               </div>
 

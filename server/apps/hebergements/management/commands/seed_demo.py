@@ -72,14 +72,14 @@ class Command(BaseCommand):
             self.stdout.write(f"Hôte démo créé : {email} / {password}")
 
         added = 0
-        for name, type_, city, location, price, rating, reviews, guests, photo, amenities, desc in DEMO:
+        for name, type_, city, location, price, _rating, _reviews, guests, photo, amenities, desc in DEMO:
             cover = f"{U}{photo}{Q}"
             _, was_created = HebergementModel.objects.get_or_create(
                 name=name,
                 host=host,
                 defaults={
                     'type': type_, 'city': city, 'location': location,
-                    'price_per_night': price, 'rating': rating, 'review_count': reviews,
+                    'price_per_night': price,
                     'max_guests': guests, 'image_url': cover,
                     'images': [cover, *INTERIORS], 'amenities': amenities,
                     'description': desc,

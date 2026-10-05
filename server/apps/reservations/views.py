@@ -18,8 +18,8 @@ class ReservationListCreateView(APIView):
             qs = ReservationModel.objects.filter(hebergement__host=request.user)
         else:
             qs = ReservationModel.objects.filter(guest=request.user)
-        qs = qs.select_related('hebergement', 'hebergement__host', 'guest')
-        serializer = ReservationSerializer(qs, many=True)
+        qs = qs.select_related('hebergement', 'hebergement__host', 'guest', 'avis')
+        serializer = ReservationSerializer(qs, many=True, context={'request': request})
         return Response({'results': serializer.data, 'count': len(serializer.data)})
 
     def post(self, request):
@@ -28,7 +28,7 @@ class ReservationListCreateView(APIView):
             if not serializer.is_valid():
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             reservation = serializer.save(guest=request.user)
-        return Response(ReservationSerializer(reservation).data, status=status.HTTP_201_CREATED)
+        return Response(ReservationSerializer(reservation, context={'request': request}).data, status=status.HTTP_201_CREATED)
 
 
 class ReservationDetailView(APIView):
@@ -44,7 +44,7 @@ class ReservationDetailView(APIView):
         obj = self._get_object(pk, request.user)
         if not obj:
             return Response({'detail': 'Réservation introuvable.'}, status=status.HTTP_404_NOT_FOUND)
-        return Response(ReservationSerializer(obj).data)
+        return Response(ReservationSerializer(obj, context={'request': request}).data)
 
     def delete(self, request, pk):
         obj = self._get_object(pk, request.user)

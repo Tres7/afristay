@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'apps.hebergements.apps.HebergementsConfig',
     'apps.reservations.apps.ReservationsConfig',
     'apps.favoris.apps.FavorisConfig',
+    'apps.avis.apps.AvisConfig',
     'apps.messaging.apps.MessagingConfig',
 ]
 

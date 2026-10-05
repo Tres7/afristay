@@ -1,0 +1,110 @@
+from django.db import IntegrityError, transaction
+from django.db.models import Avg, Count
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from rest_framework import status
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from apps.hebergements.models import HebergementModel
+from apps.hebergements.serializers import HebergementSerializer
+from .models import AvisModel, CRITERES
+from .serializers import AvisCreateSerializer, AvisSerializer, ReponseHoteSerializer
+from .services import motif_refus, recalculer_note, sejours_a_evaluer
+
+PAGE_MAX = 50
+
+
+class AvisListCreateView(APIView):
+    """GET ?hebergement=<id> : avis publics + résumé.  POST : laisser un avis sur un séjour terminé."""
+
+    def get_permissions(self):
+        return [AllowAny()] if self.request.method == 'GET' else [IsAuthenticated()]
+
+    def get(self, request):
+        hebergement = get_object_or_404(HebergementModel, pk=request.query_params.get('hebergement'))
+        qs = AvisModel.objects.filter(hebergement=hebergement).select_related('auteur', 'reservation')
+
+        agregats = qs.aggregate(
+            moyenne=Avg('note'), total=Count('id'),
+            **{f'm_{c}': Avg(c) for c in CRITERES},
+        )
+        repartition = {n: 0 for n in range(5, 0, -1)}
+        for ligne in qs.values('note').annotate(n=Count('id')):
+            repartition[ligne['note']] = ligne['n']
+
+        try:
+            limit = min(int(request.query_params.get('limit', 6)), PAGE_MAX)
+            offset = max(int(request.query_params.get('offset', 0)), 0)
+        except ValueError:
+            limit, offset = 6, 0
+
+        return Response({
+            'resume': {
+                'moyenne': round(agregats['moyenne'], 2) if agregats['moyenne'] else None,
+                'total': agregats['total'],
+                'criteres': {c: (round(agregats[f'm_{c}'], 1) if agregats[f'm_{c}'] else None) for c in CRITERES},
+                'libelles': CRITERES,
+                'repartition': repartition,
+            },
+            'results': AvisSerializer(qs[offset:offset + limit], many=True).data,
+            'count': agregats['total'],
+        })
+
+    def post(self, request):
+        serializer = AvisCreateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        reservation = serializer.validated_data['reservation']
+        refus = motif_refus(reservation, request.user)
+        if refus:
+            return Response({'detail': refus}, status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            with transaction.atomic():
+                avis = serializer.save(auteur=request.user, hebergement_id=reservation.hebergement_id)
+                recalculer_note(reservation.hebergement_id)
+        except IntegrityError:
+            return Response({'detail': "Vous avez déjà laissé un avis pour ce séjour."}, status=status.HTTP_409_CONFLICT)
+
+        return Response(AvisSerializer(avis).data, status=status.HTTP_201_CREATED)
+
+
+class AvisALaisserView(APIView):
+    """Séjours terminés que l'utilisateur peut encore évaluer."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        resultats = [
+            {
+                'reservation_id': str(r.id),
+                'check_in': r.check_in,
+                'check_out': r.check_out,
+                'hebergement': HebergementSerializer(r.hebergement, context={'request': request}).data,
+            }
+            for r in sejours_a_evaluer(request.user)
+        ]
+        return Response({'results': resultats, 'count': len(resultats)})
+
+
+class ReponseHoteView(APIView):
+    """L'hôte répond une seule fois, publiquement, à un avis sur son logement."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        avis = get_object_or_404(AvisModel.objects.select_related('hebergement'), pk=pk)
+        if avis.hebergement.host_id != request.user.id:
+            return Response({'detail': "Seul l'hôte de ce logement peut répondre."}, status=status.HTTP_403_FORBIDDEN)
+        if avis.reponse_hote:
+            return Response({'detail': 'Vous avez déjà répondu à cet avis.'}, status=status.HTTP_409_CONFLICT)
+
+        serializer = ReponseHoteSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        avis.reponse_hote = serializer.validated_data['reponse'].strip()
+        avis.reponse_le = timezone.now()
+        avis.save(update_fields=['reponse_hote', 'reponse_le'])
+        return Response(AvisSerializer(avis).data)
