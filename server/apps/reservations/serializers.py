@@ -13,15 +13,26 @@ class ReservationSerializer(serializers.ModelSerializer):
     nights = serializers.IntegerField(read_only=True)
     reference = serializers.CharField(read_only=True)
     guest_name = serializers.SerializerMethodField()
+    avis_id = serializers.SerializerMethodField()
+    peut_evaluer = serializers.SerializerMethodField()
 
     class Meta:
         model = ReservationModel
         fields = [
             'id', 'hebergement', 'hebergement_detail', 'check_in', 'check_out',
             'guests_count', 'total_price', 'status', 'payment_method',
-            'message', 'nights', 'reference', 'guest_name', 'created_at',
+            'message', 'nights', 'reference', 'guest_name', 'avis_id', 'peut_evaluer', 'created_at',
         ]
         read_only_fields = ['id', 'status', 'created_at']
+
+    def get_avis_id(self, obj):
+        avis = getattr(obj, 'avis', None) if hasattr(obj, 'avis') else None
+        return str(avis.id) if avis else None
+
+    def get_peut_evaluer(self, obj):
+        from apps.avis.services import motif_refus
+        request = self.context.get('request')
+        return bool(request and motif_refus(obj, request.user) is None)
 
     def get_guest_name(self, obj):
         return f"{obj.guest.first_name} {obj.guest.last_name}".strip()

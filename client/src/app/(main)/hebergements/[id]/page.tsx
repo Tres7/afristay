@@ -6,10 +6,12 @@ import { motion } from "framer-motion";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, MapPin, Star, ChevronDown, ChevronUp, Share2, Calendar, Users, MessageCircle, Pencil } from "lucide-react";
+import { ArrowLeft, MapPin, ChevronDown, ChevronUp, Share2, Calendar, Users, MessageCircle, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import AmenityBadge from "@/components/hebergement/AmenityBadge";
 import FavoriteButton from "@/components/hebergement/FavoriteButton";
+import RatingBadge from "@/components/avis/RatingBadge";
+import AvisSection from "@/components/avis/AvisSection";
 import api, { apiErrorMessage } from "@/lib/api";
 import { addDays, calculateNights, calculateServiceFee, FALLBACK_IMAGE, formatPrice, isoDate, TYPE_LABELS } from "@/lib/utils";
 import type { Hebergement } from "@/types/api/models";
@@ -116,11 +118,9 @@ function HebergementContent() {
           <div className="min-w-0">
             <h1 className="font-heading font-bold text-dark text-2xl sm:text-3xl">{hebergement.name}</h1>
             <div className="flex items-center gap-x-3 gap-y-1 mt-2 flex-wrap text-sm">
-              <span className="flex items-center gap-1">
-                <Star size={15} className="text-accent fill-accent" />
-                <span className="text-dark font-semibold">{hebergement.rating.toFixed(1)}</span>
-                <span className="text-muted">({hebergement.review_count} avis)</span>
-              </span>
+              <a href="#avis" className="hover:underline">
+                <RatingBadge rating={hebergement.rating} count={hebergement.review_count} variant="full" />
+              </a>
               <span className="text-muted">·</span>
               <span className="flex items-center gap-1 text-muted"><MapPin size={14} />{hebergement.location ? `${hebergement.location}, ` : ""}{hebergement.city}</span>
               <span className="text-muted">·</span>
@@ -201,6 +201,8 @@ function HebergementContent() {
                 <p className="text-muted text-sm">Aucun équipement renseigné.</p>
               )}
             </section>
+
+            <AvisSection hebergementId={hebergement.id} isOwner={isOwner} hostName={hebergement.host_name || "l'hôte"} />
 
             <section className="bg-white rounded-2xl shadow-card p-5 sm:p-6">
               <h2 className="font-heading font-bold text-dark text-xl mb-4">Localisation</h2>

@@ -5,11 +5,12 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Pencil, Trash2, Eye, EyeOff, Calendar, Users, MapPin, Star } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, Calendar, Users, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import api, { apiErrorMessage } from "@/lib/api";
 import { cn, FALLBACK_IMAGE, formatDate, formatPrice, isoDate, TYPE_LABELS } from "@/lib/utils";
 import HebergementForm from "@/components/hote/HebergementForm";
+import RatingBadge from "@/components/avis/RatingBadge";
 import type { Hebergement, Paginated, Reservation } from "@/types/api/models";
 
 type Tab = "annonces" | "reservations";
@@ -163,7 +164,7 @@ function EspaceHoteContent() {
                     </div>
                     <p className="font-heading font-bold text-primary whitespace-nowrap">{formatPrice(h.price_per_night)}<span className="text-xs text-gray-400 font-normal">/nuit</span></p>
                   </div>
-                  <p className="flex items-center gap-1 text-xs text-gray-500 mt-2"><Star size={12} className="fill-accent text-accent" />{h.rating.toFixed(1)} ({h.review_count} avis)</p>
+                  <RatingBadge rating={h.rating} count={h.review_count} variant="full" className="mt-2" />
                   <div className="flex flex-wrap gap-2 mt-auto pt-4">
                     <button onClick={() => setEditing(h)} className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gray-100 text-dark text-sm font-medium hover:bg-gray-200"><Pencil size={14} /> Modifier</button>
                     <button onClick={() => toggleAvailability(h)} className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gray-100 text-dark text-sm font-medium hover:bg-gray-200">

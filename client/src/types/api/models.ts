@@ -44,6 +44,8 @@ export interface Reservation {
   nights: number;
   reference: string;
   guest_name: string;
+  avis_id: string | null;
+  peut_evaluer: boolean;
   created_at: string;
 }
 
@@ -70,4 +72,39 @@ export interface Me {
   is_verified: boolean;
   is_active: boolean;
   date_joined: string;
+}
+
+export type CritereAvis = "proprete" | "conformite" | "communication" | "emplacement" | "qualite_prix";
+
+export interface Avis {
+  id: string;
+  note: number;
+  criteres: Record<CritereAvis, number>;
+  commentaire: string;
+  auteur: { prenom: string; initiale: string; avatar_url: string | null };
+  sejour: string;
+  reponse_hote: string;
+  reponse_le: string | null;
+  created_at: string;
+}
+
+export interface AvisResume {
+  moyenne: number | null;
+  total: number;
+  criteres: Record<CritereAvis, number | null>;
+  libelles: Record<CritereAvis, string>;
+  repartition: Record<string, number>;
+}
+
+export interface AvisPage {
+  resume: AvisResume;
+  results: Avis[];
+  count: number;
+}
+
+export interface SejourAEvaluer {
+  reservation_id: string;
+  check_in: string;
+  check_out: string;
+  hebergement: Hebergement;
 }

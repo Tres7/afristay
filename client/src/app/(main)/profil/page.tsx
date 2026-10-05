@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { signOut, useSession } from "next-auth/react";
-import { ChevronRight, User, CalendarCheck, Heart, CreditCard, Bell, Globe, HelpCircle, LogOut, Home, MessageCircle, BadgeCheck } from "lucide-react";
+import { ChevronRight, User, CalendarCheck, Heart, CreditCard, Bell, Globe, HelpCircle, LogOut, Home, MessageCircle, BadgeCheck, Star } from "lucide-react";
 import api from "@/lib/api";
-import { initials, ROLE_LABELS } from "@/lib/utils";
-import type { Favori, Me, Paginated, Reservation } from "@/types/api/models";
+import { FALLBACK_IMAGE, formatDate, initials, ROLE_LABELS } from "@/lib/utils";
+import type { Favori, Me, Paginated, Reservation, SejourAEvaluer } from "@/types/api/models";
 
 export default function ProfilPage() {
   const { data: session } = useSession();
@@ -18,6 +18,10 @@ export default function ProfilPage() {
   const { data: reservations } = useQuery({
     queryKey: ["reservations"],
     queryFn: async () => (await api.get<Paginated<Reservation>>("/v1/reservations/")).data.results,
+  });
+  const { data: aEvaluer = [] } = useQuery({
+    queryKey: ["avis-a-laisser"],
+    queryFn: async () => (await api.get<Paginated<SejourAEvaluer>>("/v1/avis/a-laisser/")).data.results,
   });
   const { data: favoris } = useQuery({
     queryKey: ["favoris"],
@@ -99,6 +103,27 @@ export default function ProfilPage() {
           </div>
 
           <div className="lg:col-span-2 space-y-6">
+            {aEvaluer.length > 0 && (
+              <div className="bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 rounded-3xl p-5 sm:p-6">
+                <p className="font-heading font-bold text-dark flex items-center gap-2">
+                  <Star size={18} className="fill-accent text-accent" />
+                  {aEvaluer.length === 1 ? "Un séjour attend votre avis" : `${aEvaluer.length} séjours attendent votre avis`}
+                </p>
+                <div className="mt-3 space-y-2">
+                  {aEvaluer.map((s) => (
+                    <Link key={s.reservation_id} href={`/profil/reservations/${s.reservation_id}/avis`} className="flex items-center gap-3 bg-white rounded-2xl p-3 hover:shadow-sm transition-shadow">
+                      <img src={s.hebergement.image_url || FALLBACK_IMAGE} alt="" className="w-14 h-12 rounded-xl object-cover flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-dark text-sm truncate">{s.hebergement.name}</p>
+                        <p className="text-xs text-muted">Départ le {formatDate(s.check_out)}</p>
+                      </div>
+                      <span className="text-sm font-bold text-primary flex-shrink-0">Noter</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {menuSections.map((section) => (
               <div key={section.title} className="bg-white rounded-3xl shadow-soft border border-gray-100 overflow-hidden">
                 <h2 className="px-6 sm:px-8 py-4 border-b border-gray-100 bg-light-muted/50 font-heading font-bold text-dark uppercase tracking-wider text-xs">{section.title}</h2>
