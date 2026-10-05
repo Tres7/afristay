@@ -2,9 +2,12 @@ from django.db.models import Count, Min, Q
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework.throttling import ScopedRateThrottle
 
-from .models import HebergementModel
+from .models import HebergementModel, HebergementPhotoModel
+from .photos import InvalidPhoto, normalize_photo
 from .serializers import HebergementSerializer, HebergementCreateSerializer
 
 HOST_ROLES = ('hote', 'admin')
@@ -162,3 +165,50 @@ class HebergementDetailView(APIView):
             return Response({'detail': 'Non autorisé.'}, status=status.HTTP_403_FORBIDDEN)
         obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class PhotoUploadView(APIView):
+    """POST multipart (champ « file ») : enregistre une photo normalisée et renvoie son URL publique."""
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'hebergement_photo_upload'
+
+    def post(self, request):
+        if request.user.role not in HOST_ROLES:
+            return Response({'detail': 'Seuls les hôtes peuvent envoyer des photos.'}, status=status.HTTP_403_FORBIDDEN)
+
+        uploaded = request.FILES.get('file')
+        if not uploaded:
+            return Response({'file': ['Aucun fichier reçu.']}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            content, width, height = normalize_photo(uploaded)
+        except InvalidPhoto as e:
+            return Response({'file': [str(e)]}, status=status.HTTP_400_BAD_REQUEST)
+
+        photo = HebergementPhotoModel(owner=request.user, width=width, height=height)
+        photo.image.save('photo.jpg', content, save=False)
+        photo.save()
+        return Response(_photo_json(request, photo), status=status.HTTP_201_CREATED)
+
+
+class PhotoDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, pk):
+        photo = HebergementPhotoModel.objects.filter(pk=pk, owner=request.user).first()
+        if not photo:
+            return Response({'detail': 'Photo introuvable.'}, status=status.HTTP_404_NOT_FOUND)
+        photo.image.delete(save=False)
+        photo.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+def _photo_json(request, photo):
+    return {
+        'id': str(photo.id),
+        'url': request.build_absolute_uri(photo.image.url),
+        'width': photo.width,
+        'height': photo.height,
+    }

@@ -109,7 +109,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-MEDIA_URL = 'media/'
+MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'mediafiles'
 
 
@@ -132,6 +132,7 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'messaging_conversation_create': '10/hour',
         'messaging_message_send': '30/min',
+        'hebergement_photo_upload': '120/hour',
     },
 }
 

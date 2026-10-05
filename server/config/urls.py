@@ -1,6 +1,8 @@
 """
 URL configuration for AfriStay project.
 """
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
@@ -12,3 +14,7 @@ urlpatterns = [
     path('api/v1/favoris/', include('apps.favoris.urls')),
     path('api/v1/messaging/', include('apps.messaging.infrastructure.http.routes.urls')),
 ]
+
+# Photos envoyées par les hôtes (en production, servies par le serveur web / un stockage objet)
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

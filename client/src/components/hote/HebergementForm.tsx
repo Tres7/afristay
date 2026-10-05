@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import api, { firstErrorMessage } from "@/lib/api";
 import { AMENITIES } from "@/components/hebergement/AmenityBadge";
+import PhotoUploader from "@/components/hote/PhotoUploader";
 import { cn, TYPE_LABELS } from "@/lib/utils";
 import type { Hebergement } from "@/types/api/models";
 
@@ -24,10 +25,15 @@ export default function HebergementForm({ initial, onSaved, onCancel }: Hebergem
     price_per_night: initial ? String(initial.price_per_night) : "",
     max_guests: initial ? String(initial.max_guests) : "2",
     description: initial?.description ?? "",
-    image_url: initial?.image_url ?? "",
-    images: (initial?.images ?? []).filter((u) => u !== initial?.image_url).join("\n"),
     amenities: initial?.amenities ?? [],
   });
+  // Photos dans l'ordre d'affichage : la première est la couverture
+  const [photos, setPhotos] = useState<string[]>(() => {
+    const all = [initial?.image_url, ...(initial?.images ?? [])].filter((u): u is string => !!u);
+    return Array.from(new Set(all));
+  });
+  const [uploading, setUploading] = useState(false);
+  const onPhotosChange = useCallback((urls: string[]) => setPhotos(urls), []);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
@@ -39,9 +45,12 @@ export default function HebergementForm({ initial, onSaved, onCancel }: Hebergem
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (photos.length === 0) {
+      setErrors({ photos: "Ajoutez au moins une photo : les annonces sans photo ne sont presque jamais réservées." });
+      return;
+    }
     setSaving(true);
     setErrors({});
-    const extra = form.images.split(/\s+/).map((u) => u.trim()).filter((u) => /^https?:\/\//.test(u));
     const payload = {
       name: form.name.trim(),
       type: form.type,
@@ -50,8 +59,8 @@ export default function HebergementForm({ initial, onSaved, onCancel }: Hebergem
       price_per_night: Number(form.price_per_night),
       max_guests: Number(form.max_guests),
       description: form.description.trim(),
-      image_url: form.image_url.trim(),
-      images: form.image_url.trim() ? [form.image_url.trim(), ...extra] : extra,
+      image_url: photos[0],
+      images: photos,
       amenities: form.amenities,
     };
     try {
@@ -107,7 +116,7 @@ export default function HebergementForm({ initial, onSaved, onCancel }: Hebergem
         </div>
         <div className="sm:col-span-2">
           <label className={labelClass} htmlFor="h-price">Prix par nuit (FCFA)</label>
-          <input id="h-price" type="number" min={1} step={500} inputMode="numeric" className={inputClass} value={form.price_per_night} onChange={set("price_per_night")} placeholder="35000" required />
+          <input id="h-price" type="number" min={1} step={1} inputMode="numeric" className={inputClass} value={form.price_per_night} onChange={set("price_per_night")} placeholder="35000" required />
           {err("price_per_night")}
         </div>
       </div>
@@ -118,18 +127,9 @@ export default function HebergementForm({ initial, onSaved, onCancel }: Hebergem
       </div>
 
       <div>
-        <label className={labelClass} htmlFor="h-cover">Photo principale (URL)</label>
-        <input id="h-cover" type="url" className={inputClass} value={form.image_url} onChange={set("image_url")} placeholder="https://…" />
-        {err("image_url")}
-        {form.image_url && /^https?:\/\//.test(form.image_url) && (
-          <img src={form.image_url} alt="Aperçu" className="mt-3 h-32 w-full sm:w-56 object-cover rounded-xl bg-gray-100" />
-        )}
-      </div>
-
-      <div>
-        <label className={labelClass} htmlFor="h-images">Autres photos <span className="normal-case font-normal text-gray-400">(une URL par ligne, 9 max.)</span></label>
-        <textarea id="h-images" rows={3} className={cn(inputClass, "font-mono text-xs")} value={form.images} onChange={set("images")} placeholder={"https://…\nhttps://…"} />
-        {err("images")}
+        <p className={labelClass}>Photos</p>
+        <p className="text-xs text-gray-500 -mt-1 mb-3">La première photo sert de couverture. Privilégiez la lumière du jour et des photos horizontales.</p>
+        <PhotoUploader value={photos} onChange={onPhotosChange} onBusyChange={setUploading} error={errors.photos ?? errors.image_url ?? errors.images} />
       </div>
 
       <fieldset>
@@ -149,8 +149,8 @@ export default function HebergementForm({ initial, onSaved, onCancel }: Hebergem
 
       <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-gray-100">
         <button type="button" onClick={onCancel} className="px-6 py-3 rounded-xl border border-gray-200 text-dark font-medium hover:bg-gray-50">Annuler</button>
-        <button type="submit" disabled={saving} className="px-8 py-3 bg-primary text-white rounded-xl font-bold shadow-md hover:bg-primary-600 disabled:opacity-60">
-          {saving ? "Enregistrement..." : initial ? "Enregistrer les modifications" : "Publier l'annonce"}
+        <button type="submit" disabled={saving || uploading} className="px-8 py-3 bg-primary text-white rounded-xl font-bold shadow-md hover:bg-primary-600 disabled:opacity-60">
+          {uploading ? "Envoi des photos..." : saving ? "Enregistrement..." : initial ? "Enregistrer les modifications" : "Publier l'annonce"}
         </button>
       </div>
     </form>
