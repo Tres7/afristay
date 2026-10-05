@@ -24,7 +24,10 @@ export const ROLE_LABELS: Record<string, string> = {
 };
 
 export function formatPrice(price: number | string): string {
-  return `${Math.round(Number(price)).toLocaleString("fr-FR")} FCFA`;
+  // fr-FR sépare les milliers par une espace fine (U+202F) quasi invisible dans certaines polices :
+  // on la remplace par une espace insécable classique (U+00A0)
+  const montant = Math.round(Number(price)).toLocaleString("fr-FR").replace(/\u202f/g, "\u00a0");
+  return `${montant}\u00a0FCFA`;
 }
 
 export function calculateNights(checkIn: string, checkOut: string): number {

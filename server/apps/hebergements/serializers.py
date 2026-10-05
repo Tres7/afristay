@@ -1,5 +1,9 @@
 from rest_framework import serializers
-from .models import HebergementModel
+from datetime import timedelta
+
+from django.utils import timezone
+
+from .models import BlocageModel, HebergementModel
 
 AMENITIES = ['piscine', 'wifi', 'clim', 'parking', 'cuisine', 'jardin', 'gym', 'spa']
 
@@ -53,3 +57,20 @@ class HebergementCreateSerializer(serializers.ModelSerializer):
         if not isinstance(value, list) or not all(isinstance(u, str) for u in value):
             raise serializers.ValidationError("Liste d'URL attendue.")
         return value[:10]
+
+
+class BlocageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BlocageModel
+        fields = ['id', 'debut', 'fin', 'motif', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+    def validate(self, data):
+        today = timezone.localdate()
+        if data['fin'] <= data['debut']:
+            raise serializers.ValidationError({'fin': 'La fin doit être après le début.'})
+        if data['debut'] < today:
+            raise serializers.ValidationError({'debut': 'Impossible de bloquer des dates passées.'})
+        if data['fin'] > today + timedelta(days=730):
+            raise serializers.ValidationError({'fin': 'Le calendrier est limité à deux ans.'})
+        return data

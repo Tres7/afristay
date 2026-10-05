@@ -1,4 +1,7 @@
+from datetime import date, timedelta
+
 from django.db.models import Count, Min, Q
+from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -6,11 +9,13 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.throttling import ScopedRateThrottle
 
-from .models import HebergementModel, HebergementPhotoModel
+from .disponibilites import a_des_reservations, periodes_indisponibles
+from .models import BlocageModel, HebergementModel, HebergementPhotoModel
 from .photos import InvalidPhoto, normalize_photo
-from .serializers import HebergementSerializer, HebergementCreateSerializer
+from .serializers import BlocageSerializer, HebergementSerializer, HebergementCreateSerializer
 
 HOST_ROLES = ('hote', 'admin')
+MAX_FENETRE_JOURS = 548  # 18 mois de calendrier par requête
 
 
 def _context(request):
@@ -61,7 +66,8 @@ class HebergementListView(APIView):
                 reservations__check_in__lt=check_out,
                 reservations__check_out__gt=check_in,
             ).values('id')
-            qs = qs.exclude(id__in=busy)
+            fermes = BlocageModel.objects.filter(debut__lt=check_out, fin__gt=check_in).values('hebergement_id')
+            qs = qs.exclude(id__in=busy).exclude(id__in=fermes)
 
         sort = request.query_params.get('sort')
         if sort == 'prix_asc':
@@ -212,3 +218,75 @@ def _photo_json(request, photo):
         'width': photo.width,
         'height': photo.height,
     }
+
+
+def _parse_date(value, defaut):
+    if not value:
+        return defaut
+    try:
+        return date.fromisoformat(value)
+    except ValueError:
+        return None
+
+
+class DisponibiliteView(APIView):
+    """GET ?debut=&fin= : périodes indisponibles. L'hôte du logement reçoit le détail (réservations, blocages)."""
+    permission_classes = [AllowAny]
+
+    def get(self, request, pk):
+        hebergement = HebergementModel.objects.filter(pk=pk).only('id', 'host_id').first()
+        if not hebergement:
+            return Response({'detail': 'Hébergement introuvable.'}, status=status.HTTP_404_NOT_FOUND)
+
+        today = timezone.localdate()
+        debut = _parse_date(request.query_params.get('debut'), today)
+        fin = _parse_date(request.query_params.get('fin'), today + timedelta(days=365))
+        if not debut or not fin or fin <= debut:
+            return Response({'detail': 'Période invalide (format AAAA-MM-JJ).'}, status=status.HTTP_400_BAD_REQUEST)
+        if (fin - debut).days > MAX_FENETRE_JOURS:
+            return Response({'detail': f'Période limitée à {MAX_FENETRE_JOURS} jours.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        est_hote = request.user.is_authenticated and request.user.id == hebergement.host_id
+        return Response({
+            'debut': debut,
+            'fin': fin,
+            'periodes': periodes_indisponibles(hebergement.id, debut, fin, detail=est_hote),
+        })
+
+
+class BlocageCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        hebergement = HebergementModel.objects.filter(pk=pk).first()
+        if not hebergement:
+            return Response({'detail': 'Hébergement introuvable.'}, status=status.HTTP_404_NOT_FOUND)
+        if hebergement.host_id != request.user.id:
+            return Response({'detail': 'Non autorisé.'}, status=status.HTTP_403_FORBIDDEN)
+
+        serializer = BlocageSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        debut, fin = serializer.validated_data['debut'], serializer.validated_data['fin']
+
+        # On ne ferme pas des nuits déjà réservées : l'hôte doit d'abord gérer la réservation
+        if a_des_reservations(hebergement.id, debut, fin):
+            return Response(
+                {'detail': 'Cette période contient une réservation. Contactez le voyageur avant de fermer ces dates.'},
+                status=status.HTTP_409_CONFLICT,
+            )
+        if BlocageModel.objects.filter(hebergement=hebergement, debut__lt=fin, fin__gt=debut).exists():
+            return Response({'detail': 'Une partie de ces dates est déjà fermée.'}, status=status.HTTP_409_CONFLICT)
+        blocage = serializer.save(hebergement=hebergement)
+        return Response(BlocageSerializer(blocage).data, status=status.HTTP_201_CREATED)
+
+
+class BlocageDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, pk):
+        blocage = BlocageModel.objects.filter(pk=pk, hebergement__host=request.user).first()
+        if not blocage:
+            return Response({'detail': 'Blocage introuvable.'}, status=status.HTTP_404_NOT_FOUND)
+        blocage.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
