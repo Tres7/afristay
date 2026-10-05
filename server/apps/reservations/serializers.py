@@ -3,6 +3,7 @@ from decimal import Decimal
 from django.utils import timezone
 from rest_framework import serializers
 from .models import ReservationModel
+from apps.hebergements.disponibilites import conflit
 from apps.hebergements.serializers import HebergementSerializer
 
 SERVICE_FEE_RATE = Decimal('0.08')
@@ -68,16 +69,10 @@ class ReservationCreateSerializer(serializers.ModelSerializer):
         if request and hebergement.host_id == request.user.id:
             raise serializers.ValidationError({'hebergement': "Vous ne pouvez pas réserver votre propre hébergement."})
 
-        overlap = ReservationModel.objects.filter(
-            hebergement=hebergement,
-            status__in=['pending', 'confirmed'],
-            check_in__lt=check_out,
-            check_out__gt=check_in,
-        ).exists()
-        if overlap:
-            raise serializers.ValidationError(
-                {'check_in': "Ces dates ne sont plus disponibles pour cet hébergement."}
-            )
+        # Même règle que le calendrier affiché : réservations actives et dates fermées par l'hôte
+        motif = conflit(hebergement.id, check_in, check_out)
+        if motif:
+            raise serializers.ValidationError({'check_in': motif})
         return data
 
     def create(self, validated_data):

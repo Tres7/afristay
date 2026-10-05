@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -13,7 +13,9 @@ import FavoriteButton from "@/components/hebergement/FavoriteButton";
 import RatingBadge from "@/components/avis/RatingBadge";
 import AvisSection from "@/components/avis/AvisSection";
 import api, { apiErrorMessage } from "@/lib/api";
-import { addDays, calculateNights, calculateServiceFee, FALLBACK_IMAGE, formatPrice, isoDate, TYPE_LABELS } from "@/lib/utils";
+import { addDays, calculateNights, calculateServiceFee, cn, FALLBACK_IMAGE, formatDate, formatPrice, isoDate, TYPE_LABELS } from "@/lib/utils";
+import { nuitsIndisponibles, useDisponibilites } from "@/lib/useDisponibilites";
+import DateRangeCalendar from "@/components/calendrier/DateRangeCalendar";
 import type { Hebergement } from "@/types/api/models";
 import type { MessagingConversation } from "@/types/api/messaging";
 
@@ -25,10 +27,20 @@ function HebergementContent() {
   const today = isoDate();
 
   const [expanded, setExpanded] = useState(false);
-  const [checkIn, setCheckIn] = useState(searchParams.get("check_in") || addDays(today, 1));
-  const [checkOut, setCheckOut] = useState(searchParams.get("check_out") || addDays(today, 4));
+  const [checkIn, setCheckIn] = useState(searchParams.get("check_in") || "");
+  const [checkOut, setCheckOut] = useState(searchParams.get("check_out") || "");
   const [guests, setGuests] = useState(Number(searchParams.get("guests") || 1));
   const [contacting, setContacting] = useState(false);
+  const [calendrierOuvert, setCalendrierOuvert] = useState(false);
+
+  const { data: periodes = [], isLoading: dispoChargement } = useDisponibilites(params.id);
+  const indisponibles = useMemo(() => nuitsIndisponibles(periodes), [periodes]);
+
+  const choisirDates = (arrivee: string, depart: string) => {
+    setCheckIn(arrivee);
+    setCheckOut(depart);
+    if (arrivee && depart) setCalendrierOuvert(false);
+  };
 
   const { data: hebergement, isLoading, isError } = useQuery({
     queryKey: ["hebergement", params.id, status],
@@ -64,7 +76,12 @@ function HebergementContent() {
   const gallery = [hebergement.image_url, ...hebergement.images.filter((i) => i !== hebergement.image_url)].filter(Boolean);
   const photos = gallery.length ? gallery : [FALLBACK_IMAGE];
   const reservationUrl = `/reservation/${hebergement.id}?check_in=${checkIn}&check_out=${checkOut}&guests=${guests}`;
-  const canBook = nights > 0 && !isOwner && hebergement.is_available;
+  // Dates arrivées par l'URL (recherche, lien partagé) mais déjà prises entre-temps
+  let datesPrises = false;
+  for (let d = checkIn; nights > 0 && d < checkOut; d = addDays(d, 1)) {
+    if (indisponibles.has(d) || d < today) { datesPrises = true; break; }
+  }
+  const canBook = nights > 0 && !dispoChargement && !datesPrises && !isOwner && hebergement.is_available;
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -228,19 +245,23 @@ function HebergementContent() {
 
               <div className="border border-gray-200 rounded-2xl overflow-hidden mb-4">
                 <div className="grid grid-cols-2 divide-x divide-gray-200">
-                  <label className="px-4 py-3 block">
-                    <span className="text-[10px] text-dark font-bold uppercase tracking-widest mb-1.5 flex items-center gap-1"><Calendar size={10} />Arrivée</span>
-                    <input
-                      type="date" value={checkIn} min={today}
-                      onChange={(e) => { setCheckIn(e.target.value); if (checkOut <= e.target.value) setCheckOut(addDays(e.target.value, 1)); }}
-                      className="text-dark text-base sm:text-sm font-medium outline-none w-full bg-transparent"
-                    />
-                  </label>
-                  <label className="px-4 py-3 block">
-                    <span className="text-[10px] text-dark font-bold uppercase tracking-widest mb-1.5 flex items-center gap-1"><Calendar size={10} />Départ</span>
-                    <input type="date" value={checkOut} min={addDays(checkIn, 1)} onChange={(e) => setCheckOut(e.target.value)} className="text-dark text-base sm:text-sm font-medium outline-none w-full bg-transparent" />
-                  </label>
+                  {([["Arrivée", checkIn], ["Départ", checkOut]] as const).map(([libelle, valeur]) => (
+                    <button
+                      key={libelle} type="button" onClick={() => setCalendrierOuvert(!calendrierOuvert)} aria-expanded={calendrierOuvert}
+                      className={cn("px-4 py-3 text-left hover:bg-gray-50", calendrierOuvert && "bg-gray-50")}
+                    >
+                      <span className="text-[10px] text-dark font-bold uppercase tracking-widest mb-1.5 flex items-center gap-1"><Calendar size={10} />{libelle}</span>
+                      <span className={cn("text-sm font-medium", valeur ? "text-dark" : "text-gray-400")}>
+                        {valeur ? formatDate(valeur, { day: "numeric", month: "short", year: "numeric" }) : "Ajouter"}
+                      </span>
+                    </button>
+                  ))}
                 </div>
+                {calendrierOuvert && (
+                  <div className="border-t border-gray-200 p-3">
+                    <DateRangeCalendar checkIn={checkIn} checkOut={checkOut} onChange={choisirDates} indisponibles={indisponibles} chargement={dispoChargement} />
+                  </div>
+                )}
                 <label className="border-t border-gray-200 px-4 py-3 block">
                   <span className="text-[10px] text-dark font-bold uppercase tracking-widest mb-1 flex items-center gap-1"><Users size={10} />Voyageurs</span>
                   <select value={guests} onChange={(e) => setGuests(Number(e.target.value))} className="text-dark text-base sm:text-sm font-medium outline-none bg-transparent w-full">
@@ -251,7 +272,14 @@ function HebergementContent() {
                 </label>
               </div>
 
-              {nights > 0 && (
+              {datesPrises && (
+                <p role="alert" className="text-sm text-red-600 bg-red-50 rounded-xl p-3 mb-3">
+                  Ces dates ne sont plus disponibles.{" "}
+                  <button type="button" onClick={() => { choisirDates("", ""); setCalendrierOuvert(true); }} className="font-bold underline">Choisir d&apos;autres dates</button>
+                </p>
+              )}
+
+              {nights > 0 && !datesPrises && (
                 <div className="space-y-3 py-4 border-t border-gray-100 text-sm">
                   <div className="flex justify-between gap-2">
                     <span className="text-gray-600">{formatPrice(hebergement.price_per_night)} × {nights} nuit{nights > 1 ? "s" : ""}</span>

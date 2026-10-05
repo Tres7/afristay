@@ -66,3 +66,24 @@ class HebergementPhotoModel(models.Model):
 
     def __str__(self):
         return f"Photo {self.id} ({self.owner_id})"
+
+
+class BlocageModel(models.Model):
+    """Période fermée à la réservation par l'hôte. Comme une réservation, `fin` est exclusive (jour de départ)."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    hebergement = models.ForeignKey(HebergementModel, on_delete=models.CASCADE, related_name='blocages')
+    debut = models.DateField()
+    fin = models.DateField()
+    motif = models.CharField(max_length=120, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = 'hebergements'
+        ordering = ['debut']
+        constraints = [
+            models.CheckConstraint(check=models.Q(fin__gt=models.F('debut')), name='blocage_fin_apres_debut'),
+        ]
+
+    def __str__(self):
+        return f"Blocage {self.hebergement_id} {self.debut} → {self.fin}"
