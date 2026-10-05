@@ -37,7 +37,7 @@ class DjangoUserRepository(UserRepository):
 
     def find_by_email(self, email: str) -> Optional[User]:
         try:
-            model = UserModel.objects.get(email=email)
+            model = UserModel.objects.get(email__iexact=email.strip())
             return self._to_entity(model)
         except UserModel.DoesNotExist:
             return None
@@ -52,7 +52,7 @@ class DjangoUserRepository(UserRepository):
     def save(self, user: User) -> User:
         model = UserModel(
             id=user.id,
-            email=str(user.email),
+            email=str(user.email).strip().lower(),
             google_id=user.google_id,
             first_name=user.first_name,
             last_name=user.last_name,
@@ -98,7 +98,7 @@ class DjangoUserRepository(UserRepository):
             raise UserNotFoundException(f"Utilisateur {user_id} introuvable.")
 
     def exists_by_email(self, email: str) -> bool:
-        return UserModel.objects.filter(email=email).exists()
+        return UserModel.objects.filter(email__iexact=str(email).strip()).exists()
 
     def exists_by_phone(self, phone: str) -> bool:
         return UserModel.objects.filter(phone=phone).exists()

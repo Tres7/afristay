@@ -1,46 +1,55 @@
 import Link from "next/link";
 import { Star, MapPin } from "lucide-react";
-import type { Property } from "@/types";
+import type { Hebergement } from "@/types/api/models";
+import FavoriteButton from "@/components/hebergement/FavoriteButton";
+import { FALLBACK_IMAGE, TYPE_LABELS, formatPrice } from "@/lib/utils";
 
 interface PropertyCardProps {
-  property: Property;
+  property: Hebergement;
+  query?: string;
+  onFavoriteChange?: (isFavorite: boolean) => void;
 }
 
-export default function PropertyCard({ property }: PropertyCardProps) {
+export default function PropertyCard({ property, query = "", onFavoriteChange }: PropertyCardProps) {
   return (
     <Link
-      href={`/hebergements/${property.id}`}
-      className="flex gap-3 bg-white rounded-card shadow-card p-3 active:scale-[0.98] transition-transform"
+      href={`/hebergements/${property.id}${query}`}
+      className="group bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-shadow overflow-hidden flex flex-col h-full"
     >
-      {/* Image placeholder */}
-      <div className="w-24 h-24 rounded-[8px] bg-light flex-shrink-0 overflow-hidden">
-        <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-          <span className="text-2xl">🏠</span>
-        </div>
+      <div className="relative aspect-[4/3] bg-slate-100 overflow-hidden">
+        <img
+          src={property.image_url || FALLBACK_IMAGE}
+          alt={property.name}
+          loading="lazy"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+        <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full text-dark shadow-sm">
+          {TYPE_LABELS[property.type] ?? property.type}
+        </span>
+        <FavoriteButton
+          hebergementId={property.id}
+          initial={property.is_favorite}
+          onChange={onFavoriteChange}
+          className="absolute top-3 right-3"
+        />
       </div>
 
-      {/* Info */}
-      <div className="flex-1 min-w-0">
-        <h3 className="font-heading font-semibold text-dark text-sm leading-tight truncate">
-          {property.name}
-        </h3>
-        <div className="flex items-center gap-1 mt-1">
-          <MapPin size={11} className="text-muted flex-shrink-0" />
-          <span className="text-muted text-xs truncate">
-            {property.location}, {property.city}
-          </span>
+      <div className="p-4 flex flex-col flex-1">
+        <div className="flex justify-between items-start gap-2">
+          <h3 className="font-heading font-semibold text-dark text-[15px] leading-snug line-clamp-1">{property.name}</h3>
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <Star size={12} className="fill-accent text-accent" />
+            <span className="text-xs font-bold text-dark">{property.rating.toFixed(1)}</span>
+          </div>
         </div>
-        <div className="flex items-center gap-1 mt-1">
-          <Star size={12} className="text-accent fill-accent" />
-          <span className="text-dark text-xs font-medium">{property.rating}</span>
-          <span className="text-muted text-xs">({property.reviews} avis)</span>
+        <div className="flex items-center gap-1 mt-1 text-gray-500">
+          <MapPin size={11} className="flex-shrink-0" />
+          <span className="text-xs truncate">{property.location ? `${property.location}, ` : ""}{property.city}</span>
         </div>
-        <div className="mt-2">
-          <span className="text-primary font-heading font-bold text-base">
-            {property.price} €
-          </span>
-          <span className="text-muted text-xs">/nuit</span>
-        </div>
+        <p className="mt-auto pt-3 text-sm">
+          <span className="font-heading font-bold text-primary">{formatPrice(property.price_per_night)}</span>
+          <span className="text-gray-400 text-xs"> / nuit</span>
+        </p>
       </div>
     </Link>
   );

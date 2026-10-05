@@ -1,286 +1,166 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { Calendar, MapPin, CheckCircle, Clock, XCircle, User, CreditCard, Heart, Settings, HelpCircle, LogOut, Star, ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useSession, signOut } from "next-auth/react";
-import api from "@/lib/api";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft, Calendar, MapPin, CheckCircle, Clock, XCircle, Users } from "lucide-react";
+import { toast } from "sonner";
+import api, { apiErrorMessage } from "@/lib/api";
+import { cn, FALLBACK_IMAGE, formatDate, formatPrice, isoDate } from "@/lib/utils";
+import PropertyCard from "@/components/hebergement/PropertyCard";
+import type { Hebergement, Paginated, Reservation } from "@/types/api/models";
 
-const tabs = [
+const TABS = [
   { id: "upcoming", label: "À venir" },
   { id: "past", label: "Passées" },
   { id: "cancelled", label: "Annulées" },
-];
+] as const;
 
-const profileLinks = [
-  { href: "/profil/edit", label: "Mon profil", icon: User },
-  { href: "/profil/reservations", label: "Mes réservations", icon: Calendar, active: true },
-  { href: "/favoris", label: "Mes favoris", icon: Heart },
-  { href: "/profil/paiement", label: "Paiement", icon: CreditCard },
-  { href: "/profil/notifications", label: "Notifications", icon: Settings },
-  { href: "/profil/aide", label: "Aide", icon: HelpCircle },
-];
+type Tab = (typeof TABS)[number]["id"];
 
-interface Reservation {
-  id: string;
-  check_in: string;
-  check_out: string;
-  guests_count: number;
-  total_price: number;
-  status: "pending" | "confirmed" | "cancelled";
-  reference: string;
-  hebergement_detail: {
-    id: string;
-    name: string;
-    city: string;
-    location: string;
-    image_url: string;
-  };
-}
-
-function reservationTab(r: Reservation): "upcoming" | "past" | "cancelled" {
+const tabFor = (r: Reservation): Tab => {
   if (r.status === "cancelled") return "cancelled";
-  const today = new Date().toISOString().split("T")[0];
-  return r.check_out >= today ? "upcoming" : "past";
-}
+  return r.check_out >= isoDate() ? "upcoming" : "past";
+};
 
-function formatDate(d: string) {
-  return new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
-}
-
-interface RecommendedHebergement {
-  id: string;
-  name: string;
-  city: string;
-  location: string;
-  price_per_night: number;
-  rating: number;
-  image_url: string;
-}
+const STATUS = {
+  confirmed: { label: "Confirmée", icon: CheckCircle, className: "bg-green-100 text-green-700" },
+  pending: { label: "En attente", icon: Clock, className: "bg-yellow-100 text-yellow-700" },
+  cancelled: { label: "Annulée", icon: XCircle, className: "bg-red-100 text-red-700" },
+};
 
 export default function ReservationsPage() {
-  const { data: session } = useSession();
-  const [activeTab, setActiveTab] = useState("upcoming");
-  const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState<Tab>("upcoming");
   const [cancellingId, setCancellingId] = useState<string | null>(null);
-  const [recommended, setRecommended] = useState<RecommendedHebergement[]>([]);
 
-  useEffect(() => {
-    api.get("/v1/reservations/")
-      .then((res) => setReservations(res.data.results))
-      .finally(() => setLoading(false));
+  const { data: reservations = [], isLoading, isError, refetch } = useQuery({
+    queryKey: ["reservations"],
+    queryFn: async () => (await api.get<Paginated<Reservation>>("/v1/reservations/")).data.results,
+  });
 
-    api.get("/v1/hebergements/", { params: { sort: "note" } })
-      .then((res) => setRecommended(res.data.results.slice(0, 3)))
-      .catch(() => setRecommended([]));
-  }, []);
+  // Recommandations : hébergements les mieux notés que l'on n'a pas déjà réservés
+  const { data: recommended = [] } = useQuery({
+    queryKey: ["hebergements", "recommandes-profil"],
+    queryFn: async () => (await api.get<Paginated<Hebergement>>("/v1/hebergements/", { params: { sort: "note", limit: 8 } })).data.results,
+  });
+  const reservedIds = new Set(reservations.map((r) => r.hebergement_detail.id));
+  const suggestions = recommended.filter((h) => !reservedIds.has(h.id)).slice(0, 3);
 
-  const handleCancel = async (id: string) => {
-    setCancellingId(id);
+  const handleCancel = async (r: Reservation) => {
+    if (!window.confirm(`Annuler votre séjour à « ${r.hebergement_detail.name} » ?`)) return;
+    setCancellingId(r.id);
     try {
-      await api.delete(`/v1/reservations/${id}/`);
-      setReservations((prev) =>
-        prev.map((r) => (r.id === id ? { ...r, status: "cancelled" } : r))
-      );
+      await api.delete(`/v1/reservations/${r.id}/`);
+      queryClient.setQueryData<Reservation[]>(["reservations"], (prev) => prev?.map((x) => (x.id === r.id ? { ...x, status: "cancelled" } : x)));
+      toast.success("Réservation annulée");
+    } catch (err) {
+      toast.error(apiErrorMessage(err, "Impossible d'annuler cette réservation."));
     } finally {
       setCancellingId(null);
     }
   };
 
-  const filtered = reservations.filter((r) => reservationTab(r) === activeTab);
-  const fullName = session?.user?.name ?? "Voyageur";
-  const avatarSrc = session?.user?.image || `https://i.pravatar.cc/150?u=${session?.user?.email ?? "afristay"}`;
+  const counts = Object.fromEntries(TABS.map((t) => [t.id, reservations.filter((r) => tabFor(r) === t.id).length])) as Record<Tab, number>;
+  const filtered = reservations.filter((r) => tabFor(r) === activeTab);
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-12">
+      <div className="mb-8 flex items-center gap-4">
+        <Link href="/profil" aria-label="Retour au profil" className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-dark hover:bg-light-muted transition-colors flex-shrink-0">
+          <ArrowLeft size={20} />
+        </Link>
+        <div>
+          <h1 className="font-heading font-bold text-2xl sm:text-3xl text-dark">Mes réservations</h1>
+          <p className="text-gray-500 text-sm mt-1">Vos séjours à venir et votre historique.</p>
+        </div>
+      </div>
 
-        {/* Left Sidebar */}
-        <aside className="lg:col-span-1">
-          <div className="bg-white rounded-3xl shadow-card border border-gray-100 p-6 sticky top-28">
-            {/* Avatar & Info */}
-            <div className="flex flex-col items-center mb-6">
-              <div className="w-20 h-20 rounded-full bg-gray-200 overflow-hidden border-2 border-primary/20 mb-3">
-                <img src={avatarSrc} alt="Avatar" className="w-full h-full object-cover" />
-              </div>
-              <h3 className="font-heading font-bold text-dark text-lg">{fullName}</h3>
-              <p className="text-gray-500 text-xs">Voyageur</p>
-            </div>
+      <div className="flex gap-6 border-b border-gray-200 mb-6 overflow-x-auto scrollbar-hide" role="tablist">
+        {TABS.map((tab) => (
+          <button
+            key={tab.id}
+            role="tab"
+            aria-selected={activeTab === tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={cn("pb-3 text-sm font-bold transition-colors whitespace-nowrap border-b-2", activeTab === tab.id ? "text-primary border-primary" : "text-gray-400 border-transparent hover:text-dark")}
+          >
+            {tab.label}{counts[tab.id] > 0 && <span className="ml-1.5 text-xs">({counts[tab.id]})</span>}
+          </button>
+        ))}
+      </div>
 
-            {/* Navigation */}
-            <nav className="space-y-1">
-              {profileLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors",
-                    link.active
-                      ? "bg-primary/10 text-primary"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-dark"
-                  )}
-                >
-                  <link.icon size={18} />
-                  {link.label}
+      <div className="space-y-4">
+        {isLoading ? (
+          [0, 1].map((i) => <div key={i} className="h-48 skeleton rounded-2xl" />)
+        ) : isError ? (
+          <div className="bg-white rounded-3xl p-12 text-center">
+            <p className="text-red-500 font-medium mb-2">Impossible de charger vos réservations.</p>
+            <button onClick={() => refetch()} className="text-primary font-bold hover:underline">Réessayer</button>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="bg-white rounded-3xl border border-gray-100 p-10 sm:p-16 text-center">
+            <p className="text-gray-500 font-medium mb-4">Aucune réservation dans cette catégorie.</p>
+            {activeTab === "upcoming" && <Link href="/recherche" className="inline-block bg-primary text-white font-bold px-6 py-3 rounded-xl">Trouver un hébergement</Link>}
+          </div>
+        ) : (
+          filtered.map((res) => {
+            const status = STATUS[res.status];
+            const canCancel = res.status !== "cancelled" && res.check_in > isoDate();
+            return (
+              <article key={res.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col sm:flex-row hover:shadow-card transition-shadow">
+                <Link href={`/hebergements/${res.hebergement_detail.id}`} className="w-full sm:w-48 md:w-56 h-44 sm:h-auto flex-shrink-0">
+                  <img src={res.hebergement_detail.image_url || FALLBACK_IMAGE} alt={res.hebergement_detail.name} className="w-full h-full object-cover" />
                 </Link>
-              ))}
-              <button
-                onClick={() => signOut({ callbackUrl: "/login" })}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-colors w-full"
-              >
-                <LogOut size={18} />
-                Déconnexion
-              </button>
-            </nav>
-          </div>
-        </aside>
-
-        {/* Main Content */}
-        <main className="lg:col-span-3 space-y-10">
-          <div>
-            <h1 className="font-heading font-bold text-3xl text-dark mb-2">Mes réservations</h1>
-            <p className="text-gray-500 text-sm">Gérez vos séjours à venir et consultez votre historique.</p>
-          </div>
-
-          {/* Tabs */}
-          <div className="flex gap-6 border-b border-gray-200">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={cn(
-                  "pb-3 text-sm font-bold transition-colors relative",
-                  activeTab === tab.id
-                    ? "text-primary border-b-2 border-primary"
-                    : "text-gray-400 hover:text-dark"
-                )}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Reservation Cards */}
-          <div className="space-y-4">
-            {loading ? (
-              <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-16 text-center">
-                <p className="text-gray-400 font-medium">Chargement...</p>
-              </div>
-            ) : filtered.length === 0 ? (
-              <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-16 text-center">
-                <p className="text-gray-400 font-medium">Aucune réservation dans cette catégorie.</p>
-              </div>
-            ) : (
-              filtered.map((res) => {
-                const h = res.hebergement_detail;
-                const heroImage = h.image_url || "https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=600&auto=format&fit=crop";
-                return (
-                  <div key={res.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col md:flex-row hover:shadow-card transition-shadow">
-                    {/* Image */}
-                    <div className="w-full md:w-56 h-48 md:h-auto flex-shrink-0 relative">
-                      <img src={heroImage} alt={h.name} className="w-full h-full object-cover" />
+                <div className="flex-1 p-5 sm:p-6 flex flex-col justify-between min-w-0">
+                  <div>
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="min-w-0">
+                        <h2 className="font-heading font-bold text-lg text-dark truncate">{res.hebergement_detail.name}</h2>
+                        <p className="flex items-center gap-1.5 text-gray-500 text-sm mt-1"><MapPin size={14} className="text-primary flex-shrink-0" />{res.hebergement_detail.city}</p>
+                      </div>
+                      <span className={cn("flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full flex-shrink-0", status.className)}>
+                        <status.icon size={12} /> {status.label}
+                      </span>
                     </div>
+                    <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-gray-600">
+                      <span className="flex items-center gap-2"><Calendar size={14} className="text-primary" />{formatDate(res.check_in)} → {formatDate(res.check_out)}</span>
+                      <span className="flex items-center gap-2"><Users size={14} className="text-primary" />{res.guests_count} voyageur{res.guests_count > 1 ? "s" : ""}</span>
+                    </div>
+                    <p className="text-xs text-gray-400 font-mono mt-2">{res.reference}</p>
+                  </div>
 
-                    {/* Details */}
-                    <div className="flex-1 p-6 flex flex-col justify-between">
-                      <div>
-                        <div className="flex items-start justify-between gap-4 mb-3">
-                          <div>
-                            <h3 className="font-heading font-bold text-lg text-dark">{h.name}</h3>
-                            <div className="flex items-center gap-1.5 text-gray-500 text-sm mt-1">
-                              <MapPin size={14} className="text-primary" />
-                              <span>{h.location}, {h.city}</span>
-                            </div>
-                          </div>
-                          {/* Status Badge */}
-                          {res.status === "confirmed" && (
-                            <span className="flex items-center gap-1.5 bg-green-100 text-green-700 text-xs font-bold px-3 py-1.5 rounded-full">
-                              <CheckCircle size={12} /> Confirmée
-                            </span>
-                          )}
-                          {res.status === "pending" && (
-                            <span className="flex items-center gap-1.5 bg-yellow-100 text-yellow-700 text-xs font-bold px-3 py-1.5 rounded-full">
-                              <Clock size={12} /> En attente
-                            </span>
-                          )}
-                          {res.status === "cancelled" && (
-                            <span className="flex items-center gap-1.5 bg-red-100 text-red-700 text-xs font-bold px-3 py-1.5 rounded-full">
-                              <XCircle size={12} /> Annulée
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="flex items-center gap-6 text-sm text-gray-600 mt-4">
-                          <div className="flex items-center gap-2">
-                            <Calendar size={14} className="text-primary" />
-                            <span>{formatDate(res.check_in)} → {formatDate(res.check_out)}</span>
-                          </div>
-                          <span className="text-gray-300">|</span>
-                          <span>{res.guests_count} voyageur{res.guests_count > 1 ? "s" : ""}</span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100">
-                        <div>
-                          <span className="text-xs text-gray-500">Total</span>
-                          <p className="font-heading font-bold text-lg text-dark">{Number(res.total_price).toLocaleString()} FCFA</p>
-                        </div>
-                        <div className="flex gap-3">
-                          <Link href={`/reservation/confirmation/${res.id}`} className="px-5 py-2 bg-gray-100 text-dark text-sm font-medium rounded-full hover:bg-gray-200 transition-colors">
-                            Détails
-                          </Link>
-                          {res.status === "confirmed" && (
-                            <button
-                              onClick={() => handleCancel(res.id)}
-                              disabled={cancellingId === res.id}
-                              className="px-5 py-2 bg-primary text-white text-sm font-medium rounded-full hover:bg-primary-600 transition-colors shadow-button disabled:opacity-60"
-                            >
-                              {cancellingId === res.id ? "Annulation..." : "Annuler"}
-                            </button>
-                          )}
-                        </div>
-                      </div>
+                  <div className="flex flex-wrap items-center justify-between gap-3 mt-5 pt-4 border-t border-gray-100">
+                    <div>
+                      <span className="text-xs text-gray-500">Total</span>
+                      <p className="font-heading font-bold text-lg text-dark">{formatPrice(res.total_price)}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Link href={`/reservation/confirmation/${res.id}`} className="px-5 py-2 bg-gray-100 text-dark text-sm font-medium rounded-full hover:bg-gray-200 transition-colors">
+                        Détails
+                      </Link>
+                      {canCancel && (
+                        <button onClick={() => handleCancel(res)} disabled={cancellingId === res.id} className="px-5 py-2 bg-red-50 text-red-600 text-sm font-medium rounded-full hover:bg-red-100 transition-colors disabled:opacity-50">
+                          {cancellingId === res.id ? "Annulation..." : "Annuler"}
+                        </button>
+                      )}
                     </div>
                   </div>
-                );
-              })
-            )}
-          </div>
-
-          {/* Recommandé pour votre prochain voyage */}
-          {recommended.length > 0 && (
-            <section className="pt-8">
-              <h2 className="font-heading font-bold text-xl text-dark mb-6">Recommandé pour votre prochain voyage</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                {recommended.map((h) => {
-                  const img = h.image_url || "https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=600&auto=format&fit=crop";
-                  return (
-                    <Link key={h.id} href={`/hebergements/${h.id}`} className="group block">
-                      <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-3">
-                        <img src={img} alt={h.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                      </div>
-                      <div className="flex justify-between items-start">
-                        <h3 className="font-bold text-dark text-sm">{h.name}</h3>
-                        <div className="flex items-center gap-1 text-dark">
-                          <Star size={10} className="fill-accent text-accent" />
-                          <span className="text-xs font-bold">{h.rating.toFixed(1)}</span>
-                        </div>
-                      </div>
-                      <p className="text-gray-500 text-xs">{h.location}, {h.city}</p>
-                      <p className="mt-1 text-sm">
-                        <span className="font-bold text-primary">{h.price_per_night.toLocaleString()} FCFA</span>
-                        <span className="text-gray-400 text-xs"> / nuit</span>
-                      </p>
-                    </Link>
-                  );
-                })}
-              </div>
-            </section>
-          )}
-        </main>
+                </div>
+              </article>
+            );
+          })
+        )}
       </div>
+
+      {suggestions.length > 0 && (
+        <section className="mt-12">
+          <h2 className="font-heading font-bold text-xl text-dark mb-6">Recommandé pour votre prochain voyage</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {suggestions.map((h) => <PropertyCard key={h.id} property={h} />)}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

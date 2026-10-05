@@ -17,3 +17,7 @@ class NotificationSender(ABC):
         hebergement_name: str, message_preview: str, conversation_url: str,
     ) -> None:
         pass
+
+    @abstractmethod
+    def send_password_reset_email(self, to: str, first_name: str, code: str) -> None:
+        pass

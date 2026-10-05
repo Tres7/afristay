@@ -1,292 +1,263 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-import { Search, Calendar, Users, Star, MapPin, SlidersHorizontal } from "lucide-react";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { Suspense, useEffect, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useQuery } from "@tanstack/react-query";
+import { Search, Calendar, Users, SlidersHorizontal, X } from "lucide-react";
 import api from "@/lib/api";
+import { addDays, cn, isoDate } from "@/lib/utils";
+import PropertyCard from "@/components/hebergement/PropertyCard";
+import type { Hebergement, Paginated } from "@/types/api/models";
 
-interface Hebergement {
-  id: string;
-  name: string;
-  type: string;
-  city: string;
-  location: string;
-  price_per_night: number;
-  rating: number;
-  image_url: string;
-}
-
-const filterOptions = [
+const SORTS = [
+  { id: "", label: "Pertinence" },
   { id: "prix_asc", label: "Prix croissant" },
   { id: "prix_desc", label: "Prix décroissant" },
   { id: "note", label: "Meilleures notes" },
+];
+
+const TYPES = [
+  { id: "", label: "Tous" },
   { id: "hotel", label: "Hôtels" },
   { id: "villa", label: "Villas" },
   { id: "appartement", label: "Appartements" },
+  { id: "auberge", label: "Auberges" },
 ];
 
-const TYPE_FILTERS = ["hotel", "villa", "appartement"];
+const FILTER_KEYS = ["city", "check_in", "check_out", "guests", "type", "sort", "price_min", "price_max"] as const;
 
 function RechercheContent() {
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [destination, setDestination] = useState(searchParams.get("destination") || "");
-  const [checkIn, setCheckIn] = useState("");
-  const [checkOut, setCheckOut] = useState("");
-  const [guests, setGuests] = useState("2");
-  const [activeFilter, setActiveFilter] = useState<string | null>(null);
-  const [priceMin, setPriceMin] = useState("");
-  const [priceMax, setPriceMax] = useState("");
+  const { status } = useSession();
+  const today = isoDate();
 
-  const [results, setResults] = useState<Hebergement[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [searched, setSearched] = useState(false);
+  // L'URL est la source de vérité : partageable et compatible bouton retour
+  const params = Object.fromEntries(FILTER_KEYS.map((k) => [k, searchParams.get(k) ?? ""])) as Record<(typeof FILTER_KEYS)[number], string>;
 
-  const fetchHebergements = async () => {
-    setLoading(true);
-    setSearched(true);
-    try {
-      const params: Record<string, string> = {};
-      if (destination) params.city = destination;
-      if (priceMin) params.price_min = priceMin;
-      if (priceMax) params.price_max = priceMax;
-      if (activeFilter && TYPE_FILTERS.includes(activeFilter)) params.type = activeFilter;
-      if (activeFilter && !TYPE_FILTERS.includes(activeFilter)) params.sort = activeFilter;
+  const [city, setCity] = useState(params.city);
+  const [checkIn, setCheckIn] = useState(params.check_in);
+  const [checkOut, setCheckOut] = useState(params.check_out);
+  const [guests, setGuests] = useState(params.guests || "1");
+  const [priceMin, setPriceMin] = useState(params.price_min);
+  const [priceMax, setPriceMax] = useState(params.price_max);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
-      const res = await api.get("/v1/hebergements/", { params });
-      setResults(res.data.results);
-    } catch {
-      setResults([]);
-    } finally {
-      setLoading(false);
+  // Resynchronise le formulaire quand l'URL change (recherche depuis la navbar, bouton retour…)
+  useEffect(() => {
+    setCity(searchParams.get("city") ?? "");
+    setCheckIn(searchParams.get("check_in") ?? "");
+    setCheckOut(searchParams.get("check_out") ?? "");
+    setGuests(searchParams.get("guests") || "1");
+    setPriceMin(searchParams.get("price_min") ?? "");
+    setPriceMax(searchParams.get("price_max") ?? "");
+  }, [searchParams]);
+
+  const pushParams = (patch: Partial<Record<(typeof FILTER_KEYS)[number], string>>) => {
+    const next = new URLSearchParams(searchParams.toString());
+    for (const [k, v] of Object.entries(patch)) {
+      if (v) next.set(k, v);
+      else next.delete(k);
     }
+    router.push(`${pathname}?${next.toString()}`, { scroll: false });
   };
 
-  // Chargement initial
-  useEffect(() => {
-    fetchHebergements();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const submitSearch = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    const validDates = checkIn && checkOut && checkOut > checkIn;
+    pushParams({
+      city: city.trim(),
+      check_in: validDates ? checkIn : "",
+      check_out: validDates ? checkOut : "",
+      guests: guests === "1" ? "" : guests,
+      price_min: priceMin,
+      price_max: priceMax,
+    });
+    setFiltersOpen(false);
+  };
 
-  // Re-fetch quand le filtre change
-  useEffect(() => {
-    if (searched) fetchHebergements();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeFilter]);
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ["hebergements", "recherche", searchParams.toString(), status],
+    queryFn: async () => {
+      const query: Record<string, string> = {};
+      for (const k of FILTER_KEYS) if (params[k]) query[k] = params[k];
+      return (await api.get<Paginated<Hebergement>>("/v1/hebergements/", { params: query })).data;
+    },
+    enabled: status !== "loading",
+  });
 
-  return (
-    <div className="min-h-screen bg-light">
-      {/* Barre de recherche */}
-      <div className="bg-white border-b border-light shadow-sm px-6 py-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex gap-3 items-center">
-            <div className="flex-1 flex items-center gap-3 border border-light rounded-xl px-4 py-3 bg-light">
-              <Search size={16} className="text-muted flex-shrink-0" />
-              <input
-                type="text"
-                value={destination}
-                onChange={(e) => setDestination(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && fetchHebergements()}
-                placeholder="Destination (ex: Lomé, Accra, Abidjan…)"
-                className="flex-1 text-sm text-dark placeholder:text-muted outline-none bg-transparent"
-              />
-            </div>
-            <div className="flex items-center gap-2 border border-light rounded-xl px-4 py-3 bg-light">
-              <Calendar size={16} className="text-muted flex-shrink-0" />
-              <input
-                type="date"
-                value={checkIn}
-                onChange={(e) => setCheckIn(e.target.value)}
-                className="text-sm text-dark outline-none bg-transparent w-32"
-              />
-            </div>
-            <div className="flex items-center gap-2 border border-light rounded-xl px-4 py-3 bg-light">
-              <Calendar size={16} className="text-muted flex-shrink-0" />
-              <input
-                type="date"
-                value={checkOut}
-                onChange={(e) => setCheckOut(e.target.value)}
-                className="text-sm text-dark outline-none bg-transparent w-32"
-              />
-            </div>
-            <div className="flex items-center gap-2 border border-light rounded-xl px-4 py-3 bg-light">
-              <Users size={16} className="text-muted flex-shrink-0" />
-              <select
-                value={guests}
-                onChange={(e) => setGuests(e.target.value)}
-                className="text-sm text-dark outline-none bg-transparent"
-              >
-                {["1", "2", "3", "4", "5+"].map((n) => (
-                  <option key={n} value={n}>{n} adulte{n !== "1" ? "s" : ""}</option>
-                ))}
-              </select>
-            </div>
+  const results = data?.results ?? [];
+  const stayQuery = params.check_in && params.check_out
+    ? `?check_in=${params.check_in}&check_out=${params.check_out}&guests=${params.guests || 1}`
+    : "";
+  const activeCount = [params.type, params.sort, params.price_min, params.price_max].filter(Boolean).length;
+
+  const filtersPanel = (
+    <div className="space-y-6">
+      <div>
+        <p className="text-xs text-muted font-bold uppercase tracking-wider mb-2">Type de logement</p>
+        <div className="flex flex-wrap gap-2">
+          {TYPES.map((t) => (
             <button
-              onClick={fetchHebergements}
-              className="bg-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium text-sm hover:bg-primary-700 transition-colors flex-shrink-0"
+              key={t.id}
+              onClick={() => pushParams({ type: t.id })}
+              className={cn("px-3 py-2 rounded-full text-sm border transition-colors", params.type === t.id ? "bg-primary text-white border-primary" : "bg-white text-dark border-gray-200 hover:border-primary/40")}
             >
-              <Search size={16} />
-              Rechercher
+              {t.label}
             </button>
-          </div>
+          ))}
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-6">
+      <div>
+        <p className="text-xs text-muted font-bold uppercase tracking-wider mb-2">Trier par</p>
+        <select value={params.sort} onChange={(e) => pushParams({ sort: e.target.value })} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-base sm:text-sm text-dark outline-none bg-white">
+          {SORTS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+        </select>
+      </div>
+
+      <div>
+        <p className="text-xs text-muted font-bold uppercase tracking-wider mb-2">Prix par nuit (FCFA)</p>
+        <div className="flex items-center gap-2">
+          <input type="number" inputMode="numeric" min={0} placeholder="Min" value={priceMin} onChange={(e) => setPriceMin(e.target.value)} className="w-full min-w-0 border border-gray-200 rounded-lg px-3 py-2 text-base sm:text-sm text-dark outline-none" />
+          <span className="text-muted">—</span>
+          <input type="number" inputMode="numeric" min={0} placeholder="Max" value={priceMax} onChange={(e) => setPriceMax(e.target.value)} className="w-full min-w-0 border border-gray-200 rounded-lg px-3 py-2 text-base sm:text-sm text-dark outline-none" />
+        </div>
+        <button onClick={() => submitSearch()} className="mt-3 w-full bg-primary text-white py-2.5 rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors">
+          Appliquer
+        </button>
+      </div>
+
+      {activeCount > 0 && (
+        <button
+          onClick={() => { setPriceMin(""); setPriceMax(""); pushParams({ type: "", sort: "", price_min: "", price_max: "" }); }}
+          className="w-full text-sm font-semibold text-gray-500 hover:text-primary"
+        >
+          Effacer les filtres
+        </button>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-light">
+      <div className="bg-white border-b border-gray-100 shadow-sm px-4 sm:px-6 py-4">
+        <form onSubmit={submitSearch} className="max-w-7xl mx-auto grid grid-cols-2 lg:flex gap-2 sm:gap-3 items-stretch">
+          <label className="col-span-2 lg:flex-1 flex items-center gap-3 border border-gray-200 rounded-xl px-4 py-3 bg-light-muted">
+            <Search size={16} className="text-muted flex-shrink-0" />
+            <input
+              type="text" value={city} onChange={(e) => setCity(e.target.value)}
+              placeholder="Destination (ex : Lomé, Dakar, Abidjan…)"
+              aria-label="Destination"
+              className="flex-1 min-w-0 text-base sm:text-sm text-dark placeholder:text-muted outline-none bg-transparent"
+            />
+          </label>
+          <label className="flex items-center gap-2 border border-gray-200 rounded-xl px-3 py-3 bg-light-muted min-w-0">
+            <Calendar size={16} className="text-muted flex-shrink-0 hidden sm:block" />
+            <input
+              type="date" aria-label="Arrivée" min={today} value={checkIn}
+              onChange={(e) => { setCheckIn(e.target.value); if (!checkOut || checkOut <= e.target.value) setCheckOut(addDays(e.target.value, 1)); }}
+              className="w-full min-w-0 text-base sm:text-sm text-dark outline-none bg-transparent"
+            />
+          </label>
+          <label className="flex items-center gap-2 border border-gray-200 rounded-xl px-3 py-3 bg-light-muted min-w-0">
+            <Calendar size={16} className="text-muted flex-shrink-0 hidden sm:block" />
+            <input
+              type="date" aria-label="Départ" min={checkIn ? addDays(checkIn, 1) : today} value={checkOut}
+              onChange={(e) => setCheckOut(e.target.value)}
+              className="w-full min-w-0 text-base sm:text-sm text-dark outline-none bg-transparent"
+            />
+          </label>
+          <label className="flex items-center gap-2 border border-gray-200 rounded-xl px-3 py-3 bg-light-muted">
+            <Users size={16} className="text-muted flex-shrink-0" />
+            <select value={guests} onChange={(e) => setGuests(e.target.value)} aria-label="Voyageurs" className="w-full text-base sm:text-sm text-dark outline-none bg-transparent">
+              {["1", "2", "3", "4", "5", "6", "8"].map((n) => <option key={n} value={n}>{n} voyageur{n !== "1" ? "s" : ""}</option>)}
+            </select>
+          </label>
+          <button type="submit" className="bg-primary text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 font-medium text-sm hover:bg-primary-700 transition-colors">
+            <Search size={16} />
+            Rechercher
+          </button>
+        </form>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         <div className="flex gap-8">
-          {/* Sidebar filtres */}
           <aside className="w-64 flex-shrink-0 hidden lg:block">
             <div className="bg-white rounded-2xl shadow-card p-5 sticky top-24">
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2 mb-5">
                 <SlidersHorizontal size={16} className="text-primary" />
-                <h3 className="font-heading font-semibold text-dark">Filtres</h3>
+                <h2 className="font-heading font-semibold text-dark">Filtres</h2>
               </div>
-
-              <div className="space-y-2">
-                <p className="text-xs text-muted font-medium uppercase tracking-wider mb-2">Trier par</p>
-                {filterOptions.map((f) => (
-                  <button
-                    key={f.id}
-                    onClick={() => setActiveFilter(activeFilter === f.id ? null : f.id)}
-                    className={cn(
-                      "w-full text-left px-3 py-2.5 rounded-xl text-sm transition-colors",
-                      activeFilter === f.id
-                        ? "bg-primary text-white"
-                        : "text-dark hover:bg-light"
-                    )}
-                  >
-                    {f.label}
-                  </button>
-                ))}
-              </div>
-
-              <div className="mt-6 pt-4 border-t border-light">
-                <p className="text-xs text-muted font-medium uppercase tracking-wider mb-3">Prix par nuit (FCFA)</p>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    placeholder="Min"
-                    value={priceMin}
-                    onChange={(e) => setPriceMin(e.target.value)}
-                    className="w-full border border-light rounded-lg px-3 py-2 text-sm text-dark outline-none"
-                  />
-                  <span className="text-muted">—</span>
-                  <input
-                    type="number"
-                    placeholder="Max"
-                    value={priceMax}
-                    onChange={(e) => setPriceMax(e.target.value)}
-                    className="w-full border border-light rounded-lg px-3 py-2 text-sm text-dark outline-none"
-                  />
-                </div>
-                <button
-                  onClick={fetchHebergements}
-                  className="mt-3 w-full bg-primary text-white py-2 rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors"
-                >
-                  Appliquer
-                </button>
-              </div>
+              {filtersPanel}
             </div>
           </aside>
 
-          {/* Résultats */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between mb-6">
-              {loading ? (
+            <div className="flex items-center justify-between gap-3 mb-6">
+              {isLoading ? (
                 <p className="text-muted text-sm">Recherche en cours...</p>
               ) : (
                 <p className="text-dark font-medium">
-                  <span className="font-heading font-bold text-2xl text-dark">{results.length}</span>
-                  {" "}hébergement{results.length > 1 ? "s" : ""} trouvé{results.length > 1 ? "s" : ""}
-                  {destination && (
-                    <span className="text-muted font-normal text-base"> à {destination}</span>
-                  )}
+                  <span className="font-heading font-bold text-2xl">{results.length}</span>{" "}
+                  hébergement{results.length > 1 ? "s" : ""}
+                  {params.city && <span className="text-muted font-normal"> à {params.city}</span>}
+                  {params.check_in && params.check_out && <span className="text-muted font-normal text-sm"> · disponibles du {new Date(params.check_in).toLocaleDateString("fr-FR")} au {new Date(params.check_out).toLocaleDateString("fr-FR")}</span>}
                 </p>
               )}
+              <button onClick={() => setFiltersOpen(true)} className="lg:hidden flex items-center gap-2 border border-gray-200 bg-white rounded-full px-4 py-2 text-sm font-semibold text-dark flex-shrink-0">
+                <SlidersHorizontal size={15} /> Filtres{activeCount > 0 && <span className="bg-primary text-white text-[10px] rounded-full w-5 h-5 flex items-center justify-center">{activeCount}</span>}
+              </button>
             </div>
 
-            {!loading && results.length === 0 && searched ? (
-              <motion.div
-                className="bg-white rounded-2xl shadow-card p-16 text-center border border-light/50"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
+            {isError ? (
+              <div className="bg-white rounded-2xl shadow-card p-12 text-center">
+                <p className="text-dark font-semibold mb-2">Impossible de charger les hébergements.</p>
+                <button onClick={() => refetch()} className="text-primary font-bold hover:underline">Réessayer</button>
+              </div>
+            ) : isLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+                {[0, 1, 2, 3, 4, 5].map((i) => <div key={i} className="h-72 rounded-2xl skeleton" />)}
+              </div>
+            ) : results.length === 0 ? (
+              <div className="bg-white rounded-2xl shadow-card p-10 sm:p-16 text-center">
                 <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <Search size={28} className="text-primary" />
                 </div>
-                <p className="text-dark font-heading font-semibold text-xl mb-2">Aucun résultat trouvé</p>
-                <p className="text-muted text-base">Essayez une autre destination ou ajustez vos critères.</p>
-              </motion.div>
+                <p className="text-dark font-heading font-semibold text-xl mb-2">Aucun résultat</p>
+                <p className="text-muted">Essayez une autre destination, d&apos;autres dates ou retirez des filtres.</p>
+                <button onClick={() => router.push(pathname)} className="mt-4 text-primary font-bold hover:underline">Voir tous les hébergements</button>
+              </div>
             ) : (
-              <motion.div
-                className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"
-                initial="hidden"
-                animate="show"
-                variants={{ hidden: {}, show: { transition: { staggerChildren: 0.07 } } }}
-              >
-                {results.map((h) => (
-                  <motion.div
-                    key={h.id}
-                    variants={{
-                      hidden: { opacity: 0, y: 20 },
-                      show: { opacity: 1, y: 0, transition: { duration: 0.4 } },
-                    }}
-                  >
-                    <Link
-                      href={`/hebergements/${h.id}`}
-                      className="group bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-shadow overflow-hidden block"
-                    >
-                      <div className="h-56 bg-slate-100 relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent z-10" />
-                        <div
-                          className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-                          style={{
-                            backgroundImage: h.image_url
-                              ? `url(${h.image_url})`
-                              : "url(https://images.unsplash.com/photo-1542314831-c6a4d27ce6a2?auto=format&fit=crop&q=80)",
-                          }}
-                        />
-                        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full px-2.5 py-1 flex items-center gap-1.5 shadow-sm z-20">
-                          <Star size={12} className="text-accent fill-accent" />
-                          <span className="text-dark text-xs font-bold">{h.rating.toFixed(1)}</span>
-                        </div>
-                      </div>
-                      <div className="p-4">
-                        <h3 className="font-heading font-semibold text-dark text-sm truncate">{h.name}</h3>
-                        <div className="flex items-center gap-1 mt-1">
-                          <MapPin size={11} className="text-muted flex-shrink-0" />
-                          <span className="text-muted text-xs truncate">{h.location}, {h.city}</span>
-                        </div>
-                        <div className="flex items-center justify-between mt-3 pt-3 border-t border-light">
-                          <div>
-                            <span className="text-primary font-heading font-bold text-lg">{h.price_per_night.toLocaleString()} FCFA</span>
-                            <span className="text-muted text-xs ml-1">/nuit</span>
-                          </div>
-                          <span className="text-xs text-muted capitalize bg-light px-2.5 py-1 rounded-full">{h.type}</span>
-                        </div>
-                      </div>
-                    </Link>
-                  </motion.div>
-                ))}
-              </motion.div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+                {results.map((h) => <PropertyCard key={h.id} property={h} query={stayQuery} />)}
+              </div>
             )}
           </div>
         </div>
       </div>
+
+      {filtersOpen && (
+        <div className="lg:hidden fixed inset-0 z-[60]" role="dialog" aria-modal="true" aria-label="Filtres">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setFiltersOpen(false)} />
+          <div className="absolute bottom-0 inset-x-0 bg-white rounded-t-3xl p-5 pb-8 max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="font-heading font-bold text-lg text-dark">Filtres</h2>
+              <button onClick={() => setFiltersOpen(false)} className="p-2 -mr-2" aria-label="Fermer"><X size={20} /></button>
+            </div>
+            {filtersPanel}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 export default function RecherchePage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-light flex items-center justify-center">
-        <p className="text-muted">Chargement...</p>
-      </div>
-    }>
+    <Suspense fallback={<div className="min-h-screen bg-light flex items-center justify-center"><p className="text-muted">Chargement...</p></div>}>
       <RechercheContent />
     </Suspense>
   );

@@ -1,4 +1,5 @@
 import Credentials from "next-auth/providers/credentials";
+import { CredentialsSignin } from "next-auth";
 import { authenticateWithCredentials } from "@/lib/api/auth/login";
 
 export const credentialsProvider = Credentials({
@@ -26,7 +27,13 @@ export const credentialsProvider = Credentials({
         refreshToken: data.refresh,
         role: data.user.role,
       };
-    } catch {
+    } catch (err) {
+      const code = (err as { code?: string } | undefined)?.code;
+      if (code === "unverified_email" || code === "inactive") {
+        const error = new CredentialsSignin();
+        error.code = code;
+        throw error;
+      }
       return null;
     }
   },

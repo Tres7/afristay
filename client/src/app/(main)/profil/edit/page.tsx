@@ -4,10 +4,12 @@ import Link from "next/link";
 import { ArrowLeft, User, Mail, Phone, Save } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import api from "@/lib/api";
+import { useQueryClient } from "@tanstack/react-query";
+import api, { apiErrorMessage } from "@/lib/api";
 
 export default function EditProfilePage() {
-  const { data: session, update } = useSession();
+  const { update } = useSession();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,15 +46,17 @@ export default function EditProfilePage() {
     setError(null);
     setSuccess(false);
     try {
-      await api.patch("/v1/users/me/", {
-        first_name: form.first_name,
-        last_name: form.last_name,
-        phone: form.phone || null,
+      const res = await api.patch("/v1/users/me/", {
+        first_name: form.first_name.trim(),
+        last_name: form.last_name.trim(),
+        phone: form.phone.trim() || null,
       });
-      await update();
+      setForm((prev) => ({ ...prev, phone: res.data.phone ?? "" }));
+      await update({ name: `${res.data.first_name} ${res.data.last_name}` });
+      queryClient.invalidateQueries({ queryKey: ["me"] });
       setSuccess(true);
-    } catch {
-      setError("Erreur lors de la mise à jour. Veuillez réessayer.");
+    } catch (err) {
+      setError(apiErrorMessage(err, "Erreur lors de la mise à jour. Veuillez réessayer."));
     } finally {
       setLoading(false);
     }
@@ -67,7 +71,7 @@ export default function EditProfilePage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-12">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 md:py-12">
       <div className="mb-8 flex items-center gap-4">
         <Link
           href="/profil"
@@ -76,12 +80,12 @@ export default function EditProfilePage() {
           <ArrowLeft size={20} />
         </Link>
         <div>
-          <h1 className="font-heading font-bold text-3xl text-dark">Modifier le profil</h1>
+          <h1 className="font-heading font-bold text-2xl sm:text-3xl text-dark">Modifier le profil</h1>
           <p className="text-muted text-sm mt-1">Mettez à jour vos informations personnelles</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-card p-8 md:p-10">
+      <div className="bg-white rounded-2xl shadow-card p-5 sm:p-8 md:p-10">
         <form onSubmit={handleSubmit} className="space-y-6 max-w-lg">
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
@@ -106,7 +110,7 @@ export default function EditProfilePage() {
                   name="first_name"
                   value={form.first_name}
                   onChange={handleChange}
-                  className="w-full pl-11 pr-4 py-3 bg-light border border-transparent rounded-xl text-dark focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-sm"
+                  className="w-full pl-11 pr-4 py-3 bg-light-muted border border-transparent rounded-xl text-base sm:text-sm text-dark focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-sm"
                 />
               </div>
             </div>
@@ -121,7 +125,7 @@ export default function EditProfilePage() {
                   name="last_name"
                   value={form.last_name}
                   onChange={handleChange}
-                  className="w-full pl-11 pr-4 py-3 bg-light border border-transparent rounded-xl text-dark focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-sm"
+                  className="w-full pl-11 pr-4 py-3 bg-light-muted border border-transparent rounded-xl text-base sm:text-sm text-dark focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-sm"
                 />
               </div>
             </div>
@@ -137,7 +141,7 @@ export default function EditProfilePage() {
                 type="email"
                 value={form.email}
                 disabled
-                className="w-full pl-11 pr-4 py-3 bg-light border border-transparent rounded-xl text-muted cursor-not-allowed shadow-sm"
+                className="w-full pl-11 pr-4 py-3 bg-light-muted border border-transparent rounded-xl text-muted cursor-not-allowed shadow-sm"
               />
             </div>
             <p className="text-xs text-muted ml-1 mt-1">L&apos;email ne peut pas être modifié.</p>
@@ -154,23 +158,23 @@ export default function EditProfilePage() {
                 name="phone"
                 value={form.phone}
                 onChange={handleChange}
-                placeholder="+229 XX XX XX XX"
-                className="w-full pl-11 pr-4 py-3 bg-light border border-transparent rounded-xl text-dark focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-sm"
+                placeholder="+228 90 00 00 00"
+                className="w-full pl-11 pr-4 py-3 bg-light-muted border border-transparent rounded-xl text-base sm:text-sm text-dark focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-sm"
               />
             </div>
           </div>
 
-          <div className="pt-4 flex justify-end gap-4 border-t border-light mt-8">
+          <div className="pt-4 flex flex-col-reverse sm:flex-row sm:justify-end gap-3 border-t border-gray-100 mt-8">
             <Link
               href="/profil"
-              className="px-6 py-3 rounded-xl border border-gray-200 text-dark font-medium hover:bg-light transition-colors"
+              className="px-6 py-3 rounded-xl border border-gray-200 text-dark font-medium text-center hover:bg-light-muted transition-colors"
             >
               Annuler
             </Link>
             <button
               type="submit"
               disabled={loading}
-              className="flex items-center gap-2 px-8 py-3 bg-primary text-white rounded-xl font-medium shadow-md hover:bg-primary-600 hover:shadow-lg transition-all disabled:opacity-70"
+              className="flex items-center justify-center gap-2 px-8 py-3 bg-primary text-white rounded-xl font-medium shadow-md hover:bg-primary-600 hover:shadow-lg transition-all disabled:opacity-70"
             >
               <Save size={18} />
               {loading ? "Enregistrement..." : "Enregistrer"}

@@ -19,3 +19,6 @@ class NotificationService:
         self._sender.send_new_message_email(
             to, first_name, sender_first_name, hebergement_name, message_preview, conversation_url,
         )
+
+    def send_password_reset_email(self, to: str, first_name: str, code: str) -> None:
+        self._sender.send_password_reset_email(to, first_name, code)

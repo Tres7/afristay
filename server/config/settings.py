@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'apps.notifications.apps.NotificationsConfig',
     'apps.hebergements.apps.HebergementsConfig',
     'apps.reservations.apps.ReservationsConfig',
+    'apps.favoris.apps.FavorisConfig',
     'apps.messaging.apps.MessagingConfig',
 ]
 
@@ -79,8 +80,8 @@ DATABASES = {
         'NAME': os.getenv('POSTGRES_DB', 'afristayDB'),
         'USER': os.getenv('POSTGRES_USER', 'afristay'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'afristay'),
-        'HOST': 'db',
-        'PORT': '5432',
+        'HOST': os.getenv('POSTGRES_HOST', 'db'),
+        'PORT': os.getenv('POSTGRES_PORT', '5432'),
     }
 }
 
@@ -108,7 +109,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-MEDIA_URL = 'media/'
+MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'mediafiles'
 
 
@@ -126,10 +127,12 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
+    'COERCE_DECIMAL_TO_STRING': False,
     # Throttles par scope (appliqués uniquement aux vues qui les déclarent)
     'DEFAULT_THROTTLE_RATES': {
         'messaging_conversation_create': '10/hour',
         'messaging_message_send': '30/min',
+        'hebergement_photo_upload': '120/hour',
     },
 }
 
@@ -160,9 +163,9 @@ FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
 
 # CORS
 
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-]
+CORS_ALLOWED_ORIGINS = os.getenv(
+    'CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000'
+).split(',')
 
 
 SIMPLE_JWT = {

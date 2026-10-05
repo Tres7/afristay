@@ -49,6 +49,7 @@ class UserService:
         )
 
         saved_user = self._repository.save(user)
+        self.store_verification_code(saved_user.id, code)
 
         try:
             event_bus.publish(UserRegistered(
@@ -97,6 +98,15 @@ class UserService:
         user.verify()
         self._repository.update(user)
 
+    def become_host(self, user_id: uuid.UUID) -> UserResponseDTO:
+        user = self._repository.find_by_id(user_id)
+        if not user:
+            raise UserNotFoundException(str(user_id))
+        if user.role == UserRole.VOYAGEUR:
+            user.change_role(UserRole.HOTE)
+            user = self._repository.update(user)
+        return UserResponseDTO.from_entity(user)
+
     def deactivate(self, user_id: uuid.UUID) -> None:
         user = self._repository.find_by_id(user_id)
         if not user:
@@ -143,14 +153,22 @@ class UserService:
         return UserResponseDTO.from_entity(user)
     
 
-    def verify_email(self, email: str, code: str, event_bus: EventPublisher) -> None:
+    def store_verification_code(self, user_id, code: str) -> None:
+        VerificationCode.objects.filter(user_id=user_id).delete()
+        VerificationCode.objects.create(
+            user_id=user_id,
+            code=code,
+            expires_at=timezone.now() + timedelta(minutes=10),
+        )
+
+    def verify_email(self, email: str, code: str, event_bus: EventPublisher) -> uuid.UUID:
         try:
-            user_model = UserModel.objects.get(email=email)
+            user_model = UserModel.objects.get(email__iexact=email.strip())
         except UserModel.DoesNotExist:
             raise UserNotFoundException(email)
 
         if user_model.is_verified:
-            return
+            raise ValueError("Compte déjà vérifié.")
 
         try:
             vc = VerificationCode.objects.filter(
@@ -177,4 +195,4 @@ class UserService:
                 user_model.id,
             )
 
-
+        return user_model.id
