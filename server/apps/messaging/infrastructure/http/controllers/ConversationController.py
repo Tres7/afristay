@@ -13,6 +13,7 @@ from apps.messaging.domain.exceptions import (
     ConversationNotFoundException,
     HebergementNotFoundException,
     InvalidMessageException,
+    NotParticipantException,
 )
 from apps.messaging.infrastructure.container import messaging_service
 from apps.messaging.infrastructure.http.permissions import IsVerified
@@ -105,6 +106,42 @@ class ConversationListCreateView(WriteGuardsMixin, APIView):
         except HebergementNotFoundException as e:
             return _not_found(e)
         except CannotContactOwnHebergementException as e:
+            return Response({'detail': str(e)}, status=status.HTTP_403_FORBIDDEN)
+
+        return Response(
+            _conversation_json(conversation),
+            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
+        )
+
+
+class ConversationWithGuestView(WriteGuardsMixin, APIView):
+    """L'hôte ouvre (ou retrouve) le fil avec le voyageur d'une de ses réservations."""
+    throttle_scope = 'messaging_conversation_create'
+
+    def post(self, request):
+        from apps.reservations.models import ReservationModel  # contrôle d'accès propre à cette route
+
+        reservation_id = _parse_uuid(request.data.get('reservation_id'))
+        if reservation_id is None:
+            return Response({'detail': 'reservation_id invalide ou manquant.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Anti-abus : un hôte ne peut écrire qu'à un voyageur ayant réservé l'un de ses logements
+        reservation = (
+            ReservationModel.objects
+            .filter(pk=reservation_id, hebergement__host_id=request.user.id)
+            .exclude(status='cancelled')
+            .first()
+        )
+        if reservation is None:
+            return Response({'detail': 'Réservation introuvable.'}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            conversation, created = messaging_service().open_as_host(
+                request.user.id, reservation.hebergement_id, reservation.guest_id,
+            )
+        except HebergementNotFoundException as e:
+            return _not_found(e)
+        except (CannotContactOwnHebergementException, NotParticipantException) as e:
             return Response({'detail': str(e)}, status=status.HTTP_403_FORBIDDEN)
 
         return Response(

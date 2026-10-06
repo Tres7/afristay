@@ -4,10 +4,13 @@ import { Suspense, useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Calendar, Users, SlidersHorizontal, X } from "lucide-react";
+import { Search, SlidersHorizontal, X } from "lucide-react";
 import api from "@/lib/api";
-import { addDays, cn, isoDate } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import PropertyCard from "@/components/hebergement/PropertyCard";
+import DateRangeField from "@/components/ui/DateRangeField";
+import GuestsField from "@/components/ui/GuestsField";
+import Select from "@/components/ui/Select";
 import type { Hebergement, Paginated } from "@/types/api/models";
 
 const SORTS = [
@@ -32,7 +35,6 @@ function RechercheContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { status } = useSession();
-  const today = isoDate();
 
   // L'URL est la source de vérité : partageable et compatible bouton retour
   const params = Object.fromEntries(FILTER_KEYS.map((k) => [k, searchParams.get(k) ?? ""])) as Record<(typeof FILTER_KEYS)[number], string>;
@@ -113,9 +115,11 @@ function RechercheContent() {
 
       <div>
         <p className="text-xs text-muted font-bold uppercase tracking-wider mb-2">Trier par</p>
-        <select value={params.sort} onChange={(e) => pushParams({ sort: e.target.value })} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-base sm:text-sm text-dark outline-none bg-white">
-          {SORTS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
-        </select>
+        <Select
+          label="Trier par" value={params.sort}
+          onChange={(v) => pushParams({ sort: v })}
+          options={SORTS.map((o) => ({ value: o.id, label: o.label }))}
+        />
       </div>
 
       <div>
@@ -154,28 +158,12 @@ function RechercheContent() {
               className="flex-1 min-w-0 text-base sm:text-sm text-dark placeholder:text-muted outline-none bg-transparent"
             />
           </label>
-          <label className="flex items-center gap-2 border border-gray-200 rounded-xl px-3 py-3 bg-light-muted min-w-0">
-            <Calendar size={16} className="text-muted flex-shrink-0 hidden sm:block" />
-            <input
-              type="date" aria-label="Arrivée" min={today} value={checkIn}
-              onChange={(e) => { setCheckIn(e.target.value); if (!checkOut || checkOut <= e.target.value) setCheckOut(addDays(e.target.value, 1)); }}
-              className="w-full min-w-0 text-base sm:text-sm text-dark outline-none bg-transparent"
-            />
-          </label>
-          <label className="flex items-center gap-2 border border-gray-200 rounded-xl px-3 py-3 bg-light-muted min-w-0">
-            <Calendar size={16} className="text-muted flex-shrink-0 hidden sm:block" />
-            <input
-              type="date" aria-label="Départ" min={checkIn ? addDays(checkIn, 1) : today} value={checkOut}
-              onChange={(e) => setCheckOut(e.target.value)}
-              className="w-full min-w-0 text-base sm:text-sm text-dark outline-none bg-transparent"
-            />
-          </label>
-          <label className="flex items-center gap-2 border border-gray-200 rounded-xl px-3 py-3 bg-light-muted">
-            <Users size={16} className="text-muted flex-shrink-0" />
-            <select value={guests} onChange={(e) => setGuests(e.target.value)} aria-label="Voyageurs" className="w-full text-base sm:text-sm text-dark outline-none bg-transparent">
-              {["1", "2", "3", "4", "5", "6", "8"].map((n) => <option key={n} value={n}>{n} voyageur{n !== "1" ? "s" : ""}</option>)}
-            </select>
-          </label>
+          <DateRangeField
+            checkIn={checkIn} checkOut={checkOut}
+            onChange={(a, d) => { setCheckIn(a); setCheckOut(d); }}
+            className="col-span-2 lg:w-[20rem]"
+          />
+          <GuestsField value={Number(guests) || 1} onChange={(n) => setGuests(String(n))} className="lg:w-48" />
           <button type="submit" className="bg-primary text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 font-medium text-sm hover:bg-primary-700 transition-colors">
             <Search size={16} />
             Rechercher

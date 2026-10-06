@@ -4,8 +4,17 @@ import { useCallback, useState } from "react";
 import api, { firstErrorMessage } from "@/lib/api";
 import { AMENITIES } from "@/components/hebergement/AmenityBadge";
 import PhotoUploader from "@/components/hote/PhotoUploader";
+import Select from "@/components/ui/Select";
+import Stepper from "@/components/ui/Stepper";
 import { cn, TYPE_LABELS } from "@/lib/utils";
-import type { Hebergement } from "@/types/api/models";
+import type { Hebergement, HebergementType } from "@/types/api/models";
+
+const TYPE_HINTS: Record<HebergementType, string> = {
+  hotel: "Chambre dans un établissement avec services",
+  villa: "Maison entière, souvent avec jardin ou piscine",
+  appartement: "Logement entier dans un immeuble",
+  auberge: "Hébergement simple et convivial, petit budget",
+};
 
 interface HebergementFormProps {
   initial?: Hebergement;
@@ -96,13 +105,19 @@ export default function HebergementForm({ initial, onSaved, onCancel }: Hebergem
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className={labelClass} htmlFor="h-type">Type</label>
-          <select id="h-type" className={inputClass} value={form.type} onChange={set("type")}>
-            {Object.entries(TYPE_LABELS).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
-          </select>
+          <Select
+            id="h-type" label="Type de logement" value={form.type}
+            onChange={(v) => setForm((prev) => ({ ...prev, type: v }))}
+            options={(Object.keys(TYPE_LABELS) as HebergementType[]).map((id) => ({ value: id, label: TYPE_LABELS[id], hint: TYPE_HINTS[id] }))}
+          />
         </div>
         <div>
-          <label className={labelClass} htmlFor="h-guests">Voyageurs max.</label>
-          <input id="h-guests" type="number" min={1} max={50} className={inputClass} value={form.max_guests} onChange={set("max_guests")} required />
+          <p className={labelClass}>Capacité</p>
+          <Stepper
+            className="border border-gray-200 rounded-xl px-4 py-2.5 bg-white"
+            label="Voyageurs max." value={Number(form.max_guests) || 1} min={1} max={50}
+            onChange={(n) => setForm((prev) => ({ ...prev, max_guests: String(n) }))}
+          />
           {err("max_guests")}
         </div>
         <div>

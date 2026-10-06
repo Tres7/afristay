@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, MapPin, ChevronDown, ChevronUp, Share2, Calendar, Users, MessageCircle, Pencil } from "lucide-react";
+import { ArrowLeft, MapPin, ChevronDown, ChevronUp, Share2, Calendar, MessageCircle, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import AmenityBadge from "@/components/hebergement/AmenityBadge";
 import FavoriteButton from "@/components/hebergement/FavoriteButton";
@@ -16,6 +16,7 @@ import api, { apiErrorMessage } from "@/lib/api";
 import { addDays, calculateNights, calculateServiceFee, cn, FALLBACK_IMAGE, formatDate, formatPrice, isoDate, TYPE_LABELS } from "@/lib/utils";
 import { nuitsIndisponibles, useDisponibilites } from "@/lib/useDisponibilites";
 import DateRangeCalendar from "@/components/calendrier/DateRangeCalendar";
+import Stepper from "@/components/ui/Stepper";
 import type { Hebergement } from "@/types/api/models";
 import type { MessagingConversation } from "@/types/api/messaging";
 
@@ -262,14 +263,11 @@ function HebergementContent() {
                     <DateRangeCalendar checkIn={checkIn} checkOut={checkOut} onChange={choisirDates} indisponibles={indisponibles} chargement={dispoChargement} />
                   </div>
                 )}
-                <label className="border-t border-gray-200 px-4 py-3 block">
-                  <span className="text-[10px] text-dark font-bold uppercase tracking-widest mb-1 flex items-center gap-1"><Users size={10} />Voyageurs</span>
-                  <select value={guests} onChange={(e) => setGuests(Number(e.target.value))} className="text-dark text-base sm:text-sm font-medium outline-none bg-transparent w-full">
-                    {Array.from({ length: hebergement.max_guests }, (_, i) => i + 1).map((n) => (
-                      <option key={n} value={n}>{n} voyageur{n > 1 ? "s" : ""}</option>
-                    ))}
-                  </select>
-                </label>
+                <Stepper
+                  className="border-t border-gray-200 px-4 py-3"
+                  label="Voyageurs" hint={`${hebergement.max_guests} maximum`}
+                  value={guests} min={1} max={hebergement.max_guests} onChange={setGuests}
+                />
               </div>
 
               {datesPrises && (

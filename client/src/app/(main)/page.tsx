@@ -6,10 +6,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, type Variants } from "framer-motion";
-import { Search, MapPin, Calendar, Users, ChevronRight, CreditCard, MessageCircle, Zap, RotateCcw, Building2, Home, Hotel, Tent } from "lucide-react";
+import { Search, MapPin, ChevronRight, CreditCard, MessageCircle, Zap, RotateCcw, Building2, Home, Hotel, Tent } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/lib/api";
-import { addDays, formatPrice, isoDate } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
+import DateRangeField from "@/components/ui/DateRangeField";
+import GuestsField from "@/components/ui/GuestsField";
 import PropertyCard from "@/components/hebergement/PropertyCard";
 import type { City, Hebergement, Paginated } from "@/types/api/models";
 
@@ -47,11 +49,10 @@ const containerVariants: Variants = {
 
 function HeroSearch() {
   const router = useRouter();
-  const today = isoDate();
   const [city, setCity] = useState("");
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
-  const [guests, setGuests] = useState("2");
+  const [guests, setGuests] = useState(2);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,7 +62,7 @@ function HeroSearch() {
       params.set("check_in", checkIn);
       params.set("check_out", checkOut);
     }
-    params.set("guests", guests);
+    params.set("guests", String(guests));
     router.push(`/recherche?${params.toString()}`);
   };
 
@@ -81,41 +82,16 @@ function HeroSearch() {
           <input type="text" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Où allez-vous ?" className={inputClass} />
         </span>
       </label>
-      <div className="grid grid-cols-2 md:contents divide-x divide-gray-100">
-        <label className={fieldClass}>
-          <span className={labelClass}>Arrivée</span>
-          <span className="flex items-center gap-2 mt-1">
-            <Calendar size={16} className="text-primary flex-shrink-0 hidden sm:block" />
-            <input
-              type="date" min={today} value={checkIn}
-              onChange={(e) => {
-                setCheckIn(e.target.value);
-                if (!checkOut || checkOut <= e.target.value) setCheckOut(addDays(e.target.value, 1));
-              }}
-              className={inputClass}
-            />
-          </span>
-        </label>
-        <label className={fieldClass}>
-          <span className={labelClass}>Départ</span>
-          <span className="flex items-center gap-2 mt-1">
-            <Calendar size={16} className="text-primary flex-shrink-0 hidden sm:block" />
-            <input type="date" min={checkIn ? addDays(checkIn, 1) : today} value={checkOut} onChange={(e) => setCheckOut(e.target.value)} className={inputClass} />
-          </span>
-        </label>
-      </div>
-      <div className="flex items-center justify-between gap-3 px-5 py-3 md:py-0 md:pr-0 w-full md:w-auto md:flex-1">
-        <label className="min-w-0">
+      <DateRangeField
+        variant="hero" checkIn={checkIn} checkOut={checkOut}
+        onChange={(a, d) => { setCheckIn(a); setCheckOut(d); }}
+        className="md:flex-[1.6] min-w-0"
+      />
+      <div className="flex items-center justify-between gap-3 pl-5 pr-2 py-2 md:py-0 w-full md:w-auto md:flex-1">
+        <div className="min-w-0 flex-1 text-left">
           <span className={labelClass}>Voyageurs</span>
-          <span className="flex items-center gap-2 mt-1">
-            <Users size={16} className="text-primary flex-shrink-0" />
-            <select value={guests} onChange={(e) => setGuests(e.target.value)} className={inputClass}>
-              {["1", "2", "3", "4", "5", "6", "8"].map((n) => (
-                <option key={n} value={n}>{n} voyageur{n !== "1" ? "s" : ""}</option>
-              ))}
-            </select>
-          </span>
-        </label>
+          <GuestsField variant="bare" value={guests} onChange={setGuests} className="mt-1" />
+        </div>
         <button type="submit" className="bg-primary hover:bg-primary-600 text-white p-4 rounded-full transition-colors flex items-center gap-2 font-bold text-sm shadow-md flex-shrink-0" aria-label="Rechercher">
           <Search size={18} />
           <span className="hidden lg:inline">Rechercher</span>

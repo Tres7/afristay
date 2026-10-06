@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { MapPin, Search, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Select from "@/components/ui/Select";
 
 type Category = "activites" | "restaurants" | "loisirs" | "sites";
 
@@ -77,13 +78,11 @@ export default function DecouvrirPage() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 mb-8 bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-gray-100">
-          <label className="flex flex-col px-4 py-2 bg-gray-50 rounded-xl sm:w-56">
-            <span className="text-[11px] font-bold text-dark uppercase tracking-wide">Ville</span>
-            <select value={city} onChange={(e) => setCity(e.target.value)} className="mt-1 text-sm font-medium text-gray-600 bg-transparent outline-none">
-              <option value="">Toutes les villes</option>
-              {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </label>
+          <Select
+            label="Ville" value={city} onChange={setCity} className="sm:w-56"
+            icon={<MapPin size={16} className="text-primary flex-shrink-0" />}
+            options={[{ value: "", label: "Toutes les villes" }, ...CITIES.map((c) => ({ value: c, label: c }))]}
+          />
           <div className="relative flex-1">
             <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
