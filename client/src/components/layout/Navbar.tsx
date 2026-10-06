@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Search, Menu, X, ArrowRight, LogIn, UserPlus, MessageCircle, Heart, CalendarCheck, User, LogOut, Home, ShieldCheck } from "lucide-react";
+import { Search, Menu, ArrowRight, LogIn, UserPlus, MessageCircle, Heart, CalendarCheck, User, LogOut, Home, ShieldCheck } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import api from "@/lib/api";
 import { usePolling } from "@/lib/usePolling";
 import { cn, initials, ROLE_LABELS } from "@/lib/utils";
 import Logo from "@/components/layout/Logo";
+import MobileDrawer, { DrawerItem } from "@/components/layout/MobileDrawer";
 
 const UNREAD_POLL_INTERVAL_MS = 10_000;
 
@@ -72,12 +73,8 @@ export default function Navbar() {
 
   usePolling(fetchUnread, UNREAD_POLL_INTERVAL_MS, authenticated);
 
-  // Ferme le menu mobile à chaque navigation et bloque le scroll quand il est ouvert
+  // Ferme le menu mobile à chaque navigation (le panneau gère lui-même le blocage du défilement)
   useEffect(() => setMobileOpen(false), [pathname]);
-  useEffect(() => {
-    document.body.style.overflow = mobileOpen ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
-  }, [mobileOpen]);
 
   const roleLabel = ROLE_LABELS[session?.user?.role ?? "voyageur"];
   const isHost = session?.user?.role === "hote" || session?.user?.role === "admin";
@@ -165,8 +162,8 @@ export default function Navbar() {
               {unread > 0 && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />}
             </Link>
           )}
-          <button className="p-2 text-dark" onClick={() => setMobileOpen(!mobileOpen)} aria-expanded={mobileOpen} aria-label={mobileOpen ? "Fermer le menu" : "Ouvrir le menu"}>
-            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+          <button className="p-2 text-dark" onClick={() => setMobileOpen(true)} aria-expanded={mobileOpen} aria-haspopup="dialog" aria-label="Ouvrir le menu">
+            <Menu size={24} />
           </button>
         </div>
       </div>
@@ -176,11 +173,13 @@ export default function Navbar() {
         <SearchForm />
       </div>
 
-      {mobileOpen && (
-        <div className="md:hidden fixed inset-x-0 top-16 bottom-0 bg-white border-t border-gray-100 px-5 py-5 space-y-5 overflow-y-auto">
+      <MobileDrawer open={mobileOpen} onClose={() => setMobileOpen(false)} label="Menu" header={<Logo size="sm" />}>
+        <DrawerItem>
           <SearchForm onDone={() => setMobileOpen(false)} className="bg-gray-50" />
+        </DrawerItem>
 
-          {authenticated && (
+        {authenticated && (
+          <DrawerItem className="mt-5">
             <Link href="/profil" className="flex items-center gap-3 p-3 rounded-2xl bg-light-muted">
               <Avatar size="w-11 h-11" />
               <div className="min-w-0">
@@ -188,53 +187,55 @@ export default function Navbar() {
                 <p className="text-xs text-gray-500">{roleLabel}</p>
               </div>
             </Link>
-          )}
+          </DrawerItem>
+        )}
 
-          <nav className="space-y-1" aria-label="Navigation mobile">
-            {[
-              { href: "/", label: "Accueil", icon: Home },
-              { href: "/recherche", label: "Hébergements", icon: Search },
-              { href: "/decouvrir", label: "Expériences", icon: ArrowRight },
-              ...(authenticated
-                ? [
-                    { href: "/profil/reservations", label: "Mes réservations", icon: CalendarCheck },
-                    { href: "/favoris", label: "Mes favoris", icon: Heart },
-                    { href: "/messages", label: `Messages${unread ? ` (${unread})` : ""}`, icon: MessageCircle },
-                    { href: "/profil", label: "Mon profil", icon: User },
-                  ]
-                : []),
-              { href: isHost ? "/hote/espace" : "/hote", label: isHost ? "Espace hôte" : "Devenir hôte", icon: Home },
-              ...(isAdmin ? [{ href: "/backoffice", label: "Back-office", icon: ShieldCheck }] : []),
-            ].map(({ href, label, icon: Icon }) => (
+        <nav className="mt-4 space-y-1" aria-label="Navigation mobile">
+          {[
+            { href: "/", label: "Accueil", icon: Home },
+            { href: "/recherche", label: "Hébergements", icon: Search },
+            { href: "/decouvrir", label: "Expériences", icon: ArrowRight },
+            ...(authenticated
+              ? [
+                  { href: "/profil/reservations", label: "Mes réservations", icon: CalendarCheck },
+                  { href: "/favoris", label: "Mes favoris", icon: Heart },
+                  { href: "/messages", label: `Messages${unread ? ` (${unread})` : ""}`, icon: MessageCircle },
+                  { href: "/profil", label: "Mon profil", icon: User },
+                ]
+              : []),
+            { href: isHost ? "/hote/espace" : "/hote", label: isHost ? "Espace hôte" : "Devenir hôte", icon: Home },
+            ...(isAdmin ? [{ href: "/backoffice", label: "Back-office", icon: ShieldCheck }] : []),
+          ].map(({ href, label, icon: Icon }) => (
+            <DrawerItem key={href + label}>
               <Link
-                key={href + label}
                 href={href}
-                className={cn("flex items-center gap-3 px-3 py-3 rounded-xl text-[15px] font-medium", pathname === href ? "bg-primary/10 text-primary" : "text-dark hover:bg-gray-50")}
+                onClick={() => setMobileOpen(false)}
+                className={cn("flex items-center gap-3 px-3 py-3 rounded-xl text-[15px] font-medium transition-colors", pathname === href ? "bg-primary/10 text-primary" : "text-dark hover:bg-gray-50")}
               >
                 <Icon size={18} className="text-primary" />
                 {label}
               </Link>
-            ))}
-          </nav>
+            </DrawerItem>
+          ))}
+        </nav>
 
-          <div className="pt-4 border-t border-gray-100">
-            {authenticated ? (
-              <button onClick={() => signOut({ callbackUrl: "/" })} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-red-100 text-red-500 text-sm font-bold">
-                <LogOut size={16} /> Se déconnecter
-              </button>
-            ) : (
-              <div className="flex flex-col gap-3">
-                <Link href={`/login?callbackUrl=${encodeURIComponent(pathname)}`} className="w-full text-center py-3 rounded-xl border border-gray-200 text-sm font-bold text-dark hover:bg-gray-50 transition-colors">
-                  Se connecter
-                </Link>
-                <Link href="/register" className="w-full text-center py-3 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors">
-                  Créer un compte
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+        <DrawerItem className="mt-4 pt-4 border-t border-gray-100">
+          {authenticated ? (
+            <button onClick={() => signOut({ callbackUrl: "/" })} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-red-100 text-red-500 text-sm font-bold">
+              <LogOut size={16} /> Se déconnecter
+            </button>
+          ) : (
+            <div className="flex flex-col gap-3">
+              <Link href={`/login?callbackUrl=${encodeURIComponent(pathname)}`} onClick={() => setMobileOpen(false)} className="w-full text-center py-3 rounded-xl border border-gray-200 text-sm font-bold text-dark hover:bg-gray-50 transition-colors">
+                Se connecter
+              </Link>
+              <Link href="/register" onClick={() => setMobileOpen(false)} className="w-full text-center py-3 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors">
+                Créer un compte
+              </Link>
+            </div>
+          )}
+        </DrawerItem>
+      </MobileDrawer>
     </header>
   );
 }
