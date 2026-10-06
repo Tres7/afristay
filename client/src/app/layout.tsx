@@ -19,10 +19,37 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
+const TITRE = "AfriStay - L'Afrique à portée de clic";
+const DESCRIPTION =
+  "Plateforme de réservation d'hébergements en Afrique. Découvrez les meilleurs logements, activités et restaurants.";
+const IMAGE_PARTAGE = "/brand/png/afristay-partage-1200x630.png";
+
+// Adresse publique du site : les aperçus de lien (WhatsApp, Facebook…) exigent des URL absolues
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.AUTH_URL || "http://localhost:3000";
+
 export const metadata: Metadata = {
-  title: "AfriStay - L'Afrique à portée de clic",
-  description:
-    "Plateforme de réservation d'hébergements en Afrique. Découvrez les meilleurs logements, activités et restaurants.",
+  metadataBase: new URL(SITE_URL),
+  title: TITRE,
+  description: DESCRIPTION,
+  applicationName: "AfriStay",
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    siteName: "AfriStay",
+    url: "/",
+    title: TITRE,
+    description: DESCRIPTION,
+    images: [{ url: IMAGE_PARTAGE, width: 1200, height: 630, alt: "AfriStay — L'Afrique à portée de clic" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITRE,
+    description: DESCRIPTION,
+    images: [IMAGE_PARTAGE],
+  },
+  icons: {
+    apple: "/brand/png/afristay-icone-180.png",
+  },
 };
 
 export default function RootLayout({
