@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Search, Menu, X, ArrowRight, LogIn, UserPlus, MessageCircle, Heart, CalendarCheck, User, LogOut, Home } from "lucide-react";
+import { Search, Menu, X, ArrowRight, LogIn, UserPlus, MessageCircle, Heart, CalendarCheck, User, LogOut, Home, ShieldCheck } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import api from "@/lib/api";
@@ -81,6 +81,7 @@ export default function Navbar() {
 
   const roleLabel = ROLE_LABELS[session?.user?.role ?? "voyageur"];
   const isHost = session?.user?.role === "hote" || session?.user?.role === "admin";
+  const isAdmin = session?.user?.role === "admin";
 
   const Avatar = ({ size }: { size: string }) => (
     <div className={cn("rounded-full bg-primary/10 overflow-hidden border border-primary/20 flex items-center justify-center flex-shrink-0", size)}>
@@ -119,6 +120,11 @@ export default function Navbar() {
           <div className="flex items-center gap-3">
             {authenticated ? (
               <>
+                {isAdmin && (
+                  <Link href="/backoffice" className="flex items-center gap-1.5 text-xs font-bold text-dark border border-gray-200 rounded-full px-3 py-1.5 hover:border-primary hover:text-primary">
+                    <ShieldCheck size={14} /> Back-office
+                  </Link>
+                )}
                 <Link href="/messages" className="relative p-2 text-gray-500 hover:text-primary transition-colors" aria-label={`Messages${unread ? ` (${unread} non lus)` : ""}`}>
                   <MessageCircle size={20} />
                   {unread > 0 && (
@@ -198,6 +204,7 @@ export default function Navbar() {
                   ]
                 : []),
               { href: isHost ? "/hote/espace" : "/hote", label: isHost ? "Espace hôte" : "Devenir hôte", icon: Home },
+              ...(isAdmin ? [{ href: "/backoffice", label: "Back-office", icon: ShieldCheck }] : []),
             ].map(({ href, label, icon: Icon }) => (
               <Link
                 key={href + label}

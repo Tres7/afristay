@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MapPin } from "lucide-react";
+import { BadgeCheck, MapPin } from "lucide-react";
 import type { Hebergement } from "@/types/api/models";
 import FavoriteButton from "@/components/hebergement/FavoriteButton";
 import RatingBadge from "@/components/avis/RatingBadge";
@@ -37,7 +37,10 @@ export default function PropertyCard({ property, query = "", onFavoriteChange }:
 
       <div className="p-4 flex flex-col flex-1">
         <div className="flex justify-between items-start gap-2">
-          <h3 className="font-heading font-semibold text-dark text-[15px] leading-snug line-clamp-1">{property.name}</h3>
+          <h3 className="font-heading font-semibold text-dark text-[15px] leading-snug flex items-center gap-1 min-w-0">
+            <span className="truncate">{property.name}</span>
+            {property.est_verifie && <BadgeCheck size={15} className="text-secondary flex-shrink-0" aria-label="Logement vérifié" />}
+          </h3>
           <RatingBadge rating={property.rating} count={property.review_count} className="flex-shrink-0" />
         </div>
         <div className="flex items-center gap-1 mt-1 text-gray-500">
