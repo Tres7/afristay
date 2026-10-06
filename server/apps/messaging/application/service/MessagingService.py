@@ -20,6 +20,7 @@ from apps.messaging.domain.exceptions import (
     ConversationAlreadyExistsException,
     ConversationNotFoundException,
     HebergementNotFoundException,
+    NotParticipantException,
 )
 from apps.messaging.domain.repositories.ConversationRepository import ConversationRepository
 from apps.messaging.domain.repositories.MessageRepository import MessageRepository
@@ -55,25 +56,41 @@ class MessagingService:
         hebergement = self._hebergements.get(hebergement_id)
         if hebergement is None:
             raise HebergementNotFoundException(str(hebergement_id))
+        return self._open(hebergement, guest_id=user_id, viewer_id=user_id)
 
-        # Lève CannotContactOwnHebergementException si l'utilisateur est l'hôte
-        conversation = Conversation.start(hebergement.id, user_id, hebergement.host_id)
+    def open_as_host(
+        self, host_id: uuid.UUID, hebergement_id: uuid.UUID, guest_id: uuid.UUID,
+    ) -> Tuple[ConversationSummaryDTO, bool]:
+        """L'hôte ouvre (ou retrouve) le fil avec un voyageur de son logement.
 
-        existing = self._conversations.find_by_hebergement_and_guest(hebergement.id, user_id)
+        Le contrôle « ce voyageur a bien réservé ce logement » est fait par l'appelant.
+        """
+        hebergement = self._hebergements.get(hebergement_id)
+        if hebergement is None:
+            raise HebergementNotFoundException(str(hebergement_id))
+        if hebergement.host_id != host_id:
+            raise NotParticipantException(str(hebergement_id))
+        return self._open(hebergement, guest_id=guest_id, viewer_id=host_id)
+
+    def _open(self, hebergement, guest_id: uuid.UUID, viewer_id: uuid.UUID) -> Tuple[ConversationSummaryDTO, bool]:
+        # Lève CannotContactOwnHebergementException si le voyageur est l'hôte
+        conversation = Conversation.start(hebergement.id, guest_id, hebergement.host_id)
+
+        existing = self._conversations.find_by_hebergement_and_guest(hebergement.id, guest_id)
         if existing:
-            return self._summaries([existing], user_id)[0], False
+            return self._summaries([existing], viewer_id)[0], False
 
         try:
             created = self._conversations.create(conversation)
         except ConversationAlreadyExistsException:
             # Création concurrente : l'autre requête a gagné, on renvoie son fil
-            existing = self._conversations.find_by_hebergement_and_guest(hebergement.id, user_id)
+            existing = self._conversations.find_by_hebergement_and_guest(hebergement.id, guest_id)
             if existing is None:
                 # Violation d'intégrité d'une autre nature (hébergement supprimé entre-temps)
-                raise HebergementNotFoundException(str(hebergement_id))
-            return self._summaries([existing], user_id)[0], False
+                raise HebergementNotFoundException(str(hebergement.id))
+            return self._summaries([existing], viewer_id)[0], False
 
-        return self._summaries([created], user_id)[0], True
+        return self._summaries([created], viewer_id)[0], True
 
     def list_conversations(self, user_id: uuid.UUID) -> List[ConversationSummaryDTO]:
         return self._summaries(self._conversations.list_for_user(user_id), user_id)

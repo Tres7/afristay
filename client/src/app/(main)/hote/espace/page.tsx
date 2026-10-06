@@ -5,13 +5,14 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Pencil, Trash2, Eye, EyeOff, Calendar, CalendarDays, Users, MapPin } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, Calendar, CalendarDays, Users, MapPin, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import api, { apiErrorMessage } from "@/lib/api";
 import { cn, FALLBACK_IMAGE, formatDate, formatPrice, isoDate, TYPE_LABELS } from "@/lib/utils";
 import HebergementForm from "@/components/hote/HebergementForm";
 import RatingBadge from "@/components/avis/RatingBadge";
 import type { Hebergement, Paginated, Reservation } from "@/types/api/models";
+import type { MessagingConversation } from "@/types/api/messaging";
 
 type Tab = "annonces" | "reservations";
 
@@ -24,6 +25,19 @@ function EspaceHoteContent() {
   const { data: session, status } = useSession();
   const [tab, setTab] = useState<Tab>("annonces");
   const [editing, setEditing] = useState<Hebergement | "new" | null>(null);
+  const [contactId, setContactId] = useState<string | null>(null);
+
+  // Ouvre (ou retrouve) la conversation avec le voyageur de cette réservation
+  const contacterVoyageur = async (r: Reservation) => {
+    setContactId(r.id);
+    try {
+      const res = await api.post<MessagingConversation>("/v1/messaging/conversations/avec-voyageur/", { reservation_id: r.id });
+      router.push(`/messages/${res.data.id}`);
+    } catch (err) {
+      toast.error(apiErrorMessage(err, "Impossible d'ouvrir la conversation."));
+      setContactId(null);
+    }
+  };
 
   const isHost = session?.user?.role === "hote" || session?.user?.role === "admin";
 
@@ -200,6 +214,14 @@ function EspaceHoteContent() {
                 <span className={cn("text-xs font-bold px-2.5 py-1 rounded-full", r.status === "cancelled" ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700")}>
                   {r.status === "cancelled" ? "Annulée" : `Confirmée · ${PAYMENT_LABELS[r.payment_method]}`}
                 </span>
+                {r.status !== "cancelled" && (
+                  <button
+                    onClick={() => contacterVoyageur(r)} disabled={contactId === r.id}
+                    className="mt-1 flex items-center gap-1.5 px-4 py-2 rounded-full border border-primary/30 text-primary text-sm font-semibold hover:bg-primary/5 disabled:opacity-50"
+                  >
+                    <MessageCircle size={14} /> {contactId === r.id ? "Ouverture..." : `Contacter ${r.guest_name.split(" ")[0]}`}
+                  </button>
+                )}
               </div>
             </article>
           ))}
