@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { signOut, useSession } from "next-auth/react";
-import { ChevronRight, User, CalendarCheck, Heart, CreditCard, Bell, Globe, HelpCircle, LogOut, Home, MessageCircle, BadgeCheck, Star } from "lucide-react";
+import { ChevronRight, User, CalendarCheck, Heart, CreditCard, Bell, Globe, HelpCircle, LogOut, Home, MessageCircle, BadgeCheck, Star, ShieldCheck } from "lucide-react";
 import api from "@/lib/api";
 import { FALLBACK_IMAGE, formatDate, initials, ROLE_LABELS } from "@/lib/utils";
 import type { Favori, Me, Paginated, Reservation, SejourAEvaluer } from "@/types/api/models";
@@ -45,6 +45,7 @@ export default function ProfilPage() {
         isHost
           ? { icon: Home, label: "Espace hôte", href: "/hote/espace", desc: "Annonces et réservations reçues" }
           : { icon: Home, label: "Devenir hôte", href: "/hote", desc: "Publiez votre logement" },
+        ...(role === "admin" ? [{ icon: ShieldCheck, label: "Back-office", href: "/backoffice", desc: "Administration de la plateforme" }] : []),
       ],
     },
     {

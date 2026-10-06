@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 
 // Pages réservées aux utilisateurs connectés (le centre d'aide reste public)
-const PROTECTED = ["/profil", "/favoris", "/messages", "/reservation", "/hote/espace"];
+const PROTECTED = ["/profil", "/favoris", "/messages", "/reservation", "/hote/espace", "/backoffice"];
 const PUBLIC_EXCEPTIONS = ["/profil/aide"];
 // Pages d'authentification inutiles une fois connecté
 const GUEST_ONLY = ["/login", "/register"];
@@ -21,6 +21,11 @@ export default auth((req) => {
     return NextResponse.redirect(url);
   }
 
+  // Back-office : administrateurs uniquement (l'API vérifie aussi le rôle)
+  if (isLoggedIn && pathname.startsWith("/backoffice") && req.auth?.user?.role !== "admin") {
+    return NextResponse.redirect(new URL("/", req.nextUrl.origin));
+  }
+
   if (isLoggedIn && GUEST_ONLY.includes(pathname)) {
     return NextResponse.redirect(new URL("/", req.nextUrl.origin));
   }
@@ -35,6 +40,7 @@ export const config = {
     "/messages/:path*",
     "/reservation/:path*",
     "/hote/espace/:path*",
+    "/backoffice/:path*",
     "/login",
     "/register",
   ],

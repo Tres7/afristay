@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, MapPin, ChevronDown, ChevronUp, Share2, Calendar, MessageCircle, Pencil } from "lucide-react";
+import { ArrowLeft, BadgeCheck, MapPin, ChevronDown, ChevronUp, Share2, Calendar, MessageCircle, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import AmenityBadge from "@/components/hebergement/AmenityBadge";
 import FavoriteButton from "@/components/hebergement/FavoriteButton";
@@ -135,6 +135,11 @@ function HebergementContent() {
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
           <div className="min-w-0">
             <h1 className="font-heading font-bold text-dark text-2xl sm:text-3xl">{hebergement.name}</h1>
+            {hebergement.est_verifie && (
+              <p className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-secondary bg-secondary/10 px-2.5 py-1 rounded-full">
+                <BadgeCheck size={14} /> Logement vérifié sur place par AfriStay
+              </p>
+            )}
             <div className="flex items-center gap-x-3 gap-y-1 mt-2 flex-wrap text-sm">
               <a href="#avis" className="hover:underline">
                 <RatingBadge rating={hebergement.rating} count={hebergement.review_count} variant="full" />

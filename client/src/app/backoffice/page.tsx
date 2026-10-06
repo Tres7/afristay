@@ -1,0 +1,95 @@
+"use client";
+
+import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
+import { BadgeCheck, CalendarCheck, Home, Star, Users } from "lucide-react";
+import api from "@/lib/api";
+import { formatPrice } from "@/lib/utils";
+import ReservationsChart from "@/components/backoffice/ReservationsChart";
+import type { AdminStats } from "@/types/api/admin";
+
+function Tuile({ titre, valeur, detail, icone: Icone, href }: { titre: string; valeur: string; detail: string; icone: typeof Users; href: string }) {
+  return (
+    <Link href={href} className="block min-w-0 bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-card transition-shadow">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted font-medium">{titre}</p>
+        <Icone size={18} className="text-gray-400" />
+      </div>
+      <p className="font-heading font-bold text-dark text-2xl sm:text-3xl mt-2 tabular-nums truncate">{valeur}</p>
+      <p className="text-xs text-muted mt-1">{detail}</p>
+    </Link>
+  );
+}
+
+export default function TableauDeBord() {
+  const { data: s, isLoading, isError, refetch } = useQuery({
+    queryKey: ["admin", "stats"],
+    queryFn: async () => (await api.get<AdminStats>("/v1/admin/stats/")).data,
+  });
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="font-heading font-bold text-2xl sm:text-3xl text-dark">Tableau de bord</h1>
+        <p className="text-muted text-sm mt-1">Vue d&apos;ensemble de la plateforme.</p>
+      </div>
+
+      {isError ? (
+        <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center">
+          <p className="text-dark font-semibold mb-2">Statistiques indisponibles.</p>
+          <button onClick={() => refetch()} className="text-primary font-bold hover:underline">Réessayer</button>
+        </div>
+      ) : isLoading || !s ? (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">{[0, 1, 2, 3].map((i) => <div key={i} className="h-32 skeleton rounded-2xl" />)}</div>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <Tuile titre="Utilisateurs" valeur={s.utilisateurs.total.toLocaleString("fr-FR")} detail={`+${s.utilisateurs.nouveaux_30j} en 30 j · ${s.utilisateurs.hotes} hôtes`} icone={Users} href="/backoffice/utilisateurs" />
+            <Tuile titre="Annonces" valeur={s.annonces.visibles.toLocaleString("fr-FR")} detail={`visibles sur ${s.annonces.total} · ${s.annonces.verifiees} vérifiées`} icone={Home} href="/backoffice/annonces" />
+            <Tuile titre="Réservations (30 j)" valeur={s.reservations.confirmees_30j.toLocaleString("fr-FR")} detail={`${s.reservations.annulees_30j} annulée${s.reservations.annulees_30j > 1 ? "s" : ""}`} icone={CalendarCheck} href="/backoffice/reservations" />
+            <Tuile
+              titre="Volume réservé (30 j)" icone={CalendarCheck} href="/backoffice/reservations"
+              valeur={`${s.reservations.volume_30j.toLocaleString("fr-FR", { notation: "compact", maximumFractionDigits: 2 })} FCFA`}
+              detail={formatPrice(s.reservations.volume_30j)}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 p-5">
+              <ReservationsChart jours={s.reservations_par_jour} />
+            </div>
+            <div className="space-y-4">
+              <Tuile
+                titre="Avis" valeur={s.avis.moyenne !== null ? `${s.avis.moyenne.toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} / 5` : "—"}
+                detail={`${s.avis.total} avis vérifiés`} icone={Star} href="/backoffice/avis"
+              />
+              <div className="bg-white rounded-2xl border border-gray-100 p-5">
+                <p className="text-sm font-semibold text-dark mb-3">À traiter</p>
+                <ul className="space-y-2 text-sm">
+                  <li>
+                    <Link href="/backoffice/annonces?verifie=false" className="flex items-center justify-between hover:text-primary">
+                      <span className="flex items-center gap-2"><BadgeCheck size={15} className="text-gray-400" /> Annonces à vérifier</span>
+                      <span className="font-bold tabular-nums">{s.annonces.total - s.annonces.verifiees}</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/backoffice/utilisateurs?actif=false" className="flex items-center justify-between hover:text-primary">
+                      <span className="flex items-center gap-2"><Users size={15} className="text-gray-400" /> Comptes désactivés</span>
+                      <span className="font-bold tabular-nums">{s.utilisateurs.desactives}</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/backoffice/avis?note=1" className="flex items-center justify-between hover:text-primary">
+                      <span className="flex items-center gap-2"><Star size={15} className="text-gray-400" /> Avis à 1 étoile</span>
+                      <span className="text-xs text-muted">voir</span>
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
