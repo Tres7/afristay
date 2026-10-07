@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Poppins, Inter } from "next/font/google";
 import "./globals.css";
 import Providers from "@/providers/Providers";
+import ConsentProvider from "@/providers/ConsentProvider";
 import AuthProvider from "@/providers/AuthProvider";
 import ThemeProvider from "@/providers/ThemeProvider";
 import SplashScreen from "@/components/layout/SplashScreen";
@@ -29,7 +30,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.AUTH_URL || "ht
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: TITRE,
+  title: { default: TITRE, template: "%s · AfriStay" },
   description: DESCRIPTION,
   applicationName: "AfriStay",
   openGraph: {
@@ -63,6 +64,11 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <Providers>
+              <ConsentProvider>
+              {/* Lien d'évitement : premier élément atteint au clavier */}
+              <a href="#contenu" className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[200] focus:px-4 focus:py-3 focus:rounded-xl focus:bg-dark focus:text-white focus:font-bold">
+                Aller au contenu principal
+              </a>
               <SplashScreen />
               {children}
               <Toaster
@@ -72,6 +78,7 @@ export default function RootLayout({
                   style: { fontFamily: "var(--font-inter)" },
                 }}
               />
+              </ConsentProvider>
             </Providers>
           </AuthProvider>
         </ThemeProvider>

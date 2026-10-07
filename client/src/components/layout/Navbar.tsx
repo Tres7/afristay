@@ -219,7 +219,7 @@ export default function Navbar() {
 
           <div className="pt-4 border-t border-gray-100">
             {authenticated ? (
-              <button onClick={() => signOut({ callbackUrl: "/" })} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-red-100 text-red-500 text-sm font-bold">
+              <button onClick={() => signOut({ callbackUrl: "/" })} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-red-100 text-red-600 text-sm font-bold">
                 <LogOut size={16} /> Se déconnecter
               </button>
             ) : (

@@ -26,7 +26,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   if (session?.user?.role !== "admin") {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-6 text-center bg-gray-50">
-        <ShieldAlert size={40} className="text-red-500" />
+        <ShieldAlert size={40} className="text-red-600" />
         <p className="font-heading font-bold text-xl text-dark">Accès réservé aux administrateurs</p>
         <Link href="/" className="text-primary font-bold hover:underline">Retour au site</Link>
       </div>
@@ -65,7 +65,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             ))}
           </nav>
         </header>
-        <main className="p-4 sm:p-6 lg:p-8 max-w-7xl">{children}</main>
+        <main id="contenu" tabIndex={-1} className="p-4 sm:p-6 lg:p-8 max-w-7xl outline-none">{children}</main>
       </div>
     </div>
   );

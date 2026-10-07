@@ -1,0 +1,86 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import LegalPage, { AC, AValider } from "@/components/legal/LegalPage";
+
+export const metadata: Metadata = { title: "Annulation et remboursement" };
+
+export default function RemboursementPage() {
+  return (
+    <LegalPage
+      titre="Politique d'annulation et de remboursement"
+      miseAJour="7 octobre 2026"
+      intro={
+        <>
+          <p>Cette page explique comment annuler une réservation et dans quelles conditions vous êtes remboursé.</p>
+          <p className="p-4 rounded-2xl bg-amber-50 text-amber-900">
+            <strong>Situation actuelle :</strong> le paiement en ligne n&apos;est pas encore activé sur AfriStay. Aucun montant
+            n&apos;est prélevé lors de la réservation, il n&apos;y a donc rien à rembourser par AfriStay pour le moment. Les règles de
+            remboursement ci-dessous s&apos;appliqueront dès l&apos;activation du paiement en ligne.
+          </p>
+        </>
+      }
+      sections={[
+        {
+          id: "annuler",
+          titre: "Annuler une réservation",
+          contenu: (
+            <ul>
+              <li>Depuis <Link href="/profil/reservations">Mon profil → Mes réservations</Link>, bouton « Annuler » sur le séjour concerné.</li>
+              <li>L&apos;annulation en ligne est possible jusqu&apos;à la veille de la date d&apos;arrivée.</li>
+              <li>Un séjour commencé ou terminé ne peut plus être annulé en ligne : contactez l&apos;hôte via la messagerie, ou le support.</li>
+            </ul>
+          ),
+        },
+        {
+          id: "bareme",
+          titre: "Barème de remboursement (paiement en ligne)",
+          contenu: (
+            <>
+              <table>
+                <thead><tr><th>Annulation par le voyageur</th><th>Remboursement</th></tr></thead>
+                <tbody>
+                  <tr><td>Plus de 7 jours avant l&apos;arrivée</td><td><AValider>100 % du prix des nuits et des frais de service</AValider></td></tr>
+                  <tr><td>Entre 7 jours et 48 heures avant l&apos;arrivée</td><td><AValider>50 % du prix des nuits ; frais de service remboursés</AValider></td></tr>
+                  <tr><td>Moins de 48 heures avant l&apos;arrivée</td><td><AValider>aucun remboursement du prix des nuits, sauf accord de l&apos;hôte</AValider></td></tr>
+                </tbody>
+              </table>
+              <p className="text-sm">Ce barème peut être plus favorable si l&apos;hôte en décide ainsi pour son logement ; il n&apos;est jamais moins favorable.</p>
+            </>
+          ),
+        },
+        {
+          id: "hote-admin",
+          titre: "Annulation par l'hôte ou par AfriStay",
+          contenu: (
+            <ul>
+              <li>Si l&apos;hôte annule, ou si AfriStay annule une réservation (logement non conforme, fraude, problème de sécurité), vous êtes <strong>remboursé intégralement</strong>, frais de service compris.</li>
+              <li>Si le logement ne correspond pas à l&apos;annonce à votre arrivée, signalez-le dans les 24 heures avec des photos : <AValider>remboursement partiel ou total selon le préjudice constaté.</AValider></li>
+            </ul>
+          ),
+        },
+        {
+          id: "delais",
+          titre: "Délais et moyens de remboursement",
+          contenu: (
+            <ul>
+              <li>Le remboursement est effectué sur le moyen de paiement utilisé (Mobile Money, carte bancaire ou PayPal).</li>
+              <li>Délai : <AValider>sous 7 jours ouvrés après l&apos;annulation</AValider>, auquel peut s&apos;ajouter le délai de traitement de votre opérateur ou de votre banque.</li>
+              <li>Une question sur un remboursement : <AC>email du support</AC>.</li>
+            </ul>
+          ),
+        },
+        {
+          id: "force-majeure",
+          titre: "Circonstances exceptionnelles",
+          contenu: (
+            <p>
+              En cas d&apos;événement grave et imprévisible empêchant le séjour (catastrophe naturelle, restriction officielle de
+              déplacement, épidémie déclarée), la réservation peut être annulée sans frais pour le voyageur comme pour l&apos;hôte, sur
+              justificatif.
+            </p>
+          ),
+        },
+      ]}
+    />
+  );
+}

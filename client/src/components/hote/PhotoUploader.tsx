@@ -147,7 +147,7 @@ export default function PhotoUploader({ value, onChange, onBusyChange, error }: 
         />
       </div>
 
-      {(notice || error) && <p className="text-xs text-red-500 mt-2">{notice || error}</p>}
+      {(notice || error) && <p className="text-xs text-red-600 mt-2">{notice || error}</p>}
 
       {items.length > 0 && (
         <ul className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-4">

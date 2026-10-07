@@ -149,7 +149,7 @@ export default function LaisserAvisPage() {
           Votre avis sera public, signé de votre prénom et de l&apos;initiale de votre nom. L&apos;hôte pourra y répondre.
         </p>
 
-        {erreur && <p role="alert" className="text-sm text-red-600 bg-red-50 rounded-xl p-3">{erreur}</p>}
+        {erreur && <p role="alert" className="text-sm text-red-700 bg-red-50 rounded-xl p-3">{erreur}</p>}
 
         <button type="submit" disabled={!complet || envoi} className="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-button disabled:opacity-50 disabled:shadow-none">
           {envoi ? "Publication..." : complet ? "Publier mon avis" : "Notez chaque critère pour publier"}

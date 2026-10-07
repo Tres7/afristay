@@ -59,7 +59,7 @@ export default function FavoriteButton({ hebergementId, initial, onChange, varia
           className
         )}
       >
-        <Heart size={15} className={isFavorite ? "text-red-500 fill-red-500" : "text-dark"} />
+        <Heart size={15} className={isFavorite ? "text-red-600 fill-red-500" : "text-dark"} />
         <span className="hidden sm:inline">{isFavorite ? "Sauvegardé" : "Sauvegarder"}</span>
       </button>
     );
@@ -73,7 +73,7 @@ export default function FavoriteButton({ hebergementId, initial, onChange, varia
       aria-pressed={isFavorite}
       className={cn(
         "p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm transition-colors hover:bg-white",
-        isFavorite ? "text-red-500" : "text-gray-500 hover:text-red-500",
+        isFavorite ? "text-red-600" : "text-gray-500 hover:text-red-600",
         className
       )}
     >

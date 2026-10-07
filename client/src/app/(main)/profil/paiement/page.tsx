@@ -29,7 +29,7 @@ export default function PaymentMethodsPage() {
           <span>
             Vous choisissez votre mode de paiement à chaque réservation. Aucune carte n&apos;est enregistrée sur votre compte et le
             paiement en ligne n&apos;est pas encore activé.{" "}
-            <Link href="/profil/aide#paiement" className="text-primary font-semibold hover:underline">En savoir plus</Link>
+            <Link href="/remboursement" className="text-primary font-semibold hover:underline">En savoir plus sur le paiement et le remboursement</Link>
           </span>
         </p>
       </div>

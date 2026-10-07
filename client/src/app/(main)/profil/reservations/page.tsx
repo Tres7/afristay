@@ -95,7 +95,7 @@ export default function ReservationsPage() {
           [0, 1].map((i) => <div key={i} className="h-48 skeleton rounded-2xl" />)
         ) : isError ? (
           <div className="bg-white rounded-3xl p-12 text-center">
-            <p className="text-red-500 font-medium mb-2">Impossible de charger vos réservations.</p>
+            <p className="text-red-600 font-medium mb-2">Impossible de charger vos réservations.</p>
             <button onClick={() => refetch()} className="text-primary font-bold hover:underline">Réessayer</button>
           </div>
         ) : filtered.length === 0 ? (
@@ -150,7 +150,7 @@ export default function ReservationsPage() {
                         Détails
                       </Link>
                       {canCancel && (
-                        <button onClick={() => handleCancel(res)} disabled={cancellingId === res.id} className="px-5 py-2 bg-red-50 text-red-600 text-sm font-medium rounded-full hover:bg-red-100 transition-colors disabled:opacity-50">
+                        <button onClick={() => handleCancel(res)} disabled={cancellingId === res.id} className="px-5 py-2 bg-red-50 text-red-700 text-sm font-medium rounded-full hover:bg-red-100 transition-colors disabled:opacity-50">
                           {cancellingId === res.id ? "Annulation..." : "Annuler"}
                         </button>
                       )}
