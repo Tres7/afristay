@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Calendar, MapPin, CheckCircle, Clock, XCircle, Users, Star } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, CheckCircle, Clock, XCircle, Users, Star, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 import api, { apiErrorMessage } from "@/lib/api";
 import { cn, FALLBACK_IMAGE, formatDate, formatPrice, isoDate } from "@/lib/utils";
@@ -25,7 +25,7 @@ const tabFor = (r: Reservation): Tab => {
 
 const STATUS = {
   confirmed: { label: "Confirmée", icon: CheckCircle, className: "bg-green-100 text-green-700" },
-  pending: { label: "En attente", icon: Clock, className: "bg-yellow-100 text-yellow-700" },
+  pending: { label: "Paiement en attente", icon: Clock, className: "bg-amber-100 text-amber-800" },
   cancelled: { label: "Annulée", icon: XCircle, className: "bg-red-100 text-red-700" },
 };
 
@@ -48,12 +48,16 @@ export default function ReservationsPage() {
   const suggestions = recommended.filter((h) => !reservedIds.has(h.id)).slice(0, 3);
 
   const handleCancel = async (r: Reservation) => {
-    if (!window.confirm(`Annuler votre séjour à « ${r.hebergement_detail.name} » ?`)) return;
+    const question = r.paiement === "reussi"
+      ? `Annuler votre séjour à « ${r.hebergement_detail.name} » ?\n\nLe remboursement suit la politique d'annulation : intégral à plus de 7 jours de l'arrivée, partiel entre 7 jours et 48 heures, aucun à moins de 48 heures.`
+      : `Annuler votre séjour à « ${r.hebergement_detail.name} » ?`;
+    if (!window.confirm(question)) return;
     setCancellingId(r.id);
     try {
-      await api.delete(`/v1/reservations/${r.id}/`);
-      queryClient.setQueryData<Reservation[]>(["reservations"], (prev) => prev?.map((x) => (x.id === r.id ? { ...x, status: "cancelled" } : x)));
-      toast.success("Réservation annulée");
+      const res = await api.delete<{ rembourse?: number }>(`/v1/reservations/${r.id}/`);
+      queryClient.invalidateQueries({ queryKey: ["reservations"] });
+      const rembourse = res.data.rembourse ?? 0;
+      toast.success(rembourse > 0 ? `Réservation annulée. ${formatPrice(rembourse)} vous seront remboursés.` : "Réservation annulée");
     } catch (err) {
       toast.error(apiErrorMessage(err, "Impossible d'annuler cette réservation."));
     } finally {
@@ -127,7 +131,18 @@ export default function ReservationsPage() {
                       <span className="flex items-center gap-2"><Calendar size={14} className="text-primary" />{formatDate(res.check_in)} → {formatDate(res.check_out)}</span>
                       <span className="flex items-center gap-2"><Users size={14} className="text-primary" />{res.guests_count} voyageur{res.guests_count > 1 ? "s" : ""}</span>
                     </div>
-                    <p className="text-xs text-gray-400 font-mono mt-2">{res.reference}</p>
+                    <p className="text-xs text-gray-500 font-mono mt-2">{res.reference}</p>
+                    {res.status === "pending" && res.expire_le && (
+                      <p className="text-sm text-amber-800 bg-amber-50 rounded-xl px-3 py-2 mt-3">
+                        Réglez votre séjour pour le confirmer : sans paiement, les dates seront libérées.
+                      </p>
+                    )}
+                    {res.remboursement && (
+                      <p className="text-sm text-dark bg-green-50 rounded-xl px-3 py-2 mt-3">
+                        Remboursement de <strong>{formatPrice(res.remboursement.montant)}</strong>{" "}
+                        {res.remboursement.statut === "envoye" ? "effectué" : "en cours"}.
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex flex-wrap items-center justify-between gap-3 mt-5 pt-4 border-t border-gray-100">
@@ -136,6 +151,11 @@ export default function ReservationsPage() {
                       <p className="font-heading font-bold text-lg text-dark">{formatPrice(res.total_price)}</p>
                     </div>
                     <div className="flex flex-wrap gap-2">
+                      {res.status === "pending" && res.expire_le && (
+                        <Link href={`/reservation/paiement/${res.id}`} className="flex items-center gap-1.5 px-5 py-2 bg-secondary text-white text-sm font-bold rounded-full hover:bg-secondary-600 transition-colors">
+                          <CreditCard size={14} /> Payer
+                        </Link>
+                      )}
                       {res.peut_evaluer && (
                         <Link href={`/profil/reservations/${res.id}/avis`} className="flex items-center gap-1.5 px-5 py-2 bg-primary text-white text-sm font-bold rounded-full hover:bg-primary-600 transition-colors">
                           <Star size={14} className="fill-white" /> Laisser un avis

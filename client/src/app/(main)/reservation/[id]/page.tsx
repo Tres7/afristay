@@ -5,16 +5,17 @@ import Link from "next/link";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Check, Info, Smartphone, CreditCard, Wallet, MapPin } from "lucide-react";
+import { ArrowLeft, Check, Info, Smartphone, CreditCard, Wallet, MapPin, Lock } from "lucide-react";
 import api, { apiErrorMessage } from "@/lib/api";
+import { allerPayer, enEuros, useConfigPaiement } from "@/lib/paiement";
 import RatingBadge from "@/components/avis/RatingBadge";
 import { calculateNights, calculateServiceFee, cn, FALLBACK_IMAGE, formatDate, formatPrice, isoDate } from "@/lib/utils";
 import type { Hebergement, Reservation } from "@/types/api/models";
 
 const PAYMENT_METHODS = [
-  { id: "mobile_money", label: "Mobile Money", sublabel: "MTN, Orange, Moov, Wave", icon: Smartphone },
+  { id: "mobile_money", label: "Mobile Money", sublabel: "Moov (Flooz), T-Money, MTN, Orange, Airtel", icon: Smartphone },
   { id: "carte", label: "Carte bancaire", sublabel: "Visa, Mastercard", icon: CreditCard },
-  { id: "paypal", label: "PayPal", sublabel: "Compte PayPal", icon: Wallet },
+  { id: "paypal", label: "PayPal", sublabel: "Compte PayPal ou carte, débité en euros", icon: Wallet },
 ] as const;
 
 function ReservationContent() {
@@ -32,6 +33,11 @@ function ReservationContent() {
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  const { data: config } = useConfigPaiement();
+  const enLigne = !!config?.actif;
+  const moyens = PAYMENT_METHODS.filter((m) => !enLigne || config?.moyens.includes(m.id));
+  const moyenChoisi = moyens.some((m) => m.id === paymentMethod) ? paymentMethod : moyens[0]?.id ?? "mobile_money";
 
   const { data: hebergement, isLoading, isError } = useQuery({
     queryKey: ["hebergement", params.id, "reservation"],
@@ -69,11 +75,20 @@ function ReservationContent() {
         check_in: checkIn,
         check_out: checkOut,
         guests_count: guestsCount,
-        payment_method: paymentMethod,
+        payment_method: moyenChoisi,
         message: message.trim(),
       });
       queryClient.invalidateQueries({ queryKey: ["reservations"] });
-      router.push(`/reservation/confirmation/${res.data.id}`);
+      if (res.data.status !== "pending") {
+        router.push(`/reservation/confirmation/${res.data.id}`);
+        return;
+      }
+      // Dates bloquées : direction la page de paiement sécurisée du prestataire
+      try {
+        await allerPayer(res.data.id, moyenChoisi);
+      } catch (err) {
+        router.push(`/reservation/paiement/${res.data.id}?erreur=${encodeURIComponent(apiErrorMessage(err, "Le paiement n'a pas pu démarrer."))}`);
+      }
     } catch (err) {
       setError(apiErrorMessage(err, "La réservation n'a pas pu être enregistrée."));
       setSubmitting(false);
@@ -139,10 +154,10 @@ function ReservationContent() {
 
             <section className="bg-white rounded-3xl shadow-sm border border-gray-100 p-5 sm:p-8">
               <h2 className="font-heading font-bold text-dark text-xl mb-5">Mode de paiement</h2>
-              <div className="space-y-3" role="radiogroup">
-                {PAYMENT_METHODS.map((method) => {
+              <div className="space-y-3" role="radiogroup" aria-label="Mode de paiement">
+                {moyens.map((method) => {
                   const Icon = method.icon;
-                  const isActive = paymentMethod === method.id;
+                  const isActive = moyenChoisi === method.id;
                   return (
                     <button
                       key={method.id} type="button" role="radio" aria-checked={isActive}
@@ -154,7 +169,10 @@ function ReservationContent() {
                       </div>
                       <div className="text-left flex-1 min-w-0">
                         <p className={cn("font-bold text-sm", isActive ? "text-primary" : "text-dark")}>{method.label}</p>
-                        <p className="text-gray-500 text-xs mt-0.5">{method.sublabel}</p>
+                        <p className="text-gray-500 text-xs mt-0.5">
+                          {method.sublabel}
+                          {method.id === "paypal" && config && !datesInvalid && <> · <strong className="text-dark">{enEuros(total, config.fcfa_par_euro)}</strong></>}
+                        </p>
                       </div>
                       <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0", isActive ? "border-primary bg-primary" : "border-gray-300")}>
                         {isActive && <Check size={10} className="text-white" />}
@@ -163,10 +181,21 @@ function ReservationContent() {
                   );
                 })}
               </div>
-              <p className="flex items-start gap-2 text-xs text-gray-500 mt-4 bg-gray-50 rounded-xl p-3">
-                <Info size={14} className="flex-shrink-0 mt-0.5 text-primary" />
-                Le paiement en ligne n&apos;est pas encore activé : aucun montant n&apos;est prélevé à cette étape. Le mode choisi est transmis à l&apos;hôte.
-              </p>
+              {enLigne ? (
+                <p className="flex items-start gap-2 text-xs text-gray-600 mt-4 bg-gray-50 rounded-xl p-3">
+                  <Lock size={14} className="flex-shrink-0 mt-0.5 text-secondary" />
+                  <span>
+                    Vous allez être redirigé vers la page sécurisée de {moyenChoisi === "paypal" ? "PayPal" : "FedaPay"} pour payer.
+                    AfriStay ne voit ni ne stocke vos coordonnées bancaires. Les dates sont bloquées pour vous pendant{" "}
+                    {config?.delai_paiement_minutes} minutes. L&apos;hôte est payé après votre arrivée.
+                  </span>
+                </p>
+              ) : (
+                <p className="flex items-start gap-2 text-xs text-gray-500 mt-4 bg-gray-50 rounded-xl p-3">
+                  <Info size={14} className="flex-shrink-0 mt-0.5 text-primary" />
+                  Le paiement en ligne n&apos;est pas encore activé : aucun montant n&apos;est prélevé à cette étape. Le mode choisi est transmis à l&apos;hôte.
+                </p>
+              )}
             </section>
           </div>
 
@@ -201,11 +230,13 @@ function ReservationContent() {
               {error && <p role="alert" className="text-sm text-red-700 bg-red-50 border border-red-100 rounded-xl p-3 mb-4">{error}</p>}
 
               <button onClick={handleConfirm} disabled={submitting || datesInvalid} className="w-full bg-secondary hover:bg-secondary-600 text-white font-bold py-4 rounded-2xl shadow-md transition-all text-base disabled:opacity-60">
-                {submitting ? "Traitement..." : "Confirmer la réservation"}
+                {submitting
+                  ? enLigne ? "Redirection vers le paiement..." : "Traitement..."
+                  : enLigne ? `Payer ${moyenChoisi === "paypal" && config ? enEuros(total, config.fcfa_par_euro) : formatPrice(total)}` : "Confirmer la réservation"}
               </button>
 
               <p className="text-center text-gray-400 text-xs mt-4 leading-relaxed">
-                En confirmant, vous acceptez nos <Link href="/cgu" className="text-primary font-medium">Conditions</Link> et la{" "}
+                {enLigne ? "En payant" : "En confirmant"}, vous acceptez nos <Link href="/cgu" className="text-primary font-medium">Conditions</Link> et la{" "}
                 <Link href="/remboursement" className="text-primary font-medium">politique d&apos;annulation</Link>.
               </p>
             </div>

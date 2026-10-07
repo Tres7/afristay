@@ -12,10 +12,9 @@ export default function RemboursementPage() {
       intro={
         <>
           <p>Cette page explique comment annuler une réservation et dans quelles conditions vous êtes remboursé.</p>
-          <p className="p-4 rounded-2xl bg-amber-50 text-amber-900">
-            <strong>Situation actuelle :</strong> le paiement en ligne n&apos;est pas encore activé sur AfriStay. Aucun montant
-            n&apos;est prélevé lors de la réservation, il n&apos;y a donc rien à rembourser par AfriStay pour le moment. Les règles de
-            remboursement ci-dessous s&apos;appliqueront dès l&apos;activation du paiement en ligne.
+          <p>
+            Votre paiement est conservé par AfriStay jusqu&apos;à votre arrivée : l&apos;hôte n&apos;est payé que 24 heures après le
+            début du séjour. C&apos;est ce qui nous permet de vous rembourser rapidement en cas d&apos;annulation ou de problème.
           </p>
         </>
       }
@@ -33,7 +32,7 @@ export default function RemboursementPage() {
         },
         {
           id: "bareme",
-          titre: "Barème de remboursement (paiement en ligne)",
+          titre: "Barème de remboursement",
           contenu: (
             <>
               <table>
@@ -63,7 +62,8 @@ export default function RemboursementPage() {
           titre: "Délais et moyens de remboursement",
           contenu: (
             <ul>
-              <li>Le remboursement est effectué sur le moyen de paiement utilisé (Mobile Money, carte bancaire ou PayPal).</li>
+              <li>Le remboursement est effectué sur le moyen de paiement utilisé : le numéro Mobile Money débité, la carte bancaire ou le compte PayPal.</li>
+              <li>Un paiement PayPal est remboursé en euros, au prorata du montant remboursé.</li>
               <li>Délai : <AValider>sous 7 jours ouvrés après l&apos;annulation</AValider>, auquel peut s&apos;ajouter le délai de traitement de votre opérateur ou de votre banque.</li>
               <li>Une question sur un remboursement : <AC>email du support</AC>.</li>
             </ul>

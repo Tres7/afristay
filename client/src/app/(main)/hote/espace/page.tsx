@@ -11,10 +11,11 @@ import api, { apiErrorMessage } from "@/lib/api";
 import { cn, FALLBACK_IMAGE, formatDate, formatPrice, isoDate, TYPE_LABELS } from "@/lib/utils";
 import HebergementForm from "@/components/hote/HebergementForm";
 import RatingBadge from "@/components/avis/RatingBadge";
+import RevenusHote from "@/components/hote/RevenusHote";
 import type { Hebergement, Paginated, Reservation } from "@/types/api/models";
 import type { MessagingConversation } from "@/types/api/messaging";
 
-type Tab = "annonces" | "reservations";
+type Tab = "annonces" | "reservations" | "revenus";
 
 const PAYMENT_LABELS: Record<string, string> = { mobile_money: "Mobile Money", carte: "Carte", paypal: "PayPal" };
 
@@ -40,6 +41,11 @@ function EspaceHoteContent() {
   };
 
   const isHost = session?.user?.role === "hote" || session?.user?.role === "admin";
+
+  useEffect(() => {
+    const onglet = searchParams.get("onglet");
+    if (onglet === "revenus" || onglet === "reservations") setTab(onglet);
+  }, [searchParams]);
 
   useEffect(() => {
     if (searchParams.get("bienvenue") === "1") {
@@ -97,8 +103,9 @@ function EspaceHoteContent() {
     }
   };
 
-  const upcoming = reservations.filter((r) => r.status !== "cancelled" && r.check_out >= isoDate());
-  const revenue = reservations.filter((r) => r.status !== "cancelled").reduce((s, r) => s + Number(r.total_price), 0);
+  const upcoming = reservations.filter((r) => r.status === "confirmed" && r.check_out >= isoDate());
+  // Part de l'hôte (prix des nuits moins la commission) sur les séjours confirmés
+  const revenue = reservations.filter((r) => r.status === "confirmed").reduce((s, r) => s + r.montants.montant_hote, 0);
 
   if (editing) {
     return (
@@ -136,7 +143,7 @@ function EspaceHoteContent() {
         {[
           { label: "Annonces", value: annonces.length },
           { label: "Séjours à venir", value: upcoming.length },
-          { label: "Total réservé", value: formatPrice(revenue) },
+          { label: "Vos revenus", value: formatPrice(revenue) },
         ].map((s) => (
           <div key={s.label} className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm min-w-0">
             <p className="text-xs text-muted font-medium">{s.label}</p>
@@ -145,8 +152,8 @@ function EspaceHoteContent() {
         ))}
       </div>
 
-      <div className="flex gap-6 border-b border-gray-200 mb-6" role="tablist">
-        {([["annonces", `Mes annonces (${annonces.length})`], ["reservations", `Réservations reçues (${reservations.length})`]] as const).map(([id, label]) => (
+      <div className="flex gap-6 border-b border-gray-200 mb-6 overflow-x-auto scrollbar-hide" role="tablist">
+        {([["annonces", `Mes annonces (${annonces.length})`], ["reservations", `Réservations (${reservations.length})`], ["revenus", "Revenus"]] as const).map(([id, label]) => (
           <button key={id} role="tab" aria-selected={tab === id} onClick={() => setTab(id)}
             className={cn("pb-3 text-sm font-bold whitespace-nowrap border-b-2 transition-colors", tab === id ? "text-primary border-primary" : "text-gray-400 border-transparent hover:text-dark")}>
             {label}
@@ -154,7 +161,9 @@ function EspaceHoteContent() {
         ))}
       </div>
 
-      {tab === "annonces" ? (
+      {tab === "revenus" ? (
+        <RevenusHote />
+      ) : tab === "annonces" ? (
         isLoading ? (
           <div className="space-y-4">{[0, 1].map((i) => <div key={i} className="h-36 skeleton rounded-2xl" />)}</div>
         ) : annonces.length === 0 ? (
@@ -210,11 +219,18 @@ function EspaceHoteContent() {
                 <span className="flex items-center gap-1.5"><Users size={14} className="text-primary" />{r.guests_count}</span>
               </div>
               <div className="flex items-center justify-between md:flex-col md:items-end gap-1">
-                <span className="font-heading font-bold text-dark">{formatPrice(r.total_price)}</span>
-                <span className={cn("text-xs font-bold px-2.5 py-1 rounded-full", r.status === "cancelled" ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700")}>
-                  {r.status === "cancelled" ? "Annulée" : `Confirmée · ${PAYMENT_LABELS[r.payment_method]}`}
+                <span className="font-heading font-bold text-dark" title="Prix des nuits moins la commission AfriStay">
+                  {formatPrice(r.montants.montant_hote)} <span className="text-xs font-normal text-gray-600">pour vous</span>
                 </span>
-                {r.status !== "cancelled" && (
+                <span className={cn("text-xs font-bold px-2.5 py-1 rounded-full",
+                  r.status === "cancelled" ? "bg-red-100 text-red-700" : r.status === "pending" ? "bg-amber-100 text-amber-800" : "bg-green-100 text-green-700")}>
+                  {r.status === "cancelled"
+                    ? "Annulée"
+                    : r.status === "pending"
+                      ? "En attente de paiement"
+                      : r.paiement === "reussi" ? `Payée · ${PAYMENT_LABELS[r.payment_method]}` : `Confirmée · ${PAYMENT_LABELS[r.payment_method]}`}
+                </span>
+                {r.status === "confirmed" && (
                   <button
                     onClick={() => contacterVoyageur(r)} disabled={contactId === r.id}
                     className="mt-1 flex items-center gap-1.5 px-4 py-2 rounded-full border border-primary/30 text-primary text-sm font-semibold hover:bg-primary/5 disabled:opacity-50"

@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'apps.favoris.apps.FavorisConfig',
     'apps.avis.apps.AvisConfig',
     'apps.messaging.apps.MessagingConfig',
+    'apps.paiements.apps.PaiementsConfig',
 ]
 
 MIDDLEWARE = [
@@ -156,6 +157,24 @@ MESSAGING = {
     'EMAIL_HOURLY_CAP': int(os.getenv('MESSAGING_EMAIL_HOURLY_CAP', '5')),
     'OUTBOX_RETENTION_DAYS': int(os.getenv('MESSAGING_OUTBOX_RETENTION_DAYS', '7')),
     'RELAY_INTERVAL_SECONDS': int(os.getenv('MESSAGING_RELAY_INTERVAL_SECONDS', '10')),
+}
+
+# Paiement en ligne (FedaPay). Sans clé FedaPay ni PayPal, le paiement en ligne est désactivé :
+# les réservations sont alors confirmées immédiatement, sans encaissement.
+FEDAPAY = {
+    'SECRET_KEY': os.getenv('FEDAPAY_SECRET_KEY', ''),
+    'ENV': os.getenv('FEDAPAY_ENV', 'sandbox'),  # sandbox | live
+    'WEBHOOK_SECRET': os.getenv('FEDAPAY_WEBHOOK_SECRET', ''),
+    # Durée pendant laquelle les dates restent bloquées en attendant le paiement
+    'EXPIRATION_MINUTES': int(os.getenv('PAIEMENT_EXPIRATION_MINUTES', '30')),
+}
+
+# PayPal (paiement en euros). Sans identifiants, PayPal n'est pas proposé.
+# Les versements aux hôtes passent toujours par FedaPay.
+PAYPAL = {
+    'CLIENT_ID': os.getenv('PAYPAL_CLIENT_ID', ''),
+    'CLIENT_SECRET': os.getenv('PAYPAL_CLIENT_SECRET', ''),
+    'ENV': os.getenv('PAYPAL_ENV', 'sandbox'),  # sandbox | live
 }
 
 # URL du frontend, utilisée dans les liens des emails

@@ -62,6 +62,7 @@ export default function CguPage() {
                 auteur) et qui ne montrent aucune personne identifiable sans son accord.
               </li>
               <li>Tenir le calendrier à jour et honorer les réservations confirmées.</li>
+              <li>Indiquer un compte Mobile Money à son nom (ou à celui de son entreprise) pour recevoir ses versements.</li>
               <li>Respecter la réglementation locale applicable (déclarations, taxes de séjour, sécurité du logement).</li>
               <li>Répondre aux voyageurs dans un délai raisonnable.</li>
             </ul>
@@ -73,13 +74,20 @@ export default function CguPage() {
           contenu: (
             <>
               <p>
-                La réservation est confirmée immédiatement si les dates sont disponibles. Le prix affiché comprend le prix des nuits et
-                des frais de service de 8 %.
+                Le prix payé par le voyageur comprend le prix des nuits fixé par l&apos;hôte et des frais de service AfriStay de 8 %.
+                Les dates sont bloquées pendant 30 minutes le temps du paiement ; la réservation est confirmée dès que le paiement est
+                reçu. Sans paiement dans ce délai, les dates sont libérées.
               </p>
               <p>
-                <strong>À ce jour, le paiement en ligne n&apos;est pas activé :</strong> aucun montant n&apos;est prélevé par AfriStay ;
-                le mode de paiement choisi est transmis à l&apos;hôte. Les conditions d&apos;annulation sont décrites dans la{" "}
-                <Link href="/remboursement">politique d&apos;annulation et de remboursement</Link>.
+                Le paiement s&apos;effectue sur la page sécurisée de nos prestataires : <strong>FedaPay</strong> (Mobile Money, carte Visa ou
+                Mastercard, en francs CFA) ou <strong>PayPal</strong> (en euros, à la parité fixe 1 € = 655,957 FCFA). AfriStay ne
+                conserve aucune donnée de carte ni code Mobile Money.
+              </p>
+              <p>
+                AfriStay encaisse le paiement pour le compte de l&apos;hôte et le conserve jusqu&apos;au séjour. <strong>L&apos;hôte reçoit le
+                prix des nuits, diminué d&apos;une commission de 5 %</strong>, sur son compte Mobile Money 24 heures après l&apos;arrivée du
+                voyageur. Ce délai permet de rembourser le voyageur si le logement ne correspond pas à l&apos;annonce. Les conditions
+                d&apos;annulation sont décrites dans la <Link href="/remboursement">politique d&apos;annulation et de remboursement</Link>.
               </p>
             </>
           ),

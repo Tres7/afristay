@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { CreditCard, Info, Smartphone, Wallet } from "lucide-react";
+import { CreditCard, Lock, Smartphone, Wallet } from "lucide-react";
 import SubPageHeader from "@/components/layout/SubPageHeader";
 
 const METHODS = [
-  { icon: Smartphone, title: "Mobile Money", desc: "MTN, Orange, Moov, Wave" },
-  { icon: CreditCard, title: "Carte bancaire", desc: "Visa, Mastercard" },
-  { icon: Wallet, title: "PayPal", desc: "Avec votre compte PayPal" },
+  { icon: Smartphone, title: "Mobile Money", desc: "Moov Money (Flooz), Mixx by Yas (T-Money), MTN, Orange, Airtel… via FedaPay" },
+  { icon: CreditCard, title: "Carte bancaire", desc: "Visa, Mastercard, via FedaPay" },
+  { icon: Wallet, title: "PayPal", desc: "Compte PayPal ou carte, débité en euros (1 € = 655,957 FCFA)" },
 ];
 
 export default function PaymentMethodsPage() {
@@ -25,10 +25,11 @@ export default function PaymentMethodsPage() {
         ))}
 
         <p className="flex items-start gap-3 text-sm text-gray-600 bg-gray-50 rounded-2xl p-4">
-          <Info size={18} className="text-primary flex-shrink-0 mt-0.5" />
+          <Lock size={18} className="text-secondary flex-shrink-0 mt-0.5" />
           <span>
-            Vous choisissez votre mode de paiement à chaque réservation. Aucune carte n&apos;est enregistrée sur votre compte et le
-            paiement en ligne n&apos;est pas encore activé.{" "}
+            Vous choisissez votre moyen de paiement à chaque réservation, puis vous payez sur la page sécurisée de FedaPay ou de
+            PayPal. AfriStay ne voit ni n&apos;enregistre vos coordonnées bancaires ou votre code Mobile Money. L&apos;hôte n&apos;est payé
+            qu&apos;après votre arrivée.{" "}
             <Link href="/remboursement" className="text-primary font-semibold hover:underline">En savoir plus sur le paiement et le remboursement</Link>
           </span>
         </p>

@@ -5,6 +5,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
+from apps.paiements import services as paiements
+
 from .models import ReservationModel
 from .serializers import ReservationSerializer, ReservationCreateSerializer
 
@@ -18,7 +20,7 @@ class ReservationListCreateView(APIView):
             qs = ReservationModel.objects.filter(hebergement__host=request.user)
         else:
             qs = ReservationModel.objects.filter(guest=request.user)
-        qs = qs.select_related('hebergement', 'hebergement__host', 'guest', 'avis')
+        qs = qs.select_related('hebergement', 'hebergement__host', 'guest', 'avis').prefetch_related('paiements', 'remboursements')
         serializer = ReservationSerializer(qs, many=True, context={'request': request})
         return Response({'results': serializer.data, 'count': len(serializer.data)})
 
@@ -55,8 +57,10 @@ class ReservationDetailView(APIView):
                 {'detail': 'Un séjour déjà commencé ou passé ne peut plus être annulé.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        if obj.status in ('confirmed', 'pending'):
-            obj.status = 'cancelled'
-            obj.save(update_fields=['status'])
-            return Response({'detail': 'Réservation annulée.'})
-        return Response({'detail': 'Cette réservation ne peut pas être annulée.'}, status=status.HTTP_400_BAD_REQUEST)
+        if obj.status not in ('confirmed', 'pending'):
+            return Response({'detail': 'Cette réservation ne peut pas être annulée.'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            rembourse = paiements.annuler(obj, par='voyageur')
+        except paiements.PaiementErreur as exc:
+            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'detail': 'Réservation annulée.', 'rembourse': rembourse})

@@ -13,6 +13,7 @@ urlpatterns = [
     path('api/v1/reservations/', include('apps.reservations.urls')),
     path('api/v1/favoris/', include('apps.favoris.urls')),
     path('api/v1/avis/', include('apps.avis.urls')),
+    path('api/v1/paiements/', include('apps.paiements.urls')),
     path('api/v1/messaging/', include('apps.messaging.infrastructure.http.routes.urls')),
 ]
 

@@ -49,6 +49,19 @@ export interface Reservation {
   avis_id: string | null;
   peut_evaluer: boolean;
   created_at: string;
+  montants: {
+    prix_nuits: number;
+    frais_service: number;
+    total: number;
+    commission_hote: number;
+    montant_hote: number;
+  };
+  /** Dernier paiement en ligne : null si la réservation a été faite sans paiement en ligne. */
+  paiement: "en_attente" | "reussi" | "echoue" | "annule" | null;
+  remboursement: { montant: number; statut: "en_cours" | "envoye" } | null;
+  /** Fin du délai pour payer (réservation en attente de paiement). */
+  expire_le: string | null;
+  annule_par: "" | "voyageur" | "hote" | "plateforme" | "expiration";
 }
 
 export interface Favori {

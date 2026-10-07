@@ -1,7 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { CheckCircle, Calendar, MapPin, Users, ArrowRight, MessageCircle } from "lucide-react";
@@ -17,12 +18,18 @@ const PAYMENT_LABELS: Record<string, string> = {
 
 export default function ConfirmationPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
 
   const { data: reservation, isLoading, isError } = useQuery({
     queryKey: ["reservation", params.id],
     queryFn: async () => (await api.get<Reservation>(`/v1/reservations/${params.id}/`)).data,
     retry: false,
   });
+
+  // Réservation pas encore payée : on renvoie vers la page de paiement
+  useEffect(() => {
+    if (reservation?.status === "pending" && reservation.expire_le) router.replace(`/reservation/paiement/${reservation.id}`);
+  }, [reservation, router]);
 
   if (isLoading) {
     return <div className="max-w-3xl mx-auto px-4 py-16"><div className="h-80 skeleton rounded-3xl" /></div>;
@@ -90,10 +97,19 @@ export default function ConfirmationPage() {
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Total ({PAYMENT_LABELS[reservation.payment_method]})</p>
+                  <p className="text-xs text-gray-500">
+                    {reservation.paiement === "reussi" ? "Payé" : "Total"} ({PAYMENT_LABELS[reservation.payment_method]})
+                  </p>
                   <p className="text-lg font-heading font-bold text-primary">{formatPrice(reservation.total_price)}</p>
                 </div>
               </div>
+
+              {reservation.remboursement && (
+                <p className="mt-4 text-sm text-dark bg-green-50 rounded-xl px-4 py-3">
+                  Remboursement de <strong>{formatPrice(reservation.remboursement.montant)}</strong>{" "}
+                  {reservation.remboursement.statut === "envoye" ? "effectué" : "en cours (sous 7 jours ouvrés)"}.
+                </p>
+              )}
 
               <div className="mt-4 pt-4 border-t border-gray-100">
                 <p className="text-xs text-gray-500">Numéro de réservation</p>
