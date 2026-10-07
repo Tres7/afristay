@@ -111,7 +111,7 @@ function RegisterForm() {
 
       <form className="space-y-4" onSubmit={handleSubmit}>
         {error && (
-          <div role="alert" className="p-3 text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl text-center font-medium">
+          <div role="alert" className="p-3 text-sm text-red-700 bg-red-50 border border-red-100 rounded-xl text-center font-medium">
             {error}
           </div>
         )}
@@ -195,12 +195,23 @@ function RegisterForm() {
 
         <div className="flex items-start gap-2 pt-1">
           <input type="checkbox" id="terms" className="mt-1 accent-primary w-4 h-4 flex-shrink-0" required />
-          <label htmlFor="terms" className="text-xs text-gray-500 leading-relaxed">
+          <label htmlFor="terms" className="text-xs text-gray-600 leading-relaxed">
             J&apos;accepte les{" "}
-            <Link href="/profil/aide#conditions" className="text-primary font-medium">Conditions d&apos;utilisation</Link> et la{" "}
-            <Link href="/profil/aide#confidentialite" className="text-primary font-medium">Politique de confidentialité</Link> d&apos;AfriStay.
+            <Link href="/cgu" target="_blank" className="text-primary font-medium underline">
+              Conditions générales d&apos;utilisation<span className="sr-only"> (s&apos;ouvre dans un nouvel onglet)</span>
+            </Link>{" "}
+            d&apos;AfriStay.
           </label>
         </div>
+
+        {/* Information RGPD : le compte repose sur le contrat (CGU), pas sur un consentement à cocher */}
+        <p className="text-xs text-gray-600 leading-relaxed bg-gray-50 rounded-xl p-3">
+          Vos données servent uniquement à gérer votre compte et vos réservations. Le téléphone est facultatif. Vous pouvez
+          consulter, modifier ou supprimer vos données à tout moment.{" "}
+          <Link href="/confidentialite" target="_blank" className="text-primary font-medium underline">
+            Politique de confidentialité<span className="sr-only"> (s&apos;ouvre dans un nouvel onglet)</span>
+          </Link>
+        </p>
 
         <button
           type="submit"

@@ -52,7 +52,7 @@ export default function ConfirmDialog({ confirmation, onClose }: { confirmation:
       <div className="absolute inset-0 bg-black/40" onClick={() => !envoi && onClose()} aria-hidden />
       <div role="alertdialog" aria-modal="true" aria-labelledby="confirm-titre" className="relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl p-6 shadow-card-hover">
         <div className="flex gap-4">
-          <div className={cn("w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0", confirmation.danger ? "bg-red-50 text-red-600" : "bg-primary/10 text-primary")}>
+          <div className={cn("w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0", confirmation.danger ? "bg-red-50 text-red-700" : "bg-primary/10 text-primary")}>
             <AlertTriangle size={20} />
           </div>
           <div className="min-w-0">

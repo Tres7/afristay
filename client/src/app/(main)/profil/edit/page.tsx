@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { ArrowLeft, User, Mail, Phone, Save } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useQueryClient } from "@tanstack/react-query";
 import api, { apiErrorMessage } from "@/lib/api";
+import ConfirmDialog, { type Confirmation } from "@/components/backoffice/ConfirmDialog";
 
 export default function EditProfilePage() {
   const { update } = useSession();
@@ -14,6 +15,7 @@ export default function EditProfilePage() {
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
 
   const [form, setForm] = useState({
     first_name: "",
@@ -75,6 +77,7 @@ export default function EditProfilePage() {
       <div className="mb-8 flex items-center gap-4">
         <Link
           href="/profil"
+          aria-label="Retour au profil"
           className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-dark hover:bg-light transition-colors"
         >
           <ArrowLeft size={20} />
@@ -182,6 +185,37 @@ export default function EditProfilePage() {
           </div>
         </form>
       </div>
+
+      <section aria-labelledby="fermer-titre" className="mt-8 bg-white rounded-2xl border border-red-100 p-6 md:p-8">
+        <h2 id="fermer-titre" className="font-heading font-bold text-lg text-dark">Fermer mon compte</h2>
+        <p className="text-sm text-gray-600 mt-2 max-w-2xl">
+          Votre compte est désactivé immédiatement : vous ne pourrez plus vous connecter et votre profil n&apos;apparaîtra plus.
+          Pour l&apos;effacement définitif de toutes vos données, suivez la procédure de la{" "}
+          <Link href="/confidentialite#droits" className="text-primary underline">politique de confidentialité</Link>.
+        </p>
+        <button
+          type="button"
+          onClick={() => setConfirmation({
+            titre: "Fermer votre compte ?",
+            message: "Vous serez déconnecté et ne pourrez plus vous connecter avec ce compte. Vos réservations à venir ne sont pas annulées automatiquement : annulez-les d'abord si nécessaire.",
+            libelle: "Fermer mon compte",
+            danger: true,
+            action: async () => {
+              try {
+                await api.delete("/v1/users/me/");
+                await signOut({ callbackUrl: "/?compte=ferme" });
+              } catch (err) {
+                setError(apiErrorMessage(err, "Impossible de fermer le compte pour le moment."));
+                throw err;
+              }
+            },
+          })}
+          className="mt-4 px-5 py-3 rounded-xl border-2 border-red-600 text-red-700 text-sm font-bold hover:bg-red-50"
+        >
+          Fermer mon compte
+        </button>
+      </section>
+      <ConfirmDialog confirmation={confirmation} onClose={() => setConfirmation(null)} />
     </div>
   );
 }

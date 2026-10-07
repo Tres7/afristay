@@ -100,7 +100,7 @@ function ReservationContent() {
                 <Link href={backToListing} className="text-sm font-bold text-primary hover:underline">Modifier</Link>
               </div>
               {datesInvalid ? (
-                <p className="text-sm text-red-600 bg-red-50 rounded-xl p-3">
+                <p className="text-sm text-red-700 bg-red-50 rounded-xl p-3">
                   Dates invalides ou passées. <Link href={backToListing} className="font-bold underline">Choisir d&apos;autres dates</Link>
                 </p>
               ) : (
@@ -129,7 +129,12 @@ function ReservationContent() {
                 id="message" value={message} onChange={(e) => setMessage(e.target.value)} maxLength={1000}
                 placeholder="Heure d'arrivée prévue, questions particulières…" rows={3}
                 className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-base sm:text-sm text-dark outline-none focus:border-primary/50 transition-colors resize-none"
+                aria-describedby="message-info"
               />
+              <p id="message-info" className="text-xs text-gray-600 mt-2">
+                Votre nom, vos dates de séjour, le nombre de voyageurs et ce message sont transmis à l&apos;hôte pour préparer votre accueil.
+                N&apos;y indiquez pas de données sensibles (santé, numéro de pièce d&apos;identité, coordonnées bancaires).
+              </p>
             </section>
 
             <section className="bg-white rounded-3xl shadow-sm border border-gray-100 p-5 sm:p-8">
@@ -193,15 +198,15 @@ function ReservationContent() {
                 <span className="font-heading font-bold text-primary text-2xl">{formatPrice(total)}</span>
               </div>
 
-              {error && <p role="alert" className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl p-3 mb-4">{error}</p>}
+              {error && <p role="alert" className="text-sm text-red-700 bg-red-50 border border-red-100 rounded-xl p-3 mb-4">{error}</p>}
 
               <button onClick={handleConfirm} disabled={submitting || datesInvalid} className="w-full bg-secondary hover:bg-secondary-600 text-white font-bold py-4 rounded-2xl shadow-md transition-all text-base disabled:opacity-60">
                 {submitting ? "Traitement..." : "Confirmer la réservation"}
               </button>
 
               <p className="text-center text-gray-400 text-xs mt-4 leading-relaxed">
-                En confirmant, vous acceptez nos <Link href="/profil/aide#conditions" className="text-primary font-medium">Conditions</Link> et la{" "}
-                <Link href="/profil/aide#annulation" className="text-primary font-medium">politique d&apos;annulation</Link>.
+                En confirmant, vous acceptez nos <Link href="/cgu" className="text-primary font-medium">Conditions</Link> et la{" "}
+                <Link href="/remboursement" className="text-primary font-medium">politique d&apos;annulation</Link>.
               </p>
             </div>
           </div>

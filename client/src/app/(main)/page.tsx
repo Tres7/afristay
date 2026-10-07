@@ -166,7 +166,7 @@ export default function HomePage() {
               <h2 className="font-heading font-bold text-dark text-2xl md:text-3xl">Destinations populaires</h2>
               <p className="text-gray-500 text-sm mt-1">Les villes où nos voyageurs posent leurs valises</p>
             </div>
-            <Link href="/recherche" className="flex items-center gap-1 text-primary text-sm font-bold hover:underline flex-shrink-0">
+            <Link href="/recherche" aria-label="Voir toutes les destinations" className="flex items-center gap-1 text-primary text-sm font-bold hover:underline flex-shrink-0">
               Voir tout <ChevronRight size={16} />
             </Link>
           </div>
@@ -210,7 +210,7 @@ export default function HomePage() {
         <section>
           <div className="flex items-end justify-between mb-6 md:mb-8 gap-4">
             <h2 className="font-heading font-bold text-dark text-2xl md:text-3xl">Les mieux notés</h2>
-            <Link href="/recherche?sort=note" className="flex items-center gap-1 text-primary text-sm font-bold hover:underline flex-shrink-0">
+            <Link href="/recherche?sort=note" aria-label="Voir tous les logements les mieux notés" className="flex items-center gap-1 text-primary text-sm font-bold hover:underline flex-shrink-0">
               Voir tout <ChevronRight size={16} />
             </Link>
           </div>

@@ -41,7 +41,7 @@ const FormField = forwardRef<HTMLInputElement, FormFieldProps>(function FormFiel
         {trailing && <div className="absolute right-3 top-1/2 -translate-y-1/2">{trailing}</div>}
       </div>
       {error ? (
-        <p id={`${inputId}-error`} className="text-xs text-red-500 mt-1.5 ml-1">{error}</p>
+        <p id={`${inputId}-error`} className="text-xs text-red-600 mt-1.5 ml-1">{error}</p>
       ) : hint ? (
         <p className="text-xs text-gray-400 mt-1.5 ml-1">{hint}</p>
       ) : null}

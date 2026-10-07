@@ -147,9 +147,9 @@ export default function ProfilPage() {
 
             <button onClick={() => signOut({ callbackUrl: "/" })} className="group w-full bg-white rounded-3xl shadow-soft border border-gray-100 flex items-center gap-4 px-6 sm:px-8 py-4 hover:bg-red-50/50 transition-colors">
               <div className="w-11 h-11 bg-red-50 rounded-2xl flex items-center justify-center flex-shrink-0">
-                <LogOut size={20} className="text-red-500" />
+                <LogOut size={20} className="text-red-600" />
               </div>
-              <span className="flex-1 text-left font-heading font-bold text-red-500">Se déconnecter</span>
+              <span className="flex-1 text-left font-heading font-bold text-red-600">Se déconnecter</span>
             </button>
           </div>
         </div>

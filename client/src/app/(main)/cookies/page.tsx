@@ -1,0 +1,100 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import LegalPage from "@/components/legal/LegalPage";
+import GererCookiesBouton from "@/components/legal/GererCookiesBouton";
+
+export const metadata: Metadata = { title: "Politique cookies" };
+
+export default function CookiesPage() {
+  return (
+    <LegalPage
+      titre="Politique cookies"
+      miseAJour="7 octobre 2026"
+      intro={
+        <>
+          <p>
+            Un cookie est un petit fichier déposé sur votre appareil lors de la visite d&apos;un site. Cette page liste
+            <strong> tous</strong> les cookies et éléments de stockage utilisés par AfriStay, leur rôle et leur durée.
+          </p>
+          <p>
+            <strong>AfriStay n&apos;utilise aucun cookie de mesure d&apos;audience, de publicité ni de réseau social.</strong>
+          </p>
+          <GererCookiesBouton className="mt-2 px-5 py-3 rounded-xl bg-dark text-white text-sm font-bold">Gérer mes choix de cookies</GererCookiesBouton>
+        </>
+      }
+      sections={[
+        {
+          id: "necessaires",
+          titre: "Cookies strictement nécessaires",
+          contenu: (
+            <>
+              <p>
+                Indispensables au fonctionnement du site (connexion, sécurité). Ils sont exemptés de consentement et ne
+                peuvent pas être désactivés depuis le site. Ils sont inaccessibles aux scripts (option « HttpOnly »).
+              </p>
+              <table>
+                <thead><tr><th>Nom</th><th>Rôle</th><th>Durée</th></tr></thead>
+                <tbody>
+                  <tr><td><code>authjs.session-token</code></td><td>Maintient votre connexion à votre compte (session chiffrée).</td><td>7 jours, ou jusqu&apos;à la déconnexion</td></tr>
+                  <tr><td><code>authjs.csrf-token</code></td><td>Protège les formulaires de connexion contre les requêtes frauduleuses.</td><td>Fermeture du navigateur</td></tr>
+                  <tr><td><code>authjs.callback-url</code></td><td>Vous ramène à la page consultée après la connexion.</td><td>Fermeture du navigateur</td></tr>
+                </tbody>
+              </table>
+              <p className="text-sm">En production, ces noms sont précédés de <code>__Secure-</code> ou <code>__Host-</code> (cookies transmis uniquement en HTTPS).</p>
+            </>
+          ),
+        },
+        {
+          id: "stockage",
+          titre: "Stockage local du navigateur",
+          contenu: (
+            <table>
+              <thead><tr><th>Nom</th><th>Rôle</th><th>Durée</th></tr></thead>
+              <tbody>
+                <tr><td><code>afristay_consentement</code></td><td>Mémorise vos choix de cookies (date et préférences).</td><td>6 mois, puis le choix vous est redemandé</td></tr>
+                <tr><td><code>verify_email</code></td><td>Retient l&apos;adresse saisie à l&apos;inscription le temps de la vérification par code.</td><td>Effacé après la vérification ou à la fermeture de l&apos;onglet</td></tr>
+                <tr><td><code>splash_shown</code></td><td>Évite de réafficher l&apos;écran d&apos;accueil animé à chaque page.</td><td>Fermeture de l&apos;onglet</td></tr>
+              </tbody>
+            </table>
+          ),
+        },
+        {
+          id: "tiers",
+          titre: "Contenus de services tiers (avec votre accord)",
+          contenu: (
+            <>
+              <p>
+                <strong>Carte Google Maps</strong> sur la fiche des logements. Elle n&apos;est chargée qu&apos;avec votre accord
+                (bandeau, paramètres des cookies ou bouton « Afficher la carte »). Une fois affichée, Google reçoit votre adresse IP
+                et peut déposer ses propres cookies, régis par la{" "}
+                <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">politique de confidentialité de Google</a>.
+              </p>
+              <p>
+                <strong>Connexion avec Google</strong> (si elle est proposée) : le service de Google n&apos;est contacté que lorsque vous
+                cliquez sur « Continuer avec Google ». Google peut alors utiliser ses propres cookies pour vous identifier.
+              </p>
+            </>
+          ),
+        },
+        {
+          id: "choix",
+          titre: "Modifier ou retirer votre consentement",
+          contenu: (
+            <>
+              <p>
+                Vous pouvez changer d&apos;avis à tout moment, aussi simplement que vous avez donné votre accord : lien
+                « Gérer les cookies » en bas de chaque page. Refuser n&apos;empêche pas d&apos;utiliser AfriStay : seule la carte
+                interactive est remplacée par un encart.
+              </p>
+              <p>
+                Vous pouvez aussi supprimer les cookies depuis les réglages de votre navigateur. Plus d&apos;informations :{" "}
+                <a href="https://www.cnil.fr/fr/cookies-et-autres-traceurs/comment-se-proteger/maitriser-votre-navigateur" target="_blank" rel="noopener noreferrer">guide de la CNIL</a>.
+              </p>
+              <p>Pour le traitement de vos données personnelles en général, consultez notre <Link href="/confidentialite">politique de confidentialité</Link>.</p>
+            </>
+          ),
+        },
+      ]}
+    />
+  );
+}

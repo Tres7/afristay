@@ -72,7 +72,7 @@ function Annonces() {
 
   const actions = (h: AdminHebergement) => (
     <>
-      <Link href={`/hebergements/${h.id}`} target="_blank" className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-gray-200 text-dark hover:bg-gray-50 flex items-center gap-1">
+      <Link href={`/hebergements/${h.id}`} target="_blank" aria-label={`Voir l'annonce ${h.name} sur le site (nouvel onglet)`} className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-gray-200 text-dark hover:bg-gray-50 flex items-center gap-1">
         Voir <ExternalLink size={12} />
       </Link>
       <ActionButton onClick={() => setConfirmation({
