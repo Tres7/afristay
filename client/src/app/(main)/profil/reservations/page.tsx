@@ -147,7 +147,7 @@ export default function ReservationsPage() {
 
                   <div className="flex flex-wrap items-center justify-between gap-3 mt-5 pt-4 border-t border-gray-100">
                     <div>
-                      <span className="text-xs text-gray-500">Total</span>
+                      <span className="text-xs text-gray-500">{res.paiement === "reussi" ? "Payé" : "Total"}</span>
                       <p className="font-heading font-bold text-lg text-dark">{formatPrice(res.total_price)}</p>
                     </div>
                     <div className="flex flex-wrap gap-2">
