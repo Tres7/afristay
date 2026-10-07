@@ -12,6 +12,7 @@ import AmenityBadge from "@/components/hebergement/AmenityBadge";
 import FavoriteButton from "@/components/hebergement/FavoriteButton";
 import RatingBadge from "@/components/avis/RatingBadge";
 import AvisSection from "@/components/avis/AvisSection";
+import MapEmbed from "@/components/hebergement/MapEmbed";
 import api, { apiErrorMessage } from "@/lib/api";
 import { addDays, calculateNights, calculateServiceFee, cn, FALLBACK_IMAGE, formatDate, formatPrice, isoDate, TYPE_LABELS } from "@/lib/utils";
 import { nuitsIndisponibles, useDisponibilites } from "@/lib/useDisponibilites";
@@ -141,7 +142,7 @@ function HebergementContent() {
               </p>
             )}
             <div className="flex items-center gap-x-3 gap-y-1 mt-2 flex-wrap text-sm">
-              <a href="#avis" className="hover:underline">
+              <a href="#avis" className="hover:underline" aria-label={hebergement.review_count ? `Note ${hebergement.rating.toFixed(1)} sur 5, voir les ${hebergement.review_count} avis` : "Nouveau logement, voir les avis"}>
                 <RatingBadge rating={hebergement.rating} count={hebergement.review_count} variant="full" />
               </a>
               <span className="text-muted">·</span>
@@ -230,13 +231,7 @@ function HebergementContent() {
             <section className="bg-white rounded-2xl shadow-card p-5 sm:p-6">
               <h2 className="font-heading font-bold text-dark text-xl mb-4">Localisation</h2>
               <div className="h-56 sm:h-64 rounded-xl overflow-hidden bg-light-muted">
-                <iframe
-                  title={`Carte — ${hebergement.city}`}
-                  src={`https://maps.google.com/maps?q=${encodeURIComponent(`${hebergement.location} ${hebergement.city}`)}&z=13&output=embed`}
-                  className="w-full h-full border-0"
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                />
+                <MapEmbed lieu={hebergement.location} ville={hebergement.city} />
               </div>
               <p className="text-sm text-muted mt-3">L&apos;adresse exacte vous est communiquée après la réservation.</p>
             </section>
@@ -276,7 +271,7 @@ function HebergementContent() {
               </div>
 
               {datesPrises && (
-                <p role="alert" className="text-sm text-red-600 bg-red-50 rounded-xl p-3 mb-3">
+                <p role="alert" className="text-sm text-red-700 bg-red-50 rounded-xl p-3 mb-3">
                   Ces dates ne sont plus disponibles.{" "}
                   <button type="button" onClick={() => { choisirDates("", ""); setCalendrierOuvert(true); }} className="font-bold underline">Choisir d&apos;autres dates</button>
                 </p>

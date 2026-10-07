@@ -185,7 +185,7 @@ function EspaceHoteContent() {
                     <button onClick={() => toggleAvailability(h)} className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gray-100 text-dark text-sm font-medium hover:bg-gray-200">
                       {h.is_available ? <><EyeOff size={14} /> Masquer</> : <><Eye size={14} /> Publier</>}
                     </button>
-                    <button onClick={() => remove(h)} className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-red-50 text-red-600 text-sm font-medium hover:bg-red-100"><Trash2 size={14} /> Supprimer</button>
+                    <button onClick={() => remove(h)} className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-red-50 text-red-700 text-sm font-medium hover:bg-red-100"><Trash2 size={14} /> Supprimer</button>
                   </div>
                 </div>
               </article>

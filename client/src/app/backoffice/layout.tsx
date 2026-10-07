@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import AdminShell from "@/components/backoffice/AdminShell";
 
 export const metadata: Metadata = {
-  title: "Back-office — AfriStay",
+  title: "Back-office",
   robots: { index: false, follow: false },
 };
 

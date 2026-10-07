@@ -130,7 +130,7 @@ export function ActionButton({ onClick, children, danger, disabled }: { onClick:
     <button
       type="button" onClick={onClick} disabled={disabled}
       className={cn("px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors disabled:opacity-40 whitespace-nowrap",
-        danger ? "border-red-200 text-red-600 hover:bg-red-50" : "border-gray-200 text-dark hover:bg-gray-50")}
+        danger ? "border-red-200 text-red-700 hover:bg-red-50" : "border-gray-200 text-dark hover:bg-gray-50")}
     >
       {children}
     </button>

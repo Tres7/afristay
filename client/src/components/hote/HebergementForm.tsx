@@ -42,6 +42,8 @@ export default function HebergementForm({ initial, onSaved, onCancel }: Hebergem
     return Array.from(new Set(all));
   });
   const [uploading, setUploading] = useState(false);
+  // Droits d'auteur et droit à l'image : l'hôte atteste détenir les droits sur les photos publiées
+  const [droitsPhotos, setDroitsPhotos] = useState(!!initial);
   const onPhotosChange = useCallback((urls: string[]) => setPhotos(urls), []);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
@@ -54,6 +56,10 @@ export default function HebergementForm({ initial, onSaved, onCancel }: Hebergem
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!droitsPhotos) {
+      setErrors({ droits: "Confirmez que vous détenez les droits sur les photos publiées." });
+      return;
+    }
     if (photos.length === 0) {
       setErrors({ photos: "Ajoutez au moins une photo : les annonces sans photo ne sont presque jamais réservées." });
       return;
@@ -90,11 +96,11 @@ export default function HebergementForm({ initial, onSaved, onCancel }: Hebergem
     }
   };
 
-  const err = (k: string) => errors[k] && <p className="text-xs text-red-500 mt-1.5">{errors[k]}</p>;
+  const err = (k: string) => errors[k] && <p className="text-xs text-red-600 mt-1.5">{errors[k]}</p>;
 
   return (
     <form onSubmit={submit} className="space-y-5">
-      {errors.detail && <p role="alert" className="text-sm text-red-600 bg-red-50 rounded-xl p-3">{errors.detail}</p>}
+      {errors.detail && <p role="alert" className="text-sm text-red-700 bg-red-50 rounded-xl p-3">{errors.detail}</p>}
 
       <div>
         <label className={labelClass} htmlFor="h-name">Titre de l&apos;annonce</label>
@@ -145,6 +151,17 @@ export default function HebergementForm({ initial, onSaved, onCancel }: Hebergem
         <p className={labelClass}>Photos</p>
         <p className="text-xs text-gray-500 -mt-1 mb-3">La première photo sert de couverture. Privilégiez la lumière du jour et des photos horizontales.</p>
         <PhotoUploader value={photos} onChange={onPhotosChange} onBusyChange={setUploading} error={errors.photos ?? errors.image_url ?? errors.images} />
+        <div className="flex items-start gap-2 mt-4">
+          <input
+            type="checkbox" id="h-droits" checked={droitsPhotos} onChange={(e) => setDroitsPhotos(e.target.checked)}
+            className="mt-1 accent-primary w-4 h-4 flex-shrink-0" aria-describedby={errors.droits ? "h-droits-erreur" : undefined}
+          />
+          <label htmlFor="h-droits" className="text-xs text-gray-600 leading-relaxed">
+            Je certifie avoir pris ces photos moi-même ou détenir l&apos;autorisation de leur auteur, et qu&apos;aucune personne
+            identifiable n&apos;y figure sans son accord (voir les <a href="/cgu#hotes" target="_blank" className="text-primary underline">CGU<span className="sr-only"> (nouvel onglet)</span></a>).
+          </label>
+        </div>
+        {errors.droits && <p id="h-droits-erreur" role="alert" className="text-xs text-red-600 mt-1.5">{errors.droits}</p>}
       </div>
 
       <fieldset>

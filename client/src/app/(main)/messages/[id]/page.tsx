@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Send, Phone, Video, MoreVertical } from "lucide-react";
+import { ArrowLeft, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import api from "@/lib/api";
 import { usePolling } from "@/lib/usePolling";
@@ -165,17 +165,6 @@ export default function ChatPage() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 bg-light/50 p-1 rounded-2xl border border-gray-100">
-            <button className="w-10 h-10 rounded-xl hover:bg-white flex items-center justify-center text-dark/70 hover:text-primary transition-all shadow-sm hover:shadow">
-              <Phone size={18} />
-            </button>
-            <button className="w-10 h-10 rounded-xl hover:bg-white flex items-center justify-center text-dark/70 hover:text-primary transition-all shadow-sm hover:shadow">
-              <Video size={18} />
-            </button>
-            <button className="w-10 h-10 rounded-xl hover:bg-white flex items-center justify-center text-dark/70 hover:text-dark transition-all shadow-sm hover:shadow">
-              <MoreVertical size={18} />
-            </button>
-          </div>
         </div>
 
         {/* Messages */}
@@ -216,7 +205,7 @@ export default function ChatPage() {
         {/* Input */}
         <div className="bg-white border-t border-light px-4 md:px-6 py-4 flex-shrink-0 mt-auto">
           {sendError && (
-            <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-2 mb-3">{sendError}</p>
+            <p className="text-sm text-red-700 bg-red-50 border border-red-100 rounded-xl px-4 py-2 mb-3">{sendError}</p>
           )}
           <div className="flex items-center gap-3">
             <div className="flex-1 relative flex items-center">
@@ -227,12 +216,14 @@ export default function ChatPage() {
                 onKeyDown={handleKeyDown}
                 maxLength={2000}
                 placeholder="Écrivez votre message..."
+                aria-label="Votre message"
                 className="w-full bg-light border border-transparent focus:border-primary/20 focus:bg-white rounded-full pl-5 pr-12 py-3.5 text-sm text-dark outline-none placeholder:text-muted transition-all shadow-sm"
               />
             </div>
             <button
               onClick={sendMessage}
               disabled={!input.trim()}
+              aria-label="Envoyer le message"
               className="w-12 h-12 bg-primary rounded-full flex items-center justify-center disabled:opacity-50 hover:bg-primary-600 transition-all shadow-md active:scale-95 flex-shrink-0"
             >
               <Send size={18} className="text-white ml-0.5" />

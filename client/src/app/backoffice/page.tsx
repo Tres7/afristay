@@ -81,7 +81,7 @@ export default function TableauDeBord() {
                   <li>
                     <Link href="/backoffice/avis?note=1" className="flex items-center justify-between hover:text-primary">
                       <span className="flex items-center gap-2"><Star size={15} className="text-gray-400" /> Avis à 1 étoile</span>
-                      <span className="text-xs text-muted">voir</span>
+                      <span className="text-xs text-muted" aria-hidden>voir</span>
                     </Link>
                   </li>
                 </ul>

@@ -1,6 +1,5 @@
 "use client";
 
-import Script from "next/script";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { authenticateWithGoogle } from "@/lib/api/auth/google";
@@ -23,6 +22,22 @@ declare global {
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
+let chargement: Promise<void> | null = null;
+function chargerScriptGoogle(): Promise<void> {
+  if (window.google) return Promise.resolve();
+  if (!chargement) {
+    chargement = new Promise((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src = "https://accounts.google.com/gsi/client";
+      s.async = true;
+      s.onload = () => resolve();
+      s.onerror = () => { chargement = null; reject(new Error("script Google indisponible")); };
+      document.head.appendChild(s);
+    });
+  }
+  return chargement;
+}
+
 interface GoogleButtonProps {
   label: string;
   callbackUrl: string;
@@ -35,8 +50,15 @@ export default function GoogleButton({ label, callbackUrl, onError }: GoogleButt
 
   if (!GOOGLE_CLIENT_ID) return null;
 
-  const handleClick = () => {
+  const handleClick = async () => {
     onError("");
+    // Le script Google n'est chargé qu'au clic : aucune requête vers Google pour les visiteurs qui ne l'utilisent pas
+    try {
+      await chargerScriptGoogle();
+    } catch {
+      onError("Google n'est pas disponible pour le moment. Réessayez dans un instant.");
+      return;
+    }
     if (!window.google) {
       onError("Google n'est pas disponible pour le moment. Réessayez dans un instant.");
       return;
@@ -77,7 +99,6 @@ export default function GoogleButton({ label, callbackUrl, onError }: GoogleButt
 
   return (
     <>
-      <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
       <button
         type="button"
         onClick={handleClick}

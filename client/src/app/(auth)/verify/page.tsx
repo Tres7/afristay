@@ -201,7 +201,7 @@ function VerifyForm() {
       )}
 
       {error && (
-        <div role="alert" className="p-3 text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl text-center font-medium mb-6">{error}</div>
+        <div role="alert" className="p-3 text-sm text-red-700 bg-red-50 border border-red-100 rounded-xl text-center font-medium mb-6">{error}</div>
       )}
       {success && (
         <div role="status" className="p-3 text-sm text-green-700 bg-green-50 border border-green-100 rounded-xl text-center font-medium mb-6">{success}</div>

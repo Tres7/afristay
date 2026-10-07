@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Logo from "@/components/layout/Logo";
+import GererCookiesBouton from "@/components/legal/GererCookiesBouton";
 
 const COLUMNS = [
   {
@@ -21,10 +22,16 @@ const COLUMNS = [
     title: "Assistance",
     links: [
       { href: "/profil/aide", label: "Centre d'aide" },
-      { href: "/profil/aide#annulation", label: "Annulation" },
-      { href: "/profil/aide#confidentialite", label: "Confidentialité" },
+      { href: "/remboursement", label: "Annulation et remboursement" },
     ],
   },
+];
+
+const LEGAL = [
+  { href: "/mentions-legales", label: "Mentions légales" },
+  { href: "/cgu", label: "CGU" },
+  { href: "/confidentialite", label: "Confidentialité (RGPD)" },
+  { href: "/cookies", label: "Politique cookies" },
 ];
 
 export default function Footer() {
@@ -34,26 +41,35 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div className="col-span-2 md:col-span-1">
             <Logo />
-            <p className="text-gray-500 text-sm mt-3 max-w-xs leading-relaxed">
+            <p className="text-gray-600 text-sm mt-3 max-w-xs leading-relaxed">
               Réservez des hébergements authentiques en Afrique et payez par Mobile Money ou carte.
             </p>
           </div>
           {COLUMNS.map((col) => (
-            <div key={col.title}>
-              <h3 className="font-heading font-bold text-dark text-sm mb-3">{col.title}</h3>
+            <nav key={col.title} aria-label={col.title}>
+              <h2 className="font-heading font-bold text-dark text-sm mb-3">{col.title}</h2>
               <ul className="space-y-2">
                 {col.links.map((l) => (
                   <li key={l.href}>
-                    <Link href={l.href} className="text-sm text-gray-500 hover:text-primary transition-colors">{l.label}</Link>
+                    <Link href={l.href} className="text-sm text-gray-600 hover:text-primary transition-colors">{l.label}</Link>
                   </li>
                 ))}
               </ul>
-            </div>
+            </nav>
           ))}
         </div>
-        <p className="text-gray-400 text-xs mt-10 pt-6 border-t border-gray-100">
-          &copy; {new Date().getFullYear()} AfriStay. Tous droits réservés.
-        </p>
+
+        <div className="mt-10 pt-6 border-t border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <p className="text-gray-600 text-xs">&copy; {new Date().getFullYear()} AfriStay. Tous droits réservés.</p>
+          <nav aria-label="Informations légales">
+            <ul className="flex flex-wrap gap-x-5 gap-y-2 text-xs">
+              {LEGAL.map((l) => (
+                <li key={l.href}><Link href={l.href} className="text-gray-600 hover:text-primary underline-offset-2 hover:underline">{l.label}</Link></li>
+              ))}
+              <li><GererCookiesBouton className="text-gray-600 hover:text-primary underline-offset-2 hover:underline" /></li>
+            </ul>
+          </nav>
+        </div>
       </div>
     </footer>
   );

@@ -26,10 +26,10 @@ export default function AuthShell({ image, title, subtitle, reverse = false, chi
       </div>
 
       <div className="w-full lg:w-1/2 flex items-start sm:items-center justify-center px-5 py-10 sm:p-12 overflow-y-auto">
-        <div className="w-full max-w-[420px]">
+        <main id="contenu" tabIndex={-1} className="w-full max-w-[420px] outline-none">
           <Logo className="mb-8 lg:hidden" />
           {children}
-        </div>
+        </main>
       </div>
     </div>
   );
