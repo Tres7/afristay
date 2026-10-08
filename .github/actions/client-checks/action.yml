@@ -1,0 +1,15 @@
+name: Client checks
+description: ESLint et vérification des types du client (Vitest viendra en phase 3).
+
+runs:
+  using: composite
+  steps:
+    - name: Lint (ESLint)
+      shell: bash
+      working-directory: client
+      run: npm run lint
+
+    - name: Types (tsc)
+      shell: bash
+      working-directory: client
+      run: npm run typecheck

@@ -1,0 +1,36 @@
+# Retour rapide avant chaque push (la CI ne tourne que sur les PR vers main).
+# Installation : pip install pre-commit && pre-commit install
+# Les hooks locaux supposent le venv du serveur activé et `npm ci` fait dans client/.
+default_install_hook_types: [pre-push]
+default_stages: [pre-push]
+
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.10
+    hooks:
+      - id: ruff-check
+        args: [--config, server/ruff.toml]
+        files: ^server/
+
+  - repo: local
+    hooks:
+      - id: server-unit-tests
+        name: tests unitaires du serveur
+        entry: bash -c 'cd server && python -m pytest -m unit -q'
+        language: system
+        files: ^server/
+        pass_filenames: false
+
+      - id: client-lint
+        name: ESLint du client
+        entry: npm --prefix client run lint
+        language: system
+        files: ^client/
+        pass_filenames: false
+
+      - id: client-typecheck
+        name: types du client
+        entry: npm --prefix client run typecheck
+        language: system
+        files: ^client/
+        pass_filenames: false

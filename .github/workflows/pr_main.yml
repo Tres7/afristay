@@ -1,0 +1,75 @@
+name: PR main
+
+on:
+  pull_request:
+    branches: [main]
+    # ready_for_review : une PR qui sort du brouillon relance la CI complète
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+
+concurrency:
+  group: pr-main-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read # liste des fichiers modifiés (paths-filter)
+
+jobs:
+  changes:
+    name: Plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      back: ${{ steps.plan.outputs.back }}
+      front: ${{ steps.plan.outputs.front }}
+      infra: ${{ steps.plan.outputs.infra }}
+      broker: ${{ steps.plan.outputs.broker }}
+      docs_only: ${{ steps.plan.outputs.docs_only }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - id: plan
+        uses: ./.github/actions/detect-ci-plan
+
+  # Niveau 1 (et 2 pour le serveur : unit puis integration dans le même job)
+  app-checks:
+    name: App
+    needs: changes
+    if: needs.changes.outputs.back == 'true' || needs.changes.outputs.front == 'true'
+    uses: ./.github/workflows/_pr-app-checks.yml
+    with:
+      back: ${{ needs.changes.outputs.back == 'true' }}
+      front: ${{ needs.changes.outputs.front == 'true' }}
+      full: ${{ !github.event.pull_request.draft }}
+
+  # Niveau 2 : seulement si le niveau 1 n'a pas échoué (un niveau 1 ignoré ne bloque pas)
+  docker-checks:
+    name: Docker
+    needs: [changes, app-checks]
+    if: >-
+      always() && !failure() && !cancelled()
+      && !github.event.pull_request.draft
+      && needs.changes.outputs.docs_only != 'true'
+    uses: ./.github/workflows/_pr-docker-checks.yml
+    with:
+      back: ${{ needs.changes.outputs.back == 'true' }}
+      front: ${{ needs.changes.outputs.front == 'true' }}
+      infra: ${{ needs.changes.outputs.infra == 'true' }}
+
+  # Seul contrôle à exiger dans la protection de main
+  pr-status:
+    name: PR status
+    if: always()
+    needs: [changes, app-checks, docker-checks]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Résultats : $RESULTS"
+          case " $RESULTS " in
+            *" failure "*|*" cancelled "*) exit 1 ;;
+          esac

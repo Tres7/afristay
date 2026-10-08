@@ -1,0 +1,71 @@
+name: App checks
+
+on:
+  workflow_call:
+    inputs:
+      back:
+        type: boolean
+        required: true
+      front:
+        type: boolean
+        required: true
+      full:
+        description: false pour une PR en brouillon (tests unitaires seulement)
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  back:
+    name: Serveur (lint, unit, integration)
+    if: inputs.back
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: afristay
+          POSTGRES_USER: afristay
+          POSTGRES_PASSWORD: ci
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U afristay"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: '5432'
+      POSTGRES_DB: afristay
+      POSTGRES_USER: afristay
+      POSTGRES_PASSWORD: ci
+      DJANGO_SECRET_KEY: ci-only-secret-key-never-used-outside-github-actions-0123456789
+      DJANGO_DEBUG: 'False'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-python-server
+      - uses: ./.github/actions/backend-checks
+        with:
+          run-integration: ${{ inputs.full }}
+      - if: always()
+        uses: ./.github/actions/upload-test-artifacts
+        with:
+          name: coverage-server
+          path: server/coverage-html
+
+  front:
+    name: Client (lint, types)
+    if: inputs.front
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-node-client
+      - uses: ./.github/actions/client-checks
