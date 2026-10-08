@@ -65,7 +65,7 @@ Un conteneur `postgres-test` déjà démarré est réutilisé et laissé en plac
 Couverture comme en CI :
 
 ```bash
-pytest -m unit --cov --cov-report= && pytest -m integration --cov --cov-append --cov-report=
+pytest -m unit --cov --cov-report= --cov-fail-under=0 && pytest -m integration --cov --cov-append --cov-report=
 coverage report        # échoue sous le cliquet de .coveragerc
 coverage html          # rapport dans htmlcov/
 ```

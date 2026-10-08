@@ -29,16 +29,18 @@ runs:
       working-directory: server
       run: python manage.py check --deploy
 
+    # --cov-fail-under=0 : pytest-cov appliquerait sinon le seuil de .coveragerc à chaque étape,
+    # dont les tests unitaires seuls. Le seuil est vérifié une fois, sur la couverture combinée.
     - name: Tests unitaires
       shell: bash
       working-directory: server
-      run: pytest -m unit --cov --cov-report=
+      run: pytest -m unit --cov --cov-report= --cov-fail-under=0
 
     - name: Tests d'intégration
       if: inputs.run-integration == 'true'
       shell: bash
       working-directory: server
-      run: pytest -m integration --cov --cov-append --cov-report=
+      run: pytest -m integration --cov --cov-append --cov-report= --cov-fail-under=0
 
     - name: Rapport de couverture
       shell: bash
