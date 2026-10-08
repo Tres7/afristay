@@ -1,0 +1,60 @@
+name: Detect CI plan
+description: Déduit des chemins modifiés quelles parties de la CI lancer.
+
+outputs:
+  back:
+    description: Le serveur Django est touché
+    value: ${{ steps.all.outputs.back || steps.filter.outputs.back }}
+  front:
+    description: Le client Next.js est touché
+    value: ${{ steps.all.outputs.front || steps.filter.outputs.front }}
+  infra:
+    description: Dockerfiles, compose ou configuration CI touchés
+    value: ${{ steps.all.outputs.infra || steps.filter.outputs.infra }}
+  broker:
+    description: Code qui parle à RabbitMQ touché (tests broker)
+    value: ${{ steps.all.outputs.broker || steps.filter.outputs.broker }}
+  docs_only:
+    description: Seule la documentation a changé
+    value: ${{ steps.all.outputs.docs_only || steps.docs.outputs.docs_only }}
+
+runs:
+  using: composite
+  steps:
+    # Lancement manuel (workflow_dispatch) : pas de diff de référence, on lance tout
+    - id: all
+      if: github.event_name != 'pull_request'
+      shell: bash
+      run: |
+        for output in back front infra broker; do echo "$output=true" >> "$GITHUB_OUTPUT"; done
+        echo "docs_only=false" >> "$GITHUB_OUTPUT"
+
+    - id: filter
+      if: github.event_name == 'pull_request'
+      uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+      with:
+        filters: |
+          back:
+            - 'server/**'
+            - '.github/**'
+          front:
+            - 'client/**'
+            - '.github/**'
+          infra:
+            - 'compose*.y*ml'
+            - '**/Dockerfile'
+            - '.hadolint.yaml'
+            - '.github/**'
+          broker:
+            - 'server/apps/notifications/**'
+            - 'server/apps/messaging/infrastructure/**'
+            - 'server/apps/users/infrastructure/messaging/**'
+            - 'server/requirements.txt'
+
+    - id: docs
+      if: github.event_name == 'pull_request'
+      shell: bash
+      env:
+        CODE_CHANGED: ${{ steps.filter.outputs.back == 'true' || steps.filter.outputs.front == 'true' || steps.filter.outputs.infra == 'true' }}
+      run: |
+        if [ "$CODE_CHANGED" = "true" ]; then echo "docs_only=false"; else echo "docs_only=true"; fi >> "$GITHUB_OUTPUT"

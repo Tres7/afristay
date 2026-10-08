@@ -1,0 +1,23 @@
+name: Upload test artifacts
+description: Publie un rapport de test (couverture HTML, traces Playwright…) en artefact du workflow.
+
+inputs:
+  name:
+    description: Nom de l'artefact
+    required: true
+  path:
+    description: Fichiers ou dossiers à publier
+    required: true
+  retention-days:
+    description: Durée de conservation
+    default: '7'
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: ${{ inputs.name }}
+        path: ${{ inputs.path }}
+        retention-days: ${{ inputs.retention-days }}
+        if-no-files-found: ignore

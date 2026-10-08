@@ -80,6 +80,9 @@ Desktop.ini
 coverage/
 .coverage
 htmlcov/
+coverage-html/
+.pytest_cache/
+.ruff_cache/
 
 # =========================
 generate-commits.ps1
