@@ -26,7 +26,7 @@ Les taux sont dans `server/apps/paiements/tarifs.py`. Les montants sont **figés
 
 | Moyen choisi | Prestataire | Devise | Remboursement |
 |---|---|---|---|
-| Mobile Money | FedaPay | FCFA | Automatique, par versement sur le numéro débité |
+| Mobile Money | FedaPay | FCFA | Automatique, par versement sur le compte Mobile Money que le voyageur indique à l'annulation |
 | Carte Visa / Mastercard | FedaPay | FCFA | **Manuel**, depuis le tableau de bord FedaPay (statut « À traiter manuellement » dans l'admin) |
 | PayPal | PayPal | EUR (1 € = 655,957 FCFA) | Automatique, sur le compte ou la carte PayPal |
 
@@ -56,6 +56,8 @@ Pays ouverts aux versements : Togo, Bénin, Burkina Faso, Niger, Mali (`operateu
 | Entre 7 jours et 48 h | tout sauf 50 % des nuits | 50 % des nuits − 5 % |
 | Moins de 48 h | rien | sa part complète |
 
+**Remboursement Mobile Money** : FedaPay ne communique pas le numéro débité. Le remboursement est créé au statut « En attente du numéro du voyageur » ; l'API d'annulation renvoie `numero_requis: true` et le site ouvre aussitôt la fenêtre « Où recevoir votre remboursement ? » (pays, opérateur, numéro). Le voyageur peut aussi le faire plus tard depuis Mes réservations. Route : `PUT /api/v1/paiements/reservations/<id>/compte-remboursement/` avec `{pays, operateur, numero}`. Le worker envoie ensuite le remboursement.
+
 L'annulation par l'hôte ou par AfriStay (`services.annuler(r, par='hote' | 'plateforme')`) rembourse tout. Pas encore exposée dans l'API : à brancher sur le back-office.
 
 ## Worker
@@ -63,7 +65,22 @@ L'annulation par l'hôte ou par AfriStay (`services.annuler(r, par='hote' | 'pla
 `python manage.py traiter_paiements` (service `paiements-worker` dans `compose.yaml`, une passe par minute ; `--once` pour une seule passe). Il :
 - relit les paiements en attente des 2 dernières heures ;
 - expire les réservations non payées ;
-- envoie les versements dus et les remboursements, et suit leur statut.
+- envoie les versements dus et les remboursements, et suit leur statut ;
+- envoie les emails (voir plus bas).
+
+Après un échec chez FedaPay, le nouvel essai attend 15 min, puis 30 min, 1 h, 2 h ; au 5e échec la ligne passe en « Échoué » (versement) ou « À traiter manuellement » (remboursement) et les administrateurs sont prévenus par email.
+
+## Emails
+
+Envoyés par le worker (`notifications.py`, gabarits dans `templates/emails/paiements/`), jamais pendant une requête web ; un envoi raté est retenté à la passe suivante, sans doublon (champs `notifie`, et `notifie_hote` pour l'email de l'hôte).
+
+| Événement | Destinataire |
+|---|---|
+| Paiement reçu, séjour confirmé | voyageur |
+| Nouvelle réservation payée (montant et date du versement, rappel si le compte de versement manque) | hôte |
+| Versement envoyé (détail de la commission) | hôte |
+| Remboursement envoyé | voyageur |
+| Versement échoué / remboursement à traiter | tous les utilisateurs `role = admin` |
 
 Une seule instance suffit ; deux instances ne causent pas de double envoi (chaque ligne est réservée par une mise à jour conditionnelle).
 
@@ -77,6 +94,8 @@ PAYPAL_CLIENT_ID=...                   # vides = PayPal non proposé
 PAYPAL_CLIENT_SECRET=...
 PAYPAL_ENV=sandbox
 PAIEMENT_EXPIRATION_MINUTES=30
+BACKEND_URL=https://api.afristay…        # liens vers l'admin dans les alertes (défaut http://localhost:8000)
+PAIEMENTS_PAUSE_EMAIL=1                  # secondes entre deux emails du worker (0 avec un vrai fournisseur d'emails)
 ```
 
 Sans aucune clé, le paiement en ligne est désactivé : les réservations sont confirmées immédiatement, comme avant.
@@ -86,10 +105,19 @@ Webhook à déclarer dans le tableau de bord FedaPay : `https://<domaine-api>/ap
 ## Suivi et opérations
 
 L'admin Django (`/admin/`) liste les paiements, versements, remboursements et profils de versement. À surveiller :
-- **Remboursements « À traiter manuellement »** : cartes bancaires, ou numéro débité inconnu → rembourser depuis FedaPay, puis passer la ligne à « Envoyé ».
+- **Remboursements « En attente du numéro du voyageur »** : le voyageur n'a pas encore indiqué son compte ; il le voit dans Mes réservations.
+- **Remboursements « À traiter manuellement »** : paiements par carte, ou 5 échecs d'envoi → rembourser depuis FedaPay, puis passer la ligne à « Envoyé ».
 - **Versements « Échoué »** : après 5 tentatives (numéro faux, mode non activé…) ; le message d'erreur est dans `derniere_erreur`. Corriger puis repasser à « Planifié ».
 - Une annulation après le versement à l'hôte est journalisée en avertissement : à régulariser avec l'hôte.
 
 ## Tests
 
-`python manage.py test apps.paiements` : 17 tests, prestataires simulés (aucun appel réseau). Ils couvrent les montants, le barème, la confirmation, l'idempotence, l'expiration, le paiement tardif, les versements, les remboursements Mobile Money / carte / PayPal et la signature des webhooks.
+`python manage.py test apps.paiements` : 20 tests, prestataires simulés (aucun appel réseau). Ils couvrent les montants, le barème, la confirmation, l'idempotence, l'expiration, le paiement tardif, les versements, les remboursements Mobile Money (numéro demandé au voyageur) / carte / PayPal, les nouveaux essais progressifs, les emails et la signature des webhooks.
+
+## Prérequis du compte FedaPay (testés en sandbox le 8 octobre 2026)
+
+- **Payouts** : refusés tant que FedaPay ne les a pas activés (`403 Opération non autorisée`). Sans eux, ni versements aux hôtes ni remboursements Mobile Money automatiques.
+- **Carte bancaire** : à activer, sinon la page de paiement ne propose que Mobile Money.
+- **Frais FedaPay** : par défaut à la charge du payeur (ajoutés au montant affiché sur la page FedaPay) ; les basculer à la charge du marchand.
+- **Nom du marchand** affiché sur la page de paiement : à renseigner (« AfriStay »).
+- Les pays et opérateurs proposés au voyageur sur la page FedaPay dépendent des opérateurs activés sur le compte (en sandbox : « Momo Test » et la Côte d'Ivoire).

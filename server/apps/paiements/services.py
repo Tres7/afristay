@@ -27,6 +27,15 @@ from .models import PaiementModel, ProfilVersementModel, RemboursementModel, Ver
 logger = logging.getLogger('apps.paiements')
 
 MAX_TENTATIVES = 5
+# Délai avant un nouvel essai après un échec : 15 min, 30 min, 1 h, 2 h (puis traitement manuel)
+DELAI_NOUVEL_ESSAI = timedelta(minutes=15)
+
+
+def _peut_reessayer(ligne) -> bool:
+    if not ligne.tentatives:
+        return True
+    attente = DELAI_NOUVEL_ESSAI * (2 ** (ligne.tentatives - 1))
+    return timezone.now() - ligne.mis_a_jour_le >= attente
 
 
 class PaiementErreur(Exception):
@@ -225,11 +234,28 @@ def _planifier_versement(reservation):
     )
 
 
+def _par_carte(paiement) -> bool:
+    return paiement.reservation.payment_method == 'carte' or 'card' in paiement.mode.lower()
+
+
 def _rembourser(reservation, paiement, montant: int, motif: str):
     if montant <= 0:
         return None
     logger.info("Remboursement de %s FCFA prévu pour %s : %s", montant, reservation.reference, motif)
-    return RemboursementModel.objects.create(reservation=reservation, paiement=paiement, montant=montant, motif=motif)
+    statut = 'a_envoyer'
+    if paiement.prestataire == 'fedapay' and not paiement.telephone and not _par_carte(paiement):
+        # Mobile Money : FedaPay ne donne pas le numéro débité, on le demande au voyageur
+        statut = 'attente_numero'
+    return RemboursementModel.objects.create(
+        reservation=reservation, paiement=paiement, montant=montant, motif=motif, statut=statut,
+    )
+
+
+def indiquer_numero_remboursement(reservation, pays: str, operateur: str, numero: str) -> int:
+    """Enregistre le compte Mobile Money du voyageur sur ses remboursements en attente. Renvoie leur nombre."""
+    return RemboursementModel.objects.filter(reservation=reservation, statut='attente_numero').update(
+        pays=pays, operateur=operateur, numero=numero, statut='a_envoyer', derniere_erreur='',
+    )
 
 
 # --- Annulation --------------------------------------------------------------------------
@@ -300,6 +326,8 @@ def envoyer_versements_dus() -> int:
         statut='planifie', date_prevue__lte=timezone.now(), reservation__status='confirmed',
     ).select_related('hote')[:50]
     for versement in dus:
+        if not _peut_reessayer(versement):
+            continue
         profil = ProfilVersementModel.objects.filter(hote=versement.hote).first()
         if not profil:
             if not versement.derniere_erreur:
@@ -344,14 +372,21 @@ def synchroniser_versement(versement: VersementModel):
 def envoyer_remboursements() -> int:
     envoyes = 0
     for remboursement in RemboursementModel.objects.filter(statut='a_envoyer').select_related('paiement', 'reservation__guest')[:50]:
+        if not _peut_reessayer(remboursement):
+            continue
         paiement = remboursement.paiement
         if paiement.prestataire == 'paypal':
             envoyes += _rembourser_paypal(remboursement)
             continue
-        if not (paiement.telephone and paiement.mode) or not fedapay_actif():
-            # Carte bancaire, ou numéro non transmis par FedaPay : remboursement manuel
+        # Compte indiqué par le voyageur, sinon numéro débité s'il est connu
+        if remboursement.numero:
+            mode, numero, pays = remboursement.operateur, remboursement.numero, remboursement.pays
+        else:
+            mode, numero, pays = paiement.mode, paiement.telephone, paiement.pays_telephone
+        if not (mode and numero) or not fedapay_actif():
+            # Carte bancaire : remboursement manuel depuis le tableau de bord FedaPay
             remboursement.statut = 'a_traiter'
-            remboursement.derniere_erreur = "Moyen de paiement du voyageur inconnu : rembourser depuis le tableau de bord FedaPay."
+            remboursement.derniere_erreur = "Paiement par carte ou compte inconnu : rembourser depuis le tableau de bord FedaPay."
             remboursement.save()
             continue
         if not _reserver(RemboursementModel, remboursement.pk, 'a_envoyer'):
@@ -359,8 +394,8 @@ def envoyer_remboursements() -> int:
         remboursement.tentatives += 1
         try:
             remboursement.payout_id = fedapay.client().creer_versement(
-                montant=remboursement.montant, mode=paiement.mode,
-                client=_client_payout(remboursement.reservation.guest, paiement.telephone, paiement.pays_telephone),
+                montant=remboursement.montant, mode=mode,
+                client=_client_payout(remboursement.reservation.guest, numero, pays),
             )
             remboursement.statut, remboursement.derniere_erreur = 'en_cours', ''
             envoyes += 1
@@ -449,11 +484,14 @@ def passe() -> dict:
         synchroniser_versement(versement)
     for remboursement in RemboursementModel.objects.filter(statut='en_cours').exclude(payout_id='').select_related('paiement')[:50]:
         synchroniser_remboursement(remboursement)
+    from . import notifications  # import local : notifications importe les modèles et les tarifs
+
     stats = {
         'reservations_expirees': expirer_reservations(),
         'versements_envoyes': envoyer_versements_dus(),
         'remboursements_envoyes': envoyer_remboursements(),
     }
+    stats['emails'] = notifications.envoyer_notifications()
     return {k: v for k, v in stats.items() if v}
 
 

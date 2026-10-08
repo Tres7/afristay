@@ -53,6 +53,9 @@ class PaiementModel(models.Model):
     mode = models.CharField(max_length=40, blank=True)
     telephone = models.CharField(max_length=20, blank=True)
     pays_telephone = models.CharField(max_length=2, blank=True)
+    # Emails de confirmation envoyés par le worker (un drapeau par destinataire : pas de doublon si l'un échoue)
+    notifie = models.BooleanField(default=False)
+    notifie_hote = models.BooleanField(default=False)
     cree_le = models.DateTimeField(auto_now_add=True)
     mis_a_jour_le = models.DateTimeField(auto_now=True)
 
@@ -90,6 +93,8 @@ class VersementModel(models.Model):
     tentatives = models.PositiveSmallIntegerField(default=0)
     derniere_erreur = models.TextField(blank=True)
     envoye_le = models.DateTimeField(null=True, blank=True)
+    # Email envoyé pour l'état final (versé à l'hôte, ou échec signalé aux administrateurs)
+    notifie = models.BooleanField(default=False)
     cree_le = models.DateTimeField(auto_now_add=True)
     mis_a_jour_le = models.DateTimeField(auto_now=True)
 
@@ -105,6 +110,7 @@ class VersementModel(models.Model):
 
 class RemboursementModel(models.Model):
     STATUTS = [
+        ('attente_numero', 'En attente du numéro du voyageur'),
         ('a_envoyer', 'À envoyer'),
         ('en_cours', 'En cours'),
         ('envoye', 'Envoyé'),
@@ -118,10 +124,16 @@ class RemboursementModel(models.Model):
     devise = models.CharField(max_length=3, default='XOF')
     motif = models.CharField(max_length=255)
     statut = models.CharField(max_length=20, choices=STATUTS, default='a_envoyer')
+    # Compte Mobile Money indiqué par le voyageur (FedaPay ne communique pas le numéro débité)
+    pays = models.CharField(max_length=2, blank=True, choices=PAYS_CHOICES)
+    operateur = models.CharField(max_length=30, blank=True, choices=OPERATEUR_CHOICES)
+    numero = models.CharField(max_length=15, blank=True)
     payout_id = models.CharField(max_length=64, blank=True)
     tentatives = models.PositiveSmallIntegerField(default=0)
     derniere_erreur = models.TextField(blank=True)
     envoye_le = models.DateTimeField(null=True, blank=True)
+    # Email envoyé pour l'état final (remboursé, ou traitement manuel signalé aux administrateurs)
+    notifie = models.BooleanField(default=False)
     cree_le = models.DateTimeField(auto_now_add=True)
     mis_a_jour_le = models.DateTimeField(auto_now=True)
 

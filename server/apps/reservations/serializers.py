@@ -43,7 +43,12 @@ class ReservationSerializer(serializers.ModelSerializer):
         lignes = list(obj.remboursements.all())
         if not lignes:
             return None
-        statut = 'envoye' if all(r.statut == 'envoye' for r in lignes) else 'en_cours'
+        if any(r.statut == 'attente_numero' for r in lignes):
+            statut = 'attente_numero'
+        elif all(r.statut == 'envoye' for r in lignes):
+            statut = 'envoye'
+        else:
+            statut = 'en_cours'
         return {'montant': sum(r.montant for r in lignes), 'statut': statut}
 
     def get_avis_id(self, obj):

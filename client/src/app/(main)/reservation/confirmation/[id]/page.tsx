@@ -107,7 +107,11 @@ export default function ConfirmationPage() {
               {reservation.remboursement && (
                 <p className="mt-4 text-sm text-dark bg-green-50 rounded-xl px-4 py-3">
                   Remboursement de <strong>{formatPrice(reservation.remboursement.montant)}</strong>{" "}
-                  {reservation.remboursement.statut === "envoye" ? "effectué" : "en cours (sous 7 jours ouvrés)"}.
+                  {reservation.remboursement.statut === "envoye"
+                    ? "effectué"
+                    : reservation.remboursement.statut === "attente_numero"
+                      ? "en attente : indiquez votre numéro Mobile Money depuis Mes réservations"
+                      : "en cours (sous 7 jours ouvrés)"}.
                 </p>
               )}
 

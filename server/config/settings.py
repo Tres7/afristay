@@ -179,6 +179,11 @@ PAYPAL = {
 
 # URL du frontend, utilisée dans les liens des emails
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+# Pause entre deux emails envoyés par le worker des paiements (limite des SMTP de test comme Mailtrap)
+PAIEMENTS_PAUSE_EMAIL = float(os.getenv('PAIEMENTS_PAUSE_EMAIL', '1'))
+
+# URL publique de l'API (liens vers l'administration dans les alertes)
+BACKEND_URL = os.getenv('BACKEND_URL', 'http://localhost:8000')
 
 
 # CORS

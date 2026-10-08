@@ -1,0 +1,12 @@
+{% autoescape off %}Bonjour {{ prenom }},
+
+Nous venons de vous verser {{ montant }} sur votre compte {{ operateur }} ({{ numero }}) pour le séjour de {{ voyageur }} dans « {{ hebergement }} » (référence {{ reference }}).
+
+  Prix des nuits : {{ montant_brut }}
+  Commission AfriStay : {{ commission }}
+  Versé : {{ montant }}
+
+Le détail de vos revenus : {{ url_revenus }}
+
+L'équipe AfriStay
+{% endautoescape %}

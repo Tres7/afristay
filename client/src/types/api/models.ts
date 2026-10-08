@@ -58,7 +58,8 @@ export interface Reservation {
   };
   /** Dernier paiement en ligne : null si la réservation a été faite sans paiement en ligne. */
   paiement: "en_attente" | "reussi" | "echoue" | "annule" | null;
-  remboursement: { montant: number; statut: "en_cours" | "envoye" } | null;
+  /** attente_numero : le voyageur doit indiquer son compte Mobile Money pour être remboursé. */
+  remboursement: { montant: number; statut: "attente_numero" | "en_cours" | "envoye" } | null;
   /** Fin du délai pour payer (réservation en attente de paiement). */
   expire_le: string | null;
   annule_par: "" | "voyageur" | "hote" | "plateforme" | "expiration";

@@ -114,6 +114,48 @@ class EstHote(IsAuthenticated):
         return super().has_permission(request, view) and request.user.role in ('hote', 'admin')
 
 
+def _valider_compte(data):
+    """Opérateur disponible dans le pays, numéro au bon nombre de chiffres."""
+    pays = data['pays']
+    if data['operateur'] not in operateurs_du_pays(pays):
+        raise serializers.ValidationError({'operateur': "Cet opérateur n'est pas disponible dans le pays choisi."})
+    attendu = PAYS[pays]['chiffres']
+    if len(data['numero']) != attendu:
+        raise serializers.ValidationError({'numero': f"Le numéro doit comporter {attendu} chiffres (sans l'indicatif +{PAYS[pays]['indicatif']})."})
+    return data
+
+
+def _chiffres(valeur: str) -> str:
+    return ''.join(c for c in valeur if c.isdigit())
+
+
+class CompteRemboursementSerializer(serializers.Serializer):
+    pays = serializers.ChoiceField(choices=list(PAYS))
+    operateur = serializers.CharField(max_length=30)
+    numero = serializers.CharField(max_length=20)
+
+    def validate_numero(self, valeur):
+        return _chiffres(valeur)
+
+    def validate(self, data):
+        return _valider_compte(data)
+
+
+class CompteRemboursementView(APIView):
+    """Le voyageur indique le compte Mobile Money sur lequel être remboursé."""
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, pk):
+        reservation = _reservation_du_voyageur(pk, request.user)
+        if not reservation:
+            return Response({'detail': 'Réservation introuvable.'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = CompteRemboursementSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        if not services.indiquer_numero_remboursement(reservation, **serializer.validated_data):
+            return Response({'detail': "Aucun remboursement n'attend de numéro pour cette réservation."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'detail': 'Numéro enregistré : le remboursement va être envoyé.'})
+
+
 class ProfilVersementSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProfilVersementModel
@@ -121,8 +163,7 @@ class ProfilVersementSerializer(serializers.ModelSerializer):
         read_only_fields = ['mis_a_jour_le']
 
     def validate_numero(self, valeur):
-        chiffres = ''.join(c for c in valeur if c.isdigit())
-        return chiffres
+        return _chiffres(valeur)
 
     def validate_titulaire(self, valeur):
         valeur = ' '.join(valeur.split())
@@ -131,13 +172,7 @@ class ProfilVersementSerializer(serializers.ModelSerializer):
         return valeur
 
     def validate(self, data):
-        pays = data['pays']
-        if data['operateur'] not in operateurs_du_pays(pays):
-            raise serializers.ValidationError({'operateur': "Cet opérateur n'est pas disponible dans le pays choisi."})
-        attendu = PAYS[pays]['chiffres']
-        if len(data['numero']) != attendu:
-            raise serializers.ValidationError({'numero': f"Le numéro doit comporter {attendu} chiffres (sans l'indicatif +{PAYS[pays]['indicatif']})."})
-        return data
+        return _valider_compte(data)
 
 
 class ProfilVersementView(APIView):

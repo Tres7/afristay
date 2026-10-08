@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import api, { apiErrorMessage } from "@/lib/api";
 import { cn, FALLBACK_IMAGE, formatDate, formatPrice, isoDate } from "@/lib/utils";
 import PropertyCard from "@/components/hebergement/PropertyCard";
+import CompteRemboursementDialog from "@/components/paiement/CompteRemboursementDialog";
 import type { Hebergement, Paginated, Reservation } from "@/types/api/models";
 
 const TABS = [
@@ -33,6 +34,7 @@ export default function ReservationsPage() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<Tab>("upcoming");
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [aRembourser, setARembourser] = useState<{ id: string; montant: number } | null>(null);
 
   const { data: reservations = [], isLoading, isError, refetch } = useQuery({
     queryKey: ["reservations"],
@@ -54,10 +56,11 @@ export default function ReservationsPage() {
     if (!window.confirm(question)) return;
     setCancellingId(r.id);
     try {
-      const res = await api.delete<{ rembourse?: number }>(`/v1/reservations/${r.id}/`);
+      const res = await api.delete<{ rembourse?: number; numero_requis?: boolean }>(`/v1/reservations/${r.id}/`);
       queryClient.invalidateQueries({ queryKey: ["reservations"] });
       const rembourse = res.data.rembourse ?? 0;
       toast.success(rembourse > 0 ? `Réservation annulée. ${formatPrice(rembourse)} vous seront remboursés.` : "Réservation annulée");
+      if (res.data.numero_requis) setARembourser({ id: r.id, montant: rembourse });
     } catch (err) {
       toast.error(apiErrorMessage(err, "Impossible d'annuler cette réservation."));
     } finally {
@@ -137,12 +140,22 @@ export default function ReservationsPage() {
                         Réglez votre séjour pour le confirmer : sans paiement, les dates seront libérées.
                       </p>
                     )}
-                    {res.remboursement && (
+                    {res.remboursement && (res.remboursement.statut === "attente_numero" ? (
+                      <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-amber-900 bg-amber-50 rounded-xl px-3 py-2 mt-3">
+                        <span>Remboursement de <strong>{formatPrice(res.remboursement.montant)}</strong> : indiquez votre numéro Mobile Money.</span>
+                        <button
+                          onClick={() => setARembourser({ id: res.id, montant: res.remboursement!.montant })}
+                          className="px-4 py-1.5 rounded-full bg-secondary text-white text-xs font-bold hover:bg-secondary-600"
+                        >
+                          Indiquer mon numéro
+                        </button>
+                      </div>
+                    ) : (
                       <p className="text-sm text-dark bg-green-50 rounded-xl px-3 py-2 mt-3">
                         Remboursement de <strong>{formatPrice(res.remboursement.montant)}</strong>{" "}
                         {res.remboursement.statut === "envoye" ? "effectué" : "en cours"}.
                       </p>
-                    )}
+                    ))}
                   </div>
 
                   <div className="flex flex-wrap items-center justify-between gap-3 mt-5 pt-4 border-t border-gray-100">
@@ -182,6 +195,19 @@ export default function ReservationsPage() {
           })
         )}
       </div>
+
+      {aRembourser && (
+        <CompteRemboursementDialog
+          reservationId={aRembourser.id}
+          montant={aRembourser.montant}
+          onClose={() => setARembourser(null)}
+          onDone={() => {
+            setARembourser(null);
+            queryClient.invalidateQueries({ queryKey: ["reservations"] });
+            toast.success("Numéro enregistré : votre remboursement est en route.");
+          }}
+        />
+      )}
 
       {suggestions.length > 0 && (
         <section className="mt-12">

@@ -63,4 +63,5 @@ class ReservationDetailView(APIView):
             rembourse = paiements.annuler(obj, par='voyageur')
         except paiements.PaiementErreur as exc:
             return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({'detail': 'Réservation annulée.', 'rembourse': rembourse})
+        numero_requis = obj.remboursements.filter(statut='attente_numero').exists()
+        return Response({'detail': 'Réservation annulée.', 'rembourse': rembourse, 'numero_requis': numero_requis})

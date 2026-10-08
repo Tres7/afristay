@@ -1,0 +1,8 @@
+{% autoescape off %}Bonjour {{ prenom }},
+
+Votre remboursement de {{ montant }} pour la réservation {{ reference }} (« {{ hebergement }} ») a été envoyé{% if destination %} sur {{ destination }}{% endif %}.
+
+Selon votre opérateur ou votre banque, il peut mettre quelques heures à apparaître.
+
+L'équipe AfriStay
+{% endautoescape %}

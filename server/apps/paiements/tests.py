@@ -94,7 +94,7 @@ class FauxPayPal:
         return {'id': 'REF1', 'status': 'COMPLETED'}
 
 
-@override_settings(FEDAPAY=FEDAPAY_TEST, PAYPAL=PAYPAL_TEST)
+@override_settings(FEDAPAY=FEDAPAY_TEST, PAYPAL=PAYPAL_TEST, PAIEMENTS_PAUSE_EMAIL=0)
 class CycleTests(TestCase):
     def setUp(self):
         User = get_user_model()
@@ -290,6 +290,65 @@ class CycleTests(TestCase):
         services.envoyer_remboursements()
         self.assertEqual(RemboursementModel.objects.get(reservation=resa).statut, 'a_traiter')
         self.assertEqual(self.faux.payouts, [])
+
+    def test_remboursement_mobile_money_demande_le_numero(self):
+        resa = self.reserver(dans_jours=10)
+        self.api.post(f'/api/v1/paiements/reservations/{resa.id}/payer/')
+        self.faux.lire_transaction = lambda i: {'id': i, 'status': 'approved', 'mode': 'momo_test'}  # sans numéro, comme FedaPay
+        services.synchroniser_paiement(PaiementModel.objects.get(reservation=resa))
+
+        r = self.api.delete(f'/api/v1/reservations/{resa.id}/')
+        self.assertTrue(r.data['numero_requis'])
+        self.assertEqual(self.api.get(f'/api/v1/reservations/{resa.id}/').data['remboursement']['statut'], 'attente_numero')
+        self.assertEqual(services.envoyer_remboursements(), 0)  # rien ne part sans numéro
+
+        url = f'/api/v1/paiements/reservations/{resa.id}/compte-remboursement/'
+        self.assertEqual(self.api.put(url, {'pays': 'TG', 'operateur': 'mtn_open', 'numero': '90000003'}, format='json').status_code, 400)
+        r = self.api.put(url, {'pays': 'TG', 'operateur': 'togocel', 'numero': '90 00 00 03'}, format='json')
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertEqual(services.envoyer_remboursements(), 1)
+        envoi = self.faux.payouts[-1]
+        self.assertEqual((envoi['montant'], envoi['mode']), (64800, 'togocel'))
+        self.assertEqual(envoi['client']['phone_number'], {'number': '90000003', 'country': 'tg'})
+        self.assertEqual(self.api.put(url, {'pays': 'TG', 'operateur': 'togocel', 'numero': '90000003'}, format='json').status_code, 400)
+
+    def test_echec_nouvel_essai_progressif(self):
+        resa = self.reserver(dans_jours=10)
+        self.payer(resa)
+        self.api.delete(f'/api/v1/reservations/{resa.id}/')
+        remboursement = RemboursementModel.objects.get(reservation=resa)
+
+        def refus(**kwargs):
+            raise fedapay.FedaPayErreur('Opération non autorisée')
+        self.faux.creer_versement = refus
+        services.envoyer_remboursements()
+        remboursement.refresh_from_db()
+        self.assertEqual((remboursement.statut, remboursement.tentatives), ('a_envoyer', 1))
+        services.envoyer_remboursements()  # trop tôt : pas de nouvel essai
+        remboursement.refresh_from_db()
+        self.assertEqual(remboursement.tentatives, 1)
+        RemboursementModel.objects.filter(pk=remboursement.pk).update(mis_a_jour_le=timezone.now() - timedelta(minutes=16))
+        services.envoyer_remboursements()
+        remboursement.refresh_from_db()
+        self.assertEqual(remboursement.tentatives, 2)
+
+    def test_emails_confirmation_versement_alerte(self):
+        from django.core import mail
+        get_user_model().objects.create_user('admin@test.tg', 'x', first_name='Ad', last_name='Min', role='admin')
+        resa = self.reserver(dans_jours=10)
+        self.payer(resa)
+        services.passe()
+        sujets = sorted(m.subject for m in mail.outbox)
+        self.assertEqual(sujets, ['Nouvelle réservation payée — Villa test', 'Séjour confirmé — Villa test'])
+        self.assertIn('64 800 FCFA', [m for m in mail.outbox if m.to == ['voy@test.tg']][0].body)
+        self.assertIn("pas encore indiqué où recevoir", [m for m in mail.outbox if m.to == ['hote@test.tg']][0].body)
+        services.passe()
+        self.assertEqual(len(mail.outbox), 2)  # pas de doublon
+
+        VersementModel.objects.filter(reservation=resa).update(statut='echoue', derniere_erreur='Numéro invalide')
+        services.passe()
+        self.assertEqual(mail.outbox[-1].to, ['admin@test.tg'])
+        self.assertIn('Numéro invalide', mail.outbox[-1].body)
 
     def test_moyen_indisponible(self):
         resa = self.reserver()
