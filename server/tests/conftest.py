@@ -2,6 +2,8 @@ from pathlib import Path
 
 import pytest
 
+from tests import services
+
 _TESTS_DIR = Path(__file__).parent
 _MARKERS = ('unit', 'integration', 'broker')
 
@@ -17,3 +19,23 @@ def pytest_collection_modifyitems(config, items):
         if layer not in _MARKERS:
             raise pytest.UsageError(f'{item.nodeid} : les tests vont dans tests/unit, tests/integration ou tests/broker')
         item.add_marker(getattr(pytest.mark, layer))
+
+
+@pytest.fixture(scope='session')
+def django_db_modify_db_settings(django_db_modify_db_settings_parallel_suffix):
+    """Appelé par pytest-django juste avant de créer la base de test, donc seulement si un test touche la base.
+
+    Démarre alors le conteneur PostgreSQL de test (voir tests/services.py) et y pointe Django.
+    """
+    if services.externally_provided():
+        yield
+        return
+
+    from django.conf import settings
+
+    started = services.start(services.POSTGRES['service'])
+    # Modification en place : les connexions déjà créées partagent ce dictionnaire
+    settings.DATABASES['default'].update(services.POSTGRES['settings'])
+    yield
+    if started:
+        services.stop(services.POSTGRES['service'])

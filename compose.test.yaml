@@ -1,0 +1,21 @@
+# Services des tests du serveur, démarrés à la demande par pytest (server/tests/services.py).
+# Projet séparé (afristay-test) : n'interfère pas avec la stack de développement de compose.yaml.
+name: afristay-test
+
+services:
+  postgres-test:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: afristay
+      POSTGRES_USER: afristay
+      POSTGRES_PASSWORD: afristay-test
+    ports:
+      - "127.0.0.1:55432:5432"
+    # Données en mémoire : rapide, et rien ne survit à l'arrêt du conteneur
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U afristay -d afristay"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
