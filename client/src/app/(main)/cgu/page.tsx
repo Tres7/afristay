@@ -93,6 +93,21 @@ export default function CguPage() {
           ),
         },
         {
+          id: "transferts",
+          titre: "Transferts aéroport",
+          contenu: (
+            <ul>
+              <li>
+                Les transferts sont assurés par des <strong>chauffeurs partenaires indépendants</strong> sélectionnés par AfriStay, qui
+                reste votre interlocuteur et encaisse le prix de la course.
+              </li>
+              <li>Le prix est fixe et payé à la réservation ; une majoration de 25 % s&apos;applique aux arrivées entre 22 h et 6 h. Aucun supplément ne peut être demandé sur place.</li>
+              <li>Réservation au plus tard 6 heures avant l&apos;atterrissage. Le chauffeur attend jusqu&apos;à 60 minutes après l&apos;heure d&apos;arrivée indiquée ; en cas de retard de vol, prévenez-le.</li>
+              <li>Annulation gratuite jusqu&apos;à 24 heures avant l&apos;arrivée ; ensuite, le prix reste dû au chauffeur. Si AfriStay ne peut pas fournir de chauffeur, le transfert est intégralement remboursé.</li>
+            </ul>
+          ),
+        },
+        {
           id: "avis",
           titre: "Avis et modération",
           contenu: (

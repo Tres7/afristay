@@ -11,14 +11,15 @@ import FormField from "@/components/ui/FormField";
 import type { PaysPaiement } from "@/types/api/paiement";
 
 interface Props {
-  reservationId: string;
+  /** Route qui enregistre le compte (réservation ou transfert). */
+  endpoint: string;
   montant: number;
   onClose: () => void;
   onDone: () => void;
 }
 
 /** Demande au voyageur le compte Mobile Money sur lequel le rembourser (FedaPay ne communique pas le numéro débité). */
-export default function CompteRemboursementDialog({ reservationId, montant, onClose, onDone }: Props) {
+export default function CompteRemboursementDialog({ endpoint, montant, onClose, onDone }: Props) {
   const { data: config } = useConfigPaiement();
   const [pays, setPays] = useState<PaysPaiement["code"]>("TG");
   const [operateurChoisi, setOperateur] = useState("");
@@ -49,7 +50,7 @@ export default function CompteRemboursementDialog({ reservationId, montant, onCl
     setEnvoi(true);
     setErreurs({});
     try {
-      await api.put(`/v1/paiements/reservations/${reservationId}/compte-remboursement/`, { pays, operateur, numero });
+      await api.put(endpoint, { pays, operateur, numero });
       onDone();
     } catch (err) {
       const data = (err as { response?: { data?: Record<string, string[] | string> } }).response?.data;

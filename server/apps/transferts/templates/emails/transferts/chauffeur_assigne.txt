@@ -1,0 +1,17 @@
+{% autoescape off %}Bonjour {{ prenom }},
+
+Votre chauffeur pour le {{ arrivee }} est attribué :
+
+  {{ chauffeur }}
+  Téléphone / WhatsApp : {{ telephone_chauffeur }}
+  Véhicule : {{ vehicule }} — immatriculation {{ immatriculation }}
+
+Il vous attendra à la sortie des arrivées de l'aéroport {{ aeroport }} avec une pancarte à votre nom. Si votre vol a du retard, prévenez-le par WhatsApp.
+
+Un souci à l'arrivée ? Assistance AfriStay : {{ assistance }}
+
+Votre transfert : {{ url }}
+
+Bon voyage,
+L'équipe AfriStay
+{% endautoescape %}

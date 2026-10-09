@@ -4,6 +4,8 @@ import { auth } from "@/auth";
 // Pages réservées aux utilisateurs connectés (le centre d'aide reste public)
 const PROTECTED = ["/profil", "/favoris", "/messages", "/reservation", "/hote/espace", "/backoffice"];
 const PUBLIC_EXCEPTIONS = ["/profil/aide"];
+// Formulaire public, mais le suivi d'un transfert (/transfert/<id>) exige d'être connecté
+const PROTECTED_SUBPATHS = ["/transfert"];
 // Pages d'authentification inutiles une fois connecté
 const GUEST_ONLY = ["/login", "/register"];
 
@@ -12,7 +14,8 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth && !req.auth.error;
 
   const isProtected =
-    PROTECTED.some((p) => pathname === p || pathname.startsWith(`${p}/`)) &&
+    (PROTECTED.some((p) => pathname === p || pathname.startsWith(`${p}/`)) ||
+      PROTECTED_SUBPATHS.some((p) => pathname.startsWith(`${p}/`))) &&
     !PUBLIC_EXCEPTIONS.some((p) => pathname.startsWith(p));
 
   if (!isLoggedIn && isProtected) {
@@ -38,6 +41,7 @@ export const config = {
     "/profil/:path*",
     "/favoris",
     "/messages/:path*",
+    "/transfert/:path+",
     "/reservation/:path*",
     "/hote/espace/:path*",
     "/backoffice/:path*",

@@ -58,6 +58,17 @@ export default function RemboursementPage() {
           ),
         },
         {
+          id: "transferts",
+          titre: "Transferts aéroport",
+          contenu: (
+            <ul>
+              <li>Annulation par le voyageur plus de 24 heures avant l&apos;arrivée : remboursement intégral.</li>
+              <li>Moins de 24 heures avant l&apos;arrivée : aucun remboursement, le chauffeur ayant réservé sa course.</li>
+              <li>Si AfriStay ne peut pas fournir de chauffeur, ou si le chauffeur ne se présente pas : remboursement intégral.</li>
+            </ul>
+          ),
+        },
+        {
           id: "delais",
           titre: "Délais et moyens de remboursement",
           contenu: (

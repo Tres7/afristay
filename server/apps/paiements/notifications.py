@@ -32,7 +32,8 @@ def _envoyer(gabarit: str, sujet: str, destinataires: list[str], contexte: dict)
     time.sleep(settings.PAIEMENTS_PAUSE_EMAIL)
     send_mail(
         subject=sujet,
-        message=render_to_string(f'emails/paiements/{gabarit}.txt', contexte),
+        # `gabarit` : nom dans emails/paiements/, ou chemin complet (autres modules, par ex. les transferts)
+        message=render_to_string(gabarit if '/' in gabarit else f'emails/paiements/{gabarit}.txt', contexte),
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=destinataires,
     )
@@ -86,29 +87,27 @@ def versement_envoye(v: VersementModel):
 
 
 def remboursement_envoye(rb: RemboursementModel):
-    r = rb.reservation
     if rb.paiement.prestataire == 'paypal':
         destination = 'votre compte PayPal'
     elif rb.numero:
         destination = f"votre compte {nom_operateur(rb.operateur)} (+{PAYS[rb.pays]['indicatif']} {rb.numero})"
     else:
         destination = ''
-    _envoyer('remboursement_envoye', f"Remboursement de {_fcfa(rb.montant)} envoyé", [r.guest.email], {
-        'prenom': r.guest.first_name, 'montant': _fcfa(rb.montant), 'reference': r.reference,
-        'hebergement': r.hebergement.name, 'destination': destination,
+    _envoyer('remboursement_envoye', f"Remboursement de {_fcfa(rb.montant)} envoyé", [rb.payeur.email], {
+        'prenom': rb.payeur.first_name, 'montant': _fcfa(rb.montant), 'reference': rb.reference,
+        'hebergement': rb.libelle, 'destination': destination,
     })
 
 
-def alerte_admin(type_: str, ligne, beneficiaire: str):
+def alerte_admin(type_: str, ligne, beneficiaire: str, *, reference: str, libelle: str, section: str = 'paiements'):
     destinataires = _admins()
     if not destinataires:
         logger.error("%s à traiter (%s) mais aucun administrateur à prévenir", type_, ligne.pk)
         return
-    r = ligne.reservation
-    _envoyer('alerte_admin', f"[AfriStay] {type_} à traiter — {r.reference}", destinataires, {
-        'type': type_, 'reference': r.reference, 'hebergement': r.hebergement.name, 'montant': _fcfa(ligne.montant),
+    _envoyer('alerte_admin', f"[AfriStay] {type_} à traiter — {reference}", destinataires, {
+        'type': type_, 'reference': reference, 'hebergement': libelle, 'montant': _fcfa(ligne.montant),
         'beneficiaire': beneficiaire, 'erreur': ligne.derniere_erreur or '—',
-        'url_admin': f"{settings.BACKEND_URL}/admin/paiements/",
+        'url_admin': f"{settings.BACKEND_URL}/admin/{section}/",
     })
 
 
@@ -136,14 +135,16 @@ def envoyer_notifications() -> int:
     )
     total += _traiter(
         VersementModel.objects.filter(statut='echoue', notifie=False).select_related('hote', *relations),
-        lambda v: alerte_admin('Versement à un hôte', v, f"{v.hote.email} ({nom_operateur(v.mode)} {v.numero})"),
+        lambda v: alerte_admin('Versement à un hôte', v, f"{v.hote.email} ({nom_operateur(v.mode)} {v.numero})",
+                               reference=v.reservation.reference, libelle=v.reservation.hebergement.name),
     )
+    relations_remb = ('paiement', 'reservation__guest', 'reservation__hebergement', 'transfert__voyageur', 'transfert__aeroport')
     total += _traiter(
-        RemboursementModel.objects.filter(statut='envoye', notifie=False).select_related('paiement', *relations),
+        RemboursementModel.objects.filter(statut='envoye', notifie=False).select_related(*relations_remb),
         remboursement_envoye,
     )
     total += _traiter(
-        RemboursementModel.objects.filter(statut='a_traiter', notifie=False).select_related('paiement', *relations),
-        lambda rb: alerte_admin('Remboursement', rb, rb.reservation.guest.email),
+        RemboursementModel.objects.filter(statut='a_traiter', notifie=False).select_related(*relations_remb),
+        lambda rb: alerte_admin('Remboursement', rb, rb.payeur.email, reference=rb.reference, libelle=rb.libelle),
     )
     return total

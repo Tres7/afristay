@@ -198,7 +198,7 @@ export default function ReservationsPage() {
 
       {aRembourser && (
         <CompteRemboursementDialog
-          reservationId={aRembourser.id}
+          endpoint={`/v1/paiements/reservations/${aRembourser.id}/compte-remboursement/`}
           montant={aRembourser.montant}
           onClose={() => setARembourser(null)}
           onDone={() => {

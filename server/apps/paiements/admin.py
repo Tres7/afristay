@@ -5,7 +5,7 @@ from .models import PaiementModel, ProfilVersementModel, RemboursementModel, Ver
 
 @admin.register(PaiementModel)
 class PaiementAdmin(admin.ModelAdmin):
-    list_display = ['reservation', 'montant', 'statut', 'mode', 'transaction_id', 'cree_le']
+    list_display = ['reference', 'montant', 'statut', 'mode', 'transaction_id', 'cree_le']
     list_filter = ['statut', 'prestataire']
     search_fields = ['transaction_id', 'reservation__guest__email']
     readonly_fields = [f.name for f in PaiementModel._meta.fields]
@@ -20,7 +20,7 @@ class VersementAdmin(admin.ModelAdmin):
 
 @admin.register(RemboursementModel)
 class RemboursementAdmin(admin.ModelAdmin):
-    list_display = ['reservation', 'montant', 'motif', 'statut', 'derniere_erreur', 'cree_le']
+    list_display = ['reference', 'montant', 'motif', 'statut', 'derniere_erreur', 'cree_le']
     list_filter = ['statut']
     search_fields = ['reservation__guest__email', 'payout_id']
 

@@ -1,0 +1,12 @@
+{% autoescape off %}{% if urgent %}URGENT : arrivée dans moins de 24 heures et aucun chauffeur attribué.
+{% else %}Un transfert vient d'être payé : il faut lui attribuer un chauffeur.
+{% endif %}
+  Référence : {{ reference }}
+  Aéroport : {{ aeroport }} — arrivée {{ arrivee }} (vol {{ vol }})
+  Véhicule demandé : {{ vehicule }} · {{ passagers }} passager{{ passagers|pluralize }}, {{ bagages }} bagage{{ bagages|pluralize }}
+  Destination : {{ destination }}
+  Voyageur : {{ voyageur }} — {{ telephone_voyageur }}
+
+Chauffeurs disponibles pour cet aéroport : {{ nb_chauffeurs }}
+Attribuer : {{ url_admin }}
+{% endautoescape %}

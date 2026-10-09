@@ -24,8 +24,30 @@ class ProfilVersementModel(models.Model):
         return f"{self.hote.email} — {self.get_operateur_display()} {self.numero}"
 
 
-class PaiementModel(models.Model):
-    """Une tentative d'encaissement (une réservation peut en avoir plusieurs : échec puis nouvel essai)."""
+class ObjetPayeMixin:
+    """Ce qui est payé : une réservation de logement ou un transfert aéroport."""
+
+    @property
+    def objet(self):
+        return self.reservation if self.reservation_id else self.transfert
+
+    @property
+    def payeur(self):
+        return self.reservation.guest if self.reservation_id else self.transfert.voyageur
+
+    @property
+    def reference(self):
+        return self.objet.reference
+
+    @property
+    def libelle(self):
+        if self.reservation_id:
+            return self.reservation.hebergement.name
+        return f"Transfert depuis l'aéroport {self.transfert.aeroport.ville}"
+
+
+class PaiementModel(ObjetPayeMixin, models.Model):
+    """Une tentative d'encaissement (un même objet peut en avoir plusieurs : échec puis nouvel essai)."""
     PRESTATAIRES = [
         ('fedapay', 'FedaPay (Mobile Money, carte)'),
         ('paypal', 'PayPal'),
@@ -38,7 +60,12 @@ class PaiementModel(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    reservation = models.ForeignKey('reservations.ReservationModel', on_delete=models.PROTECT, related_name='paiements')
+    reservation = models.ForeignKey(
+        'reservations.ReservationModel', on_delete=models.PROTECT, related_name='paiements', null=True, blank=True,
+    )
+    transfert = models.ForeignKey(
+        'transferts.TransfertModel', on_delete=models.PROTECT, related_name='paiements', null=True, blank=True,
+    )
     montant = models.PositiveIntegerField()
     devise = models.CharField(max_length=3, default='XOF')
     prestataire = models.CharField(max_length=20, choices=PRESTATAIRES, default='fedapay')
@@ -63,9 +90,14 @@ class PaiementModel(models.Model):
         app_label = 'paiements'
         ordering = ['-cree_le']
         verbose_name = 'Paiement'
+        constraints = [models.CheckConstraint(
+            condition=models.Q(reservation__isnull=False, transfert__isnull=True)
+            | models.Q(reservation__isnull=True, transfert__isnull=False),
+            name='paiement_reservation_ou_transfert',
+        )]
 
     def __str__(self):
-        return f"{self.montant} FCFA — {self.get_statut_display()} — {self.reservation.reference}"
+        return f"{self.montant} FCFA — {self.get_statut_display()} — {self.reference}"
 
 
 class VersementModel(models.Model):
@@ -108,7 +140,7 @@ class VersementModel(models.Model):
         return f"{self.montant} FCFA → {self.hote.email} ({self.get_statut_display()})"
 
 
-class RemboursementModel(models.Model):
+class RemboursementModel(ObjetPayeMixin, models.Model):
     STATUTS = [
         ('attente_numero', 'En attente du numéro du voyageur'),
         ('a_envoyer', 'À envoyer'),
@@ -118,7 +150,12 @@ class RemboursementModel(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    reservation = models.ForeignKey('reservations.ReservationModel', on_delete=models.PROTECT, related_name='remboursements')
+    reservation = models.ForeignKey(
+        'reservations.ReservationModel', on_delete=models.PROTECT, related_name='remboursements', null=True, blank=True,
+    )
+    transfert = models.ForeignKey(
+        'transferts.TransfertModel', on_delete=models.PROTECT, related_name='remboursements', null=True, blank=True,
+    )
     paiement = models.ForeignKey(PaiementModel, on_delete=models.PROTECT, related_name='remboursements')
     montant = models.PositiveIntegerField()
     devise = models.CharField(max_length=3, default='XOF')
@@ -143,4 +180,4 @@ class RemboursementModel(models.Model):
         verbose_name = 'Remboursement'
 
     def __str__(self):
-        return f"{self.montant} FCFA — {self.reservation.reference} ({self.get_statut_display()})"
+        return f"{self.montant} FCFA — {self.reference} ({self.get_statut_display()})"

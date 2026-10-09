@@ -77,28 +77,29 @@ def paiement_reussi(reservation) -> PaiementModel | None:
 
 # --- Encaissement ------------------------------------------------------------------------
 
-def demarrer_paiement(reservation, moyen: str = 'mobile_money') -> str:
-    """Crée la transaction chez le prestataire et renvoie l'adresse de sa page de paiement."""
+def creer_paiement(*, objet, montant: int, moyen: str, description: str, url_retour: str, voyageur) -> str:
+    """Crée la transaction chez le prestataire pour `objet` (réservation ou transfert) et renvoie
+    l'adresse de la page de paiement. `url_retour` : page du site où le voyageur revient."""
     if moyen not in moyens_actifs():
         raise PaiementErreur("Ce moyen de paiement n'est pas disponible.")
-    if reservation.status != 'pending':
-        raise PaiementErreur("Cette réservation n'attend pas de paiement.")
-    if reservation.expire_le and reservation.expire_le <= timezone.now():
-        raise PaiementErreur("Le délai de paiement est dépassé : les dates ont été libérées. Refaites la réservation.")
+    cible = {'reservation': objet} if isinstance(objet, ReservationModel) else {'transfert': objet}
 
-    montants = tarifs.montants_de(reservation)
-    if reservation.payment_method != moyen:
-        reservation.payment_method = moyen
-        reservation.save(update_fields=['payment_method'])
     if MOYENS[moyen] == 'paypal':
-        return _demarrer_paypal(reservation, montants)
+        paiement = PaiementModel(**cible, montant=montant, prestataire='paypal', montant_eur=paypal.en_euros(montant))
+        try:
+            paiement.transaction_id, paiement.url_paiement = paypal.client().creer_commande(
+                montant_eur=paiement.montant_eur, description=description, reference=str(paiement.id),
+                url_retour=url_retour, url_annulation=f"{url_retour}?annule=1",
+            )
+        except paypal.PayPalErreur:
+            logger.exception("Création de la commande PayPal impossible pour %s", objet.pk)
+            raise PaiementErreur("PayPal est momentanément indisponible. Réessayez ou choisissez un autre moyen de paiement.")
+        paiement.save()
+        return paiement.url_paiement
 
-    voyageur = reservation.guest
     try:
         transaction_id, url = fedapay.client().creer_transaction(
-            montant=montants.total,
-            description=f"AfriStay {reservation.reference} — {reservation.hebergement.name}",
-            callback_url=f"{settings.FRONTEND_URL}/reservation/paiement/{reservation.id}",
+            montant=montant, description=description, callback_url=url_retour,
             client={
                 'firstname': voyageur.first_name or 'Voyageur',
                 'lastname': voyageur.last_name or 'AfriStay',
@@ -106,34 +107,29 @@ def demarrer_paiement(reservation, moyen: str = 'mobile_money') -> str:
             },
         )
     except fedapay.FedaPayErreur:
-        logger.exception("Création de la transaction impossible pour %s", reservation.id)
+        logger.exception("Création de la transaction impossible pour %s", objet.pk)
         raise PaiementErreur("Le service de paiement est momentanément indisponible. Réessayez dans quelques instants.")
-
-    PaiementModel.objects.create(
-        reservation=reservation, montant=montants.total, transaction_id=transaction_id, url_paiement=url,
-    )
+    PaiementModel.objects.create(**cible, montant=montant, transaction_id=transaction_id, url_paiement=url)
     return url
 
 
-def _demarrer_paypal(reservation, montants) -> str:
-    paiement = PaiementModel(
-        reservation=reservation, montant=montants.total, prestataire='paypal',
-        montant_eur=paypal.en_euros(montants.total),
+def demarrer_paiement(reservation, moyen: str = 'mobile_money') -> str:
+    """Paiement d'une réservation de logement."""
+    if moyen not in moyens_actifs():
+        raise PaiementErreur("Ce moyen de paiement n'est pas disponible.")
+    if reservation.status != 'pending':
+        raise PaiementErreur("Cette réservation n'attend pas de paiement.")
+    if reservation.expire_le and reservation.expire_le <= timezone.now():
+        raise PaiementErreur("Le délai de paiement est dépassé : les dates ont été libérées. Refaites la réservation.")
+
+    if reservation.payment_method != moyen:
+        reservation.payment_method = moyen
+        reservation.save(update_fields=['payment_method'])
+    return creer_paiement(
+        objet=reservation, montant=tarifs.montants_de(reservation).total, moyen=moyen, voyageur=reservation.guest,
+        description=f"AfriStay {reservation.reference} — {reservation.hebergement.name}",
+        url_retour=f"{settings.FRONTEND_URL}/reservation/paiement/{reservation.id}",
     )
-    retour = f"{settings.FRONTEND_URL}/reservation/paiement/{reservation.id}"
-    try:
-        paiement.transaction_id, paiement.url_paiement = paypal.client().creer_commande(
-            montant_eur=paiement.montant_eur,
-            description=f"AfriStay {reservation.reference} — {reservation.hebergement.name}",
-            reference=str(paiement.id),
-            url_retour=retour,
-            url_annulation=f"{retour}?annule=1",
-        )
-    except paypal.PayPalErreur:
-        logger.exception("Création de la commande PayPal impossible pour %s", reservation.id)
-        raise PaiementErreur("PayPal est momentanément indisponible. Réessayez ou choisissez un autre moyen de paiement.")
-    paiement.save()
-    return paiement.url_paiement
 
 
 def synchroniser_paiement(paiement: PaiementModel) -> str:
@@ -189,24 +185,29 @@ def _paiement_reussi(paiement_id, donnees: dict):
         paiement = PaiementModel.objects.select_for_update().get(pk=paiement_id)
         if paiement.statut == 'reussi':
             return  # déjà traité (webhook reçu deux fois, ou webhook + vérification du navigateur)
-        reservation = ReservationModel.objects.select_for_update().get(pk=paiement.reservation_id)
 
         paiement.statut = 'reussi'
         paiement.mode = str(donnees.get('mode') or '')[:40]
         if paiement.prestataire == 'fedapay':
             paiement.telephone, paiement.pays_telephone = _telephone(donnees)
         paiement.save()
-        logger.info("Paiement reçu : %s FCFA pour %s", paiement.montant, reservation.reference)
+        logger.info("Paiement reçu : %s FCFA pour %s", paiement.montant, paiement.reference)
 
+        if paiement.transfert_id:
+            from apps.transferts.services import paiement_recu  # import local : transferts dépend de paiements
+            paiement_recu(paiement)
+            return
+
+        reservation = ReservationModel.objects.select_for_update().get(pk=paiement.reservation_id)
         if reservation.paiements.filter(statut='reussi').exclude(pk=paiement.pk).exists():
-            _rembourser(reservation, paiement, paiement.montant, "Paiement reçu en double")
+            rembourser(paiement, paiement.montant, "Paiement reçu en double")
             return
         if reservation.status == 'cancelled' and reservation.annule_par != 'expiration':
-            _rembourser(reservation, paiement, paiement.montant, "Réservation annulée avant la confirmation du paiement")
+            rembourser(paiement, paiement.montant, "Réservation annulée avant la confirmation du paiement")
             return
         # Paiement arrivé après l'expiration : on confirme si les dates sont toujours libres
         if conflit(reservation.hebergement_id, reservation.check_in, reservation.check_out, exclure=reservation.pk):
-            _rembourser(reservation, paiement, paiement.montant, "Dates plus disponibles au moment du paiement")
+            rembourser(paiement, paiement.montant, "Dates plus disponibles au moment du paiement")
             reservation.status, reservation.annule_par = 'cancelled', 'plateforme'
             reservation.annule_le = timezone.now()
             reservation.save(update_fields=['status', 'annule_par', 'annule_le'])
@@ -235,25 +236,29 @@ def _planifier_versement(reservation):
 
 
 def _par_carte(paiement) -> bool:
-    return paiement.reservation.payment_method == 'carte' or 'card' in paiement.mode.lower()
+    moyen = paiement.reservation.payment_method if paiement.reservation_id else paiement.transfert.moyen
+    return moyen == 'carte' or 'card' in paiement.mode.lower()
 
 
-def _rembourser(reservation, paiement, montant: int, motif: str):
+def rembourser(paiement, montant: int, motif: str):
+    """Prévoit le remboursement de `montant` sur ce paiement (envoyé ensuite par le worker)."""
     if montant <= 0:
         return None
-    logger.info("Remboursement de %s FCFA prévu pour %s : %s", montant, reservation.reference, motif)
+    logger.info("Remboursement de %s FCFA prévu pour %s : %s", montant, paiement.reference, motif)
     statut = 'a_envoyer'
     if paiement.prestataire == 'fedapay' and not paiement.telephone and not _par_carte(paiement):
         # Mobile Money : FedaPay ne donne pas le numéro débité, on le demande au voyageur
         statut = 'attente_numero'
     return RemboursementModel.objects.create(
-        reservation=reservation, paiement=paiement, montant=montant, motif=motif, statut=statut,
+        reservation_id=paiement.reservation_id, transfert_id=paiement.transfert_id,
+        paiement=paiement, montant=montant, motif=motif, statut=statut,
     )
 
 
-def indiquer_numero_remboursement(reservation, pays: str, operateur: str, numero: str) -> int:
-    """Enregistre le compte Mobile Money du voyageur sur ses remboursements en attente. Renvoie leur nombre."""
-    return RemboursementModel.objects.filter(reservation=reservation, statut='attente_numero').update(
+def indiquer_numero_remboursement(objet, pays: str, operateur: str, numero: str) -> int:
+    """Enregistre le compte Mobile Money du voyageur sur les remboursements en attente de `objet`
+    (réservation ou transfert). Renvoie leur nombre."""
+    return objet.remboursements.filter(statut='attente_numero').update(
         pays=pays, operateur=operateur, numero=numero, statut='a_envoyer', derniere_erreur='',
     )
 
@@ -291,7 +296,7 @@ def annuler(reservation, par: str) -> int:
             elif versement and versement.statut in ('en_cours', 'envoye'):
                 logger.warning("Annulation de %s après le versement à l'hôte : à régulariser", reservation.reference)
 
-            _rembourser(reservation, paiement, bareme.rembourse_voyageur, motif)
+            rembourser(paiement, bareme.rembourse_voyageur, motif)
             rembourse = bareme.rembourse_voyageur
 
         reservation.status = 'cancelled'
@@ -318,6 +323,48 @@ def _reserver(modele, pk, de: str) -> bool:
     return modele.objects.filter(pk=pk, statut=de).update(statut='en_cours') == 1
 
 
+def envoyer_payout(ligne, *, mode: str, numero: str, pays: str, email: str, titulaire: str) -> bool:
+    """Envoie un versement Mobile Money pour une ligne planifiée (versement à un hôte ou à un chauffeur).
+
+    La ligne doit avoir les champs statut, tentatives, payout_id, mode, numero, derniere_erreur.
+    Renvoie True si FedaPay a accepté l'envoi.
+    """
+    if not _peut_reessayer(ligne) or not _reserver(type(ligne), ligne.pk, 'planifie'):
+        return False
+    prenom, _, nom = titulaire.strip().partition(' ')
+    ligne.tentatives += 1
+    try:
+        ligne.payout_id = fedapay.client().creer_versement(montant=ligne.montant, mode=mode, client={
+            'firstname': prenom or 'Client', 'lastname': nom or 'AfriStay', 'email': email,
+            'phone_number': {'number': numero, 'country': pays.lower()},
+        })
+        ligne.statut, ligne.derniere_erreur = 'en_cours', ''
+        ligne.mode, ligne.numero = mode, numero
+    except fedapay.FedaPayErreur as exc:
+        ligne.derniere_erreur = str(exc)
+        ligne.statut = 'echoue' if ligne.tentatives >= MAX_TENTATIVES else 'planifie'
+    ligne.save()
+    return ligne.statut == 'en_cours'
+
+
+def synchroniser_payout(ligne):
+    """Relit chez FedaPay le statut d'un versement en cours (hôte ou chauffeur)."""
+    try:
+        donnees = fedapay.client().lire_versement(ligne.payout_id)
+    except fedapay.FedaPayErreur:
+        return
+    statut = fedapay.STATUTS_PAYOUT.get(str(donnees.get('status', '')).lower())
+    if statut == 'envoye':
+        ligne.statut, ligne.envoye_le = 'envoye', timezone.now()
+        logger.info("Versement de %s FCFA envoyé (%s)", ligne.montant, ligne.pk)
+    elif statut == 'echoue':
+        ligne.derniere_erreur = str(donnees.get('last_error_code') or 'Versement refusé par FedaPay')
+        ligne.statut = 'echoue' if ligne.tentatives >= MAX_TENTATIVES else 'planifie'
+    else:
+        return
+    ligne.save()
+
+
 def envoyer_versements_dus() -> int:
     if not fedapay_actif():
         return 0  # les versements aux hôtes passent par FedaPay
@@ -326,52 +373,28 @@ def envoyer_versements_dus() -> int:
         statut='planifie', date_prevue__lte=timezone.now(), reservation__status='confirmed',
     ).select_related('hote')[:50]
     for versement in dus:
-        if not _peut_reessayer(versement):
-            continue
         profil = ProfilVersementModel.objects.filter(hote=versement.hote).first()
         if not profil:
             if not versement.derniere_erreur:
                 versement.derniere_erreur = "L'hôte n'a pas encore indiqué où recevoir son argent."
                 versement.save(update_fields=['derniere_erreur', 'mis_a_jour_le'])
             continue
-        if not _reserver(VersementModel, versement.pk, 'planifie'):
-            continue
-        versement.tentatives += 1
-        try:
-            versement.payout_id = fedapay.client().creer_versement(
-                montant=versement.montant, mode=profil.operateur,
-                client=_client_payout(versement.hote, profil.numero, profil.pays, profil.titulaire),
-            )
-            versement.statut, versement.derniere_erreur = 'en_cours', ''
-            versement.mode, versement.numero = profil.operateur, profil.numero
-            envoyes += 1
-        except fedapay.FedaPayErreur as exc:
-            versement.derniere_erreur = str(exc)
-            versement.statut = 'echoue' if versement.tentatives >= MAX_TENTATIVES else 'planifie'
-        versement.save()
+        envoyes += envoyer_payout(
+            versement, mode=profil.operateur, numero=profil.numero, pays=profil.pays,
+            email=versement.hote.email, titulaire=profil.titulaire or versement.hote.get_full_name(),
+        )
     return envoyes
 
 
 def synchroniser_versement(versement: VersementModel):
-    try:
-        donnees = fedapay.client().lire_versement(versement.payout_id)
-    except fedapay.FedaPayErreur:
-        return
-    statut = fedapay.STATUTS_PAYOUT.get(str(donnees.get('status', '')).lower())
-    if statut == 'envoye':
-        versement.statut, versement.envoye_le = 'envoye', timezone.now()
-        logger.info("Versement de %s FCFA envoyé à %s", versement.montant, versement.hote_id)
-    elif statut == 'echoue':
-        versement.derniere_erreur = str(donnees.get('last_error_code') or 'Versement refusé par FedaPay')
-        versement.statut = 'echoue' if versement.tentatives >= MAX_TENTATIVES else 'planifie'
-    else:
-        return
-    versement.save()
+    synchroniser_payout(versement)
 
 
 def envoyer_remboursements() -> int:
     envoyes = 0
-    for remboursement in RemboursementModel.objects.filter(statut='a_envoyer').select_related('paiement', 'reservation__guest')[:50]:
+    for remboursement in RemboursementModel.objects.filter(statut='a_envoyer').select_related(
+        'paiement', 'reservation__guest', 'transfert__voyageur',
+    )[:50]:
         if not _peut_reessayer(remboursement):
             continue
         paiement = remboursement.paiement
@@ -395,7 +418,7 @@ def envoyer_remboursements() -> int:
         try:
             remboursement.payout_id = fedapay.client().creer_versement(
                 montant=remboursement.montant, mode=mode,
-                client=_client_payout(remboursement.reservation.guest, numero, pays),
+                client=_client_payout(remboursement.payeur, numero, pays),
             )
             remboursement.statut, remboursement.derniere_erreur = 'en_cours', ''
             envoyes += 1
@@ -485,11 +508,13 @@ def passe() -> dict:
     for remboursement in RemboursementModel.objects.filter(statut='en_cours').exclude(payout_id='').select_related('paiement')[:50]:
         synchroniser_remboursement(remboursement)
     from . import notifications  # import local : notifications importe les modèles et les tarifs
+    from apps.transferts import services as transferts  # import local : transferts dépend de paiements
 
     stats = {
         'reservations_expirees': expirer_reservations(),
         'versements_envoyes': envoyer_versements_dus(),
         'remboursements_envoyes': envoyer_remboursements(),
+        **transferts.passe(),
     }
     stats['emails'] = notifications.envoyer_notifications()
     return {k: v for k, v in stats.items() if v}
@@ -506,7 +531,10 @@ def traiter_evenement(evenement: dict):
         if paiement:
             synchroniser_paiement(paiement)
     elif nom.startswith('payout.'):
+        from apps.transferts.models import VersementChauffeurModel  # import local : transferts dépend de paiements
         for versement in VersementModel.objects.filter(payout_id=identifiant, statut='en_cours'):
             synchroniser_versement(versement)
+        for versement in VersementChauffeurModel.objects.filter(payout_id=identifiant, statut='en_cours'):
+            synchroniser_payout(versement)
         for remboursement in RemboursementModel.objects.filter(payout_id=identifiant, statut='en_cours'):
             synchroniser_remboursement(remboursement)

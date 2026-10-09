@@ -9,6 +9,7 @@ const COLUMNS = [
       { href: "/recherche", label: "Hébergements" },
       { href: "/decouvrir", label: "Expériences" },
       { href: "/recherche?sort=note", label: "Les mieux notés" },
+      { href: "/transfert", label: "Transfert aéroport" },
     ],
   },
   {

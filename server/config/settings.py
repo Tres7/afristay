@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'apps.avis.apps.AvisConfig',
     'apps.messaging.apps.MessagingConfig',
     'apps.paiements.apps.PaiementsConfig',
+    'apps.transferts.apps.TransfertsConfig',
 ]
 
 MIDDLEWARE = [
@@ -181,6 +182,9 @@ PAYPAL = {
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
 # Pause entre deux emails envoyés par le worker des paiements (limite des SMTP de test comme Mailtrap)
 PAIEMENTS_PAUSE_EMAIL = float(os.getenv('PAIEMENTS_PAUSE_EMAIL', '1'))
+
+# Contact d'assistance donné aux voyageurs (transferts aéroport…)
+ASSISTANCE_CONTACT = os.getenv('ASSISTANCE_CONTACT', 'support@afristay.com')
 
 # URL publique de l'API (liens vers l'administration dans les alertes)
 BACKEND_URL = os.getenv('BACKEND_URL', 'http://localhost:8000')

@@ -43,6 +43,8 @@ export default function ConfidentialitePage() {
                 <tr><td>Identifiant et photo de profil Google (uniquement si vous utilisez « Continuer avec Google »)</td><td>Connexion simplifiée</td><td>Exécution du contrat</td></tr>
                 <tr><td>Réservations : dates, nombre de voyageurs, montant, mode de paiement choisi, message à l&apos;hôte</td><td>Gérer votre séjour et le transmettre à l&apos;hôte</td><td>Exécution du contrat</td></tr>
                 <tr><td>Paiements : montant, statut, identifiant de la transaction chez FedaPay ou PayPal, opérateur et numéro Mobile Money débité</td><td>Encaisser le séjour, vous rembourser sur le même moyen de paiement, comptabilité</td><td>Exécution du contrat ; obligation légale (comptabilité)</td></tr>
+                <tr><td>Transferts aéroport : aéroport, heure et numéro de vol, passagers, bagages, adresse de destination, numéro de téléphone, message au chauffeur</td><td>Organiser la prise en charge à l&apos;aéroport</td><td>Exécution du contrat</td></tr>
+                <tr><td>Chauffeurs partenaires : identité, téléphone, véhicule, immatriculation, compte Mobile Money</td><td>Attribuer les courses et payer les chauffeurs</td><td>Exécution du contrat</td></tr>
                 <tr><td>Hôtes : pays, opérateur, numéro Mobile Money et nom du titulaire</td><td>Verser à l&apos;hôte le prix de ses séjours</td><td>Exécution du contrat</td></tr>
                 <tr><td>Messages échangés avec les hôtes ou les voyageurs</td><td>Messagerie et notifications par email</td><td>Exécution du contrat</td></tr>
                 <tr><td>Avis et notes (publiés avec votre prénom et l&apos;initiale de votre nom)</td><td>Informer les autres voyageurs</td><td>Intérêt légitime (fiabilité des avis)</td></tr>
@@ -71,6 +73,7 @@ export default function ConfidentialitePage() {
           contenu: (
             <ul>
               <li>L&apos;<strong>hôte</strong> du logement que vous réservez reçoit votre nom, les détails de la réservation et votre message.</li>
+              <li>Le <strong>chauffeur partenaire</strong> d&apos;un transfert reçoit votre nom, votre numéro de téléphone, votre numéro de vol, le nombre de passagers et de bagages, l&apos;adresse de destination et votre message.</li>
               <li>Les <strong>administrateurs</strong> d&apos;AfriStay, pour la modération et l&apos;assistance (accès restreint et tracé).</li>
               <li>Hébergement du site et des données : <AC>nom, adresse et pays de l&apos;hébergeur</AC>.</li>
               <li>Envoi des emails (codes, notifications) : <AC>prestataire d&apos;envoi d&apos;emails</AC>.</li>

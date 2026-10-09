@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { CheckCircle, Calendar, MapPin, Users, ArrowRight, MessageCircle } from "lucide-react";
+import { CheckCircle, Calendar, MapPin, Users, ArrowRight, MessageCircle, Plane } from "lucide-react";
 import api from "@/lib/api";
 import { FALLBACK_IMAGE, formatDate, formatPrice } from "@/lib/utils";
 import type { Reservation } from "@/types/api/models";
@@ -122,6 +122,18 @@ export default function ConfirmationPage() {
             </div>
           </div>
         </motion.div>
+
+        {reservation.status === "confirmed" && (
+          <Link href={`/transfert?reservation=${reservation.id}`}
+            className="mb-8 flex items-center gap-4 bg-dark text-white rounded-3xl p-5 sm:p-6 hover:bg-dark/90 transition-colors">
+            <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center flex-shrink-0"><Plane size={22} /></div>
+            <div className="flex-1 min-w-0">
+              <p className="font-heading font-bold">Un chauffeur vous attend à l&apos;aéroport ?</p>
+              <p className="text-sm text-white/80">Réservez votre transfert jusqu&apos;à {h.city} : prix fixe, pancarte à votre nom, annulation gratuite jusqu&apos;à 24 h avant.</p>
+            </div>
+            <ArrowRight size={20} className="flex-shrink-0" />
+          </Link>
+        )}
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link href="/profil/reservations" className="bg-primary text-white font-bold px-8 py-4 rounded-full text-center shadow-button hover:bg-primary-600 transition-colors flex items-center justify-center gap-2">

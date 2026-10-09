@@ -17,6 +17,12 @@ export async function allerPayer(reservationId: string, moyen?: MoyenPaiement) {
   window.location.assign(res.data.url);
 }
 
+/** Paiement d'un transfert aéroport : même principe que pour un logement. */
+export async function payerTransfert(transfertId: string, moyen: MoyenPaiement) {
+  const res = await api.post<{ url: string }>(`/v1/transferts/${transfertId}/payer/`, { moyen });
+  window.location.assign(res.data.url);
+}
+
 /** Temps restant avant la libération des dates, en minutes (arrondi au supérieur). */
 export function minutesRestantes(expireLe: string | null): number | null {
   if (!expireLe) return null;

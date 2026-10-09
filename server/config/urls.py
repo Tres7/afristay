@@ -14,6 +14,7 @@ urlpatterns = [
     path('api/v1/favoris/', include('apps.favoris.urls')),
     path('api/v1/avis/', include('apps.avis.urls')),
     path('api/v1/paiements/', include('apps.paiements.urls')),
+    path('api/v1/transferts/', include('apps.transferts.urls')),
     path('api/v1/messaging/', include('apps.messaging.infrastructure.http.routes.urls')),
 ]
 

@@ -35,6 +35,16 @@ const SECTIONS = [
     ],
   },
   {
+    id: "transferts",
+    title: "Transfert aéroport",
+    items: [
+      { q: "Comment réserver un chauffeur à l'aéroport ?", a: "Depuis « Transfert aéroport » (ou depuis la confirmation de votre séjour) : indiquez votre vol, choisissez le véhicule et payez. Réservez au plus tard 6 heures avant l'atterrissage." },
+      { q: "Quand vais-je connaître mon chauffeur ?", a: "Son nom, son numéro et son véhicule vous sont envoyés par email au plus tard la veille de votre arrivée, et apparaissent dans Profil → Mes transferts." },
+      { q: "Mon vol a du retard", a: "Le chauffeur attend jusqu'à 60 minutes après l'heure prévue. Au-delà, prévenez-le par appel ou WhatsApp : son numéro figure dans votre transfert." },
+      { q: "Puis-je annuler ?", a: "Oui, gratuitement jusqu'à 24 heures avant l'arrivée. Ensuite, le transfert n'est plus remboursé." },
+    ],
+  },
+  {
     id: "compte",
     title: "Mon compte",
     items: [
