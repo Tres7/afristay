@@ -89,7 +89,7 @@ function VoyageContent() {
             <div className="flex -space-x-2" aria-label={`${v.membres.length} membres`}>
               {v.membres.slice(0, 6).map((m) => (
                 <span key={m.id} title={m.nom} className="w-9 h-9 rounded-full bg-primary/10 border-2 border-white text-primary text-xs font-bold flex items-center justify-center">
-                  {m.nom.slice(0, 2).toUpperCase()}
+                  {m.nom.split(" ").map((x) => x[0]).join("").slice(0, 2).toUpperCase()}
                 </span>
               ))}
             </div>
