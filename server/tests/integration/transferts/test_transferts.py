@@ -104,7 +104,8 @@ def test_heure_saisie_dans_le_fuseau_de_l_aeroport(client_for, make_user, faux):
 
 def test_regles_de_creation(client_for, make_user, faux):
     client = client_for(make_user())
-    trop_tot = client.post(TRANSFERTS, _payload(arrivee=_arrivee(dans_heures=2)), format='json')
+    dans_2h = timezone.localtime() + timedelta(hours=2)  # Lomé est à UTC+0, comme le serveur
+    trop_tot = client.post(TRANSFERTS, _payload(arrivee=dans_2h.strftime('%Y-%m-%dT%H:%M')), format='json')
     assert trop_tot.status_code == 400 and '6 heures' in trop_tot.data['detail']
     trop_grand = client.post(TRANSFERTS, _payload(passagers=5), format='json')
     assert trop_grand.status_code == 400 and '3 passagers maximum' in trop_grand.data['detail']
