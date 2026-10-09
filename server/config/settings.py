@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'apps.paiements.apps.PaiementsConfig',
     'apps.transferts.apps.TransfertsConfig',
     'apps.voyages.apps.VoyagesConfig',
+    'apps.concierge.apps.ConciergeConfig',
 ]
 
 MIDDLEWARE = [
@@ -183,6 +184,18 @@ PAYPAL = {
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
 # Pause entre deux emails envoyés par le worker des paiements (limite des SMTP de test comme Mailtrap)
 PAIEMENTS_PAUSE_EMAIL = float(os.getenv('PAIEMENTS_PAUSE_EMAIL', '1'))
+
+# AI Concierge (Claude, API Anthropic). Sans clé, le Concierge est désactivé.
+CONCIERGE = {
+    'API_KEY': os.getenv('ANTHROPIC_API_KEY', ''),
+    'MODELE': os.getenv('CONCIERGE_MODELE', 'claude-sonnet-5-5'),
+    # Niveau d'effort du modèle : medium convient à une conversation avec appels d'outils
+    'EFFORT': os.getenv('CONCIERGE_EFFORT', 'medium'),
+    'RECHERCHE_WEB': os.getenv('CONCIERGE_RECHERCHE_WEB', 'True').lower() in ('true', '1', 'yes'),
+    # Limites par utilisateur (coût de l'API)
+    'MAX_PAR_HEURE': int(os.getenv('CONCIERGE_MAX_PAR_HEURE', '20')),
+    'MAX_PAR_JOUR': int(os.getenv('CONCIERGE_MAX_PAR_JOUR', '60')),
+}
 
 # Contact d'assistance donné aux voyageurs (transferts aéroport…)
 ASSISTANCE_CONTACT = os.getenv('ASSISTANCE_CONTACT', 'support@afristay.com')

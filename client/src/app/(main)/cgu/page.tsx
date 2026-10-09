@@ -108,6 +108,18 @@ export default function CguPage() {
           ),
         },
         {
+          id: "concierge",
+          titre: "Concierge IA",
+          contenu: (
+            <ul>
+              <li>Le Concierge est un assistant fondé sur l&apos;intelligence artificielle (Claude, d&apos;Anthropic). Vous dialoguez avec une machine, pas avec une personne.</li>
+              <li>Ses réponses peuvent contenir des erreurs. Les prix et disponibilités des logements et des transferts proviennent d&apos;AfriStay et font foi au moment de la réservation ; les autres informations (restaurants, horaires, démarches) sont à vérifier.</li>
+              <li>Le Concierge ne réserve et ne paie rien à votre place. N&apos;y communiquez ni coordonnées bancaires, ni code Mobile Money, ni données sensibles.</li>
+              <li>Son usage est limité en nombre de messages par heure et par jour.</li>
+            </ul>
+          ),
+        },
+        {
           id: "avis",
           titre: "Avis et modération",
           contenu: (

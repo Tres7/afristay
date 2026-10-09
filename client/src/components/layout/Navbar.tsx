@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Search, Menu, ArrowRight, LogIn, UserPlus, MessageCircle, Heart, CalendarCheck, User, LogOut, Home, ShieldCheck, Plane, Users } from "lucide-react";
+import { Search, Menu, ArrowRight, LogIn, UserPlus, MessageCircle, Heart, CalendarCheck, User, LogOut, Home, ShieldCheck, Plane, Users, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import api from "@/lib/api";
@@ -199,6 +199,7 @@ export default function Navbar() {
             { href: "/decouvrir", label: "Expériences", icon: ArrowRight },
             { href: "/transfert", label: "Transfert aéroport", icon: Plane },
             { href: "/together", label: "Voyager à plusieurs", icon: Users },
+            { href: "/concierge", label: "Concierge IA", icon: Sparkles },
             ...(authenticated
               ? [
                   { href: "/profil/reservations", label: "Mes réservations", icon: CalendarCheck },

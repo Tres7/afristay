@@ -49,6 +49,7 @@ export default function ConfidentialitePage() {
                 <tr><td>Messages échangés avec les hôtes ou les voyageurs</td><td>Messagerie et notifications par email</td><td>Exécution du contrat</td></tr>
                 <tr><td>Avis et notes (publiés avec votre prénom et l&apos;initiale de votre nom)</td><td>Informer les autres voyageurs</td><td>Intérêt légitime (fiabilité des avis)</td></tr>
                 <tr><td>Voyages de groupe (AfriStay Together) : nom du voyage, destination, dates, membres, logements proposés et votes, itinéraire, informations pratiques, réservations que vous choisissez de partager</td><td>Préparer un voyage à plusieurs</td><td>Exécution du contrat</td></tr>
+                <tr><td>Conversations avec le Concierge IA : vos messages et les réponses, offres proposées</td><td>Vous aider à organiser votre séjour ; suivi du coût du service</td><td>Exécution du contrat (service demandé)</td></tr>
                 <tr><td>Favoris</td><td>Retrouver les logements sauvegardés</td><td>Exécution du contrat</td></tr>
                 <tr><td>Hôtes : annonces, photos (métadonnées et position GPS supprimées à l&apos;envoi), calendrier</td><td>Publier et gérer les logements</td><td>Exécution du contrat</td></tr>
                 <tr><td>Codes de vérification temporaires, nombre de tentatives</td><td>Vérifier votre email, sécuriser la réinitialisation du mot de passe, bloquer les abus</td><td>Intérêt légitime (sécurité)</td></tr>
@@ -80,6 +81,7 @@ export default function ConfidentialitePage() {
               <li>Hébergement du site et des données : <AC>nom, adresse et pays de l&apos;hébergeur</AC>.</li>
               <li>Envoi des emails (codes, notifications) : <AC>prestataire d&apos;envoi d&apos;emails</AC>.</li>
               <li><strong>FedaPay</strong> (Bénin) : encaissement Mobile Money et carte, versements aux hôtes et remboursements. Reçoit votre nom, votre email, le montant et, pour les hôtes, le numéro de versement.</li>
+              <li><strong>Anthropic</strong> (États-Unis) : uniquement si vous utilisez le Concierge IA. Reçoit le contenu de vos messages pour générer les réponses (modèle Claude). Selon ses conditions commerciales, Anthropic n&apos;utilise pas les données reçues par son API pour entraîner ses modèles. N&apos;y indiquez pas de données sensibles.</li>
               <li><strong>PayPal</strong> (Europe) : uniquement si vous choisissez ce moyen de paiement. Reçoit le montant et la référence de la réservation.</li>
               <li>Google : uniquement si vous utilisez la connexion Google ou acceptez l&apos;affichage de la carte (voir la <Link href="/cookies">politique cookies</Link>). Google peut traiter des données hors de l&apos;Union européenne, dans le cadre du Data Privacy Framework UE–États-Unis.</li>
               <li>Unsplash : certaines photos d&apos;illustration sont chargées depuis ses serveurs, qui reçoivent alors votre adresse IP.</li>
@@ -95,6 +97,7 @@ export default function ConfidentialitePage() {
               <li>Compte : tant qu&apos;il est actif ; <AValider>supprimé ou anonymisé après 3 ans sans connexion.</AValider></li>
               <li>Réservations : <AValider>durée de la relation, puis 5 ans (délai de prescription).</AValider></li>
               <li>Paiements, versements et remboursements : <AValider>10 ans (pièces comptables).</AValider></li>
+              <li>Conversations avec le Concierge IA : jusqu&apos;à ce que vous les supprimiez (bouton dans la conversation), <AValider>et au plus 12 mois après le dernier message.</AValider></li>
               <li>Messages : <AValider>3 ans après le dernier message de la conversation.</AValider></li>
               <li>Avis : tant que le logement est publié, ou jusqu&apos;à leur suppression par modération.</li>
               <li>Journaux techniques de sécurité : <AValider>1 an.</AValider></li>

@@ -11,6 +11,7 @@ const COLUMNS = [
       { href: "/recherche?sort=note", label: "Les mieux notés" },
       { href: "/transfert", label: "Transfert aéroport" },
       { href: "/together", label: "Voyager à plusieurs" },
+      { href: "/concierge", label: "Concierge IA" },
     ],
   },
   {

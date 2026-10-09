@@ -33,12 +33,14 @@ function TransfertContent() {
   const connecte = status === "authenticated" && !!session && !session.error;
   const { data: config } = useConfigPaiement();
 
-  const [aeroport, setAeroport] = useState("");
-  const [date, setDate] = useState("");
-  const [heure, setHeure] = useState("");
+  // Préremplissage depuis un lien (Concierge : ?aeroport=LFW&date=…&heure=…&passagers=…&bagages=…)
+  const nombre = (cle: string, defaut: number, max: number) => Math.min(max, Math.max(0, Number(searchParams.get(cle)) || defaut));
+  const [aeroport, setAeroport] = useState(searchParams.get("aeroport")?.toUpperCase() ?? "");
+  const [date, setDate] = useState(searchParams.get("date") ?? "");
+  const [heure, setHeure] = useState(searchParams.get("heure") ?? "");
   const [vol, setVol] = useState("");
-  const [passagers, setPassagers] = useState(1);
-  const [bagages, setBagages] = useState(1);
+  const [passagers, setPassagers] = useState(Math.max(1, nombre("passagers", 1, 7)));
+  const [bagages, setBagages] = useState(nombre("bagages", 1, 10));
   const [categorie, setCategorie] = useState<CategorieVehicule | null>(null);
   const [destination, setDestination] = useState("");
   const [telephone, setTelephone] = useState("");

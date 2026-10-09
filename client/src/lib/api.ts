@@ -18,6 +18,12 @@ export function setApiAccessToken(token: string | null) {
   accessToken = token;
 }
 
+/** Jeton d'accès courant, pour les requêtes faites hors d'axios (flux SSE du Concierge). */
+export async function jetonAcces(): Promise<string | null> {
+  if (accessToken !== undefined) return accessToken;
+  return (await getSession())?.accessToken ?? null;
+}
+
 api.interceptors.request.use(async (config) => {
   if (typeof window !== "undefined") {
     // Évite un appel à /api/auth/session par requête (le polling de la messagerie en ferait un toutes les 4 s)
