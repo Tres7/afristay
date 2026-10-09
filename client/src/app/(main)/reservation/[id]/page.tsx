@@ -108,7 +108,7 @@ function ReservationContent() {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-10">
-          <div className="lg:col-span-3 space-y-6 order-2 lg:order-1">
+          <div className="lg:col-span-3 space-y-6">
             <section className="bg-white rounded-3xl shadow-sm border border-gray-100 p-5 sm:p-8">
               <div className="flex items-center justify-between mb-5">
                 <h2 className="font-heading font-bold text-dark text-xl">Votre voyage</h2>
@@ -152,7 +152,7 @@ function ReservationContent() {
               </p>
             </section>
 
-            <section className="bg-white rounded-3xl shadow-sm border border-gray-100 p-5 sm:p-8">
+            <section id="mode-paiement" className="bg-white rounded-3xl shadow-sm border border-gray-100 p-5 sm:p-8 scroll-mt-28">
               <h2 className="font-heading font-bold text-dark text-xl mb-5">Mode de paiement</h2>
               <div className="space-y-3" role="radiogroup" aria-label="Mode de paiement">
                 {moyens.map((method) => {
@@ -199,7 +199,7 @@ function ReservationContent() {
             </section>
           </div>
 
-          <div className="lg:col-span-2 order-1 lg:order-2">
+          <div className="lg:col-span-2">
             <div className="bg-white rounded-3xl shadow-card border border-gray-100 p-5 sm:p-6 lg:sticky lg:top-28">
               <div className="flex gap-4 pb-5 border-b border-gray-100">
                 <img src={hebergement.image_url || FALLBACK_IMAGE} alt={hebergement.name} className="w-24 h-20 rounded-2xl object-cover flex-shrink-0" />
@@ -229,6 +229,12 @@ function ReservationContent() {
 
               {error && <p role="alert" className="text-sm text-red-700 bg-red-50 border border-red-100 rounded-xl p-3 mb-4">{error}</p>}
 
+              {enLigne && (
+                <p className="flex items-center justify-between gap-2 text-sm text-gray-600 mb-3">
+                  <span>Payer avec : <strong className="text-dark">{moyens.find((m) => m.id === moyenChoisi)?.label}</strong></span>
+                  <a href="#mode-paiement" className="text-primary font-semibold hover:underline">Changer</a>
+                </p>
+              )}
               <button onClick={handleConfirm} disabled={submitting || datesInvalid} className="w-full bg-secondary hover:bg-secondary-600 text-white font-bold py-4 rounded-2xl shadow-md transition-all text-base disabled:opacity-60">
                 {submitting
                   ? enLigne ? "Redirection vers le paiement..." : "Traitement..."
