@@ -240,7 +240,7 @@ function ConciergeContent() {
               </button>
             </div>
             <p className="text-[11px] text-gray-600 mt-1.5 text-center">
-              Vos messages sont traités par Claude (Anthropic). <Link href="/confidentialite#destinataires" className="underline">En savoir plus</Link>
+              Vos messages sont traités par Gemini (Google). <Link href="/confidentialite#destinataires" className="underline">En savoir plus</Link>
             </p>
           </form>
         </section>

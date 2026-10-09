@@ -1,23 +1,24 @@
-"""AI Concierge : outils AfriStay et boucle de conversation. L'API Claude est simulée (aucun appel réseau)."""
+"""AI Concierge : outils AfriStay et boucle de conversation. L'API Gemini est simulée (aucun appel réseau)."""
 import json
 from datetime import timedelta
-from types import SimpleNamespace
+from types import SimpleNamespace as NS
 from unittest import mock
 
 import pytest
 from django.utils import timezone
+from google.genai._gaos.lib import compat_errors
 from rest_framework.test import APIClient
 
 from apps.concierge import outils, services
-from apps.concierge.models import MessageModel
+from apps.concierge.models import ConversationModel, MessageModel
 
 CONVERSATIONS = '/api/v1/concierge/conversations/'
 
 
 @pytest.fixture
 def concierge(settings):
-    settings.CONCIERGE = {**settings.CONCIERGE, 'API_KEY': 'sk-ant-test', 'MAX_PAR_HEURE': 20, 'MAX_PAR_JOUR': 60,
-                          'RECHERCHE_WEB': True}
+    settings.CONCIERGE = {**settings.CONCIERGE, 'API_KEY': 'cle-test', 'MAX_PAR_HEURE': 20, 'MAX_PAR_JOUR': 60,
+                          'RECHERCHE_WEB': True, 'MODELE': 'gemini-3.8-flash', 'REFLEXION': 'low'}
     return settings
 
 
@@ -27,54 +28,41 @@ def _client(user):
     return c
 
 
-# --- Faux client Claude ------------------------------------------------------------------
+# --- Faux client Gemini (API Interactions en streaming) --------------------------------------
 
-class Bloc(SimpleNamespace):
-    def to_dict(self):
-        return {k: v for k, v in vars(self).items()}
-
-
-class Reponse:
-    def __init__(self, blocs, stop_reason):
-        self.content = blocs
-        self.stop_reason = stop_reason
-        self.usage = SimpleNamespace(input_tokens=1000, output_tokens=200)
-
-    def to_dict(self):
-        return {'content': [b.to_dict() for b in self.content]}
-
-
-class Flux:
-    def __init__(self, reponse):
-        self.reponse = reponse
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *exc):
-        return False
-
-    def __iter__(self):
-        for b in self.reponse.content:
-            yield SimpleNamespace(type='content_block_start', content_block=b)
-            if b.type == 'text':
-                yield SimpleNamespace(type='text', text=b.text)
-
-    def get_final_message(self):
-        return self.reponse
+def tour(interaction_id, texte='', appels=(), statut=None):
+    """Événements SSE d'un tour : texte en deux morceaux, appels de fonction, fin."""
+    evts = [NS(event_type='interaction.created', interaction=NS(id=interaction_id))]
+    index = 0
+    if texte:
+        evts.append(NS(event_type='step.start', index=index, step=NS(type='model_output')))
+        moitie = len(texte) // 2
+        for morceau in (texte[:moitie], texte[moitie:]):
+            evts.append(NS(event_type='step.delta', index=index, delta=NS(type='text', text=morceau)))
+        index += 1
+    for nom, args in appels:
+        evts.append(NS(event_type='step.start', index=index, step=NS(type='function_call', id=f'call_{index}', name=nom, arguments={})))
+        evts.append(NS(event_type='step.delta', index=index, delta=NS(type='arguments_delta', arguments=json.dumps(args))))
+        index += 1
+    etapes = [NS(type='function_call', id=f'call_{i + (1 if texte else 0)}', name=n, arguments=a) for i, (n, a) in enumerate(appels)]
+    evts.append(NS(event_type='interaction.completed', interaction=NS(
+        id=interaction_id, status=statut or ('requires_action' if appels else 'completed'), steps=etapes,
+        usage=NS(total_input_tokens=1000, total_output_tokens=200, total_thought_tokens=50))))
+    return evts
 
 
-class FauxClaude:
-    """Renvoie les réponses prévues, dans l'ordre, et garde les requêtes reçues."""
-
-    def __init__(self, *reponses):
-        self.reponses = list(reponses)
+class FauxGemini:
+    def __init__(self, *tours):
+        self.tours = list(tours)
         self.requetes = []
-        self.beta = SimpleNamespace(messages=SimpleNamespace(stream=self._stream))
+        self.interactions = NS(create=self._create)
 
-    def _stream(self, **kwargs):
+    def _create(self, **kwargs):
         self.requetes.append(json.loads(json.dumps(kwargs, default=str)))
-        return Flux(self.reponses.pop(0))
+        suivant = self.tours.pop(0)
+        if isinstance(suivant, Exception):
+            raise suivant
+        return iter(suivant)
 
 
 def _evenements(response):
@@ -92,21 +80,20 @@ def test_recherche_de_logements_reels_avec_cout_du_sejour(make_hebergement):
 
     resultat, cartes = outils.rechercher_logements({
         'ville': 'lomé', 'arrivee': arrivee.isoformat(), 'depart': (arrivee + timedelta(days=5)).isoformat(),
-        'voyageurs': 2, 'budget_max_nuit': 50000, 'type': None,
+        'voyageurs': 2, 'budget_max_nuit': 50000,
     })
     assert [r['nom'] for r in resultat['resultats']] == ['Appart Bè']
     assert resultat['resultats'][0]['cout_total_sejour_fcfa'] == 162000  # 5 x 30 000 + 8 %
     assert cartes[0]['type'] == 'logement' and cartes[0]['total'] == 162000
 
-    vide, _ = outils.rechercher_logements({'ville': 'Kigali', 'arrivee': None, 'depart': None, 'voyageurs': None,
-                                           'budget_max_nuit': None, 'type': None})
+    vide, _ = outils.rechercher_logements({'ville': 'Kigali'})
     assert vide['resultats'] == [] and 'ne recommande pas' in vide['message']
 
 
 def test_entrees_invalides_renvoyees_en_erreur_au_modele():
     contenu, cartes, erreur = outils.executer('rechercher_logements', {'ville': 'Lomé', 'arrivee': '12/11/2026'})
     assert erreur and 'date invalide' in contenu and cartes == []
-    assert outils.executer('rechercher_logements', 'pas un objet')[2] is True
+    assert outils.executer('rechercher_logements', None)[2] is True
     assert outils.executer('outil_inconnu', {})[2] is True
 
 
@@ -119,16 +106,21 @@ def test_devis_transfert_et_aeroport_non_desservi():
     assert 'non desservi' in inconnu['erreur'] and 'Lomé (LFW)' in inconnu['erreur']
 
 
+def test_declarations_de_fonctions_au_format_gemini():
+    for d in outils.DEFINITIONS:
+        assert d['type'] == 'function' and d['parameters']['type'] == 'object'
+        # Pas de types « chaîne ou null » : non pris en charge par le schéma de Gemini
+        assert all(isinstance(p['type'], str) for p in d['parameters']['properties'].values())
+
+
 # --- Boucle de conversation ------------------------------------------------------------------
 
-def test_conversation_avec_outil_puis_reponse(concierge, make_user, make_hebergement):
+def test_conversation_avec_fonction_puis_reponse(concierge, make_user, make_hebergement):
     h = make_hebergement(name='Appart Bè', city='Lomé', price_per_night=30000)
-    faux = FauxClaude(
-        Reponse([Bloc(type='text', text='Je regarde les logements à Lomé.'),
-                 Bloc(type='tool_use', id='toolu_1', name='rechercher_logements',
-                      input={'ville': 'Lomé', 'arrivee': None, 'depart': None, 'voyageurs': 2,
-                             'budget_max_nuit': None, 'type': None})], 'tool_use'),
-        Reponse([Bloc(type='text', text="L'**Appart Bè** est idéal pour vous deux.")], 'end_turn'),
+    faux = FauxGemini(
+        tour('int_1', 'Je regarde les logements à Lomé.', [('rechercher_logements', {'ville': 'Lomé', 'voyageurs': 2})]),
+        tour('int_2', "L'**Appart Bè** est idéal pour vous deux."),
+        tour('int_3', 'Avec plaisir !'),
     )
     client = _client(make_user())
     cid = client.post(CONVERSATIONS).data['id']
@@ -139,25 +131,64 @@ def test_conversation_avec_outil_puis_reponse(concierge, make_user, make_heberge
     assert types[0] == 'texte' and 'outil' in types and 'cartes' in types and types[-1] == 'fin'
     assert next(d for e, d in evts if e == 'cartes')['cartes'][0]['id'] == str(h.id)
 
-    # Requête : modèle, effort, repli par défaut, outils (dont la recherche web), système mis en cache
+    # Premier appel : modèle, réflexion, consigne système, fonctions + recherche Google, sans interaction précédente
     req = faux.requetes[0]
-    assert (req['model'], req['output_config'], req['fallbacks']) == ('claude-sonnet-5-5', {'effort': 'medium'}, 'default')
-    assert req['betas'] == ['server-side-fallback-2026-07-01']
-    assert {t['name'] for t in req['tools']} == {'rechercher_logements', 'devis_transfert', 'proposer_voyage_de_groupe', 'web_search'}
-    assert req['system'][0]['cache_control'] == {'type': 'ephemeral'}
-    # Second appel : l'historique rejoué contient le tour de l'assistant puis le résultat de l'outil
-    hist = faux.requetes[1]['messages']
-    assert [m['role'] for m in hist] == ['user', 'assistant', 'user']
-    assert hist[1]['content'][1]['id'] == 'toolu_1' and hist[2]['content'][0]['tool_use_id'] == 'toolu_1'
+    assert (req['model'], req['generation_config'], req['stream']) == ('gemini-3.8-flash', {'thinking_level': 'low'}, True)
+    assert 'Concierge AfriStay' in req['system_instruction'] and 'Date du jour' in req['system_instruction']
+    assert [t.get('name', t['type']) for t in req['tools']] == [
+        'rechercher_logements', 'devis_transfert', 'proposer_voyage_de_groupe', 'google_search']
+    assert 'previous_interaction_id' not in req and req['input'] == 'Un appart à Lomé pour 2'
+    # Second appel : résultat de la fonction rattaché à l'interaction précédente
+    req2 = faux.requetes[1]
+    assert req2['previous_interaction_id'] == 'int_1'
+    resultat = req2['input'][0]
+    assert (resultat['type'], resultat['call_id'], resultat['name']) == ('function_result', 'call_1', 'rechercher_logements')
+    assert 'Appart Bè' in resultat['result'][0]['text']
 
     affichage = client.get(f'{CONVERSATIONS}{cid}/').data
     assert affichage['titre'] == 'Un appart à Lomé pour 2'
-    roles = [(m['role'], bool(m['cartes'])) for m in affichage['messages']]
-    assert roles == [('user', False), ('assistant', False), ('assistant', True)]
+    assert [(m['role'], bool(m['cartes'])) for m in affichage['messages']] == [('user', False), ('assistant', False), ('assistant', True)]
+    assert ConversationModel.objects.get(pk=cid).interaction_id == 'int_2'
+
+    # Message suivant : la conversation continue sur la dernière interaction
+    with mock.patch.object(services, '_client', return_value=faux):
+        _evenements(client.post(f'{CONVERSATIONS}{cid}/messages/', {'texte': 'Merci'}, format='json'))
+    assert faux.requetes[2]['previous_interaction_id'] == 'int_2'
 
 
-def test_refus_ecarte_la_reponse(concierge, make_user):
-    faux = FauxClaude(Reponse([Bloc(type='text', text='partiel')], 'refusal'))
+def test_interaction_expiree_reprise_avec_resume(concierge, make_user):
+    user = make_user()
+    conv = ConversationModel.objects.create(utilisateur=user, titre='Lomé', interaction_id='int_ancienne')
+    MessageModel.objects.create(conversation=conv, role='user', texte='Je pars à Lomé en mai')
+    MessageModel.objects.create(conversation=conv, role='assistant', texte='Belle idée, mai est chaud.')
+    expiree = compat_errors.NotFoundError('interaction introuvable', response=mock.Mock(status_code=404), body=None)
+    faux = FauxGemini(expiree, tour('int_neuve', 'Bien sûr.'))
+    with mock.patch.object(services, '_client', return_value=faux):
+        evts = _evenements(_client(user).post(f'{CONVERSATIONS}{conv.id}/messages/', {'texte': 'Et le budget ?'}, format='json'))
+    assert evts[-1][0] == 'fin'
+    reprise = faux.requetes[1]
+    assert 'previous_interaction_id' not in reprise
+    assert 'Je pars à Lomé en mai' in reprise['input'] and 'Et le budget ?' in reprise['input']
+    conv.refresh_from_db()
+    assert conv.interaction_id == 'int_neuve'
+
+
+def test_quota_recherche_google_continue_sans_elle(concierge, make_user):
+    quota = compat_errors.RateLimitError('quota', response=mock.Mock(status_code=429), body=None)
+    faux = FauxGemini(quota, tour('int_b', 'Voici mes idées.'), tour('int_c', 'Encore une idée.'))
+    client = _client(make_user())
+    cid = client.post(CONVERSATIONS).data['id']
+    with mock.patch.object(services, '_client', return_value=faux):
+        evts = _evenements(client.post(f'{CONVERSATIONS}{cid}/messages/', {'texte': 'Restaurants à Lomé ?'}, format='json'))
+        assert evts[-1][0] == 'fin'
+        _evenements(client.post(f'{CONVERSATIONS}{cid}/messages/', {'texte': 'Et à Cotonou ?'}, format='json'))
+    noms = [[t.get('name', t['type']) for t in r['tools']] for r in faux.requetes]
+    assert 'google_search' in noms[0] and 'google_search' not in noms[1]
+    assert 'google_search' not in noms[2]  # désactivée quelques minutes, pas d'attente inutile
+
+
+def test_reponse_bloquee_ecartee(concierge, make_user):
+    faux = FauxGemini(tour('int_x', 'partiel', statut='failed'))
     client = _client(make_user())
     cid = client.post(CONVERSATIONS).data['id']
     with mock.patch.object(services, '_client', return_value=faux):
@@ -174,7 +205,7 @@ def test_quota_inactif_et_confidentialite(concierge, make_user, settings):
     assert client.post(f'{CONVERSATIONS}{cid}/messages/', {'texte': ''}, format='json').status_code == 400
 
     settings.CONCIERGE = {**settings.CONCIERGE, 'MAX_PAR_HEURE': 1}
-    faux = FauxClaude(Reponse([Bloc(type='text', text='Bonjour !')], 'end_turn'))
+    faux = FauxGemini(tour('int_a', 'Bonjour !'))
     with mock.patch.object(services, '_client', return_value=faux):
         assert client.post(f'{CONVERSATIONS}{cid}/messages/', {'texte': 'Salut'}, format='json').status_code == 200
         trop = client.post(f'{CONVERSATIONS}{cid}/messages/', {'texte': 'Encore'}, format='json')

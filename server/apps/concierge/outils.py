@@ -1,8 +1,7 @@
 """Outils que le Concierge appelle pour proposer de vraies offres AfriStay.
 
-Chaque outil renvoie (résultat pour le modèle, cartes pour l'interface). Les entrées viennent du
-modèle : elles sont validées ici avant toute requête (les entrées d'outil arrivent en streaming et
-ne sont pas validées par l'API).
+Chaque outil renvoie (résultat pour le modèle, cartes pour l'interface). Les arguments viennent du
+modèle : ils sont validés ici avant toute requête.
 """
 import json
 from datetime import date, datetime
@@ -20,11 +19,12 @@ TYPES = ['hotel', 'villa', 'appartement', 'auberge']
 
 
 def _outil(name: str, description: str, proprietes: dict, requis: list[str]) -> dict:
+    """Déclaration de fonction au format de l'API Interactions de Gemini."""
     return {
+        'type': 'function',
         'name': name,
         'description': description,
-        'eager_input_streaming': True,
-        'input_schema': {'type': 'object', 'properties': proprietes, 'required': requis, 'additionalProperties': False},
+        'parameters': {'type': 'object', 'properties': proprietes, 'required': requis},
     }
 
 
@@ -36,17 +36,17 @@ DEFINITIONS = [
         "renvoie aussi la disponibilité et le coût total du séjour (frais de service compris).",
         {
             'ville': {'type': 'string', 'description': 'Ville, par exemple Lomé, Cotonou, Abidjan'},
-            'arrivee': {'type': ['string', 'null'], 'description': "Date d'arrivée AAAA-MM-JJ, ou null"},
-            'depart': {'type': ['string', 'null'], 'description': 'Date de départ AAAA-MM-JJ, ou null'},
-            'voyageurs': {'type': ['integer', 'null'], 'description': 'Nombre de voyageurs, ou null'},
-            'budget_max_nuit': {'type': ['integer', 'null'], 'description': 'Prix maximum par nuit en FCFA, ou null'},
-            'type': {'type': ['string', 'null'], 'enum': TYPES + [None], 'description': 'Type de logement, ou null'},
+            'arrivee': {'type': 'string', 'description': "Date d'arrivée AAAA-MM-JJ (facultatif)"},
+            'depart': {'type': 'string', 'description': 'Date de départ AAAA-MM-JJ (facultatif)'},
+            'voyageurs': {'type': 'integer', 'description': 'Nombre de voyageurs (facultatif)'},
+            'budget_max_nuit': {'type': 'integer', 'description': 'Prix maximum par nuit en FCFA (facultatif)'},
+            'type': {'type': 'string', 'enum': TYPES, 'description': 'Type de logement (facultatif)'},
         },
-        ['ville', 'arrivee', 'depart', 'voyageurs', 'budget_max_nuit', 'type'],
+        ['ville'],
     ),
     _outil(
         'devis_transfert',
-        "Donne le prix exact d'un transfert aéroport → logement avec un chauffeur partenaire AfriStay, par "
+        "Donne le prix exact d'un transfert aéroport → logement (aller seulement, pas de retour) avec un chauffeur partenaire AfriStay, par "
         "type de véhicule. Aéroports desservis : Lomé (LFW), Cotonou (COO), Ouagadougou (OUA), Niamey (NIM), "
         "Bamako (BKO). L'heure est celle du billet (heure locale de l'aéroport).",
         {
@@ -65,13 +65,13 @@ DEFINITIONS = [
         {
             'nom': {'type': 'string', 'description': 'Nom court du voyage'},
             'destination': {'type': 'string'},
-            'arrivee': {'type': ['string', 'null'], 'description': 'AAAA-MM-JJ ou null'},
-            'depart': {'type': ['string', 'null'], 'description': 'AAAA-MM-JJ ou null'},
+            'arrivee': {'type': 'string', 'description': 'AAAA-MM-JJ (facultatif)'},
+            'depart': {'type': 'string', 'description': 'AAAA-MM-JJ (facultatif)'},
             'voyageurs': {'type': 'integer'},
             'logements': {'type': 'array', 'items': {'type': 'string'},
                           'description': 'Identifiants des logements à proposer au groupe (issus de rechercher_logements)'},
         },
-        ['nom', 'destination', 'arrivee', 'depart', 'voyageurs', 'logements'],
+        ['nom', 'destination', 'voyageurs', 'logements'],
     ),
 ]
 
