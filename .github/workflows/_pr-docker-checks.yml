@@ -1,0 +1,77 @@
+name: Docker checks
+
+on:
+  workflow_call:
+    inputs:
+      back:
+        type: boolean
+        required: true
+      front:
+        type: boolean
+        required: true
+      infra:
+        type: boolean
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Compose et Dockerfiles
+    if: inputs.infra
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: docker compose config
+        # compose.yaml lit server/.env et client/.env, absents du dépôt
+        run: |
+          cp server/.env.example server/.env
+          cp client/.env.example client/.env
+          docker compose config --quiet
+      - uses: hadolint/hadolint-action@06be81baf89a55ffd0e24b8f04a4185738dd3387 # v3.5.0
+        with:
+          dockerfile: server/Dockerfile
+          config: .hadolint.yaml
+      - uses: hadolint/hadolint-action@06be81baf89a55ffd0e24b8f04a4185738dd3387 # v3.5.0
+        with:
+          dockerfile: client/Dockerfile
+          config: .hadolint.yaml
+
+  server-image:
+    name: Image du serveur
+    if: inputs.back || inputs.infra
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: server
+          push: false
+          tags: afristay-server:pr-${{ github.event.pull_request.number || github.run_id }}
+          cache-from: type=gha,scope=server
+          cache-to: type=gha,mode=max,scope=server
+
+  next-build:
+    name: Build Next.js
+    if: inputs.front
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-node-client
+      - name: next build
+        working-directory: client
+        # Le lint et les types sont déjà vérifiés par le job client
+        run: npx next build --no-lint

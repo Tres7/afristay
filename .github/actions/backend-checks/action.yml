@@ -1,0 +1,48 @@
+name: Backend checks
+description: >-
+  ruff, migrations, check --deploy, puis pytest unit et integration sur la même machine
+  pour que la couverture soit combinée. Attend PostgreSQL (service du job) et l'environnement Django.
+
+inputs:
+  run-integration:
+    description: Lancer les tests d'intégration après les tests unitaires ('false' pour une PR en brouillon)
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    - name: Lint (ruff)
+      shell: bash
+      working-directory: server
+      run: ruff check . --output-format=github
+
+    - name: Migrations à jour
+      shell: bash
+      working-directory: server
+      run: python manage.py makemigrations --check --dry-run
+
+    - name: Réglages de production (check --deploy)
+      shell: bash
+      working-directory: server
+      run: python manage.py check --deploy
+
+    - name: Tests unitaires
+      shell: bash
+      working-directory: server
+      run: pytest -m unit --cov --cov-report=
+
+    - name: Tests d'intégration
+      if: inputs.run-integration == 'true'
+      shell: bash
+      working-directory: server
+      run: pytest -m integration --cov --cov-append --cov-report=
+
+    - name: Rapport de couverture
+      shell: bash
+      working-directory: server
+      run: |
+        coverage html -d coverage-html
+        {
+          echo "### Couverture du serveur"
+          coverage report --format=markdown --skip-covered --sort=cover
+        } >> "$GITHUB_STEP_SUMMARY"
