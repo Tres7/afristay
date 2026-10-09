@@ -7,7 +7,8 @@ export function useConfigPaiement() {
   return useQuery({
     queryKey: ["paiements", "config"],
     queryFn: async () => (await api.get<ConfigPaiement>("/v1/paiements/config/")).data,
-    staleTime: 10 * 60 * 1000,
+    // Court : un moyen de paiement activé côté serveur doit apparaître sans recharger la page
+    staleTime: 60 * 1000,
   });
 }
 
