@@ -1,7 +1,4 @@
-"""Tests du module de paiement. FedaPay est simulé : aucun appel réseau.
-
-    python manage.py test apps.paiements
-"""
+"""Cycle complet du paiement (PostgreSQL). FedaPay et PayPal sont simulés : aucun appel réseau."""
 import hashlib
 import hmac
 import json
@@ -18,36 +15,11 @@ from apps.hebergements.disponibilites import conflit
 from apps.hebergements.models import HebergementModel
 from apps.reservations.models import ReservationModel
 
-from . import fedapay, paypal, services, tarifs
-from .models import PaiementModel, ProfilVersementModel, RemboursementModel, VersementModel
+from apps.paiements import fedapay, paypal, services, tarifs
+from apps.paiements.models import PaiementModel, RemboursementModel, VersementModel
 
 FEDAPAY_TEST = {'SECRET_KEY': 'sk_sandbox_test', 'ENV': 'sandbox', 'WEBHOOK_SECRET': 'whsec_test', 'EXPIRATION_MINUTES': 30}
 PAYPAL_TEST = {'CLIENT_ID': 'id', 'CLIENT_SECRET': 'secret', 'ENV': 'sandbox'}
-
-
-class TarifsTests(TestCase):
-    def test_montants(self):
-        m = tarifs.calculer(20000, 3)
-        self.assertEqual((m.prix_nuits, m.frais_service, m.commission_hote), (60000, 4800, 3000))
-        self.assertEqual(m.total, 64800)
-        self.assertEqual(m.montant_hote, 57000)
-
-    def test_arrondi_au_franc(self):
-        m = tarifs.calculer('12345.00', 1)
-        self.assertEqual((m.frais_service, m.commission_hote), (988, 617))
-
-    def test_bareme(self):
-        m = tarifs.calculer(20000, 3)
-        resa = mock.Mock(check_in=(timezone.localdate() + timedelta(days=10)))
-        self.assertEqual(tarifs.bareme_voyageur(m, resa).rembourse_voyageur, 64800)
-
-        resa.check_in = timezone.localdate() + timedelta(days=4)
-        a = tarifs.bareme_voyageur(m, resa)
-        self.assertEqual((a.rembourse_voyageur, a.nuits_retenues, a.montant_hote), (34800, 30000, 28500))
-
-        resa.check_in = timezone.localdate() + timedelta(days=1)
-        a = tarifs.bareme_voyageur(m, resa)
-        self.assertEqual((a.rembourse_voyageur, a.montant_hote), (0, 57000))
 
 
 class FauxFedaPay:

@@ -104,7 +104,7 @@ class PayPal:
                 'cancel_url': url_annulation,
             }}},
         }, idempotence=reference)
-        lien = next((l['href'] for l in commande.get('links', []) if l.get('rel') in ('payer-action', 'approve')), '')
+        lien = next((lk['href'] for lk in commande.get('links', []) if lk.get('rel') in ('payer-action', 'approve')), '')
         if not lien:
             raise PayPalErreur("PayPal n'a pas renvoyé de lien de paiement.")
         return commande['id'], lien

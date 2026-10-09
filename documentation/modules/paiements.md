@@ -112,7 +112,10 @@ L'admin Django (`/admin/`) liste les paiements, versements, remboursements et pr
 
 ## Tests
 
-`python manage.py test apps.paiements` : 20 tests, prestataires simulés (aucun appel réseau). Ils couvrent les montants, le barème, la confirmation, l'idempotence, l'expiration, le paiement tardif, les versements, les remboursements Mobile Money (numéro demandé au voyageur) / carte / PayPal, les nouveaux essais progressifs, les emails et la signature des webhooks.
+- `server/tests/unit/paiements/` : montants, arrondis, barème d'annulation, conversion en euros (sans base).
+- `server/tests/integration/paiements/` : cycle complet sur PostgreSQL, prestataires simulés (aucun appel réseau) — confirmation, idempotence, expiration, paiement tardif, versements, remboursements Mobile Money (numéro demandé au voyageur) / carte / PayPal, nouveaux essais progressifs, emails, signature des webhooks.
+
+Voir `documentation/ci.md` pour les lancer.
 
 ## Prérequis du compte FedaPay (testés en sandbox le 8 octobre 2026)
 
