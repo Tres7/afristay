@@ -4,8 +4,8 @@ import { auth } from "@/auth";
 // Pages réservées aux utilisateurs connectés (le centre d'aide reste public)
 const PROTECTED = ["/profil", "/favoris", "/messages", "/reservation", "/hote/espace", "/backoffice"];
 const PUBLIC_EXCEPTIONS = ["/profil/aide"];
-// Formulaire public, mais le suivi d'un transfert (/transfert/<id>) exige d'être connecté
-const PROTECTED_SUBPATHS = ["/transfert"];
+// Pages d'accueil publiques ; leurs sous-pages (suivi d'un transfert, voyage de groupe, invitation) exigent d'être connecté
+const PROTECTED_SUBPATHS = ["/transfert", "/together"];
 // Pages d'authentification inutiles une fois connecté
 const GUEST_ONLY = ["/login", "/register"];
 
@@ -42,6 +42,7 @@ export const config = {
     "/favoris",
     "/messages/:path*",
     "/transfert/:path+",
+    "/together/:path+",
     "/reservation/:path*",
     "/hote/espace/:path*",
     "/backoffice/:path*",

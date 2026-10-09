@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'apps.messaging.apps.MessagingConfig',
     'apps.paiements.apps.PaiementsConfig',
     'apps.transferts.apps.TransfertsConfig',
+    'apps.voyages.apps.VoyagesConfig',
 ]
 
 MIDDLEWARE = [

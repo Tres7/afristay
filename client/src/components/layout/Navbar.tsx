@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Search, Menu, ArrowRight, LogIn, UserPlus, MessageCircle, Heart, CalendarCheck, User, LogOut, Home, ShieldCheck, Plane } from "lucide-react";
+import { Search, Menu, ArrowRight, LogIn, UserPlus, MessageCircle, Heart, CalendarCheck, User, LogOut, Home, ShieldCheck, Plane, Users } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import api from "@/lib/api";
@@ -17,6 +17,7 @@ const NAV_LINKS = [
   { href: "/recherche", label: "Hébergements" },
   { href: "/decouvrir", label: "Expériences" },
   { href: "/transfert", label: "Transferts" },
+  { href: "/together", label: "Together" },
   { href: "/hote", label: "Devenir hôte" },
 ];
 
@@ -197,6 +198,7 @@ export default function Navbar() {
             { href: "/recherche", label: "Hébergements", icon: Search },
             { href: "/decouvrir", label: "Expériences", icon: ArrowRight },
             { href: "/transfert", label: "Transfert aéroport", icon: Plane },
+            { href: "/together", label: "Voyager à plusieurs", icon: Users },
             ...(authenticated
               ? [
                   { href: "/profil/reservations", label: "Mes réservations", icon: CalendarCheck },

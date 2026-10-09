@@ -12,6 +12,7 @@ import AmenityBadge from "@/components/hebergement/AmenityBadge";
 import FavoriteButton from "@/components/hebergement/FavoriteButton";
 import RatingBadge from "@/components/avis/RatingBadge";
 import AvisSection from "@/components/avis/AvisSection";
+import ProposerAuGroupe from "@/components/voyage/ProposerAuGroupe";
 import MapEmbed from "@/components/hebergement/MapEmbed";
 import api, { apiErrorMessage } from "@/lib/api";
 import { addDays, calculateNights, calculateServiceFee, cn, FALLBACK_IMAGE, formatDate, formatPrice, isoDate, TYPE_LABELS } from "@/lib/utils";
@@ -298,6 +299,7 @@ function HebergementContent() {
                 {isOwner ? "C'est votre hébergement" : !hebergement.is_available ? "Indisponible" : nights > 0 ? "Réserver" : "Sélectionnez des dates"}
               </button>
               <p className="text-center text-muted text-xs mt-3">Vous ne serez débité qu&apos;à l&apos;étape suivante.</p>
+              {!isOwner && <div className="mt-4"><ProposerAuGroupe hebergementId={hebergement.id} /></div>}
             </div>
           </div>
         </div>
