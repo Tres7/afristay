@@ -21,7 +21,7 @@ def test_verification_email(notifications, mailoutbox):
 def test_welcome_email(notifications, mailoutbox):
     notifications.send_welcome_email('ama@example.tg', 'Ama')
     [email] = mailoutbox
-    assert email.subject == 'Bienvenue sur AfriStay'
+    assert email.subject == 'Bienvenue sur Kwa-Ba'
     assert 'Ama' in email.body
 
 
@@ -36,7 +36,7 @@ def test_new_message_email(notifications, mailoutbox):
     notifications.send_new_message_email('kofi@example.tg', 'Kofi', 'Ama', 'Villa Océane', 'Bonjour, est-ce libre ?',
                                          'https://afristay.example/messages/42')
     [email] = mailoutbox
-    assert email.subject == 'Nouveau message de Ama sur AfriStay'
+    assert email.subject == 'Nouveau message de Ama sur Kwa-Ba'
     for expected in ('Kofi', 'Villa Océane', 'Bonjour, est-ce libre ?', 'https://afristay.example/messages/42'):
         assert expected in email.body
 
