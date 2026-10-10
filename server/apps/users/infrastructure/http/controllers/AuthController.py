@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenRefreshView
 
 from apps.users.application.dto.dto import GoogleAuthDTO, RegisterDTO, UserRole
 from apps.users.application.service.UserService import UserService
@@ -16,7 +17,7 @@ from apps.users.application.events.PasswordResetRequested import PasswordResetRe
 from apps.users.infrastructure.persistence.DjangoUserRepository import DjangoUserRepository
 from apps.users.infrastructure.messaging.FallbackEventBus import FallbackEventBus
 from apps.users.infrastructure.http.serializers.auth_serializers import (
-    RegisterSerializer, LoginSerializer, PasswordResetConfirmSerializer,
+    RegisterSerializer, LoginSerializer, PasswordResetConfirmSerializer, RefreshWithGracePeriodSerializer,
 )
 from apps.users.domain.exceptions import UserAlreadyExistsException, UserNotFoundException
 from apps.users.infrastructure.persistence.models import UserModel, VerificationCode
@@ -280,3 +281,8 @@ class PasswordResetConfirmView(APIView):
         VerificationCode.objects.filter(user=user_model).delete()
         cache.delete(attempts_key)
         return Response({'detail': 'Mot de passe modifié.'}, status=status.HTTP_200_OK)
+
+
+class RefreshView(TokenRefreshView):
+    serializer_class = RefreshWithGracePeriodSerializer
+

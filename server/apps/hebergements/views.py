@@ -13,7 +13,7 @@ from rest_framework.throttling import ScopedRateThrottle
 from .disponibilites import a_des_reservations, filtre_actives, periodes_indisponibles, verrouiller
 from .models import BlocageModel, HebergementModel, HebergementPhotoModel
 from .photos import InvalidPhoto, normalize_photo
-from .serializers import BlocageSerializer, HebergementSerializer, HebergementCreateSerializer
+from .serializers import BlocageSerializer, HebergementSerializer, HebergementCreateSerializer, RechercheSerializer
 
 HOST_ROLES = ('hote', 'admin')
 MAX_FENETRE_JOURS = 548  # 18 mois de calendrier par requête
@@ -32,6 +32,11 @@ class HebergementListView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request):
+        recherche = RechercheSerializer.depuis(request.query_params)
+        if not recherche.is_valid():
+            return Response(recherche.errors, status=status.HTTP_400_BAD_REQUEST)
+        filtres = recherche.validated_data
+
         qs = HebergementModel.objects.filter(is_available=True).select_related('host')
 
         city = request.query_params.get('city')
@@ -42,13 +47,10 @@ class HebergementListView(APIView):
         if type_:
             qs = qs.filter(type=type_)
 
-        price_min = request.query_params.get('price_min')
-        if price_min:
-            qs = qs.filter(price_per_night__gte=price_min)
-
-        price_max = request.query_params.get('price_max')
-        if price_max:
-            qs = qs.filter(price_per_night__lte=price_max)
+        if 'price_min' in filtres:
+            qs = qs.filter(price_per_night__gte=filtres['price_min'])
+        if 'price_max' in filtres:
+            qs = qs.filter(price_per_night__lte=filtres['price_max'])
 
         guests = request.query_params.get('guests')
         if guests and guests.isdigit():
@@ -59,8 +61,7 @@ class HebergementListView(APIView):
             qs = qs.filter(Q(name__icontains=search) | Q(city__icontains=search) | Q(location__icontains=search))
 
         # Exclut les logements déjà réservés sur la période demandée
-        check_in = request.query_params.get('check_in')
-        check_out = request.query_params.get('check_out')
+        check_in, check_out = filtres.get('check_in'), filtres.get('check_out')
         if check_in and check_out:
             busy = HebergementModel.objects.filter(
                 filtre_actives('reservations__'),
