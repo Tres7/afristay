@@ -1,4 +1,4 @@
-"""Outils que le Concierge appelle pour proposer de vraies offres AfriStay.
+"""Outils que le Concierge appelle pour proposer de vraies offres Kwa-Ba.
 
 Chaque outil renvoie (résultat pour le modèle, cartes pour l'interface). Les arguments viennent du
 modèle : ils sont validés ici avant toute requête.
@@ -31,7 +31,7 @@ def _outil(name: str, description: str, proprietes: dict, requis: list[str]) -> 
 DEFINITIONS = [
     _outil(
         'rechercher_logements',
-        "Cherche des logements publiés sur AfriStay dans une ville. À utiliser avant de recommander un "
+        "Cherche des logements publiés sur Kwa-Ba dans une ville. À utiliser avant de recommander un "
         "logement : ne propose jamais un logement ni un prix qui ne vient pas de cet outil. Avec des dates, "
         "renvoie aussi la disponibilité et le coût total du séjour (frais de service compris).",
         {
@@ -46,7 +46,7 @@ DEFINITIONS = [
     ),
     _outil(
         'devis_transfert',
-        "Donne le prix exact d'un transfert aéroport → logement (aller seulement, pas de retour) avec un chauffeur partenaire AfriStay, par "
+        "Donne le prix exact d'un transfert aéroport → logement (aller seulement, pas de retour) avec un chauffeur partenaire Kwa-Ba, par "
         "type de véhicule. Aéroports desservis : Lomé (LFW), Cotonou (COO), Ouagadougou (OUA), Niamey (NIM), "
         "Bamako (BKO). L'heure est celle du billet (heure locale de l'aéroport).",
         {
@@ -59,7 +59,7 @@ DEFINITIONS = [
     ),
     _outil(
         'proposer_voyage_de_groupe',
-        "Prépare un voyage de groupe AfriStay Together (logements à voter entre amis, budget par personne). "
+        "Prépare un voyage de groupe Kwa-Ba Together (logements à voter entre amis, budget par personne). "
         "Ne crée rien : affiche au voyageur un bouton pour créer le voyage s'il le souhaite. À utiliser quand "
         "il voyage à plusieurs et veut décider avec les autres.",
         {
@@ -154,7 +154,7 @@ def rechercher_logements(entree: dict):
         if len(resultats) == 6:
             break
     if not resultats:
-        return {'resultats': [], 'message': "Aucun logement AfriStay ne correspond. Propose d'élargir les critères "
+        return {'resultats': [], 'message': "Aucun logement Kwa-Ba ne correspond. Propose d'élargir les critères "
                                              "(budget, dates, quartier) ; ne recommande pas de logement extérieur."}, []
     return {'resultats': resultats, 'frais_service': '8 % inclus dans cout_total_sejour_fcfa'}, cartes
 

@@ -14,7 +14,7 @@ export default function RemboursementPage() {
         <>
           <p>Cette page explique comment annuler une réservation et dans quelles conditions vous êtes remboursé.</p>
           <p>
-            Votre paiement est conservé par AfriStay jusqu&apos;à votre arrivée : l&apos;hôte n&apos;est payé que 24 heures après le
+            Votre paiement est conservé par Kwa-Ba jusqu&apos;à votre arrivée : l&apos;hôte n&apos;est payé que 24 heures après le
             début du séjour. C&apos;est ce qui nous permet de vous rembourser rapidement en cas d&apos;annulation ou de problème.
           </p>
         </>
@@ -50,10 +50,10 @@ export default function RemboursementPage() {
         },
         {
           id: "hote-admin",
-          titre: "Annulation par l'hôte ou par AfriStay",
+          titre: "Annulation par l'hôte ou par Kwa-Ba",
           contenu: (
             <ul>
-              <li>Si l&apos;hôte annule, ou si AfriStay annule une réservation (logement non conforme, fraude, problème de sécurité), vous êtes <strong>remboursé intégralement</strong>, frais de service compris.</li>
+              <li>Si l&apos;hôte annule, ou si Kwa-Ba annule une réservation (logement non conforme, fraude, problème de sécurité), vous êtes <strong>remboursé intégralement</strong>, frais de service compris.</li>
               <li>Si le logement ne correspond pas à l&apos;annonce à votre arrivée, signalez-le dans les 24 heures avec des photos : <AValider>remboursement partiel ou total selon le préjudice constaté.</AValider></li>
             </ul>
           ),
@@ -65,7 +65,7 @@ export default function RemboursementPage() {
             <ul>
               <li>Annulation par le voyageur plus de 24 heures avant l&apos;arrivée : remboursement intégral.</li>
               <li>Moins de 24 heures avant l&apos;arrivée : aucun remboursement, le chauffeur ayant réservé sa course.</li>
-              <li>Si AfriStay ne peut pas fournir de chauffeur, ou si le chauffeur ne se présente pas : remboursement intégral.</li>
+              <li>Si Kwa-Ba ne peut pas fournir de chauffeur, ou si le chauffeur ne se présente pas : remboursement intégral.</li>
             </ul>
           ),
         },

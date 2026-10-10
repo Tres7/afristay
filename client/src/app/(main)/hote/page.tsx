@@ -52,7 +52,7 @@ export default function DevenirHotePage() {
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-16 md:py-24 text-center">
           <h1 className="font-heading font-bold text-3xl sm:text-4xl md:text-5xl mb-4">Partagez votre logement avec des voyageurs du monde entier</h1>
           <p className="text-white/90 text-base md:text-lg max-w-2xl mx-auto mb-8">
-            Publiez gratuitement votre villa, appartement, chambre d&apos;hôtel ou auberge sur AfriStay.
+            Publiez gratuitement votre villa, appartement, chambre d&apos;hôtel ou auberge sur Kwa-Ba.
           </p>
           {cta}
           {status === "unauthenticated" && (
@@ -81,7 +81,7 @@ export default function DevenirHotePage() {
         <div className="mt-12 bg-white rounded-3xl p-6 md:p-8 border border-gray-100">
           <h3 className="font-heading font-bold text-dark text-lg mb-4">Ce qu&apos;il vous faut</h3>
           <ul className="grid sm:grid-cols-2 gap-3 text-sm text-gray-600">
-            {["Un compte AfriStay vérifié", "Des photos de votre logement (liens d'images)", "Un prix par nuit en FCFA", "La capacité d'accueil et les équipements"].map((item) => (
+            {["Un compte Kwa-Ba vérifié", "Des photos de votre logement (liens d'images)", "Un prix par nuit en FCFA", "La capacité d'accueil et les équipements"].map((item) => (
               <li key={item} className="flex items-start gap-2"><CheckCircle size={16} className="text-secondary flex-shrink-0 mt-0.5" />{item}</li>
             ))}
           </ul>

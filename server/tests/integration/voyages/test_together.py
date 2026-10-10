@@ -1,4 +1,4 @@
-"""AfriStay Together : voyage de groupe, invitation, votes, budget par personne, itinéraire."""
+"""Kwa-Ba Together : voyage de groupe, invitation, votes, budget par personne, itinéraire."""
 from datetime import timedelta
 
 import pytest

@@ -11,7 +11,7 @@ const METHODS = [
 export default function PaymentMethodsPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 md:py-12">
-      <SubPageHeader title="Moyens de paiement" subtitle="Les modes de paiement acceptés sur AfriStay" />
+      <SubPageHeader title="Moyens de paiement" subtitle="Les modes de paiement acceptés sur Kwa-Ba" />
 
       <div className="bg-white rounded-3xl shadow-card p-5 sm:p-8 space-y-4">
         {METHODS.map(({ icon: Icon, title, desc }) => (
@@ -28,7 +28,7 @@ export default function PaymentMethodsPage() {
           <Lock size={18} className="text-secondary flex-shrink-0 mt-0.5" />
           <span>
             Vous choisissez votre moyen de paiement à chaque réservation, puis vous payez sur la page sécurisée de FedaPay ou de
-            PayPal. AfriStay ne voit ni n&apos;enregistre vos coordonnées bancaires ou votre code Mobile Money. L&apos;hôte n&apos;est payé
+            PayPal. Kwa-Ba ne voit ni n&apos;enregistre vos coordonnées bancaires ou votre code Mobile Money. L&apos;hôte n&apos;est payé
             qu&apos;après votre arrivée.{" "}
             <Link href="/remboursement" className="text-primary font-semibold hover:underline">En savoir plus sur le paiement et le remboursement</Link>
           </span>

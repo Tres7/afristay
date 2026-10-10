@@ -415,7 +415,7 @@ function Membres({ v, recharger }: { v: Voyage; recharger: () => void }) {
   const [copie, setCopie] = useState(false);
   const [dates, setDates] = useState({ date_debut: v.date_debut ?? "", date_fin: v.date_fin ?? "", nb_voyageurs: v.nb_voyageurs });
   const lien = typeof window !== "undefined" ? `${window.location.origin}/together/rejoindre/${v.code_invitation}` : "";
-  const texte = `Rejoins notre voyage « ${v.nom} » à ${v.destination} sur AfriStay : on choisit le logement ensemble ! ${lien}`;
+  const texte = `Rejoins notre voyage « ${v.nom} » à ${v.destination} sur Kwa-Ba : on choisit le logement ensemble ! ${lien}`;
 
   const copier = async () => {
     try {

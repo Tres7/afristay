@@ -200,7 +200,7 @@ function RegisterForm() {
             <Link href="/cgu" target="_blank" className="text-primary font-medium underline">
               Conditions générales d&apos;utilisation<span className="sr-only"> (s&apos;ouvre dans un nouvel onglet)</span>
             </Link>{" "}
-            d&apos;AfriStay.
+            de Kwa-Ba.
           </label>
         </div>
 
@@ -235,7 +235,7 @@ export default function RegisterPage() {
     <AuthShell
       reverse
       image="https://images.unsplash.com/photo-1542314831-c6a4d27ce6a2?q=80&w=2000&auto=format&fit=crop"
-      title="Rejoignez la communauté AfriStay"
+      title="Rejoignez la communauté Kwa-Ba"
       subtitle="Réservez des hébergements vérifiés, sauvegardez vos coups de cœur et échangez directement avec les hôtes."
     >
       <Suspense>

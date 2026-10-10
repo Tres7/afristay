@@ -89,7 +89,7 @@ function Together({ c }: { c: CarteTogether }) {
 export default function CartesConcierge({ cartes }: { cartes: Carte[] }) {
   if (!cartes.length) return null;
   return (
-    <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1 -mx-1 px-1" aria-label="Offres AfriStay proposées">
+    <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1 -mx-1 px-1" aria-label="Offres Kwa-Ba proposées">
       {cartes.map((c, i) =>
         c.type === "logement" ? <Logement key={`${c.id}-${i}`} c={c} />
           : c.type === "transfert" ? <Transfert key={`t-${i}`} c={c} />

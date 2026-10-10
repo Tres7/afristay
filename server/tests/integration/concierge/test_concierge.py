@@ -1,4 +1,4 @@
-"""AI Concierge : outils AfriStay et boucle de conversation. L'API Gemini est simulée (aucun appel réseau)."""
+"""AI Concierge : outils Kwa-Ba et boucle de conversation. L'API Gemini est simulée (aucun appel réseau)."""
 import json
 from datetime import timedelta
 from types import SimpleNamespace as NS
@@ -134,7 +134,7 @@ def test_conversation_avec_fonction_puis_reponse(concierge, make_user, make_hebe
     # Premier appel : modèle, réflexion, consigne système, fonctions + recherche Google, sans interaction précédente
     req = faux.requetes[0]
     assert (req['model'], req['generation_config'], req['stream']) == ('gemini-3.8-flash', {'thinking_level': 'low'}, True)
-    assert 'Concierge AfriStay' in req['system_instruction'] and 'Date du jour' in req['system_instruction']
+    assert 'Concierge Kwa-Ba' in req['system_instruction'] and 'Date du jour' in req['system_instruction']
     assert [t.get('name', t['type']) for t in req['tools']] == [
         'rechercher_logements', 'devis_transfert', 'proposer_voyage_de_groupe', 'google_search']
     assert 'previous_interaction_id' not in req and req['input'] == 'Un appart à Lomé pour 2'

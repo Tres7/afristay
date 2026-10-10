@@ -186,7 +186,7 @@ function ReservationContent() {
                   <Lock size={14} className="flex-shrink-0 mt-0.5 text-secondary" />
                   <span>
                     Vous allez être redirigé vers la page sécurisée de {moyenChoisi === "paypal" ? "PayPal" : "FedaPay"} pour payer.
-                    AfriStay ne voit ni ne stocke vos coordonnées bancaires. Les dates sont bloquées pour vous pendant{" "}
+                    Kwa-Ba ne voit ni ne stocke vos coordonnées bancaires. Les dates sont bloquées pour vous pendant{" "}
                     {config?.delai_paiement_minutes} minutes. L&apos;hôte est payé après votre arrivée.
                   </span>
                 </p>

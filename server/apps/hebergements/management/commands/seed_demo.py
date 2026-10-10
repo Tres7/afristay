@@ -60,7 +60,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         email = os.getenv('DEMO_HOST_EMAIL', 'hote.demo@afristay.com')
-        password = os.getenv('DEMO_HOST_PASSWORD', 'AfriStay2026!')
+        password = os.getenv('DEMO_HOST_PASSWORD', 'Kwa-Ba2026!')
 
         host, created = UserModel.objects.get_or_create(
             email=email,

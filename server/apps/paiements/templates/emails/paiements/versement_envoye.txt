@@ -3,10 +3,10 @@
 Nous venons de vous verser {{ montant }} sur votre compte {{ operateur }} ({{ numero }}) pour le séjour de {{ voyageur }} dans « {{ hebergement }} » (référence {{ reference }}).
 
   Prix des nuits : {{ montant_brut }}
-  Commission AfriStay : {{ commission }}
+  Commission Kwa-Ba : {{ commission }}
   Versé : {{ montant }}
 
 Le détail de vos revenus : {{ url_revenus }}
 
-L'équipe AfriStay
+L'équipe Kwa-Ba
 {% endautoescape %}

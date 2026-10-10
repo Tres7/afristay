@@ -27,7 +27,7 @@ class MessageModel(models.Model):
     conversation = models.ForeignKey(ConversationModel, on_delete=models.CASCADE, related_name='messages')
     role = models.CharField(max_length=10, choices=[('user', 'Voyageur'), ('assistant', 'Concierge')])
     contenu = models.JSONField(default=dict, blank=True, help_text="Détail technique : appels d'outils et leurs arguments")
-    # Affichage : texte lisible et offres AfriStay (cartes) ; les résultats d'outils restent invisibles
+    # Affichage : texte lisible et offres Kwa-Ba (cartes) ; les résultats d'outils restent invisibles
     texte = models.TextField(blank=True)
     cartes = models.JSONField(default=list, blank=True)
     visible = models.BooleanField(default=True)

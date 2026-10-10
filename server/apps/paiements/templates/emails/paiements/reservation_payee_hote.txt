@@ -7,12 +7,12 @@
 {% if message %}
 Son message : « {{ message }} »
 {% endif %}
-Vous recevrez {{ montant_hote }} (prix des nuits moins la commission AfriStay) sur votre Mobile Money le {{ date_versement }}.
+Vous recevrez {{ montant_hote }} (prix des nuits moins la commission Kwa-Ba) sur votre Mobile Money le {{ date_versement }}.
 {% if not profil_complet %}
 Important : vous n'avez pas encore indiqué où recevoir votre argent. Faites-le ici :
 {{ url_revenus }}
 {% endif %}
 Voir la réservation : {{ url_reservations }}
 
-L'équipe AfriStay
+L'équipe Kwa-Ba
 {% endautoescape %}

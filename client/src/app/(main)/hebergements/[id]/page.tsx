@@ -139,7 +139,7 @@ function HebergementContent() {
             <h1 className="font-heading font-bold text-dark text-2xl sm:text-3xl">{hebergement.name}</h1>
             {hebergement.est_verifie && (
               <p className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-secondary bg-secondary/10 px-2.5 py-1 rounded-full">
-                <BadgeCheck size={14} /> Logement vérifié sur place par AfriStay
+                <BadgeCheck size={14} /> Logement vérifié sur place par Kwa-Ba
               </p>
             )}
             <div className="flex items-center gap-x-3 gap-y-1 mt-2 flex-wrap text-sm">
@@ -188,7 +188,7 @@ function HebergementContent() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm text-muted">Hôte</p>
-                  <p className="font-heading font-bold text-dark truncate">{hebergement.host_name || "Hôte AfriStay"}</p>
+                  <p className="font-heading font-bold text-dark truncate">{hebergement.host_name || "Hôte Kwa-Ba"}</p>
                 </div>
               </div>
               {isOwner ? (

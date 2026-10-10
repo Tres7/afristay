@@ -73,7 +73,7 @@ class Migration(migrations.Migration):
                 ('moyen', models.CharField(choices=[('mobile_money', 'Mobile Money'), ('carte', 'Carte bancaire'), ('paypal', 'PayPal')], default='mobile_money', max_length=20)),
                 ('statut', models.CharField(choices=[('en_attente_paiement', 'En attente de paiement'), ('confirme', 'Payé, chauffeur à attribuer'), ('chauffeur_assigne', 'Chauffeur attribué'), ('termine', 'Effectué'), ('annule', 'Annulé')], default='en_attente_paiement', max_length=20)),
                 ('expire_le', models.DateTimeField(blank=True, null=True)),
-                ('annule_par', models.CharField(blank=True, choices=[('voyageur', 'Voyageur'), ('plateforme', 'AfriStay'), ('expiration', 'Paiement non effectué à temps')], max_length=20)),
+                ('annule_par', models.CharField(blank=True, choices=[('voyageur', 'Voyageur'), ('plateforme', 'Kwa-Ba'), ('expiration', 'Paiement non effectué à temps')], max_length=20)),
                 ('annule_le', models.DateTimeField(blank=True, null=True)),
                 ('confirmation_notifiee', models.BooleanField(default=False, help_text='Paiement confirmé au voyageur')),
                 ('admins_notifies', models.BooleanField(default=False, help_text='Administrateurs prévenus : chauffeur à attribuer')),
@@ -83,7 +83,7 @@ class Migration(migrations.Migration):
                 ('cree_le', models.DateTimeField(auto_now_add=True)),
                 ('aeroport', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='transferts', to='transferts.aeroportmodel')),
                 ('chauffeur', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='transferts', to='transferts.chauffeurmodel')),
-                ('reservation', models.ForeignKey(blank=True, help_text='Séjour AfriStay associé (facultatif)', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='transferts', to='reservations.reservationmodel')),
+                ('reservation', models.ForeignKey(blank=True, help_text='Séjour Kwa-Ba associé (facultatif)', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='transferts', to='reservations.reservationmodel')),
                 ('voyageur', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='transferts', to=settings.AUTH_USER_MODEL)),
             ],
             options={

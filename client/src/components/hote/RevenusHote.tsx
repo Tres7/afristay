@@ -32,7 +32,7 @@ export default function RevenusHote() {
         {[
           { label: "À venir", value: revenus?.totaux.a_venir, icon: Clock, hint: "Versé 24 h après l'arrivée du voyageur" },
           { label: "En cours d'envoi", value: revenus?.totaux.en_cours, icon: Loader2, hint: "Sur votre Mobile Money sous peu" },
-          { label: "Déjà versé", value: revenus?.totaux.verse, icon: CheckCircle, hint: `Commission AfriStay : ${formatPrice(revenus?.totaux.commission ?? 0)}` },
+          { label: "Déjà versé", value: revenus?.totaux.verse, icon: CheckCircle, hint: `Commission Kwa-Ba : ${formatPrice(revenus?.totaux.commission ?? 0)}` },
         ].map(({ label, value, icon: Icon, hint }) => (
           <div key={label} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
             <p className="flex items-center gap-2 text-xs text-muted font-medium"><Icon size={14} className="text-primary" /> {label}</p>
@@ -47,7 +47,7 @@ export default function RevenusHote() {
       <section className="bg-white rounded-3xl border border-gray-100 p-5 sm:p-6">
         <h2 className="font-heading font-bold text-dark text-lg">Versements</h2>
         <p className="text-sm text-gray-600 mt-1">
-          Pour chaque séjour payé, vous recevez le prix des nuits moins la commission AfriStay de {commission} %.
+          Pour chaque séjour payé, vous recevez le prix des nuits moins la commission Kwa-Ba de {commission} %.
         </p>
         {isLoading ? (
           <div className="h-24 skeleton rounded-2xl mt-4" />

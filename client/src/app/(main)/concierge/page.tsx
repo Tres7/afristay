@@ -136,7 +136,7 @@ function ConciergeContent() {
       <div className="min-h-[70vh] flex items-center justify-center px-4 bg-light">
         <div className="max-w-md text-center bg-white rounded-3xl border border-gray-100 shadow-card p-8">
           <div className="w-14 h-14 mx-auto rounded-2xl bg-primary/10 text-primary flex items-center justify-center"><Sparkles size={26} /></div>
-          <h1 className="font-heading font-bold text-dark text-2xl mt-4">AfriStay Concierge</h1>
+          <h1 className="font-heading font-bold text-dark text-2xl mt-4">Kwa-Ba Concierge</h1>
           <p className="text-gray-600 mt-2">Votre assistant de voyage : logement selon votre budget, itinéraire, chauffeur à l&apos;aéroport et bonnes adresses.</p>
           <Link href="/login?callbackUrl=/concierge" className="inline-block mt-6 bg-primary text-white font-bold px-6 py-3 rounded-xl">Se connecter pour commencer</Link>
         </div>
@@ -172,7 +172,7 @@ function ConciergeContent() {
             <div className="flex items-center gap-2">
               <div className="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center"><Sparkles size={18} /></div>
               <div>
-                <h1 className="font-heading font-bold text-dark leading-tight">AfriStay Concierge</h1>
+                <h1 className="font-heading font-bold text-dark leading-tight">Kwa-Ba Concierge</h1>
                 <p className="text-[11px] text-gray-600">Assistant IA · peut se tromper, vérifiez les informations importantes</p>
               </div>
             </div>
@@ -191,7 +191,7 @@ function ConciergeContent() {
               <div className="max-w-xl mx-auto text-center pt-6">
                 <h2 className="font-heading font-bold text-dark text-2xl">Où partez-vous ?</h2>
                 <p className="text-gray-600 mt-2 text-sm">
-                  Dites-moi votre destination, vos dates, votre budget et vos envies : je vous propose les logements AfriStay qui
+                  Dites-moi votre destination, vos dates, votre budget et vos envies : je vous propose les logements Kwa-Ba qui
                   conviennent, un itinéraire, un chauffeur à l&apos;aéroport et une estimation du budget.
                 </p>
                 <div className="grid sm:grid-cols-2 gap-2 mt-6 text-left">

@@ -3,7 +3,7 @@
 Tous les montants sont des entiers en FCFA (le franc CFA n'a pas de sous-unité).
 Exemple pour 3 nuits à 20 000 FCFA :
     prix des nuits 60 000, frais de service voyageur 4 800 → le voyageur paie 64 800 ;
-    commission hôte 3 000 → l'hôte reçoit 57 000 ; AfriStay garde 7 800 (avant frais FedaPay).
+    commission hôte 3 000 → l'hôte reçoit 57 000 ; Kwa-Ba garde 7 800 (avant frais FedaPay).
 """
 from dataclasses import dataclass
 from datetime import datetime, time, timedelta

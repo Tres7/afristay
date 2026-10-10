@@ -21,7 +21,7 @@ class ReservationModel(models.Model):
     ANNULE_PAR_CHOICES = [
         ('voyageur', 'Voyageur'),
         ('hote', 'Hôte'),
-        ('plateforme', 'AfriStay'),
+        ('plateforme', 'Kwa-Ba'),
         ('expiration', 'Paiement non effectué à temps'),
     ]
 

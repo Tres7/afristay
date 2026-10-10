@@ -13,5 +13,5 @@ Annulation : remboursement intégral jusqu'à 7 jours avant l'arrivée, partiel 
 Détails : {{ url_remboursement }}
 
 Bon séjour,
-L'équipe AfriStay
+L'équipe Kwa-Ba
 {% endautoescape %}

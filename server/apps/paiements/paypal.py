@@ -96,7 +96,7 @@ class PayPal:
                 'amount': {'currency_code': 'EUR', 'value': str(montant_eur)},
             }],
             'payment_source': {'paypal': {'experience_context': {
-                'brand_name': 'AfriStay',
+                'brand_name': 'Kwa-Ba',
                 'locale': 'fr-FR',
                 'shipping_preference': 'NO_SHIPPING',
                 'user_action': 'PAY_NOW',

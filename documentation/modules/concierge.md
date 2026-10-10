@@ -1,6 +1,6 @@
-# AfriStay AI Concierge
+# Kwa-Ba AI Concierge
 
-Assistant de voyage conversationnel : logement selon le budget, itinéraire, budget total, restaurants et activités, transfert aéroport, questions pratiques — et présentation des offres AfriStay avec boutons de réservation.
+Assistant de voyage conversationnel : logement selon le budget, itinéraire, budget total, restaurants et activités, transfert aéroport, questions pratiques — et présentation des offres Kwa-Ba avec boutons de réservation.
 Code : `server/apps/concierge/` (backend), `client/src/app/(main)/concierge/` et `client/src/components/concierge/` (frontend).
 
 ## Modèle et réglages
@@ -10,13 +10,13 @@ Code : `server/apps/concierge/` (backend), `client/src/app/(main)/concierge/` et
 | Fournisseur | Google Gemini, **API Interactions** (SDK Python `google-genai` 2.x) | API recommandée par Google pour les nouveaux projets depuis juin 2026 |
 | Modèle | `gemini-3.8-flash` (`CONCIERGE_MODELE`) | Modèle Flash conseillé par Google ; `gemini-3.5-flash-lite` pour réduire le coût |
 | Réflexion | `thinking_level: low` (`CONCIERGE_REFLEXION` : minimal, low, medium, high) | Réponses rapides ; `medium` si les itinéraires manquent de profondeur |
-| Recherche web | outil intégré `google_search`, combiné aux fonctions AfriStay (`CONCIERGE_RECHERCHE_WEB`) | Restaurants, visites, informations à jour (combinaison réservée aux modèles Gemini 3) |
+| Recherche web | outil intégré `google_search`, combiné aux fonctions Kwa-Ba (`CONCIERGE_RECHERCHE_WEB`) | Restaurants, visites, informations à jour (combinaison réservée aux modèles Gemini 3) |
 | Historique | `previous_interaction_id` : Google conserve la conversation (55 jours en offre payante) | Les signatures de réflexion du modèle sont gérées par l'API ; notre base garde ce qui s'affiche |
 | Nouveaux essais du SDK | erreurs serveur (500-504) seulement | Sans ce réglage, un quota dépassé (429) bloquait le voyageur plus d'une minute |
 
 ## Fonctions (`outils.py`)
 
-Le modèle n'invente ni logement ni prix : il appelle des fonctions qui interrogent la base AfriStay.
+Le modèle n'invente ni logement ni prix : il appelle des fonctions qui interrogent la base Kwa-Ba.
 
 | Fonction | Rôle | Carte affichée |
 |---|---|---|
@@ -54,7 +54,7 @@ CONCIERGE_MAX_PAR_JOUR=60
 ```
 
 **En production, activer la facturation sur le projet Google** :
-- en offre gratuite, Google peut utiliser les conversations pour améliorer ses produits (incompatible avec la politique de confidentialité d'AfriStay) ;
+- en offre gratuite, Google peut utiliser les conversations pour améliorer ses produits (incompatible avec la politique de confidentialité de Kwa-Ba) ;
 - les limites par minute de l'offre gratuite sont très basses (refus 429 constatés pendant les tests, notamment sur la recherche Google).
 
 ## Production

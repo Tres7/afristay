@@ -5,13 +5,13 @@ Code : `server/apps/paiements/` (backend), `client/src/lib/paiement.ts`, `client
 
 ## Principe
 
-AfriStay encaisse tout le paiement, le conserve jusqu'au séjour, puis reverse sa part à l'hôte.
+Kwa-Ba encaisse tout le paiement, le conserve jusqu'au séjour, puis reverse sa part à l'hôte.
 
 ```
-Voyageur ──paie 64 800 FCFA──▶ AfriStay (FedaPay ou PayPal)
+Voyageur ──paie 64 800 FCFA──▶ Kwa-Ba (FedaPay ou PayPal)
                                    │  conservé jusqu'à l'arrivée + 24 h
                                    ├──▶ Hôte : 57 000 FCFA (Mobile Money, via FedaPay)
-                                   └──▶ AfriStay : 7 800 FCFA (avant frais des prestataires)
+                                   └──▶ Kwa-Ba : 7 800 FCFA (avant frais des prestataires)
 ```
 
 | Élément | Taux | Exemple : 3 nuits à 20 000 FCFA |
@@ -58,7 +58,7 @@ Pays ouverts aux versements : Togo, Bénin, Burkina Faso, Niger, Mali (`operateu
 
 **Remboursement Mobile Money** : FedaPay ne communique pas le numéro débité. Le remboursement est créé au statut « En attente du numéro du voyageur » ; l'API d'annulation renvoie `numero_requis: true` et le site ouvre aussitôt la fenêtre « Où recevoir votre remboursement ? » (pays, opérateur, numéro). Le voyageur peut aussi le faire plus tard depuis Mes réservations. Route : `PUT /api/v1/paiements/reservations/<id>/compte-remboursement/` avec `{pays, operateur, numero}`. Le worker envoie ensuite le remboursement.
 
-L'annulation par l'hôte ou par AfriStay (`services.annuler(r, par='hote' | 'plateforme')`) rembourse tout. Pas encore exposée dans l'API : à brancher sur le back-office.
+L'annulation par l'hôte ou par Kwa-Ba (`services.annuler(r, par='hote' | 'plateforme')`) rembourse tout. Pas encore exposée dans l'API : à brancher sur le back-office.
 
 ## Worker
 
@@ -122,5 +122,5 @@ Voir `documentation/ci.md` pour les lancer.
 - **Payouts** : refusés tant que FedaPay ne les a pas activés (`403 Opération non autorisée`). Sans eux, ni versements aux hôtes ni remboursements Mobile Money automatiques.
 - **Carte bancaire** : à activer, sinon la page de paiement ne propose que Mobile Money.
 - **Frais FedaPay** : par défaut à la charge du payeur (ajoutés au montant affiché sur la page FedaPay) ; les basculer à la charge du marchand.
-- **Nom du marchand** affiché sur la page de paiement : à renseigner (« AfriStay »).
+- **Nom du marchand** affiché sur la page de paiement : à renseigner (« Kwa-Ba »).
 - Les pays et opérateurs proposés au voyageur sur la page FedaPay dépendent des opérateurs activés sur le compte (en sandbox : « Momo Test » et la Côte d'Ivoire).

@@ -76,7 +76,7 @@ function Preferences({ initial, onFermer, onEnregistrer }: { initial: boolean; o
           </div>
         </div>
 
-        <p className="text-xs text-gray-600 mt-4">AfriStay n&apos;utilise aucun outil de mesure d&apos;audience ni de publicité.</p>
+        <p className="text-xs text-gray-600 mt-4">Kwa-Ba n&apos;utilise aucun outil de mesure d&apos;audience ni de publicité.</p>
 
         <div className="flex flex-col-reverse sm:flex-row sm:justify-between gap-2 mt-6">
           <Link href="/cookies" onClick={onFermer} className="text-sm font-semibold text-primary underline self-center">Politique cookies</Link>

@@ -1,8 +1,8 @@
 Bonjour {{ first_name }},
 
-Bienvenue sur AfriStay.
+Bienvenue sur Kwa-Ba.
 Votre compte a bien été créé et vérifié.
 Vous êtes prêt(e) à découvrir l'Afrique dans toute sa splendeur!
 
 À très bientôt,
-L'équipe AfriStay
+L'équipe Kwa-Ba

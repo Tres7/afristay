@@ -1,5 +1,5 @@
 """
-Django settings for AfriStay project.
+Django settings for Kwa-Ba project.
 """
 
 import os

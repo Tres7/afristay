@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='reservationmodel',
             name='annule_par',
-            field=models.CharField(blank=True, choices=[('voyageur', 'Voyageur'), ('hote', 'Hôte'), ('plateforme', 'AfriStay'), ('expiration', 'Paiement non effectué à temps')], max_length=20),
+            field=models.CharField(blank=True, choices=[('voyageur', 'Voyageur'), ('hote', 'Hôte'), ('plateforme', 'Kwa-Ba'), ('expiration', 'Paiement non effectué à temps')], max_length=20),
         ),
         migrations.AddField(
             model_name='reservationmodel',

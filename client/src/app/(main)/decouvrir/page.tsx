@@ -19,7 +19,7 @@ const TABS: { id: Category | "tout"; label: string }[] = [
 const U = "https://images.unsplash.com/";
 const Q = "?q=80&w=800&auto=format&fit=crop";
 
-// Guide éditorial : idées de sorties près des villes où AfriStay propose des hébergements
+// Guide éditorial : idées de sorties près des villes où Kwa-Ba propose des hébergements
 const EXPERIENCES: { id: number; name: string; category: Category; tag: string; city: string; country: string; price: string; img: string; desc: string }[] = [
   { id: 1, name: "Excursion à Ganvié", category: "activites", tag: "Culture", city: "Cotonou", country: "Bénin", price: "≈ 15 000 FCFA", img: `${U}photo-1504150558240-0b4fd8946624${Q}`, desc: "Pirogue jusqu'à la « Venise de l'Afrique », village lacustre sur le lac Nokoué." },
   { id: 2, name: "Lac Rose et dunes", category: "activites", tag: "Nature", city: "Dakar", country: "Sénégal", price: "≈ 25 000 FCFA", img: `${U}photo-1509099836639-18ba1795216d${Q}`, desc: "Demi-journée au lac Retba, célèbre pour sa couleur rose, et balade dans les dunes." },

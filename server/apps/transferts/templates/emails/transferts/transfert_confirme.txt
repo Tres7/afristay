@@ -15,5 +15,5 @@ Annulation gratuite jusqu'à 24 heures avant l'arrivée.
 Suivre votre transfert : {{ url }}
 
 Bon voyage,
-L'équipe AfriStay
+L'équipe Kwa-Ba
 {% endautoescape %}

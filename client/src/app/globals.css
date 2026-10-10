@@ -126,7 +126,7 @@ body {
 /* ─── Accessibilité ────────────────────────────────────────── */
 /* Focus clavier toujours visible (WCAG 2.4.7), sans gêner les clics souris */
 :focus-visible {
-  outline: 3px solid #A85412;
+  outline: 3px solid #0E4D47;
   outline-offset: 2px;
   border-radius: 6px;
 }

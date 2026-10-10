@@ -55,7 +55,7 @@ function TransfertContent() {
     staleTime: 60 * 60 * 1000,
   });
 
-  // Séjour AfriStay associé : on préremplit l'aéroport, la date, les voyageurs et l'adresse
+  // Séjour Kwa-Ba associé : on préremplit l'aéroport, la date, les voyageurs et l'adresse
   const { data: reservation } = useQuery({
     queryKey: ["reservation", reservationId],
     queryFn: async () => (await api.get<Reservation>(`/v1/reservations/${reservationId}/`)).data,
@@ -132,7 +132,7 @@ function TransfertContent() {
           <p className="flex items-center gap-2 text-sm font-semibold text-orange-200"><Plane size={16} /> Transfert aéroport</p>
           <h1 className="font-heading font-bold text-3xl sm:text-4xl mt-2 max-w-2xl">Votre chauffeur vous attend à l&apos;arrivée</h1>
           <p className="text-white/80 mt-3 max-w-xl">
-            Un chauffeur partenaire AfriStay vous accueille à la sortie avec une pancarte à votre nom et vous conduit à votre logement. Prix fixe, payé à l&apos;avance.
+            Un chauffeur partenaire Kwa-Ba vous accueille à la sortie avec une pancarte à votre nom et vous conduit à votre logement. Prix fixe, payé à l&apos;avance.
           </p>
           <ul className="flex flex-wrap gap-x-6 gap-y-2 mt-6 text-sm text-white/90">
             <li className="flex items-center gap-2"><Clock size={15} /> {devis?.attente_incluse_minutes ?? 60} min d&apos;attente incluses</li>

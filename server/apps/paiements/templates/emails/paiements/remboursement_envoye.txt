@@ -4,5 +4,5 @@ Votre remboursement de {{ montant }} pour la réservation {{ reference }} (« {{
 
 Selon votre opérateur ou votre banque, il peut mettre quelques heures à apparaître.
 
-L'équipe AfriStay
+L'équipe Kwa-Ba
 {% endautoescape %}

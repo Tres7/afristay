@@ -29,7 +29,7 @@ const SECTIONS = [
     items: [
       { q: "Quels moyens de paiement sont acceptés ?", a: "Mobile Money (Moov, T-Money, MTN, Orange, Airtel…) et carte Visa ou Mastercard via FedaPay, ou PayPal (débité en euros). Vous choisissez au moment de la réservation." },
       { q: "Quand suis-je débité ?", a: "Au moment de la réservation, sur la page sécurisée de FedaPay ou de PayPal. Les dates sont bloquées 30 minutes le temps de payer ; la réservation est confirmée dès le paiement reçu." },
-      { q: "Quand l'hôte est-il payé ?", a: "AfriStay conserve votre paiement jusqu'à votre arrivée et ne le verse à l'hôte que 24 heures après le début du séjour. En cas de problème à l'arrivée, signalez-le dans ce délai." },
+      { q: "Quand l'hôte est-il payé ?", a: "Kwa-Ba conserve votre paiement jusqu'à votre arrivée et ne le verse à l'hôte que 24 heures après le début du séjour. En cas de problème à l'arrivée, signalez-le dans ce délai." },
       { q: "Comment suis-je remboursé ?", a: "Sur le moyen de paiement utilisé, selon la politique d'annulation : intégralement à plus de 7 jours de l'arrivée, partiellement entre 7 jours et 48 heures." },
       { q: "Que comprennent les frais de service ?", a: "Des frais de service de 8 % s'ajoutent au prix des nuits. Le détail est affiché avant confirmation." },
     ],
@@ -66,7 +66,7 @@ const SECTIONS = [
     title: "Confidentialité",
     items: [
       { q: "Quelles données sont collectées ?", a: "Nom, e-mail, téléphone (facultatif), vos réservations, favoris et messages. Ces données servent uniquement au fonctionnement du service." },
-      { q: "Mon mot de passe est-il protégé ?", a: "Oui : il est stocké sous forme chiffrée (hachée) et n'est jamais visible, y compris par l'équipe AfriStay." },
+      { q: "Mon mot de passe est-il protégé ?", a: "Oui : il est stocké sous forme chiffrée (hachée) et n'est jamais visible, y compris par l'équipe Kwa-Ba." },
     ],
   },
 ];

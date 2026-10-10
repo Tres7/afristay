@@ -131,7 +131,7 @@ def test_cycle_complet_paiement_attribution_versement(client_for, make_user, fau
     paiements.passe()
     sujets = {m.subject for m in mail.outbox}
     assert 'Transfert confirmé — Lomé' in sujets
-    assert any(s.startswith('[AfriStay] Chauffeur à attribuer') for s in sujets)
+    assert any(s.startswith('[Kwa-Ba] Chauffeur à attribuer') for s in sujets)
 
     # Un SUV convient pour une berline demandée ; il est proposé dans l'admin
     assert chauffeur in services.chauffeurs_disponibles(t)

@@ -78,7 +78,7 @@ class TransfertModel(models.Model):
     ]
     ANNULE_PAR = [
         ('voyageur', 'Voyageur'),
-        ('plateforme', 'AfriStay'),
+        ('plateforme', 'Kwa-Ba'),
         ('expiration', 'Paiement non effectué à temps'),
     ]
     MOYENS = [('mobile_money', 'Mobile Money'), ('carte', 'Carte bancaire'), ('paypal', 'PayPal')]
@@ -87,7 +87,7 @@ class TransfertModel(models.Model):
     voyageur = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='transferts')
     reservation = models.ForeignKey(
         'reservations.ReservationModel', on_delete=models.SET_NULL, null=True, blank=True, related_name='transferts',
-        help_text='Séjour AfriStay associé (facultatif)',
+        help_text='Séjour Kwa-Ba associé (facultatif)',
     )
     aeroport = models.ForeignKey(AeroportModel, on_delete=models.PROTECT, related_name='transferts')
     arrivee = models.DateTimeField(help_text="Heure d'atterrissage prévue")

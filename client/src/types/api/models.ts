@@ -18,7 +18,7 @@ export interface Hebergement {
   host_id: string;
   host_name: string;
   is_favorite: boolean;
-  /** Visite de contrôle validée par AfriStay (absent tant que le backend ne l'expose pas). */
+  /** Visite de contrôle validée par Kwa-Ba (absent tant que le backend ne l'expose pas). */
   est_verifie?: boolean;
   created_at: string;
 }

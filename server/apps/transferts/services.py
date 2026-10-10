@@ -6,7 +6,7 @@
           et le versement du chauffeur est planifié (arrivée + 24 h)
         → le worker paie le chauffeur et passe le transfert à « termine »
     annulation par le voyageur : remboursement intégral jusqu'à 24 h avant l'arrivée, rien ensuite
-    annulation par AfriStay (aucun chauffeur disponible…) : remboursement intégral
+    annulation par Kwa-Ba (aucun chauffeur disponible…) : remboursement intégral
 """
 import logging
 from datetime import datetime
@@ -82,7 +82,7 @@ def demarrer_paiement(transfert: TransfertModel, moyen: str) -> str:
         transfert.save(update_fields=['moyen'])
     return paiements.creer_paiement(
         objet=transfert, montant=transfert.prix, moyen=moyen, voyageur=transfert.voyageur,
-        description=f"AfriStay {transfert.reference} — transfert aéroport {transfert.aeroport.ville}",
+        description=f"Kwa-Ba {transfert.reference} — transfert aéroport {transfert.aeroport.ville}",
         url_retour=f"{settings.FRONTEND_URL}/transfert/{transfert.id}",
     )
 
@@ -151,7 +151,7 @@ def annuler(transfert: TransfertModel, par: str) -> int:
                     statut='annule',
                 )
             # Moins de 24 h avant l'arrivée : le chauffeur est déjà en route, il reste payé
-            motif = "Annulation par le voyageur" if par == 'voyageur' else "Annulation par AfriStay"
+            motif = "Annulation par le voyageur" if par == 'voyageur' else "Annulation par Kwa-Ba"
             paiements.rembourser(paiement, rembourse, motif)
 
         transfert.statut, transfert.annule_par, transfert.annule_le = 'annule', par, timezone.now()

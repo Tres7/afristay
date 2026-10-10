@@ -41,7 +41,7 @@ export default function ProfilPage() {
         { icon: User, label: "Mes informations", href: "/profil/edit", desc: "Nom, téléphone" },
         { icon: CalendarCheck, label: "Mes réservations", href: "/profil/reservations", desc: upcoming ? `${upcoming} séjour${upcoming > 1 ? "s" : ""} à venir` : "Historique et à venir" },
         { icon: Plane, label: "Mes transferts", href: "/profil/transferts", desc: "Chauffeurs à l'aéroport" },
-        { icon: Users, label: "Voyages de groupe", href: "/together", desc: "AfriStay Together" },
+        { icon: Users, label: "Voyages de groupe", href: "/together", desc: "Kwa-Ba Together" },
         { icon: Sparkles, label: "Concierge IA", href: "/concierge", desc: "Votre assistant de voyage" },
         { icon: Heart, label: "Mes favoris", href: "/favoris", desc: "Hébergements sauvegardés" },
         { icon: MessageCircle, label: "Messages", href: "/messages", desc: "Échanges avec les hôtes" },

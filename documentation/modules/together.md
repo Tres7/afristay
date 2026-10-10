@@ -1,4 +1,4 @@
-# AfriStay Together (voyages de groupe)
+# Kwa-Ba Together (voyages de groupe)
 
 Préparer un voyage à plusieurs sans tout gérer dans une conversation WhatsApp.
 Code : `server/apps/voyages/` (backend), `client/src/app/(main)/together/` et `client/src/components/voyage/ProposerAuGroupe.tsx` (frontend).
@@ -14,7 +14,7 @@ Code : `server/apps/voyages/` (backend), `client/src/app/(main)/together/` et `c
 | Budget par personne | Calculé | Prix des nuits pour les dates du voyage + 8 % de frais, divisé par le nombre de voyageurs ; disponibilité et capacité affichées |
 | Retenir un logement | Organisateur | Bouton « Réserver pour le groupe » (dates et voyageurs préremplis) |
 | Itinéraire | Membres | Étapes datées (heure, lieu, détails), regroupées par jour |
-| Réservations et infos | Membres | Chacun peut partager ses propres réservations AfriStay ; bloc « infos pratiques » commun (vols, rendez-vous) |
+| Réservations et infos | Membres | Chacun peut partager ses propres réservations Kwa-Ba ; bloc « infos pratiques » commun (vols, rendez-vous) |
 | Membres | Organisateur / membre | Retirer un membre / quitter ; l'organisateur ne peut que supprimer le voyage |
 
 Limites : 20 membres par voyage. Un voyage est invisible (404) pour qui n'en est pas membre. Les membres ne voient que le prénom et l'initiale du nom des autres.

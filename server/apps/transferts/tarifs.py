@@ -18,7 +18,7 @@ CATEGORIE_CHOICES = [(code, c['nom']) for code, c in CATEGORIES.items()]
 DEBUT_NUIT, FIN_NUIT = time(22, 0), time(6, 0)
 MAJORATION_NUIT = Decimal('0.25')
 
-# Part du prix conservée par AfriStay, le reste revient au chauffeur partenaire
+# Part du prix conservée par Kwa-Ba, le reste revient au chauffeur partenaire
 COMMISSION_CHAUFFEUR = Decimal('0.20')
 
 # Il faut le temps d'attribuer un chauffeur : réservation au plus tard 6 h avant l'arrivée

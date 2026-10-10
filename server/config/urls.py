@@ -1,5 +1,5 @@
 """
-URL configuration for AfriStay project.
+URL configuration for Kwa-Ba project.
 """
 from django.conf import settings
 from django.conf.urls.static import static

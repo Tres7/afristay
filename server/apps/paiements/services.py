@@ -102,7 +102,7 @@ def creer_paiement(*, objet, montant: int, moyen: str, description: str, url_ret
             montant=montant, description=description, callback_url=url_retour,
             client={
                 'firstname': voyageur.first_name or 'Voyageur',
-                'lastname': voyageur.last_name or 'AfriStay',
+                'lastname': voyageur.last_name or 'Kwa-Ba',
                 'email': voyageur.email,
             },
         )
@@ -127,7 +127,7 @@ def demarrer_paiement(reservation, moyen: str = 'mobile_money') -> str:
         reservation.save(update_fields=['payment_method'])
     return creer_paiement(
         objet=reservation, montant=tarifs.montants_de(reservation).total, moyen=moyen, voyageur=reservation.guest,
-        description=f"AfriStay {reservation.reference} — {reservation.hebergement.name}",
+        description=f"Kwa-Ba {reservation.reference} — {reservation.hebergement.name}",
         url_retour=f"{settings.FRONTEND_URL}/reservation/paiement/{reservation.id}",
     )
 
@@ -281,7 +281,7 @@ def annuler(reservation, par: str) -> int:
                 motif = "Annulation par le voyageur"
             else:
                 bareme = tarifs.Annulation(rembourse_voyageur=montants.total, nuits_retenues=0)
-                motif = "Annulation par l'hôte" if par == 'hote' else "Annulation par AfriStay"
+                motif = "Annulation par l'hôte" if par == 'hote' else "Annulation par Kwa-Ba"
 
             versement = VersementModel.objects.select_for_update().filter(reservation=reservation).first()
             if versement and versement.statut in ('planifie', 'echoue'):
@@ -312,7 +312,7 @@ def _client_payout(utilisateur, numero: str, pays: str, titulaire: str = '') -> 
     prenom, _, nom = (titulaire or '').strip().partition(' ')
     return {
         'firstname': prenom or utilisateur.first_name or 'Client',
-        'lastname': nom or utilisateur.last_name or 'AfriStay',
+        'lastname': nom or utilisateur.last_name or 'Kwa-Ba',
         'email': utilisateur.email,
         'phone_number': {'number': numero, 'country': pays.lower()},
     }
@@ -335,7 +335,7 @@ def envoyer_payout(ligne, *, mode: str, numero: str, pays: str, email: str, titu
     ligne.tentatives += 1
     try:
         ligne.payout_id = fedapay.client().creer_versement(montant=ligne.montant, mode=mode, client={
-            'firstname': prenom or 'Client', 'lastname': nom or 'AfriStay', 'email': email,
+            'firstname': prenom or 'Client', 'lastname': nom or 'Kwa-Ba', 'email': email,
             'phone_number': {'number': numero, 'country': pays.lower()},
         })
         ligne.statut, ligne.derniere_erreur = 'en_cours', ''

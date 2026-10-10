@@ -42,7 +42,7 @@ export default function RejoindrePage() {
           <>
             <h1 className="font-heading font-bold text-dark text-xl mt-4">Invitation introuvable</h1>
             <p className="text-sm text-gray-600 mt-2">{apiErrorMessage(error, "Ce lien n'est plus valable.")} Demandez un nouveau lien à la personne qui organise.</p>
-            <Link href="/together" className="inline-block mt-6 text-primary font-bold hover:underline">Découvrir AfriStay Together</Link>
+            <Link href="/together" className="inline-block mt-6 text-primary font-bold hover:underline">Découvrir Kwa-Ba Together</Link>
           </>
         ) : !v ? (
           <div className="h-40 skeleton rounded-2xl mt-4" />

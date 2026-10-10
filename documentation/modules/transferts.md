@@ -5,13 +5,13 @@ Code : `server/apps/transferts/` (backend), `client/src/app/(main)/transfert/` e
 
 ## Principe
 
-AfriStay ne gère pas de flotte : il travaille avec des **chauffeurs partenaires indépendants**, enregistrés dans l'admin Django. Le voyageur paie la course en ligne (FedaPay ou PayPal, via `apps.paiements`) ; AfriStay paie le chauffeur par Mobile Money après la course, moins sa commission.
+Kwa-Ba ne gère pas de flotte : il travaille avec des **chauffeurs partenaires indépendants**, enregistrés dans l'admin Django. Le voyageur paie la course en ligne (FedaPay ou PayPal, via `apps.paiements`) ; Kwa-Ba paie le chauffeur par Mobile Money après la course, moins sa commission.
 
 ```
-Voyageur ──paie 10 000 FCFA──▶ AfriStay
+Voyageur ──paie 10 000 FCFA──▶ Kwa-Ba
                                  │  chauffeur attribué par l'équipe, payé 24 h après la prise en charge
                                  ├──▶ Chauffeur : 8 000 FCFA (Mobile Money)
-                                 └──▶ AfriStay : 2 000 FCFA (commission de 20 %)
+                                 └──▶ Kwa-Ba : 2 000 FCFA (commission de 20 %)
 ```
 
 ## Cycle
@@ -33,7 +33,7 @@ Voyageur ──paie 10 000 FCFA──▶ AfriStay
 |---|---|
 | Véhicules | Berline (3 passagers, 3 bagages), SUV confort (4, 4), Minibus (7, 8) |
 | Majoration de nuit (arrivée entre 22 h et 6 h, heure locale) | +25 %, arrondi aux 500 FCFA |
-| Commission AfriStay | 20 % du prix de la course |
+| Commission Kwa-Ba | 20 % du prix de la course |
 | Délai minimum de réservation | 6 h avant l'atterrissage |
 | Annulation gratuite | jusqu'à 24 h avant l'arrivée ; ensuite rien n'est remboursé (le chauffeur reste payé) |
 | Attente incluse | 60 min après l'heure d'arrivée |

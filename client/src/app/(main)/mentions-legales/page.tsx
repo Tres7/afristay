@@ -9,7 +9,7 @@ export default function MentionsLegalesPage() {
     <LegalPage
       titre="Mentions légales"
       miseAJour="7 octobre 2026"
-      intro={<p>Informations relatives à l&apos;éditeur du site AfriStay, à son hébergeur et aux contenus publiés.</p>}
+      intro={<p>Informations relatives à l&apos;éditeur du site Kwa-Ba, à son hébergeur et aux contenus publiés.</p>}
       sections={[
         {
           id: "editeur",
@@ -41,7 +41,7 @@ export default function MentionsLegalesPage() {
           titre: "Propriété intellectuelle",
           contenu: (
             <p>
-              Le nom AfriStay, son logo et l&apos;ensemble des éléments graphiques et textuels du site sont la propriété de l&apos;éditeur,
+              Le nom Kwa-Ba, son logo et l&apos;ensemble des éléments graphiques et textuels du site sont la propriété de l&apos;éditeur,
               sauf mention contraire. Toute reproduction sans autorisation est interdite. Les annonces, photos et avis publiés par les
               utilisateurs restent la propriété de leurs auteurs.
             </p>

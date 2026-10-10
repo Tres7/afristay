@@ -1,4 +1,4 @@
-"""AfriStay Together : préparer un voyage à plusieurs (logements proposés et votés, budget par
+"""Kwa-Ba Together : préparer un voyage à plusieurs (logements proposés et votés, budget par
 personne, itinéraire et réservations partagés)."""
 import secrets
 import uuid
@@ -61,7 +61,7 @@ class MembreModel(models.Model):
 
 
 class PropositionModel(models.Model):
-    """Un logement AfriStay proposé au groupe."""
+    """Un logement Kwa-Ba proposé au groupe."""
     voyage = models.ForeignKey(VoyageGroupeModel, on_delete=models.CASCADE, related_name='propositions')
     hebergement = models.ForeignKey('hebergements.HebergementModel', on_delete=models.CASCADE, related_name='+')
     propose_par = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='+')
@@ -102,7 +102,7 @@ class EtapeModel(models.Model):
 
 
 class LienReservationModel(models.Model):
-    """Réservation AfriStay d'un membre, partagée avec le groupe."""
+    """Réservation Kwa-Ba d'un membre, partagée avec le groupe."""
     voyage = models.ForeignKey(VoyageGroupeModel, on_delete=models.CASCADE, related_name='reservations')
     reservation = models.ForeignKey('reservations.ReservationModel', on_delete=models.CASCADE, related_name='+')
     ajoute_par = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='+')

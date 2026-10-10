@@ -104,7 +104,7 @@ def alerte_admin(type_: str, ligne, beneficiaire: str, *, reference: str, libell
     if not destinataires:
         logger.error("%s à traiter (%s) mais aucun administrateur à prévenir", type_, ligne.pk)
         return
-    _envoyer('alerte_admin', f"[AfriStay] {type_} à traiter — {reference}", destinataires, {
+    _envoyer('alerte_admin', f"[Kwa-Ba] {type_} à traiter — {reference}", destinataires, {
         'type': type_, 'reference': reference, 'hebergement': libelle, 'montant': _fcfa(ligne.montant),
         'beneficiaire': beneficiaire, 'erreur': ligne.derniere_erreur or '—',
         'url_admin': f"{settings.BACKEND_URL}/admin/{section}/",

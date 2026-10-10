@@ -219,7 +219,7 @@ function EspaceHoteContent() {
                 <span className="flex items-center gap-1.5"><Users size={14} className="text-primary" />{r.guests_count}</span>
               </div>
               <div className="flex items-center justify-between md:flex-col md:items-end gap-1">
-                <span className="font-heading font-bold text-dark" title="Prix des nuits moins la commission AfriStay">
+                <span className="font-heading font-bold text-dark" title="Prix des nuits moins la commission Kwa-Ba">
                   {formatPrice(r.montants.montant_hote)} <span className="text-xs font-normal text-gray-600">pour vous</span>
                 </span>
                 <span className={cn("text-xs font-bold px-2.5 py-1 rounded-full",

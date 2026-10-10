@@ -14,7 +14,7 @@ import type { Voyage, VoyageResume } from "@/types/api/voyage";
 
 const ATOUTS = [
   { icon: Link2, titre: "Invitez par lien", texte: "Envoyez le lien sur WhatsApp : vos proches rejoignent le voyage en un clic." },
-  { icon: Vote, titre: "Votez pour le logement", texte: "Chacun propose des logements AfriStay et vote pour son préféré." },
+  { icon: Vote, titre: "Votez pour le logement", texte: "Chacun propose des logements Kwa-Ba et vote pour son préféré." },
   { icon: Wallet, titre: "Budget par personne", texte: "Le coût de chaque logement, frais compris, divisé par le nombre de voyageurs." },
   { icon: CalendarDays, titre: "Itinéraire partagé", texte: "Activités, horaires, vols et réservations au même endroit." },
 ];
@@ -58,7 +58,7 @@ export default function TogetherPage() {
     <div className="bg-light pb-12">
       <section className="bg-gradient-to-br from-primary-700 to-primary-900 text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
-          <p className="flex items-center gap-2 text-sm font-semibold text-orange-100"><Users size={16} /> AfriStay Together</p>
+          <p className="flex items-center gap-2 text-sm font-semibold text-orange-100"><Users size={16} /> Kwa-Ba Together</p>
           <h1 className="font-heading font-bold text-3xl sm:text-4xl mt-2 max-w-2xl">Organisez votre voyage à plusieurs, sans vous perdre dans WhatsApp</h1>
           <p className="text-white/85 mt-3 max-w-xl">Un espace commun pour choisir le logement ensemble, comparer le budget de chacun et partager l&apos;itinéraire.</p>
           {connecte ? (
