@@ -5,6 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import IconeKwaba from "@/components/layout/IconeKwaba";
 import { Logotype } from "@/components/layout/Logo";
 
+// Durée d'affichage : le temps de voir la marque (un clic, une touche ou un toucher le passe)
+const DUREE_MS = 4500;
+
 export default function SplashScreen() {
   const [visible, setVisible] = useState(false);
 
@@ -13,8 +16,13 @@ export default function SplashScreen() {
     if (!shown) {
       setVisible(true);
       sessionStorage.setItem("splash_shown", "1");
-      const t = setTimeout(() => setVisible(false), 2400);
-      return () => clearTimeout(t);
+      const t = setTimeout(() => setVisible(false), DUREE_MS);
+      const passer = () => setVisible(false);
+      window.addEventListener("keydown", passer, { once: true });
+      return () => {
+        clearTimeout(t);
+        window.removeEventListener("keydown", passer);
+      };
     }
   }, []);
 
@@ -26,7 +34,8 @@ export default function SplashScreen() {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, scale: 1.05 }}
           transition={{ duration: 0.5, ease: "easeInOut" }}
-          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white dark:bg-[#0f172a]"
+          onClick={() => setVisible(false)}
+          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white dark:bg-[#0f172a] cursor-pointer"
         >
           {/* Logo animé */}
           <motion.div
@@ -70,7 +79,7 @@ export default function SplashScreen() {
             <motion.div
               initial={{ width: "0%" }}
               animate={{ width: "100%" }}
-              transition={{ delay: 1, duration: 1.2, ease: "easeInOut" }}
+              transition={{ delay: 1, duration: DUREE_MS / 1000 - 1.3, ease: "easeInOut" }}
               className="h-full rounded-full"
               style={{ background: "linear-gradient(90deg, #0E4D47, #F59E0B)" }}
             />
