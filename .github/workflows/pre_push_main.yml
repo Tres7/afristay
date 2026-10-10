@@ -1,0 +1,24 @@
+name: Main
+
+on:
+  push:
+    branches: [main]
+    # Un push qui ne touche que la documentation ne reconstruit pas l'image
+    paths-ignore:
+      - '**/*.md'
+      - 'documentation/**'
+
+concurrency:
+  group: main-push
+  cancel-in-progress: false # chaque commit de main garde son image
+
+permissions:
+  contents: read
+
+jobs:
+  push-image:
+    name: Image
+    uses: ./.github/workflows/_main-push-image.yml
+    permissions:
+      contents: read
+      packages: write

@@ -1,0 +1,36 @@
+name: Trivy scan
+description: >-
+  Scanne une image Docker (OS et paquets Python). Échoue sur toute vulnérabilité HIGH ou CRITICAL
+  qui a un correctif disponible ; le rapport complet va dans le résumé du job.
+
+inputs:
+  image-ref:
+    description: Image à scanner (locale après un build chargé, ou distante après docker login)
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Trivy (HIGH et CRITICAL corrigeables)
+      uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+      with:
+        image-ref: ${{ inputs.image-ref }}
+        scanners: vuln
+        severity: HIGH,CRITICAL
+        ignore-unfixed: true
+        format: table
+        output: trivy-report.txt
+        exit-code: '1'
+
+    - name: Rapport Trivy
+      if: always()
+      shell: bash
+      env:
+        IMAGE_REF: ${{ inputs.image-ref }}
+      run: |
+        {
+          echo "### Trivy : \`${IMAGE_REF}\`"
+          echo '```'
+          cat trivy-report.txt 2>/dev/null || echo "Pas de rapport (le scan n'a pas pu démarrer)."
+          echo '```'
+        } >> "$GITHUB_STEP_SUMMARY"
