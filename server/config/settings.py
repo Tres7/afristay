@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     # Local
     'apps.users',
     'apps.notifications.apps.NotificationsConfig',
@@ -218,7 +219,14 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
+    # L'ancien refresh token est mis sur liste noire à chaque rotation (purge : manage.py flushexpiredtokens)
+    'BLACKLIST_AFTER_ROTATION': True,
 }
+
+# Délai pendant lequel un refresh token qui vient d'être renouvelé renvoie encore la même nouvelle paire.
+# NextAuth renouvelle le même jeton en parallèle au chargement d'une page : sans ce délai, seul le premier
+# appel réussirait et les autres déconnecteraient l'utilisateur.
+JWT_REFRESH_GRACE_SECONDS = int(os.getenv('JWT_REFRESH_GRACE_SECONDS', '60'))
 
 # Email (permet donc de changer de provider quand on veut)
 EMAIL_BACKEND = os.getenv(

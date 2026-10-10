@@ -94,13 +94,7 @@ Quand la couverture progresse, remonter `fail_under` dans la même PR. Les seuil
 
 Chaque anomalie repérée a un test qui décrit le comportement attendu, marqué `@pytest.mark.xfail(strict=True, raises=AssertionError)`. Tant que le bug existe, le test est « xfail » et la CI reste verte. Le jour où le correctif arrive, le test passe, `strict=True` fait échouer la CI : retirer alors le marqueur `xfail` dans la PR du correctif.
 
-| Anomalie | Test |
-| --- | --- |
-| Recherche : `check_in`, `check_out`, `price_min`, `price_max` invalides → 500 | `integration/hebergements/test_search.py` |
-| `max_guests=0` accepté à la création d'un logement | `integration/hebergements/test_listings.py` |
-| Avis : `?hebergement=abc` → 500 | `integration/avis/test_avis_api.py` |
-| Avis : `?limit=-5` → 500 | `integration/avis/test_avis_api.py` |
-| Un refresh token déjà utilisé reste valable (pas de `token_blacklist`) | `integration/users/test_profile_and_tokens.py` |
+Aucune anomalie connue à ce jour : les sept anomalies repérées à la mise en place des tests ont été corrigées.
 
 `pytest -rxX` affiche la liste en fin d'exécution.
 
