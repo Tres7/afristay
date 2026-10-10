@@ -1,11 +1,14 @@
 import uuid
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 
 from apps.paiements.operateurs import PAYS_CHOICES
 
 from .montants import CAUSE_CHOICES
+
+SLUGS_RESERVES = {'don', 'impact'}
 
 
 class OrganisationModel(models.Model):
@@ -47,6 +50,11 @@ class OrganisationModel(models.Model):
 
     def __str__(self):
         return self.nom
+
+    def clean(self):
+        # Ces adresses sont déjà prises par des pages du site (/give/don/…, /give/impact)
+        if self.slug in SLUGS_RESERVES:
+            raise ValidationError({'slug': "Cette adresse est réservée, choisissez-en une autre."})
 
     @property
     def publiee(self) -> bool:
