@@ -1,0 +1,13 @@
+# Secrets et environnement local : jamais dans l'image
+.env
+.env.*
+!.env.example
+
+# Dépendances et builds locaux (réinstallés dans l'image)
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+npm-debug.log*
+
+Dockerfile

@@ -44,14 +44,17 @@ jobs:
       POSTGRES_PASSWORD: ci
       DJANGO_SECRET_KEY: ci-only-secret-key-never-used-outside-github-actions-0123456789
       DJANGO_DEBUG: 'False'
+      TEST_SERVICES: external # PostgreSQL est le service container du job, pas compose.test.yaml
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0 # diff-cover compare la PR à sa branche cible
       - uses: ./.github/actions/setup-python-server
       - uses: ./.github/actions/backend-checks
         with:
           run-integration: ${{ inputs.full }}
+          compare-branch: ${{ github.base_ref && format('origin/{0}', github.base_ref) || '' }}
       - if: always()
         uses: ./.github/actions/upload-test-artifacts
         with:

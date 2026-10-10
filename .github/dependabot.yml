@@ -1,32 +1,45 @@
 version: 2
 
+# Mises à jour proposées uniquement sur main, une fois par jour à 3 h (heure de Paris)
 updates:
   # Actions épinglées par SHA dans les workflows et les actions composites
   - package-ecosystem: github-actions
     directories: ['/', '/.github/actions/*']
+    target-branch: main
     schedule:
-      interval: weekly
+      interval: daily
+      time: '03:00'
+      timezone: Europe/Paris
     groups:
       github-actions:
         patterns: ['*']
 
   - package-ecosystem: pip
     directory: /server
+    target-branch: main
     schedule:
-      interval: weekly
+      interval: daily
+      time: '03:00'
+      timezone: Europe/Paris
     groups:
       python-minor-patch:
         update-types: [minor, patch]
 
   - package-ecosystem: npm
     directory: /client
+    target-branch: main
     schedule:
-      interval: weekly
+      interval: daily
+      time: '03:00'
+      timezone: Europe/Paris
     groups:
       npm-minor-patch:
         update-types: [minor, patch]
 
   - package-ecosystem: docker
     directories: ['/server', '/client']
+    target-branch: main
     schedule:
-      interval: weekly
+      interval: daily
+      time: '03:00'
+      timezone: Europe/Paris

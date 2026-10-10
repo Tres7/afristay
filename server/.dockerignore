@@ -1,0 +1,25 @@
+# Secrets et environnement local : jamais dans l'image (passés à l'exécution par variables d'environnement)
+.env
+.env.*
+!.env.example
+.venv/
+
+# Artefacts locaux
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+coverage-html/
+htmlcov/
+mediafiles/
+staticfiles/
+
+# Outillage de test et de développement
+tests/
+requirements-dev.txt
+pytest.ini
+.coveragerc
+ruff.toml
+Dockerfile
