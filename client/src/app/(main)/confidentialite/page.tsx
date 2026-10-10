@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import LienContact from "@/components/legal/LienContact";
 import LegalPage, { AC, AValider } from "@/components/legal/LegalPage";
 
 export const metadata: Metadata = { title: "Politique de confidentialité" };
@@ -26,7 +27,7 @@ export default function ConfidentialitePage() {
           contenu: (
             <ul>
               <li>Responsable : <AC>raison sociale et forme juridique</AC>, <AC>adresse du siège</AC>.</li>
-              <li>Contact pour la protection des données : <AC>adresse email dédiée, par ex. donnees@afristay.com</AC>.</li>
+              <li>Contact pour la protection des données : <LienContact sujet="Protection des données" />.</li>
               <li>Délégué à la protection des données (si désigné) : <AC>nom ou « non désigné »</AC>.</li>
             </ul>
           ),
@@ -79,7 +80,7 @@ export default function ConfidentialitePage() {
               <li>Les <strong>membres d&apos;un voyage de groupe</strong> voient votre prénom et l&apos;initiale de votre nom, vos votes, vos propositions et les réservations que vous partagez avec eux (logement, dates, montant).</li>
               <li>Les <strong>administrateurs</strong> d&apos;AfriStay, pour la modération et l&apos;assistance (accès restreint et tracé).</li>
               <li>Hébergement du site et des données : <AC>nom, adresse et pays de l&apos;hébergeur</AC>.</li>
-              <li>Envoi des emails (codes, notifications) : <AC>prestataire d&apos;envoi d&apos;emails</AC>.</li>
+              <li>Envoi des emails (codes, notifications) : <strong>Brevo</strong> (Sendinblue SAS, Paris, France), données hébergées dans l&apos;Union européenne. Reçoit votre adresse email et le contenu des messages envoyés.</li>
               <li><strong>FedaPay</strong> (Bénin) : encaissement Mobile Money et carte, versements aux hôtes et remboursements. Reçoit votre nom, votre email, le montant et, pour les hôtes, le numéro de versement.</li>
               <li><strong>Google</strong> (États-Unis), API Gemini : uniquement si vous utilisez le Concierge IA. Reçoit le contenu de vos messages pour générer les réponses et conserve l&apos;historique de la conversation jusqu&apos;à 55 jours pour pouvoir la poursuivre. <AValider>Service utilisé en offre payante : selon ses conditions, Google n&apos;utilise alors pas ces données pour améliorer ses produits.</AValider> N&apos;y indiquez pas de données sensibles.</li>
               <li><strong>PayPal</strong> (Europe) : uniquement si vous choisissez ce moyen de paiement. Reçoit le montant et la référence de la réservation.</li>
@@ -113,7 +114,7 @@ export default function ConfidentialitePage() {
               <ul>
                 <li>Modifier vos informations : <Link href="/profil/edit">Mon profil → Mes informations</Link>.</li>
                 <li>Fermer votre compte : depuis la même page, rubrique « Fermer mon compte ».</li>
-                <li>Obtenir une copie de vos données ou leur effacement définitif : écrivez à <AC>adresse email dédiée</AC>. Réponse sous un mois maximum.</li>
+                <li>Obtenir une copie de vos données ou leur effacement définitif : écrivez à <LienContact sujet="Mes données personnelles" />. Réponse sous un mois maximum.</li>
               </ul>
               <p>
                 Si vous estimez que vos droits ne sont pas respectés, vous pouvez saisir l&apos;autorité de protection des données

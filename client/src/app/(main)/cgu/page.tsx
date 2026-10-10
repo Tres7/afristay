@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import LienContact from "@/components/legal/LienContact";
 import LegalPage, { AC } from "@/components/legal/LegalPage";
 
 export const metadata: Metadata = { title: "Conditions générales d'utilisation" };
@@ -140,7 +141,7 @@ export default function CguPage() {
             <p>
               En cas de manquement grave aux présentes conditions (fraude, annonce trompeuse, comportement abusif), AfriStay peut
               masquer une annonce, annuler une réservation ou désactiver un compte. La décision est motivée et vous pouvez la contester
-              en écrivant à <AC>adresse email du support</AC>.
+              en écrivant à <LienContact sujet="Contestation d'une décision" />.
             </p>
           ),
         },

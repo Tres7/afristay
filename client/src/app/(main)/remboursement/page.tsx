@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import LienContact from "@/components/legal/LienContact";
 import LegalPage, { AC, AValider } from "@/components/legal/LegalPage";
 
 export const metadata: Metadata = { title: "Annulation et remboursement" };
@@ -76,7 +77,7 @@ export default function RemboursementPage() {
               <li>Le remboursement est effectué sur le moyen de paiement utilisé : le numéro Mobile Money débité, la carte bancaire ou le compte PayPal.</li>
               <li>Un paiement PayPal est remboursé en euros, au prorata du montant remboursé.</li>
               <li>Délai : <AValider>sous 7 jours ouvrés après l&apos;annulation</AValider>, auquel peut s&apos;ajouter le délai de traitement de votre opérateur ou de votre banque.</li>
-              <li>Une question sur un remboursement : <AC>email du support</AC>.</li>
+              <li>Une question sur un remboursement : <LienContact sujet="Remboursement" />.</li>
             </ul>
           ),
         },

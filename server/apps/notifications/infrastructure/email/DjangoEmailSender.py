@@ -1,4 +1,4 @@
-from django.core.mail import send_mail
+from apps.notifications.infrastructure.email.envoi import send_mail
 from django.conf import settings
 from django.template.loader import render_to_string
 from apps.notifications.application.ports.NotificationSender import NotificationSender

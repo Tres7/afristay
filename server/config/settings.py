@@ -198,7 +198,10 @@ CONCIERGE = {
 }
 
 # Contact d'assistance donné aux voyageurs (transferts aéroport…)
-ASSISTANCE_CONTACT = os.getenv('ASSISTANCE_CONTACT', 'support@afristay.com')
+ASSISTANCE_CONTACT = os.getenv('ASSISTANCE_CONTACT', 'info@kwa-ba.com')
+
+# Adresse de réponse des emails envoyés (les réponses des utilisateurs arrivent dans cette boîte)
+EMAIL_REPLY_TO = os.getenv('EMAIL_REPLY_TO', '')
 
 # URL publique de l'API (liens vers l'administration dans les alertes)
 BACKEND_URL = os.getenv('BACKEND_URL', 'http://localhost:8000')
