@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import LienContact from "@/components/legal/LienContact";
 import LegalPage, { AC } from "@/components/legal/LegalPage";
 
 export const metadata: Metadata = { title: "Mentions légales" };
@@ -8,7 +9,7 @@ export default function MentionsLegalesPage() {
     <LegalPage
       titre="Mentions légales"
       miseAJour="7 octobre 2026"
-      intro={<p>Informations relatives à l&apos;éditeur du site AfriStay, à son hébergeur et aux contenus publiés.</p>}
+      intro={<p>Informations relatives à l&apos;éditeur du site Kwa-Ba, à son hébergeur et aux contenus publiés.</p>}
       sections={[
         {
           id: "editeur",
@@ -19,7 +20,7 @@ export default function MentionsLegalesPage() {
               <li>Siège social : <AC>adresse complète</AC></li>
               <li>Immatriculation : <AC>numéro RCS / RCCM et ville d&apos;immatriculation</AC></li>
               <li>Numéro de TVA intracommunautaire : <AC>si applicable</AC></li>
-              <li>Contact : <AC>email</AC> — <AC>téléphone</AC></li>
+              <li>Contact : <LienContact /> — <AC>téléphone</AC></li>
               <li>Directeur ou directrice de la publication : <AC>nom et fonction</AC></li>
             </ul>
           ),
@@ -40,7 +41,7 @@ export default function MentionsLegalesPage() {
           titre: "Propriété intellectuelle",
           contenu: (
             <p>
-              Le nom AfriStay, son logo et l&apos;ensemble des éléments graphiques et textuels du site sont la propriété de l&apos;éditeur,
+              Le nom Kwa-Ba, son logo et l&apos;ensemble des éléments graphiques et textuels du site sont la propriété de l&apos;éditeur,
               sauf mention contraire. Toute reproduction sans autorisation est interdite. Les annonces, photos et avis publiés par les
               utilisateurs restent la propriété de leurs auteurs.
             </p>
@@ -65,7 +66,7 @@ export default function MentionsLegalesPage() {
           contenu: (
             <p>
               Pour signaler un contenu illicite (annonce frauduleuse, photo utilisée sans droit, propos haineux), écrivez à{" "}
-              <AC>email de signalement</AC> en précisant l&apos;adresse de la page concernée. Les contenus manifestement illicites sont
+              <LienContact sujet="Signalement d'un contenu" /> en précisant l&apos;adresse de la page concernée. Les contenus manifestement illicites sont
               retirés dans les meilleurs délais.
             </p>
           ),

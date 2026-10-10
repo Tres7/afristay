@@ -25,7 +25,7 @@ export default function NotificationsPage() {
             </div>
           </div>
         ))}
-        <p className="text-sm text-gray-500 pt-2">AfriStay n&apos;envoie aucun e-mail publicitaire.</p>
+        <p className="text-sm text-gray-500 pt-2">Kwa-Ba n&apos;envoie aucun e-mail publicitaire.</p>
       </div>
     </div>
   );

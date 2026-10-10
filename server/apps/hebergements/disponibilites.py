@@ -5,20 +5,30 @@ le jour `fin` (départ) reste libre pour une nouvelle arrivée.
 """
 from datetime import date
 
+from django.db.models import Q
+from django.utils import timezone
 
 from .models import BlocageModel
 
-STATUTS_ACTIFS = ('pending', 'confirmed')
+def filtre_actives(prefixe: str = ''):
+    """Réservations qui occupent leurs dates : confirmées, ou en attente de paiement non expirées."""
+    p = prefixe
+    return (
+        Q(**{f'{p}status': 'confirmed'})
+        | Q(**{f'{p}status': 'pending', f'{p}expire_le__isnull': True})
+        | Q(**{f'{p}status': 'pending', f'{p}expire_le__gt': timezone.now()})
+    )
 
 
-def _reservations(hebergement_id, debut: date, fin: date):
+def _reservations(hebergement_id, debut: date, fin: date, exclure=None):
     from apps.reservations.models import ReservationModel  # import local : évite un import circulaire
-    return ReservationModel.objects.filter(
+    qs = ReservationModel.objects.filter(
+        filtre_actives(),
         hebergement_id=hebergement_id,
-        status__in=STATUTS_ACTIFS,
         check_in__lt=fin,
         check_out__gt=debut,
     )
+    return qs.exclude(pk=exclure) if exclure else qs
 
 
 def _blocages(hebergement_id, debut: date, fin: date):
@@ -33,9 +43,12 @@ def est_disponible(hebergement_id, debut: date, fin: date) -> bool:
     return not _reservations(hebergement_id, debut, fin).exists() and not _blocages(hebergement_id, debut, fin).exists()
 
 
-def conflit(hebergement_id, debut: date, fin: date) -> str | None:
-    """Explique pourquoi la période n'est pas libre (message destiné au voyageur), ou None."""
-    if _reservations(hebergement_id, debut, fin).exists():
+def conflit(hebergement_id, debut: date, fin: date, exclure=None) -> str | None:
+    """Explique pourquoi la période n'est pas libre (message destiné au voyageur), ou None.
+
+    `exclure` : identifiant d'une réservation à ignorer (celle que l'on est en train de confirmer).
+    """
+    if _reservations(hebergement_id, debut, fin, exclure).exists():
         return "Ces dates sont déjà réservées pour cet hébergement."
     if _blocages(hebergement_id, debut, fin).exists():
         return "L'hôte a fermé ces dates à la réservation."

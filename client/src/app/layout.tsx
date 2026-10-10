@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Poppins, Inter } from "next/font/google";
+import { Montserrat, Inter } from "next/font/google";
 import "./globals.css";
 import Providers from "@/providers/Providers";
 import ConsentProvider from "@/providers/ConsentProvider";
@@ -8,10 +8,10 @@ import ThemeProvider from "@/providers/ThemeProvider";
 import SplashScreen from "@/components/layout/SplashScreen";
 import { Toaster } from "sonner";
 
-const poppins = Poppins({
+const montserrat = Montserrat({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-poppins",
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-montserrat",
 });
 
 const inter = Inter({
@@ -20,27 +20,27 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-const TITRE = "AfriStay - L'Afrique à portée de clic";
+const TITRE = "Kwa-Ba — Le monde vous accueille";
 const DESCRIPTION =
   "Plateforme de réservation d'hébergements en Afrique. Découvrez les meilleurs logements, activités et restaurants.";
-const IMAGE_PARTAGE = "/brand/png/afristay-partage-1200x630.png";
+const IMAGE_PARTAGE = "/brand/kwaba-partage-1200x630.png";
 
 // Adresse publique du site : les aperçus de lien (WhatsApp, Facebook…) exigent des URL absolues
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.AUTH_URL || "http://localhost:3000";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { default: TITRE, template: "%s · AfriStay" },
+  title: { default: TITRE, template: "%s · Kwa-Ba" },
   description: DESCRIPTION,
-  applicationName: "AfriStay",
+  applicationName: "Kwa-Ba",
   openGraph: {
     type: "website",
     locale: "fr_FR",
-    siteName: "AfriStay",
+    siteName: "Kwa-Ba",
     url: "/",
     title: TITRE,
     description: DESCRIPTION,
-    images: [{ url: IMAGE_PARTAGE, width: 1200, height: 630, alt: "AfriStay — L'Afrique à portée de clic" }],
+    images: [{ url: IMAGE_PARTAGE, width: 1200, height: 630, alt: "Kwa-Ba — Le monde vous accueille." }],
   },
   twitter: {
     card: "summary_large_image",
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     images: [IMAGE_PARTAGE],
   },
   icons: {
-    apple: "/brand/png/afristay-icone-180.png",
+    apple: "/brand/kwaba-icone-180.png",
   },
 };
 
@@ -60,7 +60,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" suppressHydrationWarning>
-      <body className={`${poppins.variable} ${inter.variable} font-body`}>
+      <body className={`${montserrat.variable} ${inter.variable} font-body`}>
         <ThemeProvider>
           <AuthProvider>
             <Providers>

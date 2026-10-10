@@ -124,7 +124,7 @@ export default function CalendrierHotePage() {
           <div className="bg-white rounded-3xl shadow-card p-5">
             <h2 className="font-heading font-bold text-dark mb-2 flex items-center gap-2"><Lock size={16} className="text-primary" /> Fermer des dates</h2>
             {!debut ? (
-              <p className="text-sm text-muted">Touchez une première nuit libre, puis la dernière nuit à fermer (travaux, usage personnel, location hors AfriStay…).</p>
+              <p className="text-sm text-muted">Touchez une première nuit libre, puis la dernière nuit à fermer (travaux, usage personnel, location hors Kwa-Ba…).</p>
             ) : (
               <div className="space-y-3">
                 <p className="text-sm text-dark">

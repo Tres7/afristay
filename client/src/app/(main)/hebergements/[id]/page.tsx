@@ -12,6 +12,7 @@ import AmenityBadge from "@/components/hebergement/AmenityBadge";
 import FavoriteButton from "@/components/hebergement/FavoriteButton";
 import RatingBadge from "@/components/avis/RatingBadge";
 import AvisSection from "@/components/avis/AvisSection";
+import ProposerAuGroupe from "@/components/voyage/ProposerAuGroupe";
 import MapEmbed from "@/components/hebergement/MapEmbed";
 import api, { apiErrorMessage } from "@/lib/api";
 import { addDays, calculateNights, calculateServiceFee, cn, FALLBACK_IMAGE, formatDate, formatPrice, isoDate, TYPE_LABELS } from "@/lib/utils";
@@ -138,7 +139,7 @@ function HebergementContent() {
             <h1 className="font-heading font-bold text-dark text-2xl sm:text-3xl">{hebergement.name}</h1>
             {hebergement.est_verifie && (
               <p className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-secondary bg-secondary/10 px-2.5 py-1 rounded-full">
-                <BadgeCheck size={14} /> Logement vérifié sur place par AfriStay
+                <BadgeCheck size={14} /> Logement vérifié sur place par Kwa-Ba
               </p>
             )}
             <div className="flex items-center gap-x-3 gap-y-1 mt-2 flex-wrap text-sm">
@@ -187,7 +188,7 @@ function HebergementContent() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm text-muted">Hôte</p>
-                  <p className="font-heading font-bold text-dark truncate">{hebergement.host_name || "Hôte AfriStay"}</p>
+                  <p className="font-heading font-bold text-dark truncate">{hebergement.host_name || "Hôte Kwa-Ba"}</p>
                 </div>
               </div>
               {isOwner ? (
@@ -298,6 +299,7 @@ function HebergementContent() {
                 {isOwner ? "C'est votre hébergement" : !hebergement.is_available ? "Indisponible" : nights > 0 ? "Réserver" : "Sélectionnez des dates"}
               </button>
               <p className="text-center text-muted text-xs mt-3">Vous ne serez débité qu&apos;à l&apos;étape suivante.</p>
+              {!isOwner && <div className="mt-4"><ProposerAuGroupe hebergementId={hebergement.id} /></div>}
             </div>
           </div>
         </div>

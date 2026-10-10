@@ -1,5 +1,5 @@
 """
-Django settings for AfriStay project.
+Django settings for Kwa-Ba project.
 """
 
 import os
@@ -39,6 +39,10 @@ INSTALLED_APPS = [
     'apps.favoris.apps.FavorisConfig',
     'apps.avis.apps.AvisConfig',
     'apps.messaging.apps.MessagingConfig',
+    'apps.paiements.apps.PaiementsConfig',
+    'apps.transferts.apps.TransfertsConfig',
+    'apps.voyages.apps.VoyagesConfig',
+    'apps.concierge.apps.ConciergeConfig',
 ]
 
 MIDDLEWARE = [
@@ -158,8 +162,49 @@ MESSAGING = {
     'RELAY_INTERVAL_SECONDS': int(os.getenv('MESSAGING_RELAY_INTERVAL_SECONDS', '10')),
 }
 
+# Paiement en ligne (FedaPay). Sans clé FedaPay ni PayPal, le paiement en ligne est désactivé :
+# les réservations sont alors confirmées immédiatement, sans encaissement.
+FEDAPAY = {
+    'SECRET_KEY': os.getenv('FEDAPAY_SECRET_KEY', ''),
+    'ENV': os.getenv('FEDAPAY_ENV', 'sandbox'),  # sandbox | live
+    'WEBHOOK_SECRET': os.getenv('FEDAPAY_WEBHOOK_SECRET', ''),
+    # Durée pendant laquelle les dates restent bloquées en attendant le paiement
+    'EXPIRATION_MINUTES': int(os.getenv('PAIEMENT_EXPIRATION_MINUTES', '30')),
+}
+
+# PayPal (paiement en euros). Sans identifiants, PayPal n'est pas proposé.
+# Les versements aux hôtes passent toujours par FedaPay.
+PAYPAL = {
+    'CLIENT_ID': os.getenv('PAYPAL_CLIENT_ID', ''),
+    'CLIENT_SECRET': os.getenv('PAYPAL_CLIENT_SECRET', ''),
+    'ENV': os.getenv('PAYPAL_ENV', 'sandbox'),  # sandbox | live
+}
+
 # URL du frontend, utilisée dans les liens des emails
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+# Pause entre deux emails envoyés par le worker des paiements (limite des SMTP de test comme Mailtrap)
+PAIEMENTS_PAUSE_EMAIL = float(os.getenv('PAIEMENTS_PAUSE_EMAIL', '1'))
+
+# AI Concierge (Gemini, API Interactions de Google). Sans clé, le Concierge est désactivé.
+CONCIERGE = {
+    'API_KEY': os.getenv('GEMINI_API_KEY', ''),
+    'MODELE': os.getenv('CONCIERGE_MODELE', 'gemini-3.8-flash'),
+    # Profondeur de réflexion du modèle : minimal | low | medium | high (low = réponses rapides)
+    'REFLEXION': os.getenv('CONCIERGE_REFLEXION', 'low'),
+    'RECHERCHE_WEB': os.getenv('CONCIERGE_RECHERCHE_WEB', 'True').lower() in ('true', '1', 'yes'),
+    # Limites par utilisateur (coût de l'API)
+    'MAX_PAR_HEURE': int(os.getenv('CONCIERGE_MAX_PAR_HEURE', '20')),
+    'MAX_PAR_JOUR': int(os.getenv('CONCIERGE_MAX_PAR_JOUR', '60')),
+}
+
+# Contact d'assistance donné aux voyageurs (transferts aéroport…)
+ASSISTANCE_CONTACT = os.getenv('ASSISTANCE_CONTACT', 'info@kwa-ba.com')
+
+# Adresse de réponse des emails envoyés (les réponses des utilisateurs arrivent dans cette boîte)
+EMAIL_REPLY_TO = os.getenv('EMAIL_REPLY_TO', '')
+
+# URL publique de l'API (liens vers l'administration dans les alertes)
+BACKEND_URL = os.getenv('BACKEND_URL', 'http://localhost:8000')
 
 
 # CORS

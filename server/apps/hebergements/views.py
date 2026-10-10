@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 
-from django.db.models import Count, Min, Q
+from django.db.models import Count, Min, ProtectedError, Q
 from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -9,7 +9,7 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.throttling import ScopedRateThrottle
 
-from .disponibilites import a_des_reservations, periodes_indisponibles
+from .disponibilites import a_des_reservations, filtre_actives, periodes_indisponibles
 from .models import BlocageModel, HebergementModel, HebergementPhotoModel
 from .photos import InvalidPhoto, normalize_photo
 from .serializers import BlocageSerializer, HebergementSerializer, HebergementCreateSerializer
@@ -62,7 +62,7 @@ class HebergementListView(APIView):
         check_out = request.query_params.get('check_out')
         if check_in and check_out:
             busy = HebergementModel.objects.filter(
-                reservations__status__in=['pending', 'confirmed'],
+                filtre_actives('reservations__'),
                 reservations__check_in__lt=check_out,
                 reservations__check_out__gt=check_in,
             ).values('id')
@@ -169,7 +169,13 @@ class HebergementDetailView(APIView):
             return Response({'detail': 'Hébergement introuvable.'}, status=status.HTTP_404_NOT_FOUND)
         if obj.host_id != request.user.id:
             return Response({'detail': 'Non autorisé.'}, status=status.HTTP_403_FORBIDDEN)
-        obj.delete()
+        try:
+            obj.delete()
+        except ProtectedError:
+            return Response(
+                {'detail': "Cette annonce a des réservations payées : elle ne peut pas être supprimée. Masquez-la plutôt."},
+                status=status.HTTP_409_CONFLICT,
+            )
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

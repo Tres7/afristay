@@ -1,10 +1,11 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { CheckCircle, Calendar, MapPin, Users, ArrowRight, MessageCircle } from "lucide-react";
+import { CheckCircle, Calendar, MapPin, Users, ArrowRight, MessageCircle, Plane } from "lucide-react";
 import api from "@/lib/api";
 import { FALLBACK_IMAGE, formatDate, formatPrice } from "@/lib/utils";
 import type { Reservation } from "@/types/api/models";
@@ -17,12 +18,18 @@ const PAYMENT_LABELS: Record<string, string> = {
 
 export default function ConfirmationPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
 
   const { data: reservation, isLoading, isError } = useQuery({
     queryKey: ["reservation", params.id],
     queryFn: async () => (await api.get<Reservation>(`/v1/reservations/${params.id}/`)).data,
     retry: false,
   });
+
+  // Réservation pas encore payée : on renvoie vers la page de paiement
+  useEffect(() => {
+    if (reservation?.status === "pending" && reservation.expire_le) router.replace(`/reservation/paiement/${reservation.id}`);
+  }, [reservation, router]);
 
   if (isLoading) {
     return <div className="max-w-3xl mx-auto px-4 py-16"><div className="h-80 skeleton rounded-3xl" /></div>;
@@ -90,10 +97,23 @@ export default function ConfirmationPage() {
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Total ({PAYMENT_LABELS[reservation.payment_method]})</p>
+                  <p className="text-xs text-gray-500">
+                    {reservation.paiement === "reussi" ? "Payé" : "Total"} ({PAYMENT_LABELS[reservation.payment_method]})
+                  </p>
                   <p className="text-lg font-heading font-bold text-primary">{formatPrice(reservation.total_price)}</p>
                 </div>
               </div>
+
+              {reservation.remboursement && (
+                <p className="mt-4 text-sm text-dark bg-green-50 rounded-xl px-4 py-3">
+                  Remboursement de <strong>{formatPrice(reservation.remboursement.montant)}</strong>{" "}
+                  {reservation.remboursement.statut === "envoye"
+                    ? "effectué"
+                    : reservation.remboursement.statut === "attente_numero"
+                      ? "en attente : indiquez votre numéro Mobile Money depuis Mes réservations"
+                      : "en cours (sous 7 jours ouvrés)"}.
+                </p>
+              )}
 
               <div className="mt-4 pt-4 border-t border-gray-100">
                 <p className="text-xs text-gray-500">Numéro de réservation</p>
@@ -102,6 +122,18 @@ export default function ConfirmationPage() {
             </div>
           </div>
         </motion.div>
+
+        {reservation.status === "confirmed" && (
+          <Link href={`/transfert?reservation=${reservation.id}`}
+            className="mb-8 flex items-center gap-4 bg-dark text-white rounded-3xl p-5 sm:p-6 hover:bg-dark/90 transition-colors">
+            <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center flex-shrink-0"><Plane size={22} /></div>
+            <div className="flex-1 min-w-0">
+              <p className="font-heading font-bold">Un chauffeur vous attend à l&apos;aéroport ?</p>
+              <p className="text-sm text-white/80">Réservez votre transfert jusqu&apos;à {h.city} : prix fixe, pancarte à votre nom, annulation gratuite jusqu&apos;à 24 h avant.</p>
+            </div>
+            <ArrowRight size={20} className="flex-shrink-0" />
+          </Link>
+        )}
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link href="/profil/reservations" className="bg-primary text-white font-bold px-8 py-4 rounded-full text-center shadow-button hover:bg-primary-600 transition-colors flex items-center justify-center gap-2">

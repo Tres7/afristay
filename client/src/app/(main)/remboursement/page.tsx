@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import LienContact from "@/components/legal/LienContact";
 import LegalPage, { AC, AValider } from "@/components/legal/LegalPage";
 
 export const metadata: Metadata = { title: "Annulation et remboursement" };
@@ -12,10 +13,9 @@ export default function RemboursementPage() {
       intro={
         <>
           <p>Cette page explique comment annuler une réservation et dans quelles conditions vous êtes remboursé.</p>
-          <p className="p-4 rounded-2xl bg-amber-50 text-amber-900">
-            <strong>Situation actuelle :</strong> le paiement en ligne n&apos;est pas encore activé sur AfriStay. Aucun montant
-            n&apos;est prélevé lors de la réservation, il n&apos;y a donc rien à rembourser par AfriStay pour le moment. Les règles de
-            remboursement ci-dessous s&apos;appliqueront dès l&apos;activation du paiement en ligne.
+          <p>
+            Votre paiement est conservé par Kwa-Ba jusqu&apos;à votre arrivée : l&apos;hôte n&apos;est payé que 24 heures après le
+            début du séjour. C&apos;est ce qui nous permet de vous rembourser rapidement en cas d&apos;annulation ou de problème.
           </p>
         </>
       }
@@ -33,7 +33,7 @@ export default function RemboursementPage() {
         },
         {
           id: "bareme",
-          titre: "Barème de remboursement (paiement en ligne)",
+          titre: "Barème de remboursement",
           contenu: (
             <>
               <table>
@@ -50,11 +50,22 @@ export default function RemboursementPage() {
         },
         {
           id: "hote-admin",
-          titre: "Annulation par l'hôte ou par AfriStay",
+          titre: "Annulation par l'hôte ou par Kwa-Ba",
           contenu: (
             <ul>
-              <li>Si l&apos;hôte annule, ou si AfriStay annule une réservation (logement non conforme, fraude, problème de sécurité), vous êtes <strong>remboursé intégralement</strong>, frais de service compris.</li>
+              <li>Si l&apos;hôte annule, ou si Kwa-Ba annule une réservation (logement non conforme, fraude, problème de sécurité), vous êtes <strong>remboursé intégralement</strong>, frais de service compris.</li>
               <li>Si le logement ne correspond pas à l&apos;annonce à votre arrivée, signalez-le dans les 24 heures avec des photos : <AValider>remboursement partiel ou total selon le préjudice constaté.</AValider></li>
+            </ul>
+          ),
+        },
+        {
+          id: "transferts",
+          titre: "Transferts aéroport",
+          contenu: (
+            <ul>
+              <li>Annulation par le voyageur plus de 24 heures avant l&apos;arrivée : remboursement intégral.</li>
+              <li>Moins de 24 heures avant l&apos;arrivée : aucun remboursement, le chauffeur ayant réservé sa course.</li>
+              <li>Si Kwa-Ba ne peut pas fournir de chauffeur, ou si le chauffeur ne se présente pas : remboursement intégral.</li>
             </ul>
           ),
         },
@@ -63,9 +74,10 @@ export default function RemboursementPage() {
           titre: "Délais et moyens de remboursement",
           contenu: (
             <ul>
-              <li>Le remboursement est effectué sur le moyen de paiement utilisé (Mobile Money, carte bancaire ou PayPal).</li>
+              <li>Le remboursement est effectué sur le moyen de paiement utilisé : le numéro Mobile Money débité, la carte bancaire ou le compte PayPal.</li>
+              <li>Un paiement PayPal est remboursé en euros, au prorata du montant remboursé.</li>
               <li>Délai : <AValider>sous 7 jours ouvrés après l&apos;annulation</AValider>, auquel peut s&apos;ajouter le délai de traitement de votre opérateur ou de votre banque.</li>
-              <li>Une question sur un remboursement : <AC>email du support</AC>.</li>
+              <li>Une question sur un remboursement : <LienContact sujet="Remboursement" />.</li>
             </ul>
           ),
         },

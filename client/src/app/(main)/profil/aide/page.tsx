@@ -27,9 +27,21 @@ const SECTIONS = [
     id: "paiement",
     title: "Paiement",
     items: [
-      { q: "Quels moyens de paiement sont acceptés ?", a: "Mobile Money (MTN, Orange, Moov, Wave), carte bancaire (Visa, Mastercard) et PayPal. Vous choisissez le mode au moment de la réservation." },
-      { q: "Quand suis-je débité ?", a: "Le paiement en ligne n'est pas encore activé : aucun montant n'est prélevé sur AfriStay pour l'instant. Le mode de paiement choisi est transmis à l'hôte." },
+      { q: "Quels moyens de paiement sont acceptés ?", a: "Mobile Money (Moov, T-Money, MTN, Orange, Airtel…) et carte Visa ou Mastercard via FedaPay, ou PayPal (débité en euros). Vous choisissez au moment de la réservation." },
+      { q: "Quand suis-je débité ?", a: "Au moment de la réservation, sur la page sécurisée de FedaPay ou de PayPal. Les dates sont bloquées 30 minutes le temps de payer ; la réservation est confirmée dès le paiement reçu." },
+      { q: "Quand l'hôte est-il payé ?", a: "Kwa-Ba conserve votre paiement jusqu'à votre arrivée et ne le verse à l'hôte que 24 heures après le début du séjour. En cas de problème à l'arrivée, signalez-le dans ce délai." },
+      { q: "Comment suis-je remboursé ?", a: "Sur le moyen de paiement utilisé, selon la politique d'annulation : intégralement à plus de 7 jours de l'arrivée, partiellement entre 7 jours et 48 heures." },
       { q: "Que comprennent les frais de service ?", a: "Des frais de service de 8 % s'ajoutent au prix des nuits. Le détail est affiché avant confirmation." },
+    ],
+  },
+  {
+    id: "transferts",
+    title: "Transfert aéroport",
+    items: [
+      { q: "Comment réserver un chauffeur à l'aéroport ?", a: "Depuis « Transfert aéroport » (ou depuis la confirmation de votre séjour) : indiquez votre vol, choisissez le véhicule et payez. Réservez au plus tard 6 heures avant l'atterrissage." },
+      { q: "Quand vais-je connaître mon chauffeur ?", a: "Son nom, son numéro et son véhicule vous sont envoyés par email au plus tard la veille de votre arrivée, et apparaissent dans Profil → Mes transferts." },
+      { q: "Mon vol a du retard", a: "Le chauffeur attend jusqu'à 60 minutes après l'heure prévue. Au-delà, prévenez-le par appel ou WhatsApp : son numéro figure dans votre transfert." },
+      { q: "Puis-je annuler ?", a: "Oui, gratuitement jusqu'à 24 heures avant l'arrivée. Ensuite, le transfert n'est plus remboursé." },
     ],
   },
   {
@@ -54,7 +66,7 @@ const SECTIONS = [
     title: "Confidentialité",
     items: [
       { q: "Quelles données sont collectées ?", a: "Nom, e-mail, téléphone (facultatif), vos réservations, favoris et messages. Ces données servent uniquement au fonctionnement du service." },
-      { q: "Mon mot de passe est-il protégé ?", a: "Oui : il est stocké sous forme chiffrée (hachée) et n'est jamais visible, y compris par l'équipe AfriStay." },
+      { q: "Mon mot de passe est-il protégé ?", a: "Oui : il est stocké sous forme chiffrée (hachée) et n'est jamais visible, y compris par l'équipe Kwa-Ba." },
     ],
   },
 ];

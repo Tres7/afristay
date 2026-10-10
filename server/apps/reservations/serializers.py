@@ -1,12 +1,9 @@
-from decimal import Decimal
-
 from django.utils import timezone
 from rest_framework import serializers
 from .models import ReservationModel
 from apps.hebergements.disponibilites import conflit
 from apps.hebergements.serializers import HebergementSerializer
-
-SERVICE_FEE_RATE = Decimal('0.08')
+from apps.paiements import services as paiements, tarifs
 
 
 class ReservationSerializer(serializers.ModelSerializer):
@@ -16,6 +13,9 @@ class ReservationSerializer(serializers.ModelSerializer):
     guest_name = serializers.SerializerMethodField()
     avis_id = serializers.SerializerMethodField()
     peut_evaluer = serializers.SerializerMethodField()
+    montants = serializers.SerializerMethodField()
+    paiement = serializers.SerializerMethodField()
+    remboursement = serializers.SerializerMethodField()
 
     class Meta:
         model = ReservationModel
@@ -23,8 +23,33 @@ class ReservationSerializer(serializers.ModelSerializer):
             'id', 'hebergement', 'hebergement_detail', 'check_in', 'check_out',
             'guests_count', 'total_price', 'status', 'payment_method',
             'message', 'nights', 'reference', 'guest_name', 'avis_id', 'peut_evaluer', 'created_at',
+            'montants', 'paiement', 'remboursement', 'expire_le', 'annule_par',
         ]
         read_only_fields = ['id', 'status', 'created_at']
+
+    def get_montants(self, obj):
+        m = tarifs.montants_de(obj)
+        return {
+            'prix_nuits': m.prix_nuits, 'frais_service': m.frais_service, 'total': m.total,
+            'commission_hote': m.commission_hote, 'montant_hote': m.montant_hote,
+        }
+
+    def get_paiement(self, obj):
+        """Statut du dernier paiement : null si aucun (paiement en ligne inactif à la réservation)."""
+        dernier = max(obj.paiements.all(), key=lambda p: p.cree_le, default=None)
+        return dernier.statut if dernier else None
+
+    def get_remboursement(self, obj):
+        lignes = list(obj.remboursements.all())
+        if not lignes:
+            return None
+        if any(r.statut == 'attente_numero' for r in lignes):
+            statut = 'attente_numero'
+        elif all(r.statut == 'envoye' for r in lignes):
+            statut = 'envoye'
+        else:
+            statut = 'en_cours'
+        return {'montant': sum(r.montant for r in lignes), 'statut': statut}
 
     def get_avis_id(self, obj):
         avis = getattr(obj, 'avis', None) if hasattr(obj, 'avis') else None
@@ -78,6 +103,17 @@ class ReservationCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         hebergement = validated_data['hebergement']
         nights = (validated_data['check_out'] - validated_data['check_in']).days
-        subtotal = hebergement.price_per_night * nights
-        total_price = (subtotal + subtotal * SERVICE_FEE_RATE).quantize(Decimal('1'))
-        return ReservationModel.objects.create(total_price=total_price, **validated_data)
+        montants = tarifs.calculer(hebergement.price_per_night, nights)
+        if paiements.paiement_actif():
+            # Dates bloquées le temps de payer ; confirmée par le webhook FedaPay
+            etat = {'status': 'pending', 'expire_le': timezone.now() + paiements.delai_paiement()}
+        else:
+            etat = {'status': 'confirmed'}
+        return ReservationModel.objects.create(
+            total_price=montants.total,
+            prix_nuits=montants.prix_nuits,
+            frais_service=montants.frais_service,
+            commission_hote=montants.commission_hote,
+            **etat,
+            **validated_data,
+        )

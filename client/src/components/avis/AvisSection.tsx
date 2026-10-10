@@ -142,7 +142,7 @@ export default function AvisSection({ hebergementId, isOwner, hostName }: AvisSe
       {!resume || resume.total === 0 ? (
         <div className="bg-light-muted rounded-xl p-5 text-sm text-gray-600">
           <p className="font-semibold text-dark mb-1">Pas encore d&apos;avis</p>
-          Ce logement est nouveau sur AfriStay. Les premiers voyageurs pourront le noter après leur séjour.
+          Ce logement est nouveau sur Kwa-Ba. Les premiers voyageurs pourront le noter après leur séjour.
         </div>
       ) : (
         <>

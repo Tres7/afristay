@@ -106,7 +106,7 @@ function WelcomeToast() {
   const router = useRouter();
   useEffect(() => {
     if (searchParams.get("bienvenue") === "1") {
-      toast.success("Bienvenue sur AfriStay ! Votre compte est vérifié.");
+      toast.success("Bienvenue sur Kwa-Ba ! Votre compte est vérifié.");
       router.replace("/");
     }
   }, [searchParams, router]);
@@ -228,7 +228,7 @@ export default function HomePage() {
         </section>
 
         <section className="py-12 bg-orange-50/60 rounded-[2rem] md:rounded-[3rem] px-6 md:px-8 text-center">
-          <h2 className="font-heading font-bold text-dark text-2xl md:text-3xl mb-3">Pourquoi choisir AfriStay ?</h2>
+          <h2 className="font-heading font-bold text-dark text-2xl md:text-3xl mb-3">Pourquoi choisir Kwa-Ba ?</h2>
           <p className="text-gray-500 max-w-2xl mx-auto text-sm mb-10 md:mb-16">
             Nous rendons votre voyage en Afrique aussi simple et serein que possible.
           </p>
@@ -249,7 +249,7 @@ export default function HomePage() {
       <section className="bg-primary py-14 md:py-20 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
           <div className="text-white max-w-xl">
-            <h2 className="font-heading font-bold text-3xl md:text-4xl mb-4">Devenez hôte AfriStay</h2>
+            <h2 className="font-heading font-bold text-3xl md:text-4xl mb-4">Devenez hôte Kwa-Ba</h2>
             <p className="text-white/90 text-sm md:text-base leading-relaxed">
               Gagnez un revenu complémentaire en partageant votre logement et faites découvrir votre région.
             </p>

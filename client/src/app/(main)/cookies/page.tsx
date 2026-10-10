@@ -14,10 +14,10 @@ export default function CookiesPage() {
         <>
           <p>
             Un cookie est un petit fichier déposé sur votre appareil lors de la visite d&apos;un site. Cette page liste
-            <strong> tous</strong> les cookies et éléments de stockage utilisés par AfriStay, leur rôle et leur durée.
+            <strong> tous</strong> les cookies et éléments de stockage utilisés par Kwa-Ba, leur rôle et leur durée.
           </p>
           <p>
-            <strong>AfriStay n&apos;utilise aucun cookie de mesure d&apos;audience, de publicité ni de réseau social.</strong>
+            <strong>Kwa-Ba n&apos;utilise aucun cookie de mesure d&apos;audience, de publicité ni de réseau social.</strong>
           </p>
           <GererCookiesBouton className="mt-2 px-5 py-3 rounded-xl bg-dark text-white text-sm font-bold">Gérer mes choix de cookies</GererCookiesBouton>
         </>
@@ -83,7 +83,7 @@ export default function CookiesPage() {
             <>
               <p>
                 Vous pouvez changer d&apos;avis à tout moment, aussi simplement que vous avez donné votre accord : lien
-                « Gérer les cookies » en bas de chaque page. Refuser n&apos;empêche pas d&apos;utiliser AfriStay : seule la carte
+                « Gérer les cookies » en bas de chaque page. Refuser n&apos;empêche pas d&apos;utiliser Kwa-Ba : seule la carte
                 interactive est remplacée par un encart.
               </p>
               <p>

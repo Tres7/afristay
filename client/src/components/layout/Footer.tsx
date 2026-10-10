@@ -9,6 +9,9 @@ const COLUMNS = [
       { href: "/recherche", label: "Hébergements" },
       { href: "/decouvrir", label: "Expériences" },
       { href: "/recherche?sort=note", label: "Les mieux notés" },
+      { href: "/transfert", label: "Transfert aéroport" },
+      { href: "/together", label: "Voyager à plusieurs" },
+      { href: "/concierge", label: "Concierge IA" },
     ],
   },
   {
@@ -60,7 +63,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-10 pt-6 border-t border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <p className="text-gray-600 text-xs">&copy; {new Date().getFullYear()} AfriStay. Tous droits réservés.</p>
+          <p className="text-gray-600 text-xs">&copy; {new Date().getFullYear()} Kwa-Ba. Tous droits réservés.</p>
           <nav aria-label="Informations légales">
             <ul className="flex flex-wrap gap-x-5 gap-y-2 text-xs">
               {LEGAL.map((l) => (

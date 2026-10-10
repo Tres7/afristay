@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Search, Menu, ArrowRight, LogIn, UserPlus, MessageCircle, Heart, CalendarCheck, User, LogOut, Home, ShieldCheck } from "lucide-react";
+import { Search, Menu, ArrowRight, LogIn, UserPlus, MessageCircle, Heart, CalendarCheck, User, LogOut, Home, ShieldCheck, Plane, Users, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import api from "@/lib/api";
@@ -16,6 +16,9 @@ const UNREAD_POLL_INTERVAL_MS = 10_000;
 const NAV_LINKS = [
   { href: "/recherche", label: "Hébergements" },
   { href: "/decouvrir", label: "Expériences" },
+  // Affichés seulement sur grand écran (sinon la barre déborde) ; toujours présents dans le menu mobile et le pied de page
+  { href: "/transfert", label: "Transferts", large: true },
+  { href: "/together", label: "Together", large: true },
   { href: "/hote", label: "Devenir hôte" },
 ];
 
@@ -101,11 +104,12 @@ export default function Navbar() {
 
         <div className="hidden md:flex items-center gap-5 lg:gap-6">
           <nav className="flex items-center gap-4 lg:gap-5" aria-label="Navigation principale">
-            {NAV_LINKS.map(({ href, label }) => (
+            {NAV_LINKS.map(({ href, label, large }) => (
               <Link
                 key={href}
                 href={isHost && href === "/hote" ? "/hote/espace" : href}
-                className={cn("text-sm font-medium transition-colors whitespace-nowrap", pathname.startsWith(href) ? "text-primary" : "text-dark hover:text-primary")}
+                className={cn("text-sm font-medium transition-colors whitespace-nowrap", large && "hidden xl:inline",
+                  pathname.startsWith(href) ? "text-primary" : "text-dark hover:text-primary")}
               >
                 {isHost && href === "/hote" ? "Espace hôte" : label}
               </Link>
@@ -195,6 +199,9 @@ export default function Navbar() {
             { href: "/", label: "Accueil", icon: Home },
             { href: "/recherche", label: "Hébergements", icon: Search },
             { href: "/decouvrir", label: "Expériences", icon: ArrowRight },
+            { href: "/transfert", label: "Transfert aéroport", icon: Plane },
+            { href: "/together", label: "Voyager à plusieurs", icon: Users },
+            { href: "/concierge", label: "Concierge IA", icon: Sparkles },
             ...(authenticated
               ? [
                   { href: "/profil/reservations", label: "Mes réservations", icon: CalendarCheck },

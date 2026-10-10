@@ -18,7 +18,7 @@ export interface Hebergement {
   host_id: string;
   host_name: string;
   is_favorite: boolean;
-  /** Visite de contrôle validée par AfriStay (absent tant que le backend ne l'expose pas). */
+  /** Visite de contrôle validée par Kwa-Ba (absent tant que le backend ne l'expose pas). */
   est_verifie?: boolean;
   created_at: string;
 }
@@ -49,6 +49,20 @@ export interface Reservation {
   avis_id: string | null;
   peut_evaluer: boolean;
   created_at: string;
+  montants: {
+    prix_nuits: number;
+    frais_service: number;
+    total: number;
+    commission_hote: number;
+    montant_hote: number;
+  };
+  /** Dernier paiement en ligne : null si la réservation a été faite sans paiement en ligne. */
+  paiement: "en_attente" | "reussi" | "echoue" | "annule" | null;
+  /** attente_numero : le voyageur doit indiquer son compte Mobile Money pour être remboursé. */
+  remboursement: { montant: number; statut: "attente_numero" | "en_cours" | "envoye" } | null;
+  /** Fin du délai pour payer (réservation en attente de paiement). */
+  expire_le: string | null;
+  annule_par: "" | "voyageur" | "hote" | "plateforme" | "expiration";
 }
 
 export interface Favori {
