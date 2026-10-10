@@ -1,0 +1,15 @@
+{% autoescape off %}Bonjour {{ prenom }},
+
+Votre don {{ reference }} ({{ montant_ong }}) a été reversé à {{ organisation }} le {{ date }}.
+
+  Dons de {{ mois }} reversés : {{ nb_dons }}
+  Montant total viré à l'ONG : {{ total }}
+{% if note %}
+Le mot de l'équipe : {{ note }}
+{% endif %}
+La preuve du virement est publiée sur la page de l'ONG.
+Voir la preuve : {{ url }}
+
+Merci encore pour votre générosité,
+L'équipe Kwa-Ba
+{% endautoescape %}
