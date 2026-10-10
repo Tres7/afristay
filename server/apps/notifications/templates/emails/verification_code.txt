@@ -1,4 +1,4 @@
-Bonjour {{ first_name }},
+{% autoescape off %}Bonjour {{ first_name }},
 
 Votre code de vérification Kwa-Ba est :
 
@@ -9,3 +9,4 @@ Il expire dans 10 minutes.
 Si vous n'avez pas créé de compte, ignorez cet email.
 
 L'équipe Kwa-Ba
+{% endautoescape %}

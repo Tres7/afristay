@@ -8,7 +8,18 @@ from datetime import date
 from django.db.models import Q
 from django.utils import timezone
 
-from .models import BlocageModel
+from .models import BlocageModel, HebergementModel
+
+
+def verrouiller(hebergement_id) -> None:
+    """Verrouille le logement jusqu'à la fin de la transaction en cours.
+
+    À appeler avant conflit() ou a_des_reservations() dès que la décision mène à une écriture
+    (réservation, confirmation de paiement, blocage) : sans verrou, deux requêtes simultanées voient
+    toutes deux les dates libres et réservent les mêmes nuits. Lève une erreur hors transaction.
+    """
+    list(HebergementModel.objects.select_for_update().filter(pk=hebergement_id).values_list('pk', flat=True))
+
 
 def filtre_actives(prefixe: str = ''):
     """Réservations qui occupent leurs dates : confirmées, ou en attente de paiement non expirées."""
