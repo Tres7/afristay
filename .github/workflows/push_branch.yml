@@ -1,0 +1,71 @@
+name: Push branch
+
+# Retour rapide sur chaque branche de travail, PR ouverte ou non : les mêmes contrôles que le hook pre-push.
+# La PR rejoue ensuite la chaîne complète.
+on:
+  push:
+    branches-ignore:
+      - main
+      - 'dependabot/**' # leurs PR lancent déjà la chaîne complète
+
+concurrency:
+  group: push-branch-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  server:
+    name: Serveur (lint, unitaires)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DJANGO_SECRET_KEY: ci-only-secret-key-never-used-outside-github-actions-0123456789
+      DJANGO_DEBUG: 'False'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-python-server
+      - name: Lint (ruff)
+        working-directory: server
+        run: ruff check . --output-format=github
+      - name: Tests unitaires
+        working-directory: server
+        run: pytest -m unit
+
+  client:
+    name: Client (lint, types)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-node-client
+      - uses: ./.github/actions/client-checks
+
+  gitleaks:
+    name: gitleaks (commits poussés)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - id: range
+        # Nouvelle branche (before = 000…) ou push --force (before absent de l'historique) :
+        # tous les commits de la branche absents de main
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if [[ ! "$BEFORE" =~ ^0+$ ]] && git cat-file -e "${BEFORE}^{commit}" 2>/dev/null; then
+            echo "log-opts=${BEFORE}..${GITHUB_SHA}"
+          else
+            echo "log-opts=origin/main..${GITHUB_SHA}"
+          fi >> "$GITHUB_OUTPUT"
+      - uses: ./.github/actions/gitleaks-scan
+        with:
+          log-opts: ${{ steps.range.outputs.log-opts }}

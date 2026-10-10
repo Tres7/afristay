@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   # Les CVE publiées depuis le dernier push sur main : l'image déployable est rescannée chaque nuit.
-  # Les audits npm et pip tournent sur chaque PR ; Trivy couvre ici aussi les paquets Python de l'image.
+  # Passera sur l'image du dernier manifest de déploiement quand les manifests existeront.
   trivy-main-image:
     name: Trivy (image main)
     runs-on: ubuntu-latest
@@ -37,3 +37,12 @@ jobs:
       - uses: ./.github/actions/trivy-scan
         with:
           image-ref: ${{ steps.name.outputs.image }}
+
+  # Nouvelles CVE dans les dépendances, et secrets sur tout l'historique (toutes branches)
+  security:
+    name: Security
+    uses: ./.github/workflows/_security-checks.yml
+    with:
+      back: true
+      front: true
+      gitleaks-log-opts: --all

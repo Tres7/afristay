@@ -43,3 +43,11 @@ updates:
       interval: daily
       time: '03:00'
       timezone: Europe/Paris
+    ignore:
+      # Versions majeures de Node faites à la main, uniquement vers une LTS paire (24, 26…) :
+      # Dependabot proposait sinon node:25, une version impaire sans support long terme
+      - dependency-name: node
+        update-types: ['version-update:semver-major']
+      # Python : on reste sur la mineure testée en CI (3.12), changement volontaire uniquement
+      - dependency-name: python
+        update-types: ['version-update:semver-minor']

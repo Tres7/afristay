@@ -1,7 +1,8 @@
 name: Trivy scan
 description: >-
-  Scanne une image Docker (OS et paquets Python). Échoue sur toute vulnérabilité HIGH ou CRITICAL
-  qui a un correctif disponible ; le rapport complet va dans le résumé du job.
+  Scanne une image Docker : vulnérabilités (OS et paquets Python) et secrets embarqués. Échoue sur toute
+  vulnérabilité HIGH ou CRITICAL qui a un correctif disponible, et sur tout secret HIGH ou CRITICAL.
+  Le rapport complet va dans le résumé du job.
 
 inputs:
   image-ref:
@@ -11,11 +12,11 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Trivy (HIGH et CRITICAL corrigeables)
+    - name: Trivy (vulnérabilités corrigeables et secrets, HIGH et CRITICAL)
       uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
       with:
         image-ref: ${{ inputs.image-ref }}
-        scanners: vuln
+        scanners: vuln,secret
         severity: HIGH,CRITICAL
         ignore-unfixed: true
         format: table
