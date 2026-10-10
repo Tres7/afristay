@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'apps.transferts.apps.TransfertsConfig',
     'apps.voyages.apps.VoyagesConfig',
     'apps.concierge.apps.ConciergeConfig',
+    'apps.give.apps.GiveConfig',
 ]
 
 MIDDLEWARE = [

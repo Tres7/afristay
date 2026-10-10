@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 
 // Pages réservées aux utilisateurs connectés (le centre d'aide reste public)
-const PROTECTED = ["/profil", "/favoris", "/messages", "/reservation", "/hote/espace", "/backoffice"];
+const PROTECTED = ["/profil", "/favoris", "/messages", "/reservation", "/hote/espace", "/backoffice", "/give/don"];
 const PUBLIC_EXCEPTIONS = ["/profil/aide"];
 // Pages d'accueil publiques ; leurs sous-pages (suivi d'un transfert, voyage de groupe, invitation) exigent d'être connecté
 const PROTECTED_SUBPATHS = ["/transfert", "/together"];
@@ -43,6 +43,7 @@ export const config = {
     "/messages/:path*",
     "/transfert/:path+",
     "/together/:path+",
+    "/give/don/:path*",
     "/reservation/:path*",
     "/hote/espace/:path*",
     "/backoffice/:path*",

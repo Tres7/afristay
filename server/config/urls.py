@@ -17,6 +17,7 @@ urlpatterns = [
     path('api/v1/transferts/', include('apps.transferts.urls')),
     path('api/v1/voyages/', include('apps.voyages.urls')),
     path('api/v1/concierge/', include('apps.concierge.urls')),
+    path('api/v1/give/', include('apps.give.urls')),
     path('api/v1/messaging/', include('apps.messaging.infrastructure.http.routes.urls')),
 ]
 

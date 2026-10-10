@@ -50,6 +50,10 @@ MOYENS = {
 }
 
 
+# Modèle payé → champ de PaiementModel qui le désigne
+CIBLES = {'reservationmodel': 'reservation', 'transfertmodel': 'transfert', 'donmodel': 'don'}
+
+
 def fedapay_actif() -> bool:
     return bool(settings.FEDAPAY['SECRET_KEY'])
 
@@ -78,11 +82,11 @@ def paiement_reussi(reservation) -> PaiementModel | None:
 # --- Encaissement ------------------------------------------------------------------------
 
 def creer_paiement(*, objet, montant: int, moyen: str, description: str, url_retour: str, voyageur) -> str:
-    """Crée la transaction chez le prestataire pour `objet` (réservation ou transfert) et renvoie
+    """Crée la transaction chez le prestataire pour `objet` (réservation, transfert ou don) et renvoie
     l'adresse de la page de paiement. `url_retour` : page du site où le voyageur revient."""
     if moyen not in moyens_actifs():
         raise PaiementErreur("Ce moyen de paiement n'est pas disponible.")
-    cible = {'reservation': objet} if isinstance(objet, ReservationModel) else {'transfert': objet}
+    cible = {CIBLES[objet._meta.model_name]: objet}
 
     if MOYENS[moyen] == 'paypal':
         paiement = PaiementModel(**cible, montant=montant, prestataire='paypal', montant_eur=paypal.en_euros(montant))
@@ -195,6 +199,10 @@ def _paiement_reussi(paiement_id, donnees: dict):
 
         if paiement.transfert_id:
             from apps.transferts.services import paiement_recu  # import local : transferts dépend de paiements
+            paiement_recu(paiement)
+            return
+        if paiement.don_id:
+            from apps.give.services import paiement_recu  # import local : give dépend de paiements
             paiement_recu(paiement)
             return
 
@@ -510,13 +518,15 @@ def passe() -> dict:
     for remboursement in RemboursementModel.objects.filter(statut='en_cours').exclude(payout_id='').select_related('paiement')[:50]:
         synchroniser_remboursement(remboursement)
     from . import notifications  # import local : notifications importe les modèles et les tarifs
-    from apps.transferts import services as transferts  # import local : transferts dépend de paiements
+    from apps.give import services as give  # imports locaux : ces modules dépendent de paiements
+    from apps.transferts import services as transferts
 
     stats = {
         'reservations_expirees': expirer_reservations(),
         'versements_envoyes': envoyer_versements_dus(),
         'remboursements_envoyes': envoyer_remboursements(),
         **transferts.passe(),
+        **give.passe(),
     }
     stats['emails'] = notifications.envoyer_notifications()
     return {k: v for k, v in stats.items() if v}

@@ -201,5 +201,5 @@ def test_transfert_d_un_autre_voyageur_invisible(client_for, make_user, faux):
 
 def test_paiement_de_transfert_lie_au_transfert():
     p = PaiementModel._meta.constraints[0]
-    assert p.name == 'paiement_reservation_ou_transfert'
+    assert p.name == 'paiement_reservation_transfert_ou_don'
     assert AeroportModel.objects.get(pk='LFW').tarifs.count() == 3

@@ -50,6 +50,7 @@ export default function ConfidentialitePage() {
                 <tr><td>Messages échangés avec les hôtes ou les voyageurs</td><td>Messagerie et notifications par email</td><td>Exécution du contrat</td></tr>
                 <tr><td>Avis et notes (publiés avec votre prénom et l&apos;initiale de votre nom)</td><td>Informer les autres voyageurs</td><td>Intérêt légitime (fiabilité des avis)</td></tr>
                 <tr><td>Voyages de groupe (Kwa-Ba Together) : nom du voyage, destination, dates, membres, logements proposés et votes, itinéraire, informations pratiques, réservations que vous choisissez de partager</td><td>Préparer un voyage à plusieurs</td><td>Exécution du contrat</td></tr>
+                <tr><td>Dons Kwa-Ba Give : ONG et projet choisis, montant, frais, moyen de paiement, accord pour transmettre votre identité à l&apos;ONG</td><td>Encaisser le don, le reverser à l&apos;ONG, vous envoyer la confirmation et le suivi du reversement</td><td>Exécution du contrat</td></tr>
                 <tr><td>Conversations avec le Concierge IA : vos messages et les réponses, offres proposées</td><td>Vous aider à organiser votre séjour ; suivi du coût du service</td><td>Exécution du contrat (service demandé)</td></tr>
                 <tr><td>Favoris</td><td>Retrouver les logements sauvegardés</td><td>Exécution du contrat</td></tr>
                 <tr><td>Hôtes : annonces, photos (métadonnées et position GPS supprimées à l&apos;envoi), calendrier</td><td>Publier et gérer les logements</td><td>Exécution du contrat</td></tr>
@@ -76,6 +77,7 @@ export default function ConfidentialitePage() {
           contenu: (
             <ul>
               <li>L&apos;<strong>hôte</strong> du logement que vous réservez reçoit votre nom, les détails de la réservation et votre message.</li>
+              <li>Une <strong>ONG partenaire de Kwa-Ba Give</strong> ne reçoit votre nom et votre email que si vous l&apos;avez accepté au moment du don ; sinon, votre don lui est présenté comme anonyme. Le montant total reversé chaque mois est publié, sans le nom des donateurs.</li>
               <li>Le <strong>chauffeur partenaire</strong> d&apos;un transfert reçoit votre nom, votre numéro de téléphone, votre numéro de vol, le nombre de passagers et de bagages, l&apos;adresse de destination et votre message.</li>
               <li>Les <strong>membres d&apos;un voyage de groupe</strong> voient votre prénom et l&apos;initiale de votre nom, vos votes, vos propositions et les réservations que vous partagez avec eux (logement, dates, montant).</li>
               <li>Les <strong>administrateurs</strong> de Kwa-Ba, pour la modération et l&apos;assistance (accès restreint et tracé).</li>
@@ -97,7 +99,7 @@ export default function ConfidentialitePage() {
               <li>Codes de vérification : 10 minutes. Choix de cookies : 6 mois.</li>
               <li>Compte : tant qu&apos;il est actif ; <AValider>supprimé ou anonymisé après 3 ans sans connexion.</AValider></li>
               <li>Réservations : <AValider>durée de la relation, puis 5 ans (délai de prescription).</AValider></li>
-              <li>Paiements, versements et remboursements : <AValider>10 ans (pièces comptables).</AValider></li>
+              <li>Paiements, versements, remboursements, dons et reversements aux ONG : <AValider>10 ans (pièces comptables).</AValider></li>
               <li>Conversations avec le Concierge IA : jusqu&apos;à ce que vous les supprimiez (bouton dans la conversation), <AValider>et au plus 12 mois après le dernier message.</AValider></li>
               <li>Messages : <AValider>3 ans après le dernier message de la conversation.</AValider></li>
               <li>Avis : tant que le logement est publié, ou jusqu&apos;à leur suppression par modération.</li>
