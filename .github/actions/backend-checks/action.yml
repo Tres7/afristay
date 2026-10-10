@@ -7,6 +7,9 @@ inputs:
   run-integration:
     description: Lancer les tests d'intégration après les tests unitaires ('false' pour une PR en brouillon)
     default: 'true'
+  compare-branch:
+    description: Branche de référence pour la couverture du code modifié (ex. origin/main) ; vide pour l'ignorer
+    default: ''
 
 runs:
   using: composite
@@ -26,23 +29,48 @@ runs:
       working-directory: server
       run: python manage.py check --deploy
 
+    # --cov-fail-under=0 : pytest-cov appliquerait sinon le seuil de .coveragerc à chaque étape,
+    # dont les tests unitaires seuls. Le seuil est vérifié une fois, sur la couverture combinée.
     - name: Tests unitaires
       shell: bash
       working-directory: server
-      run: pytest -m unit --cov --cov-report=
+      run: pytest -m unit --cov --cov-report= --cov-fail-under=0
 
     - name: Tests d'intégration
       if: inputs.run-integration == 'true'
       shell: bash
       working-directory: server
-      run: pytest -m integration --cov --cov-append --cov-report=
+      run: pytest -m integration --cov --cov-append --cov-report= --cov-fail-under=0
 
     - name: Rapport de couverture
       shell: bash
       working-directory: server
       run: |
-        coverage html -d coverage-html
+        coverage html -d coverage-html --fail-under=0
         {
           echo "### Couverture du serveur"
-          coverage report --format=markdown --skip-covered --sort=cover
+          coverage report --format=markdown --skip-covered --sort=cover --fail-under=0
         } >> "$GITHUB_STEP_SUMMARY"
+
+    # Les seuils ne s'appliquent qu'à la couverture combinée : une PR en brouillon ne lance que les tests unitaires
+    - name: Cliquet de couverture globale (.coveragerc)
+      if: inputs.run-integration == 'true'
+      shell: bash
+      working-directory: server
+      run: |
+        total=$(coverage report --format=total)
+        echo "Couverture globale : ${total} %"
+
+    - name: Couverture du code modifié (80 % minimum)
+      if: inputs.run-integration == 'true' && inputs.compare-branch != ''
+      shell: bash
+      working-directory: server
+      env:
+        COMPARE_BRANCH: ${{ inputs.compare-branch }}
+      run: |
+        coverage xml -q -o coverage.xml --fail-under=0
+        status=0
+        diff-cover coverage.xml --compare-branch="$COMPARE_BRANCH" --fail-under=80 \
+          --format markdown:diff-cover.md || status=$?
+        cat diff-cover.md >> "$GITHUB_STEP_SUMMARY"
+        exit "$status"
