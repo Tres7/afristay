@@ -1,0 +1,63 @@
+name: Push image
+
+on:
+  workflow_call:
+    outputs:
+      image:
+        description: Image publiée, référencée par digest (ghcr.io/...@sha256:...)
+        value: ${{ jobs.server-image.outputs.image }}
+
+permissions:
+  contents: read
+
+jobs:
+  server-image:
+    name: Image du serveur (build, Trivy, push)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.push.outputs.image }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - id: name
+        # GHCR exige un nom en minuscules (le propriétaire du dépôt est « Tres7 »)
+        run: echo "repository=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/afristay-server" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: server
+          push: false
+          load: true
+          tags: |
+            ${{ steps.name.outputs.repository }}:sha-${{ github.sha }}
+            ${{ steps.name.outputs.repository }}:main
+          cache-from: type=gha,scope=server
+          cache-to: type=gha,mode=max,scope=server
+
+      # L'image n'est publiée que si le scan passe : c'est exactement l'image scannée qui part sur GHCR
+      - uses: ./.github/actions/trivy-scan
+        with:
+          image-ref: ${{ steps.name.outputs.repository }}:sha-${{ github.sha }}
+
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: push
+        env:
+          REPOSITORY: ${{ steps.name.outputs.repository }}
+        run: |
+          docker push "${REPOSITORY}:sha-${GITHUB_SHA}"
+          docker push "${REPOSITORY}:main"
+          image=$(docker inspect --format '{{index .RepoDigests 0}}' "${REPOSITORY}:sha-${GITHUB_SHA}")
+          echo "image=${image}" >> "$GITHUB_OUTPUT"
+          echo "Image publiée : \`${image}\`" >> "$GITHUB_STEP_SUMMARY"

@@ -1,7 +1,11 @@
+from datetime import timedelta
+
 import pytest
+from django.utils import timezone
 from rest_framework.test import APIClient
 
 from apps.hebergements.models import HebergementModel
+from apps.reservations.models import ReservationModel
 from apps.users.infrastructure.messaging.RabbitMQEventBus import RabbitMQEventBus
 from apps.users.infrastructure.persistence.models import UserModel
 
@@ -62,9 +66,32 @@ def make_hebergement(make_user):
 
 
 @pytest.fixture
-def client_for(api_client):
+def raw_client():
+    """Client qui renvoie la réponse 500 au lieu de lever l'exception de la vue (tests « jamais 500 »)."""
+    client = APIClient()
+    client.raise_request_exception = False
+    return client
+
+
+@pytest.fixture
+def client_for():
+    """Un client authentifié distinct par utilisateur."""
     def _login_as(user):
-        api_client.force_authenticate(user=user)
-        return api_client
+        client = APIClient()
+        client.force_authenticate(user=user)
+        return client
 
     return _login_as
+
+
+@pytest.fixture
+def make_reservation(make_user):
+    """Réservation écrite directement en base (y compris dans le passé, impossible via l'API)."""
+    def _make(hebergement, guest=None, starts_in=10, nights=3, status='confirmed'):
+        check_in = timezone.localdate() + timedelta(days=starts_in)
+        return ReservationModel.objects.create(
+            hebergement=hebergement, guest=guest or make_user(), check_in=check_in,
+            check_out=check_in + timedelta(days=nights), total_price=0, status=status,
+        )
+
+    return _make

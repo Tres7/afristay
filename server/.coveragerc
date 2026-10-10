@@ -6,5 +6,8 @@ omit =
     */apps.py
 
 [report]
+# Cliquet : couverture combinée (unit + integration) mesurée à la mise en place, arrondie vers le bas.
+# À remonter quand la couverture progresse, jamais à baisser.
+fail_under = 88
 skip_empty = True
 show_missing = True

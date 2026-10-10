@@ -1,0 +1,39 @@
+name: Nightly
+
+on:
+  schedule:
+    - cron: '0 1 * * *' # 1 h UTC (3 h à Paris en été, 2 h en hiver)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # Les CVE publiées depuis le dernier push sur main : l'image déployable est rescannée chaque nuit.
+  # Les audits npm et pip tournent sur chaque PR ; Trivy couvre ici aussi les paquets Python de l'image.
+  trivy-main-image:
+    name: Trivy (image main)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - id: name
+        run: echo "image=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/afristay-server:main" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - run: docker pull "${{ steps.name.outputs.image }}"
+
+      - uses: ./.github/actions/trivy-scan
+        with:
+          image-ref: ${{ steps.name.outputs.image }}

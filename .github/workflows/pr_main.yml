@@ -58,11 +58,21 @@ jobs:
       front: ${{ needs.changes.outputs.front == 'true' }}
       infra: ${{ needs.changes.outputs.infra == 'true' }}
 
+  # En parallèle des autres niveaux : audits des dépendances (rapides, sans installation)
+  security:
+    name: Security
+    needs: changes
+    if: needs.changes.outputs.back == 'true' || needs.changes.outputs.front == 'true'
+    uses: ./.github/workflows/_pr-security.yml
+    with:
+      back: ${{ needs.changes.outputs.back == 'true' }}
+      front: ${{ needs.changes.outputs.front == 'true' }}
+
   # Seul contrôle à exiger dans la protection de main
   pr-status:
     name: PR status
     if: always()
-    needs: [changes, app-checks, docker-checks]
+    needs: [changes, app-checks, docker-checks, security]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
