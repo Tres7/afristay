@@ -1,27 +1,34 @@
 # CI
 
-La CI tourne sur les pull requests vers `main` (`.github/workflows/pr_main.yml`). Une branche sans PR n'a pas de CI : le hook pre-push donne le retour rapide en local.
+Chaque push sur une branche de travail lance un contrôle rapide (`push_branch.yml`) : les mêmes vérifications que le hook pre-push local. Les pull requests vers `main` lancent la chaîne complète (`pr_main.yml`).
 
-## Ce qui tourne
+## Sur chaque push de branche
+
+`push_branch.yml`, sur toute branche sauf `main` et `dependabot/**` : `ruff check` et tests unitaires du serveur, ESLint et `tsc` du client, gitleaks sur les commits poussés.
+
+## Sur chaque pull request
 
 | Job | Contenu | Quand |
 | --- | --- | --- |
 | Plan | Chemins modifiés → serveur, client, infra, broker, docs seules | Toujours |
 | App / Serveur | `ruff check`, `makemigrations --check`, `check --deploy`, tests `unit` puis `integration` (PostgreSQL 16), couverture combinée et ses deux seuils (voir plus bas) | `server/**` ou `.github/**` modifié |
 | App / Client | ESLint, `tsc` | `client/**` ou `.github/**` modifié |
-| Docker | `docker compose config`, hadolint, build de l'image serveur puis scan Trivy, `next build` | Après App, hors brouillon |
-| Security | `npm audit --omit=dev --audit-level=high` (client), `pip-audit` (serveur) | En parallèle, selon la partie modifiée |
+| Config | actionlint (workflows, avec shellcheck), hadolint (Dockerfiles) | Workflows, Dockerfiles ou compose modifiés |
+| Docker | `docker compose config`, build de l'image serveur puis scan Trivy, `next build` | Après App et Config, hors brouillon |
+| Security | gitleaks sur les commits de la PR ; `npm audit --omit=dev --audit-level=high` (client) et `pip-audit` (serveur) selon la partie modifiée | Toujours, en parallèle |
 | PR status | Échoue si un job a échoué ou été annulé ; un job ignoré est toléré | Toujours |
 
-Trivy échoue sur toute vulnérabilité HIGH ou CRITICAL **qui a un correctif disponible** ; le rapport complet est dans le résumé du job.
+Trivy échoue sur toute vulnérabilité HIGH ou CRITICAL **qui a un correctif disponible**, et sur tout secret HIGH ou CRITICAL embarqué dans l'image ; le rapport complet est dans le résumé du job.
+
+gitleaks masque les valeurs dans les logs. Un faux positif vérifié s'ajoute à `.gitleaksignore` par son empreinte ; un vrai secret se révoque, puis se retire de l'historique.
 
 ## Après la fusion et la nuit
 
 | Workflow | Déclencheur | Contenu |
 | --- | --- | --- |
-| `pre_push_main.yml` | Push sur `main` (sauf documentation seule) | Build de l'image serveur, scan Trivy, puis push sur `ghcr.io/tres7/afristay-server` (tags `sha-<commit>` et `main`) seulement si le scan passe |
-| `nightly.yml` | Chaque nuit à 1 h UTC, ou à la main | Scan Trivy de l'image `main` publiée : détecte les CVE apparues depuis le dernier push |
-| Dependabot | Chaque jour à 3 h (Paris), sur `main` uniquement | PR de mise à jour : actions, pip, npm, images Docker de base |
+| `push_main.yml` | Push sur `main` touchant `server/**` ou `.github/**` | Build de l'image serveur, scan Trivy, puis push sur `ghcr.io/tres7/afristay-server` (tags `sha-<commit>` et `main`) seulement si le scan passe |
+| `nightly.yml` | Chaque nuit à 1 h UTC, ou à la main | Scan Trivy de l'image `main` publiée, `pip-audit`, `npm audit`, gitleaks sur tout l'historique (toutes branches) |
+| Dependabot | Chaque jour à 3 h (Paris), sur `main` uniquement | PR de mise à jour : actions, pip, npm, images Docker de base. Les versions majeures de `node` et les mineures de `python` sont ignorées : changement volontaire uniquement |
 
 Une PR en brouillon ne lance que le lint et les tests unitaires. La passer en « prête » relance tout.
 
@@ -87,26 +94,18 @@ Quand la couverture progresse, remonter `fail_under` dans la même PR. Les seuil
 
 Chaque anomalie repérée a un test qui décrit le comportement attendu, marqué `@pytest.mark.xfail(strict=True, raises=AssertionError)`. Tant que le bug existe, le test est « xfail » et la CI reste verte. Le jour où le correctif arrive, le test passe, `strict=True` fait échouer la CI : retirer alors le marqueur `xfail` dans la PR du correctif.
 
-| Anomalie | Test |
-| --- | --- |
-| Deux réservations simultanées des mêmes dates sont toutes deux acceptées | `integration/reservations/test_concurrency.py` |
-| Recherche : `check_in`, `check_out`, `price_min`, `price_max` invalides → 500 | `integration/hebergements/test_search.py` |
-| `max_guests=0` accepté à la création d'un logement | `integration/hebergements/test_listings.py` |
-| Avis : `?hebergement=abc` → 500 | `integration/avis/test_avis_api.py` |
-| Avis : `?limit=-5` → 500 | `integration/avis/test_avis_api.py` |
-| Un refresh token déjà utilisé reste valable (pas de `token_blacklist`) | `integration/users/test_profile_and_tokens.py` |
-| Emails texte : « N'Guessan » devient « N&#x27;Guessan » (échappement HTML) | `unit/notifications/test_email_sender.py` |
+Aucune anomalie connue à ce jour : les sept anomalies repérées à la mise en place des tests ont été corrigées.
 
 `pytest -rxX` affiche la liste en fin d'exécution.
 
-## Hook pre-push
+## Installation du poste et hook pre-push
 
 ```bash
-pip install pre-commit
-pre-commit install
+make install    # venv du serveur, dépendances, npm ci, hooks pre-push
+make help       # autres commandes : lint, test-unit, test
 ```
 
-Avant chaque push : `ruff check` et tests unitaires si `server/` a changé, ESLint et `tsc` si `client/` a changé. Le venv du serveur doit être activé.
+Avant chaque push : gitleaks sur les commits poussés, `ruff check` et tests unitaires si `server/` a changé, ESLint et `tsc` si `client/` a changé. La première installation compile gitleaks (quelques minutes), puis l'environnement est réutilisé.
 
 ## Lint
 

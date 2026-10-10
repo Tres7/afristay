@@ -18,7 +18,7 @@ from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 
-from apps.hebergements.disponibilites import conflit
+from apps.hebergements.disponibilites import conflit, verrouiller
 from apps.reservations.models import ReservationModel
 
 from . import fedapay, paypal, tarifs
@@ -213,7 +213,9 @@ def _paiement_reussi(paiement_id, donnees: dict):
         if reservation.status == 'cancelled' and reservation.annule_par != 'expiration':
             rembourser(paiement, paiement.montant, "Réservation annulée avant la confirmation du paiement")
             return
-        # Paiement arrivé après l'expiration : on confirme si les dates sont toujours libres
+        # Paiement arrivé après l'expiration : on confirme si les dates sont toujours libres.
+        # Verrou du logement : une réservation simultanée ne peut pas prendre ces dates entre-temps.
+        verrouiller(reservation.hebergement_id)
         if conflit(reservation.hebergement_id, reservation.check_in, reservation.check_out, exclure=reservation.pk):
             rembourser(paiement, paiement.montant, "Dates plus disponibles au moment du paiement")
             reservation.status, reservation.annule_par = 'cancelled', 'plateforme'

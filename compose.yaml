@@ -42,6 +42,8 @@ services:
       context: ./server
       dockerfile: Dockerfile
     container_name: afristay-backend
+    # Pas root : __pycache__ et mediafiles sont écrits dans le dossier monté avec ton uid
+    user: "${UID:-1000}:${GID:-1000}"
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - ./server:/app
@@ -61,6 +63,8 @@ services:
       context: ./client
       dockerfile: Dockerfile
     container_name: afristay-frontend
+    # Pas root : .next est écrit dans le dossier monté avec ton uid (sinon tsc et le hook pre-push échouent)
+    user: node
     command: npm run dev
     volumes:
       - ./client:/app
@@ -92,6 +96,7 @@ services:
   consumer:
     build:
       context: ./server
+    user: "${UID:-1000}:${GID:-1000}"
     command: python manage.py consume_events
     volumes:
       - ./server:/app
@@ -106,6 +111,7 @@ services:
   messaging-relay:
     build:
       context: ./server
+    user: "${UID:-1000}:${GID:-1000}"
     command: python manage.py relay_messaging_outbox
     volumes:
       - ./server:/app

@@ -48,9 +48,6 @@ class TestCreate:
         response = client_for(make_user(role='hote')).post(HEBERGEMENTS, _listing(images=images), format='json')
         assert len(HebergementModel.objects.get(pk=response.data['id']).images) == 10
 
-    @pytest.mark.xfail(strict=True, raises=AssertionError, reason=(
-        "Anomalie : max_guests=0 accepté, le logement ne peut alors plus être réservé."
-    ))
     def test_zero_guests_rejected(self, client_for, make_user):
         response = client_for(make_user(role='hote')).post(HEBERGEMENTS, _listing(max_guests=0), format='json')
         assert response.status_code == 400

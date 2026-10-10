@@ -1,5 +1,6 @@
 name: Security
 
+# Partagé par la PR (pr_main.yml) et la nuit (nightly.yml)
 on:
   workflow_call:
     inputs:
@@ -9,11 +10,28 @@ on:
       front:
         type: boolean
         required: true
+      gitleaks-log-opts:
+        description: Plage de commits scannée par gitleaks (« base..head » en PR, « --all » la nuit)
+        type: string
+        required: true
 
 permissions:
   contents: read
 
 jobs:
+  gitleaks:
+    name: gitleaks (secrets dans les commits)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: ./.github/actions/gitleaks-scan
+        with:
+          log-opts: ${{ inputs.gitleaks-log-opts }}
+
   npm-audit:
     name: npm audit (client)
     if: inputs.front
@@ -25,7 +43,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '22'
+          node-version: '24'
       - name: npm audit
         working-directory: client
         # Lit le lockfile, sans installation. Les dépendances de dev ne partent pas en production.

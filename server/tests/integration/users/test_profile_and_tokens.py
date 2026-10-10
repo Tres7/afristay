@@ -1,4 +1,9 @@
+import threading
+
 import pytest
+from django.db import connection
+from rest_framework.test import APIClient
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
 ME = '/api/v1/users/me/'
 LOGIN = '/api/v1/auth/login/'
@@ -54,10 +59,57 @@ class TestRefresh:
     def test_invalid_refresh(self, api_client):
         assert api_client.post(REFRESH, {'refresh': 'pas-un-jeton'}, format='json').status_code == 401
 
-    @pytest.mark.xfail(strict=True, raises=AssertionError, reason=(
-        "Anomalie : ROTATE_REFRESH_TOKENS sans l'application token_blacklist, l'ancien refresh reste valable 7 jours."
-    ))
-    def test_rotated_refresh_token_cannot_be_reused(self, api_client, make_user, password):
+    def test_refresh_token_is_rotated(self, api_client, make_user, password):
         refresh = _login(api_client, make_user(), password)['refresh']
-        assert api_client.post(REFRESH, {'refresh': refresh}, format='json').status_code == 200
+        assert api_client.post(REFRESH, {'refresh': refresh}, format='json').data['refresh'] != refresh
+
+    def test_reuse_within_grace_period_returns_the_same_pair(self, api_client, make_user, password):
+        # NextAuth renouvelle le même jeton en parallèle au chargement d'une page : aucun appel ne doit échouer
+        refresh = _login(api_client, make_user(), password)['refresh']
+        first = api_client.post(REFRESH, {'refresh': refresh}, format='json')
+        second = api_client.post(REFRESH, {'refresh': refresh}, format='json')
+        assert second.status_code == 200
+        assert second.data == first.data
+
+    def test_rotated_refresh_token_rejected_after_grace_period(self, api_client, make_user, password, settings):
+        settings.JWT_REFRESH_GRACE_SECONDS = 0  # délai écoulé
+        refresh = _login(api_client, make_user(), password)['refresh']
+        new_refresh = api_client.post(REFRESH, {'refresh': refresh}, format='json').data['refresh']
+
         assert api_client.post(REFRESH, {'refresh': refresh}, format='json').status_code == 401
+        assert api_client.post(REFRESH, {'refresh': new_refresh}, format='json').status_code == 200
+
+
+@pytest.mark.django_db(transaction=True)
+def test_simultaneous_refreshes_of_the_same_token_all_succeed(make_user, password, monkeypatch):
+    refresh = _login(APIClient(), make_user(), password)['refresh']
+
+    # Force les deux appels à entrer ensemble dans la rotation : sans le verrou, chacun produirait
+    # sa propre paire (et l'un des deux verrait le jeton déjà sur liste noire)
+    barrier = threading.Barrier(2, timeout=3)
+    original = TokenRefreshSerializer.validate
+
+    def wait_then_rotate(self, attrs):
+        try:
+            barrier.wait()
+        except threading.BrokenBarrierError:
+            pass
+        return original(self, attrs)
+
+    monkeypatch.setattr(TokenRefreshSerializer, 'validate', wait_then_rotate)
+    responses = []
+
+    def renew():
+        try:
+            responses.append(APIClient().post(REFRESH, {'refresh': refresh}, format='json'))
+        finally:
+            connection.close()
+
+    threads = [threading.Thread(target=renew) for _ in range(2)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join(timeout=15)
+
+    assert [r.status_code for r in responses] == [200, 200]
+    assert responses[0].data['refresh'] == responses[1].data['refresh']
