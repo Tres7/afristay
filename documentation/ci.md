@@ -11,10 +11,10 @@ Chaque push sur une branche de travail lance un contrôle rapide (`push_branch.y
 | Job | Contenu | Quand |
 | --- | --- | --- |
 | Plan | Chemins modifiés → serveur, client, infra, broker, docs seules | Toujours |
-| App / Serveur | `ruff check`, `makemigrations --check`, `check --deploy`, tests `unit` puis `integration` (PostgreSQL 16), couverture combinée et ses deux seuils (voir plus bas) | `server/**` ou `.github/**` modifié |
+| App / Serveur | `ruff check`, `makemigrations --check`, `check --deploy` (bloquant sur tout avertissement), tests `unit` puis `integration` (PostgreSQL 16), couverture combinée et ses deux seuils (voir plus bas) | `server/**` ou `.github/**` modifié |
 | App / Client | ESLint, `tsc` | `client/**` ou `.github/**` modifié |
 | Config | actionlint (workflows, avec shellcheck), hadolint (Dockerfiles) | Workflows, Dockerfiles ou compose modifiés |
-| Docker | `docker compose config`, build de l'image serveur puis scan Trivy, `next build` | Après App et Config, hors brouillon |
+| Docker | `docker compose config`, build de l'image serveur, smoke test (non root, migrations, `/api/health/` contre un PostgreSQL jetable) puis scan Trivy, `next build` | Après App et Config, hors brouillon |
 | Security | gitleaks sur les commits de la PR ; `npm audit --omit=dev --audit-level=high` (client) et `pip-audit` (serveur) selon la partie modifiée | Toujours, en parallèle |
 | PR status | Échoue si un job a échoué ou été annulé ; un job ignoré est toléré | Toujours |
 
@@ -26,7 +26,7 @@ gitleaks masque les valeurs dans les logs. Un faux positif vérifié s'ajoute à
 
 | Workflow | Déclencheur | Contenu |
 | --- | --- | --- |
-| `push_main.yml` | Push sur `main` touchant `server/**` ou `.github/**` | Build de l'image serveur, scan Trivy, puis push sur `ghcr.io/tres7/afristay-server` (tags `sha-<commit>` et `main`) seulement si le scan passe |
+| `push_main.yml` | Push sur `main` touchant `server/**` ou `.github/**` | Build de l'image serveur, smoke test, scan Trivy, puis push sur `ghcr.io/tres7/afristay-server` (tags `sha-<commit>` et `main`) seulement si le scan passe |
 | `nightly.yml` | Chaque nuit à 1 h UTC, ou à la main | Scan Trivy de l'image `main` publiée, `pip-audit`, `npm audit`, gitleaks sur tout l'historique (toutes branches) |
 | Dependabot | Chaque jour à 3 h (Paris), sur `main` uniquement | PR de mise à jour : actions, pip, npm, images Docker de base. Les versions majeures de `node` et les mineures de `python` sont ignorées : changement volontaire uniquement |
 
@@ -81,7 +81,7 @@ Les services hexagonaux (`messaging`, `UserService`) se testent sans base, avec 
 
 ## Couverture
 
-Mesurée sur `server/apps` (unit + integration combinés, branches comprises). Rapport dans le résumé du job, HTML en artefact `coverage-server`.
+Mesurée sur `server/apps` et `server/config` (unit + integration combinés, branches comprises ; `settings.py`, `wsgi.py` et `asgi.py` exclus). Rapport dans le résumé du job, HTML en artefact `coverage-server`.
 
 | Seuil | Règle | Où |
 | --- | --- | --- |

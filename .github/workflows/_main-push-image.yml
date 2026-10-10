@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   server-image:
-    name: Image du serveur (build, Trivy, push)
+    name: Image du serveur (build, smoke test, Trivy, push)
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -41,7 +41,11 @@ jobs:
           cache-from: type=gha,scope=server
           cache-to: type=gha,mode=max,scope=server
 
-      # L'image n'est publiée que si le scan passe : c'est exactement l'image scannée qui part sur GHCR
+      # L'image n'est publiée que si elle démarre et que le scan passe : c'est exactement elle qui part sur GHCR
+      - uses: ./.github/actions/smoke-test-image
+        with:
+          image: ${{ steps.name.outputs.repository }}:sha-${{ github.sha }}
+
       - uses: ./.github/actions/trivy-scan
         with:
           image-ref: ${{ steps.name.outputs.repository }}:sha-${{ github.sha }}

@@ -7,15 +7,35 @@ from pathlib import Path
 from dotenv import load_dotenv
 from datetime import timedelta
 
+from django.core.exceptions import ImproperlyConfigured
+
+from config.storage import r2_storage
+
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-change-me-in-production')
+def _env_bool(name: str, default: str) -> bool:
+    return os.getenv(name, default).lower() in ('true', '1', 'yes')
 
-DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() in ('true', '1', 'yes')
 
-ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,0.0.0.0,backend').split(',')
+def _env_list(name: str, default: str) -> list[str]:
+    return [item.strip() for item in os.getenv(name, default).split(',') if item.strip()]
+
+
+# Production par défaut : le développement active DEBUG explicitement (server/.env)
+DEBUG = _env_bool('DJANGO_DEBUG', 'False')
+
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', '')
+if not SECRET_KEY:
+    if not DEBUG:
+        raise ImproperlyConfigured('DJANGO_SECRET_KEY est obligatoire hors développement (DJANGO_DEBUG=False).')
+    SECRET_KEY = 'django-insecure-dev-only'
+
+ALLOWED_HOSTS = _env_list('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,0.0.0.0,backend')
+# Render fournit le nom d'hôte public du service
+if os.getenv('RENDER_EXTERNAL_HOSTNAME'):
+    ALLOWED_HOSTS.append(os.environ['RENDER_EXTERNAL_HOSTNAME'])
 
 
 # Application definition
@@ -48,6 +68,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # Fichiers statiques (admin) servis par l'application, sans serveur web devant Gunicorn
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -117,6 +139,15 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'mediafiles'
+
+# Photos et avatars : disque local en développement, stockage objet Cloudflare R2 (API S3) dès que R2_BUCKET
+# est défini. Le disque des conteneurs Render est éphémère : sans R2, les photos disparaissent au redéploiement.
+STORAGES = {
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage'},
+}
+if (_r2 := r2_storage(os.environ)) is not None:
+    STORAGES['default'] = _r2
 
 
 # Default primary key field type
@@ -208,11 +239,23 @@ EMAIL_REPLY_TO = os.getenv('EMAIL_REPLY_TO', '')
 BACKEND_URL = os.getenv('BACKEND_URL', 'http://localhost:8000')
 
 
+# HTTPS en production : Render termine TLS et transmet X-Forwarded-Proto
+SECURE_REDIRECT_EXEMPT = [r'^api/health/$']   # sonde de santé interne, en HTTP
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = _env_bool('DJANGO_SECURE_SSL_REDIRECT', 'True')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = int(os.getenv('DJANGO_SECURE_HSTS_SECONDS', str(60 * 60 * 24 * 365)))
+
+# L'API est servie sur un sous-domaine (onrender.com, puis un domaine de l'équipe) : HSTS ne doit ni couvrir
+# les autres sous-domaines ni être préchargé dans les navigateurs, décisions à prendre au niveau du domaine.
+SILENCED_SYSTEM_CHECKS = ['security.W005', 'security.W021']
+
+
 # CORS
 
-CORS_ALLOWED_ORIGINS = os.getenv(
-    'CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000'
-).split(',')
+CORS_ALLOWED_ORIGINS = _env_list('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000')
 
 
 SIMPLE_JWT = {
