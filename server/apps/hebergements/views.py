@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 
+from django.db import transaction
 from django.db.models import Count, Min, ProtectedError, Q
 from django.utils import timezone
 from rest_framework.views import APIView
@@ -9,7 +10,7 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.throttling import ScopedRateThrottle
 
-from .disponibilites import a_des_reservations, filtre_actives, periodes_indisponibles
+from .disponibilites import a_des_reservations, filtre_actives, periodes_indisponibles, verrouiller
 from .models import BlocageModel, HebergementModel, HebergementPhotoModel
 from .photos import InvalidPhoto, normalize_photo
 from .serializers import BlocageSerializer, HebergementSerializer, HebergementCreateSerializer
@@ -275,15 +276,18 @@ class BlocageCreateView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         debut, fin = serializer.validated_data['debut'], serializer.validated_data['fin']
 
-        # On ne ferme pas des nuits déjà réservées : l'hôte doit d'abord gérer la réservation
-        if a_des_reservations(hebergement.id, debut, fin):
-            return Response(
-                {'detail': 'Cette période contient une réservation. Contactez le voyageur avant de fermer ces dates.'},
-                status=status.HTTP_409_CONFLICT,
-            )
-        if BlocageModel.objects.filter(hebergement=hebergement, debut__lt=fin, fin__gt=debut).exists():
-            return Response({'detail': 'Une partie de ces dates est déjà fermée.'}, status=status.HTTP_409_CONFLICT)
-        blocage = serializer.save(hebergement=hebergement)
+        with transaction.atomic():
+            # Verrou du logement : une réservation simultanée ne peut pas prendre ces nuits pendant la fermeture
+            verrouiller(hebergement.id)
+            # On ne ferme pas des nuits déjà réservées : l'hôte doit d'abord gérer la réservation
+            if a_des_reservations(hebergement.id, debut, fin):
+                return Response(
+                    {'detail': 'Cette période contient une réservation. Contactez le voyageur avant de fermer ces dates.'},
+                    status=status.HTTP_409_CONFLICT,
+                )
+            if BlocageModel.objects.filter(hebergement=hebergement, debut__lt=fin, fin__gt=debut).exists():
+                return Response({'detail': 'Une partie de ces dates est déjà fermée.'}, status=status.HTTP_409_CONFLICT)
+            blocage = serializer.save(hebergement=hebergement)
         return Response(BlocageSerializer(blocage).data, status=status.HTTP_201_CREATED)
 
 

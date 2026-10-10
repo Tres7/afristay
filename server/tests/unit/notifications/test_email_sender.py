@@ -1,7 +1,11 @@
+from pathlib import Path
+
 import pytest
 
 from apps.notifications.application.service.NotificationService import NotificationService
 from apps.notifications.infrastructure.email.DjangoEmailSender import DjangoEmailSender
+
+APPS_DIR = Path(__file__).resolve().parents[3] / 'apps'
 
 
 @pytest.fixture
@@ -41,10 +45,18 @@ def test_new_message_email(notifications, mailoutbox):
         assert expected in email.body
 
 
-@pytest.mark.xfail(strict=True, raises=AssertionError, reason=(
-    "Anomalie : les gabarits .txt passent par l'échappement HTML de Django ; "
-    "« N'Guessan » devient « N&#x27;Guessan » dans un email en texte brut."
-))
 def test_plain_text_email_keeps_apostrophes(notifications, mailoutbox):
     notifications.send_welcome_email('nguessan@example.tg', "N'Guessan")
     assert "N'Guessan" in mailoutbox[0].body
+
+
+def test_every_text_email_template_disables_html_escaping():
+    # Un email en texte brut n'est pas du HTML : sans autoescape off, « N'Guessan » devient « N&#x27;Guessan »
+    templates = sorted(APPS_DIR.glob('*/templates/emails/**/*.txt'))
+    assert templates
+    unprotected = [
+        str(t.relative_to(APPS_DIR)) for t in templates
+        if not t.read_text().lstrip().startswith('{% autoescape off %}')
+        or not t.read_text().rstrip().endswith('{% endautoescape %}')
+    ]
+    assert unprotected == []

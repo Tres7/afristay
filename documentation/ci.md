@@ -96,13 +96,11 @@ Chaque anomalie repérée a un test qui décrit le comportement attendu, marqué
 
 | Anomalie | Test |
 | --- | --- |
-| Deux réservations simultanées des mêmes dates sont toutes deux acceptées | `integration/reservations/test_concurrency.py` |
 | Recherche : `check_in`, `check_out`, `price_min`, `price_max` invalides → 500 | `integration/hebergements/test_search.py` |
 | `max_guests=0` accepté à la création d'un logement | `integration/hebergements/test_listings.py` |
 | Avis : `?hebergement=abc` → 500 | `integration/avis/test_avis_api.py` |
 | Avis : `?limit=-5` → 500 | `integration/avis/test_avis_api.py` |
 | Un refresh token déjà utilisé reste valable (pas de `token_blacklist`) | `integration/users/test_profile_and_tokens.py` |
-| Emails texte : « N'Guessan » devient « N&#x27;Guessan » (échappement HTML) | `unit/notifications/test_email_sender.py` |
 
 `pytest -rxX` affiche la liste en fin d'exécution.
 
