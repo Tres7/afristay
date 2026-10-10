@@ -17,8 +17,8 @@ permissions:
   contents: read
 
 jobs:
-  lint:
-    name: Compose et Dockerfiles
+  compose:
+    name: Configuration compose
     if: inputs.infra
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -33,14 +33,6 @@ jobs:
           cp client/.env.example client/.env
           docker compose config --quiet
           docker compose -f compose.test.yaml config --quiet
-      - uses: hadolint/hadolint-action@06be81baf89a55ffd0e24b8f04a4185738dd3387 # v3.5.0
-        with:
-          dockerfile: server/Dockerfile
-          config: .hadolint.yaml
-      - uses: hadolint/hadolint-action@06be81baf89a55ffd0e24b8f04a4185738dd3387 # v3.5.0
-        with:
-          dockerfile: client/Dockerfile
-          config: .hadolint.yaml
 
   server-image:
     name: Image du serveur (build et Trivy)

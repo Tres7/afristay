@@ -44,10 +44,19 @@ jobs:
       front: ${{ needs.changes.outputs.front == 'true' }}
       full: ${{ !github.event.pull_request.draft }}
 
+  # Niveau 1 : workflows (actionlint) et Dockerfiles (hadolint)
+  config-checks:
+    name: Config
+    needs: changes
+    if: needs.changes.outputs.infra == 'true'
+    uses: ./.github/workflows/_pr-config-checks.yml
+    with:
+      infra: true
+
   # Niveau 2 : seulement si le niveau 1 n'a pas échoué (un niveau 1 ignoré ne bloque pas)
   docker-checks:
     name: Docker
-    needs: [changes, app-checks]
+    needs: [changes, app-checks, config-checks]
     if: >-
       always() && !failure() && !cancelled()
       && !github.event.pull_request.draft
@@ -58,21 +67,24 @@ jobs:
       front: ${{ needs.changes.outputs.front == 'true' }}
       infra: ${{ needs.changes.outputs.infra == 'true' }}
 
-  # En parallèle des autres niveaux : audits des dépendances (rapides, sans installation)
+  # Niveau 1, sur toute PR : secrets dans les commits de la PR, audits des dépendances touchées
   security:
     name: Security
     needs: changes
-    if: needs.changes.outputs.back == 'true' || needs.changes.outputs.front == 'true'
-    uses: ./.github/workflows/_pr-security.yml
+    uses: ./.github/workflows/_security-checks.yml
     with:
       back: ${{ needs.changes.outputs.back == 'true' }}
       front: ${{ needs.changes.outputs.front == 'true' }}
+      gitleaks-log-opts: >-
+        ${{ github.event.pull_request
+        && format('{0}..{1}', github.event.pull_request.base.sha, github.event.pull_request.head.sha)
+        || 'origin/main..HEAD' }}
 
   # Seul contrôle à exiger dans la protection de main
   pr-status:
     name: PR status
     if: always()
-    needs: [changes, app-checks, docker-checks, security]
+    needs: [changes, app-checks, config-checks, docker-checks, security]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:

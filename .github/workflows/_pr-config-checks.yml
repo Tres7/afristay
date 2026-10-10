@@ -1,0 +1,46 @@
+name: Config checks
+
+on:
+  workflow_call:
+    inputs:
+      infra:
+        description: Workflows, actions, Dockerfiles ou compose modifiés
+        type: boolean
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  actionlint:
+    name: actionlint (workflows)
+    if: inputs.infra
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: actionlint
+        # Vérifie aussi les scripts shell des workflows (shellcheck est inclus dans l'image)
+        run: |
+          docker run --rm -v "$PWD":/repo:ro --workdir /repo \
+            rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 -color
+
+  hadolint:
+    name: hadolint (Dockerfiles)
+    if: inputs.infra
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: hadolint/hadolint-action@06be81baf89a55ffd0e24b8f04a4185738dd3387 # v3.5.0
+        with:
+          dockerfile: server/Dockerfile
+          config: .hadolint.yaml
+      - uses: hadolint/hadolint-action@06be81baf89a55ffd0e24b8f04a4185738dd3387 # v3.5.0
+        with:
+          dockerfile: client/Dockerfile
+          config: .hadolint.yaml

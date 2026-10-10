@@ -3,10 +3,10 @@ name: Main
 on:
   push:
     branches: [main]
-    # Un push qui ne touche que la documentation ne reconstruit pas l'image
-    paths-ignore:
-      - '**/*.md'
-      - 'documentation/**'
+    # Seuls le serveur et la CI produisent une nouvelle image ; le client est déployé par Vercel
+    paths:
+      - 'server/**'
+      - '.github/**'
 
 concurrency:
   group: main-push
