@@ -26,13 +26,44 @@ gitleaks masque les valeurs dans les logs. Un faux positif vérifié s'ajoute à
 
 | Workflow | Déclencheur | Contenu |
 | --- | --- | --- |
-| `push_main.yml` | Push sur `main` touchant `server/**` ou `.github/**` | Build de l'image serveur, smoke test, scan Trivy, puis push sur `ghcr.io/tres7/afristay-server` (tags `sha-<commit>` et `main`) seulement si le scan passe |
-| `nightly.yml` | Chaque nuit à 1 h UTC, ou à la main | Scan Trivy de l'image `main` publiée, `pip-audit`, `npm audit`, gitleaks sur tout l'historique (toutes branches) |
+| `push_main.yml` | Push sur `main` (sauf documentation et manifests) | Plan par rapport au dernier manifest ; si le serveur a changé : build de l'image, smoke test, Trivy, push par digest (`sha-<commit>`) ; puis manifest de déploiement, commité par la CD App, et tags définitifs de l'image (`main`, `manifest-<N>`) |
+| `nightly.yml` | Chaque nuit à 1 h UTC, ou à la main | Scan Trivy de l'image du dernier manifest (ce qui est déployable), `pip-audit`, `npm audit`, gitleaks sur tout l'historique (toutes branches) |
 | Dependabot | Chaque jour à 3 h (Paris), sur `main` uniquement | PR de mise à jour : actions, pip, npm, images Docker de base. Les versions majeures de `node` et les mineures de `python` sont ignorées : changement volontaire uniquement |
 
 Une PR en brouillon ne lance que le lint et les tests unitaires. La passer en « prête » relance tout.
 
 **Protection de `main`** : exiger uniquement le contrôle `PR status`.
+
+## Manifests de déploiement
+
+Chaque état déployable de `main` est décrit par un fichier `deploy/manifests/manifest-<N>-<sha7>.yaml`, validé par `deploy/manifests/schema.json` :
+
+```yaml
+schemaVersion: 1
+manifestVersion: 42                 # strictement croissant
+sourceRevision: <commit de main>    # 40 caractères
+createdAt: 2026-10-10T16:30:00Z
+services:
+  server:
+    kind: image
+    sourceRevision: <dernier commit touchant server/>
+    image: ghcr.io/tres7/afristay-server@sha256:<digest>
+  client:
+    kind: git
+    sourceRevision: <dernier commit touchant client/>
+```
+
+- Les révisions sont celles du dernier commit qui touche `server/` ou `client/`, et non celles du manifest précédent : un run sauté ne fausse rien.
+- Une image n'est reconstruite que si la révision du serveur diffère du dernier manifest ; sinon son digest est repris. Sans changement du serveur ni du client, aucun manifest n'est créé.
+- Les scripts (`.github/scripts/manifest`, testés par `npm test`) : `plan.mjs`, `create.mjs`, `validate.mjs`, `latest.mjs`.
+- Le commit du manifest sur `main` (protégée) est fait par la **CD App**, seule autorisée à contourner le ruleset. Sans elle (variable `CD_APP_CLIENT_ID` absente), le manifest est produit en artefact du run, non commité.
+
+### Configurer la CD App
+
+1. Profil GitHub → Settings → Developer settings → GitHub Apps → **New GitHub App** : webhook désactivé ; permission de dépôt **Contents : Read and write**, rien d'autre ; installable sur ce compte uniquement.
+2. Installer l'App sur le seul dépôt `afristay`.
+3. Dans le dépôt, Settings → Secrets and variables → Actions : variable **`CD_APP_CLIENT_ID`** (Client ID de l'App) et secret **`CD_APP_PRIVATE_KEY`** (contenu du fichier `.pem` généré).
+4. Ruleset « Protect main » → Bypass list : ajouter l'App.
 
 ## Tests du serveur
 
