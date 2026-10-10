@@ -27,7 +27,8 @@ runs:
     - name: Réglages de production (check --deploy)
       shell: bash
       working-directory: server
-      run: python manage.py check --deploy
+      # Bloquant : tout avertissement de sécurité doit être corrigé ou mis en sourdine avec justification (settings.py)
+      run: python manage.py check --deploy --fail-level WARNING
 
     # --cov-fail-under=0 : pytest-cov appliquerait sinon le seuil de .coveragerc à chaque étape,
     # dont les tests unitaires seuls. Le seuil est vérifié une fois, sur la couverture combinée.

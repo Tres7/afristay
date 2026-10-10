@@ -1,0 +1,56 @@
+name: Smoke test image
+description: >-
+  Démarre l'image de production contre un PostgreSQL jetable : utilisateur non root, migrations,
+  démarrage de Gunicorn et réponse de /api/health/. Échoue avec les logs du conteneur en cas de problème.
+
+inputs:
+  image:
+    description: Image locale à tester (chargée par le build)
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Smoke test
+      shell: bash
+      env:
+        IMAGE: ${{ inputs.image }}
+      run: |
+        set -euo pipefail
+        net="smoke-${GITHUB_RUN_ID}-${GITHUB_JOB}"
+        cleanup() {
+          docker logs smoke-api > smoke-api.log 2>&1 || true
+          docker rm -f smoke-api smoke-db > /dev/null 2>&1 || true
+          docker network rm "$net" > /dev/null 2>&1 || true
+        }
+        trap cleanup EXIT
+
+        uid=$(docker run --rm --entrypoint id "$IMAGE" -u)
+        if [ "$uid" = "0" ]; then echo "::error::L'image tourne en root"; exit 1; fi
+        echo "Utilisateur de l'image : uid ${uid}"
+
+        docker network create "$net" > /dev/null
+        docker run -d --name smoke-db --network "$net" \
+          -e POSTGRES_DB=afristay -e POSTGRES_USER=afristay -e POSTGRES_PASSWORD=smoke \
+          --health-cmd "pg_isready -U afristay" --health-interval 2s --health-retries 30 postgres:16 > /dev/null
+        for _ in $(seq 1 30); do
+          [ "$(docker inspect -f '{{.State.Health.Status}}' smoke-db)" = healthy ] && break
+          sleep 2
+        done
+
+        envs=(-e DJANGO_SECRET_KEY=smoke-test-only-secret-key-0123456789-0123456789-0123456789
+              -e POSTGRES_HOST=smoke-db -e POSTGRES_DB=afristay -e POSTGRES_USER=afristay
+              -e POSTGRES_PASSWORD=smoke -e DJANGO_ALLOWED_HOSTS=localhost)
+        docker run --rm --network "$net" "${envs[@]}" "$IMAGE" python manage.py migrate --noinput
+        docker run -d --name smoke-api --network "$net" -p 127.0.0.1:8000:8000 "${envs[@]}" "$IMAGE" > /dev/null
+
+        for _ in $(seq 1 30); do
+          if body=$(curl -sf http://localhost:8000/api/health/); then
+            echo "Santé : ${body}"
+            exit 0
+          fi
+          sleep 2
+        done
+        echo "::error::/api/health/ ne répond pas après 60 s"
+        cat smoke-api.log 2>/dev/null || docker logs smoke-api
+        exit 1

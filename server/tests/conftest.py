@@ -39,3 +39,9 @@ def django_db_modify_db_settings(django_db_modify_db_settings_parallel_suffix):
     yield
     if started:
         services.stop(services.POSTGRES['service'])
+
+
+@pytest.fixture(autouse=True)
+def _http_test_client(settings):
+    # Le client de test parle en HTTP : sans ceci, la redirection HTTPS de production renverrait des 301
+    settings.SECURE_SSL_REDIRECT = False

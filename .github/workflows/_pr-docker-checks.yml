@@ -35,7 +35,7 @@ jobs:
           docker compose -f compose.test.yaml config --quiet
 
   server-image:
-    name: Image du serveur (build et Trivy)
+    name: Image du serveur (build, smoke test, Trivy)
     if: inputs.back || inputs.infra
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -54,6 +54,9 @@ jobs:
           tags: ${{ env.IMAGE }}
           cache-from: type=gha,scope=server
           cache-to: type=gha,mode=max,scope=server
+      - uses: ./.github/actions/smoke-test-image
+        with:
+          image: ${{ env.IMAGE }}
       - uses: ./.github/actions/trivy-scan
         with:
           image-ref: ${{ env.IMAGE }}

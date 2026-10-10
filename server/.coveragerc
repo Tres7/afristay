@@ -1,9 +1,15 @@
 [run]
-source = apps
+source =
+    apps
+    config
 branch = True
 omit =
     */migrations/*
     */apps.py
+    # Chargé par pytest-django avant le démarrage de la mesure, et points d'entrée des serveurs
+    config/settings.py
+    config/wsgi.py
+    config/asgi.py
 
 [report]
 # Cliquet : couverture combinée (unit + integration) mesurée à la mise en place, arrondie vers le bas.
