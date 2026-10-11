@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, ImagePlus, Link2, Loader2, Star, Trash2, Triangl
 import api, { apiErrorMessage } from "@/lib/api";
 import { compressImage } from "@/lib/compressImage";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 export const MAX_PHOTOS = 10;
 const ACCEPTED = ["image/jpeg", "image/png", "image/webp"];
@@ -26,6 +27,7 @@ let keySeq = 0;
 const nextKey = () => `p${++keySeq}`;
 
 export default function PhotoUploader({ value, onChange, onBusyChange, error }: PhotoUploaderProps) {
+  const t = useTranslations("photos");
   const [items, setItems] = useState<Item[]>(() => value.map((url) => ({ key: nextKey(), status: "done", url })));
   const [dragOver, setDragOver] = useState(false);
   const [linkOpen, setLinkOpen] = useState(false);
@@ -62,7 +64,7 @@ export default function PhotoUploader({ value, onChange, onBusyChange, error }: 
       URL.revokeObjectURL(preview);
       update(key, { key, status: "done", url: res.data.url, photoId: res.data.id });
     } catch (err) {
-      update(key, { key, status: "error", preview, error: apiErrorMessage(err, "Envoi impossible.") });
+      update(key, { key, status: "error", preview, error: apiErrorMessage(err, t("envoiImpossible")) });
     }
   };
 
@@ -73,7 +75,7 @@ export default function PhotoUploader({ value, onChange, onBusyChange, error }: 
     const rejected = files.filter((f) => !ACCEPTED.includes(f.type));
     const accepted = files.filter((f) => ACCEPTED.includes(f.type)).slice(0, Math.max(0, room));
 
-    if (rejected.length) setNotice("Formats acceptés : JPEG, PNG ou WebP (les photos HEIC d'iPhone doivent être exportées en JPEG).");
+    if (rejected.length) setNotice(t("formats"));
     else if (files.length > accepted.length) setNotice(`${MAX_PHOTOS} photos maximum par annonce.`);
     if (!accepted.length) return;
 
@@ -106,7 +108,7 @@ export default function PhotoUploader({ value, onChange, onBusyChange, error }: 
   const addLink = () => {
     const url = link.trim();
     if (!/^https?:\/\/\S+$/.test(url)) {
-      setNotice("Lien invalide : il doit commencer par http:// ou https://");
+      setNotice(t("lienInvalide"));
       return;
     }
     if (items.length >= MAX_PHOTOS) {
@@ -131,12 +133,12 @@ export default function PhotoUploader({ value, onChange, onBusyChange, error }: 
       >
         <ImagePlus size={28} className="mx-auto text-primary mb-2" />
         <p className="text-sm text-dark font-medium">
-          <span className="hidden sm:inline">Glissez vos photos ici ou </span>
+          <span className="hidden sm:inline">{t("glissez")} </span>
           <button type="button" onClick={() => inputRef.current?.click()} disabled={items.length >= MAX_PHOTOS} className="text-primary font-bold hover:underline disabled:opacity-50">
-            <span className="sm:hidden">Ajouter des photos</span><span className="hidden sm:inline">parcourez</span>
+            <span className="sm:hidden">{t("ajouterPhotos")}</span><span className="hidden sm:inline">{t("parcourez")}</span>
           </button>
         </p>
-        <p className="text-xs text-gray-500 mt-1">JPEG, PNG ou WebP · 10 Mo max · {items.length}/{MAX_PHOTOS} photos</p>
+        <p className="text-xs text-gray-500 mt-1">{t("limites", { nombre: items.length, max: MAX_PHOTOS })}</p>
         <input
           ref={inputRef}
           type="file"
@@ -159,7 +161,7 @@ export default function PhotoUploader({ value, onChange, onBusyChange, error }: 
 
                 {index === 0 && item.status === "done" && (
                   <span className="absolute top-2 left-2 bg-primary text-white text-[10px] font-bold uppercase px-2 py-1 rounded-full flex items-center gap-1">
-                    <Star size={10} className="fill-white" /> Couverture
+                    <Star size={10} className="fill-white" /> {t("couverture")}
                   </span>
                 )}
 
@@ -184,15 +186,15 @@ export default function PhotoUploader({ value, onChange, onBusyChange, error }: 
                     <div className="flex gap-1">
                       {item.status === "done" && (
                         <>
-                          <button type="button" onClick={() => move(index, -1)} disabled={index === 0} aria-label="Déplacer à gauche" className="w-7 h-7 rounded-full bg-white/90 text-dark flex items-center justify-center disabled:opacity-40"><ArrowLeft size={14} /></button>
-                          <button type="button" onClick={() => move(index, 1)} disabled={index === items.length - 1} aria-label="Déplacer à droite" className="w-7 h-7 rounded-full bg-white/90 text-dark flex items-center justify-center disabled:opacity-40"><ArrowRight size={14} /></button>
+                          <button type="button" onClick={() => move(index, -1)} disabled={index === 0} aria-label={t("gauche")} className="w-7 h-7 rounded-full bg-white/90 text-dark flex items-center justify-center disabled:opacity-40"><ArrowLeft size={14} /></button>
+                          <button type="button" onClick={() => move(index, 1)} disabled={index === items.length - 1} aria-label={t("droite")} className="w-7 h-7 rounded-full bg-white/90 text-dark flex items-center justify-center disabled:opacity-40"><ArrowRight size={14} /></button>
                           {index !== 0 && (
-                            <button type="button" onClick={() => makeCover(index)} aria-label="Définir comme couverture" title="Définir comme couverture" className="w-7 h-7 rounded-full bg-white/90 text-primary flex items-center justify-center"><Star size={14} /></button>
+                            <button type="button" onClick={() => makeCover(index)} aria-label={t("definirCouverture")} title={t("definirCouverture")} className="w-7 h-7 rounded-full bg-white/90 text-primary flex items-center justify-center"><Star size={14} /></button>
                           )}
                         </>
                       )}
                     </div>
-                    <button type="button" onClick={() => remove(item)} aria-label="Retirer la photo" className="w-7 h-7 rounded-full bg-white/90 text-red-600 flex items-center justify-center"><Trash2 size={14} /></button>
+                    <button type="button" onClick={() => remove(item)} aria-label={t("retirer")} className="w-7 h-7 rounded-full bg-white/90 text-red-600 flex items-center justify-center"><Trash2 size={14} /></button>
                   </div>
                 )}
               </li>
@@ -207,14 +209,14 @@ export default function PhotoUploader({ value, onChange, onBusyChange, error }: 
             <input
               type="url" value={link} onChange={(e) => setLink(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addLink(); } }}
-              placeholder="https://…" aria-label="Lien d'une photo"
+              placeholder="https://…" aria-label={t("lienPhoto")}
               className="flex-1 min-w-0 px-3 py-2 border border-gray-200 rounded-xl text-base sm:text-sm outline-none focus:border-primary"
             />
-            <button type="button" onClick={addLink} className="px-4 py-2 rounded-xl bg-gray-100 text-sm font-medium text-dark hover:bg-gray-200">Ajouter</button>
+            <button type="button" onClick={addLink} className="px-4 py-2 rounded-xl bg-gray-100 text-sm font-medium text-dark hover:bg-gray-200">{t("ajouter")}</button>
           </div>
         ) : (
           <button type="button" onClick={() => setLinkOpen(true)} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-primary">
-            <Link2 size={13} /> Ajouter une photo par lien
+            <Link2 size={13} /> {t("ajouterParLien")}
           </button>
         )}
       </div>

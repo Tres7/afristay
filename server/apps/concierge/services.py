@@ -103,8 +103,34 @@ def _outils(recherche_web: bool) -> list:
     return liste
 
 
-def _systeme() -> str:
-    return f"{SYSTEME}\n\nDate du jour : {formats.date_format(timezone.localdate(), 'l j F Y')}."
+# Messages affichés au voyageur, en français et en anglais
+MESSAGES = {
+    'longue': ("Cette conversation est longue : ouvrez-en une nouvelle pour continuer.", "This conversation is long: start a new one to continue."),
+    'erreur': ("Le Concierge a rencontré une erreur. Réessayez.", "The Concierge ran into an error. Please try again."),
+    'sollicite': ("Le Concierge est très sollicité. Réessayez dans une minute.", "The Concierge is very busy. Please try again in a minute."),
+    'injoignable': ("Le Concierge est momentanément injoignable. Réessayez.", "The Concierge is temporarily unavailable. Please try again."),
+    'refus': ("Je ne peux pas répondre à cette demande. Posez-moi une question sur votre voyage.", "I can't answer that request. Ask me something about your trip."),
+    'inacheve': ("Je n'ai pas pu terminer cette recherche. Reformulez votre demande.", "I couldn't finish this search. Please rephrase your request."),
+    'cherche': ("Je cherche", "Searching"),
+    'web': ("Je cherche sur le web", "Searching the web"),
+}
+
+
+def _m(cle: str, langue: str) -> str:
+    return MESSAGES[cle][1 if langue == 'en' else 0]
+
+
+def langue_de(entete: str) -> str:
+    """Langue du site d'après l'en-tête Accept-Language (« en » pour /en, sinon français)."""
+    return 'en' if (entete or '').strip().lower().startswith('en') else 'fr'
+
+
+def _systeme(langue: str = 'fr') -> str:
+    systeme = f"{SYSTEME}\n\nDate du jour : {formats.date_format(timezone.localdate(), 'l j F Y')}."
+    if langue == 'en':
+        systeme += ("\n\nLANGUE : le voyageur utilise la version anglaise du site. Réponds en anglais (britannique), "
+                    "avec les montants en FCFA (« 25,000 FCFA »), même si les données des outils sont en français.")
+    return systeme
 
 
 def _sse(evenement: str, donnees: dict) -> str:
@@ -130,7 +156,7 @@ class _Tour:
         self.tokens_entree = self.tokens_sortie = 0
 
 
-def _lire_flux(flux, tour: _Tour):
+def _lire_flux(flux, tour: _Tour, langue: str = 'fr'):
     """Parcourt les événements SSE de Gemini ; produit nos propres événements pour le navigateur."""
     appels_partiels = {}  # index de l'étape → appel en cours (arguments reçus par morceaux)
     for ev in flux:
@@ -153,9 +179,10 @@ def _lire_flux(flux, tour: _Tour):
             if etape.type == 'function_call':
                 appels_partiels[ev.index] = {'id': etape.id, 'name': etape.name, 'arguments': '',
                                              'initiaux': getattr(etape, 'arguments', None)}
-                yield _sse('outil', {'nom': etape.name, 'libelle': outils.LIBELLES.get(etape.name, 'Je cherche')})
+                libelles = outils.LIBELLES_EN if langue == 'en' else outils.LIBELLES
+                yield _sse('outil', {'nom': etape.name, 'libelle': libelles.get(etape.name, _m('cherche', langue))})
             elif etape.type == 'google_search_call':
-                yield _sse('outil', {'nom': 'google_search', 'libelle': 'Je cherche sur le web'})
+                yield _sse('outil', {'nom': 'google_search', 'libelle': _m('web', langue)})
         elif t == 'step.delta':
             delta = ev.delta
             if delta.type == 'text':
@@ -176,10 +203,10 @@ def _lire_flux(flux, tour: _Tour):
             tour.appels.append({'id': a['id'], 'name': a['name'], 'arguments': arguments})
 
 
-def repondre(conversation: ConversationModel, texte_voyageur: str):
+def repondre(conversation: ConversationModel, texte_voyageur: str, langue: str = 'fr'):
     """Générateur d'événements SSE : texte (deltas), outil (progression), cartes, fin, erreur."""
     if conversation.messages.count() >= MAX_MESSAGES_PAR_CONVERSATION:
-        yield _sse('erreur', {'message': "Cette conversation est longue : ouvrez-en une nouvelle pour continuer."})
+        yield _sse('erreur', {'message': _m('longue', langue)})
         return
 
     resume = _resume(conversation) if conversation.interaction_id else ''
@@ -198,7 +225,7 @@ def repondre(conversation: ConversationModel, texte_voyageur: str):
     for _ in range(MAX_TOURS_OUTILS + 2):
         parametres = {
             'model': settings.CONCIERGE['MODELE'],
-            'system_instruction': _systeme(),
+            'system_instruction': _systeme(langue),
             'tools': _outils(recherche_web),
             'input': entree,
             'generation_config': {'thinking_level': settings.CONCIERGE['REFLEXION']},
@@ -208,7 +235,7 @@ def repondre(conversation: ConversationModel, texte_voyageur: str):
             parametres['previous_interaction_id'] = precedent
         tour = _Tour()
         try:
-            yield from _lire_flux(client.interactions.create(**parametres), tour)
+            yield from _lire_flux(client.interactions.create(**parametres), tour, langue)
         except (erreurs_gemini.NotFoundError, erreurs_gemini.BadRequestError) as exc:
             if precedent and isinstance(entree, str):
                 # Interaction précédente expirée chez Google : on repart avec un résumé de la conversation
@@ -217,7 +244,7 @@ def repondre(conversation: ConversationModel, texte_voyageur: str):
                 entree = f"Résumé de notre conversation précédente :\n{resume}\n\nNouveau message : {texte_voyageur}"
                 continue
             logger.warning("Gemini a refusé la requête (%s) : %s", exc.status_code, exc.message)
-            yield _sse('erreur', {'message': 'Le Concierge a rencontré une erreur. Réessayez.'})
+            yield _sse('erreur', {'message': _m('erreur', langue)})
             return
         except erreurs_gemini.RateLimitError:
             if recherche_web and not tour.texte:
@@ -226,20 +253,20 @@ def repondre(conversation: ConversationModel, texte_voyageur: str):
                 cache.set(CLE_RECHERCHE_INDISPONIBLE, True, 600)
                 recherche_web = False
                 continue
-            yield _sse('erreur', {'message': 'Le Concierge est très sollicité. Réessayez dans une minute.'})
+            yield _sse('erreur', {'message': _m('sollicite', langue)})
             return
         except (erreurs_gemini.APIConnectionError, erreurs_gemini.APITimeoutError):
-            yield _sse('erreur', {'message': 'Le Concierge est momentanément injoignable. Réessayez.'})
+            yield _sse('erreur', {'message': _m('injoignable', langue)})
             return
         except erreurs_gemini.APIError as exc:
             logger.error("Erreur Gemini %s : %s", getattr(exc, 'status_code', ''), getattr(exc, 'message', exc))
-            yield _sse('erreur', {'message': 'Le Concierge a rencontré une erreur. Réessayez.'})
+            yield _sse('erreur', {'message': _m('erreur', langue)})
             return
 
         if tour.erreur or tour.statut == 'failed':
             # Réponse bloquée (filtres de sécurité) ou échec : la réponse partielle est écartée
             logger.info("Tour Gemini en échec (%s) : %s", tour.statut, tour.erreur)
-            yield _sse('refus', {'message': "Je ne peux pas répondre à cette demande. Posez-moi une question sur votre voyage."})
+            yield _sse('refus', {'message': _m('refus', langue)})
             return
 
         precedent = tour.interaction_id or precedent
@@ -266,7 +293,7 @@ def repondre(conversation: ConversationModel, texte_voyageur: str):
             yield _sse('cartes', {'cartes': cartes_du_tour})
         entree = resultats
     else:
-        yield _sse('erreur', {'message': "Je n'ai pas pu terminer cette recherche. Reformulez votre demande."})
+        yield _sse('erreur', {'message': _m('inacheve', langue)})
         return
 
     # Les offres trouvées pendant le tour s'affichent sous la réponse finale

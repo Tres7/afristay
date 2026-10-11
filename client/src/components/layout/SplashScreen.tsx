@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import IconeKwaba from "@/components/layout/IconeKwaba";
 import { Logotype } from "@/components/layout/Logo";
+import { useTranslations } from "next-intl";
 
 // Durée d'affichage : le temps de voir la marque (un clic, une touche ou un toucher le passe)
 const DUREE_MS = 4500;
 
 export default function SplashScreen() {
+  const t = useTranslations("commun");
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -65,7 +67,7 @@ export default function SplashScreen() {
               transition={{ delay: 0.85, duration: 0.4 }}
               className="text-sm text-gray-600 dark:text-slate-300 font-body tracking-[0.18em]"
             >
-              Le monde vous accueille.
+              {t("slogan")}
             </motion.p>
           </motion.div>
 

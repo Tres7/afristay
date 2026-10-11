@@ -6,6 +6,7 @@ import DateRangeCalendar from "@/components/calendrier/DateRangeCalendar";
 import Floating from "@/components/ui/Floating";
 import { usePopover } from "@/lib/usePopover";
 import { calculateNights, cn, formatDate } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface DateRangeFieldProps {
   checkIn: string;
@@ -20,6 +21,7 @@ const AUCUNE = new Set<string>();
 
 /** Choix arrivée / départ avec notre calendrier (identique sur tous les navigateurs et téléphones). */
 export default function DateRangeField({ checkIn, checkOut, onChange, variant = "field", className }: DateRangeFieldProps) {
+  const t = useTranslations("dates");
   const { open, setOpen, ref, panelRef } = usePopover();
   const nuits = useMemo(() => calculateNights(checkIn, checkOut), [checkIn, checkOut]);
 
@@ -28,7 +30,7 @@ export default function DateRangeField({ checkIn, checkOut, onChange, variant = 
     if (a && d) setOpen(false);
   };
 
-  const libelle = (v: string) => (v ? formatDate(v, { day: "numeric", month: "short" }) : "Ajouter");
+  const libelle = (v: string) => (v ? formatDate(v, { day: "numeric", month: "short" }) : t("ajouter"));
 
   const moitie = (titre: string, valeur: string) => (
     <button
@@ -49,17 +51,17 @@ export default function DateRangeField({ checkIn, checkOut, onChange, variant = 
   return (
     <div ref={ref} className={cn("relative", className)}>
       <div className={cn("flex divide-x divide-gray-100", variant === "field" && "border border-gray-200 rounded-xl bg-white overflow-hidden", open && variant === "field" && "border-primary ring-2 ring-primary/20")}>
-        {moitie("Arrivée", checkIn)}
-        {moitie("Départ", checkOut)}
+        {moitie(t("arrivee"), checkIn)}
+        {moitie(t("depart"), checkOut)}
       </div>
 
       {open && (
-        <Floating ref={panelRef} anchor={ref} width={680} sheetOnMobile onClose={() => setOpen(false)} label="Choisir les dates du séjour" className="md:p-5">
+        <Floating ref={panelRef} anchor={ref} width={680} sheetOnMobile onClose={() => setOpen(false)} label={t("choisirDates")} className="md:p-5">
           <div className="flex items-center justify-between mb-4">
             <p className="font-heading font-bold text-dark">
-              {nuits > 0 ? `${nuits} nuit${nuits > 1 ? "s" : ""} · ${libelle(checkIn)} → ${libelle(checkOut)}` : "Quand partez-vous ?"}
+              {nuits > 0 ? `${t("nuits", { nombre: nuits })} · ${libelle(checkIn)} → ${libelle(checkOut)}` : t("quandPartez")}
             </p>
-            <button type="button" onClick={() => setOpen(false)} aria-label="Fermer" className="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center">
+            <button type="button" onClick={() => setOpen(false)} aria-label={t("fermer")} className="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center">
               <X size={18} />
             </button>
           </div>

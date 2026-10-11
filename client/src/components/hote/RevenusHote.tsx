@@ -10,15 +10,18 @@ import { cn, formatDate, formatPrice } from "@/lib/utils";
 import Select from "@/components/ui/Select";
 import FormField from "@/components/ui/FormField";
 import type { ProfilVersement, Revenus, StatutVersement } from "@/types/api/paiement";
+import { useTranslations } from "next-intl";
+import { PAYS } from "@/lib/give";
 
 const STATUTS: Record<StatutVersement, { label: string; className: string }> = {
-  planifie: { label: "Prévu", className: "bg-gray-100 text-dark" },
-  en_cours: { label: "En cours d'envoi", className: "bg-amber-100 text-amber-800" },
-  envoye: { label: "Versé", className: "bg-green-100 text-green-800" },
-  echoue: { label: "À vérifier", className: "bg-red-100 text-red-700" },
+  planifie: { label: "prevu", className: "bg-gray-100 text-dark" },
+  en_cours: { label: "enCours", className: "bg-amber-100 text-amber-800" },
+  envoye: { label: "verse", className: "bg-green-100 text-green-800" },
+  echoue: { label: "aVerifier", className: "bg-red-100 text-red-700" },
 };
 
 export default function RevenusHote() {
+  const t = useTranslations("revenus");
   const { data: config } = useConfigPaiement();
   const { data: revenus, isLoading } = useQuery({
     queryKey: ["paiements", "revenus"],
@@ -30,9 +33,9 @@ export default function RevenusHote() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         {[
-          { label: "À venir", value: revenus?.totaux.a_venir, icon: Clock, hint: "Versé 24 h après l'arrivée du voyageur" },
-          { label: "En cours d'envoi", value: revenus?.totaux.en_cours, icon: Loader2, hint: "Sur votre Mobile Money sous peu" },
-          { label: "Déjà versé", value: revenus?.totaux.verse, icon: CheckCircle, hint: `Commission Kwa-Ba : ${formatPrice(revenus?.totaux.commission ?? 0)}` },
+          { label: t("totaux.aVenir"), value: revenus?.totaux.a_venir, icon: Clock, hint: t("totaux.aVenirAide") },
+          { label: t("totaux.enCours"), value: revenus?.totaux.en_cours, icon: Loader2, hint: t("totaux.enCoursAide") },
+          { label: t("totaux.verse"), value: revenus?.totaux.verse, icon: CheckCircle, hint: t("totaux.commission", { montant: formatPrice(revenus?.totaux.commission ?? 0) }) },
         ].map(({ label, value, icon: Icon, hint }) => (
           <div key={label} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
             <p className="flex items-center gap-2 text-xs text-muted font-medium"><Icon size={14} className="text-primary" /> {label}</p>
@@ -45,14 +48,14 @@ export default function RevenusHote() {
       <ProfilVersementForm manquant={revenus ? !revenus.profil_complet : false} />
 
       <section className="bg-white rounded-3xl border border-gray-100 p-5 sm:p-6">
-        <h2 className="font-heading font-bold text-dark text-lg">Versements</h2>
+        <h2 className="font-heading font-bold text-dark text-lg">{t("versements")}</h2>
         <p className="text-sm text-gray-600 mt-1">
-          Pour chaque séjour payé, vous recevez le prix des nuits moins la commission Kwa-Ba de {commission} %.
+          {t("explication", { commission })}
         </p>
         {isLoading ? (
           <div className="h-24 skeleton rounded-2xl mt-4" />
         ) : !revenus?.versements.length ? (
-          <p className="text-sm text-gray-600 mt-4 bg-gray-50 rounded-2xl p-6 text-center">Aucun versement pour le moment : ils apparaissent dès qu&apos;un voyageur paie un séjour.</p>
+          <p className="text-sm text-gray-600 mt-4 bg-gray-50 rounded-2xl p-6 text-center">{t("aucun")}</p>
         ) : (
           <ul className="mt-4 divide-y divide-gray-100">
             {revenus.versements.map((v) => (
@@ -67,12 +70,12 @@ export default function RevenusHote() {
                   )}
                 </div>
                 <div className="text-xs text-gray-600 sm:text-right">
-                  <p>{formatPrice(v.montant_brut)} − {formatPrice(v.commission)} de commission</p>
-                  <p>{v.statut === "envoye" && v.envoye_le ? `Versé le ${formatDate(v.envoye_le.slice(0, 10))}` : `Prévu le ${formatDate(v.date_prevue.slice(0, 10))}`}</p>
+                  <p>{t("deCommission", { brut: formatPrice(v.montant_brut), commission: formatPrice(v.commission) })}</p>
+                  <p>{v.statut === "envoye" && v.envoye_le ? t("verseLe", { date: formatDate(v.envoye_le.slice(0, 10)) }) : t("prevuLe", { date: formatDate(v.date_prevue.slice(0, 10)) })}</p>
                 </div>
                 <div className="flex sm:flex-col items-center sm:items-end justify-between gap-1">
                   <span className="font-heading font-bold text-dark">{formatPrice(v.montant)}</span>
-                  <span className={cn("text-xs font-bold px-2.5 py-1 rounded-full", STATUTS[v.statut].className)}>{STATUTS[v.statut].label}</span>
+                  <span className={cn("text-xs font-bold px-2.5 py-1 rounded-full", STATUTS[v.statut].className)}>{t(`statuts.${STATUTS[v.statut].label}`)}</span>
                 </div>
               </li>
             ))}
@@ -84,6 +87,8 @@ export default function RevenusHote() {
 }
 
 function ProfilVersementForm({ manquant }: { manquant: boolean }) {
+  const t = useTranslations("revenus");
+  const tD = useTranslations("remboursementDialog");
   const queryClient = useQueryClient();
   const { data: config } = useConfigPaiement();
   const { data: profil, isLoading } = useQuery({
@@ -112,7 +117,7 @@ function ProfilVersementForm({ manquant }: { manquant: boolean }) {
       const res = await api.put<ProfilVersement>("/v1/paiements/profil-versement/", { ...form, operateur });
       queryClient.setQueryData(["paiements", "profil-versement"], res.data);
       queryClient.invalidateQueries({ queryKey: ["paiements", "revenus"] });
-      toast.success("Coordonnées de versement enregistrées");
+      toast.success(t("enregistrees"));
       setEdition(false);
     } catch (err) {
       const data = (err as { response?: { data?: Record<string, string[] | string> } }).response?.data;
@@ -136,59 +141,59 @@ function ProfilVersementForm({ manquant }: { manquant: boolean }) {
       <section className="bg-white rounded-3xl border border-gray-100 p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-4">
         <div className="w-12 h-12 rounded-2xl bg-secondary/10 text-secondary flex items-center justify-center flex-shrink-0"><Smartphone size={22} /></div>
         <div className="flex-1 min-w-0">
-          <h2 className="font-heading font-bold text-dark">Vos versements arrivent sur</h2>
+          <h2 className="font-heading font-bold text-dark">{t("arriventSur")}</h2>
           <p className="text-sm text-gray-600">{nomOperateur(profil.operateur)} · +{indicatif} {profil.numero} · {profil.titulaire}</p>
         </div>
-        <button onClick={() => setEdition(true)} className="px-5 py-2.5 rounded-full border border-gray-200 text-sm font-bold text-dark hover:bg-gray-50">Modifier</button>
+        <button onClick={() => setEdition(true)} className="px-5 py-2.5 rounded-full border border-gray-200 text-sm font-bold text-dark hover:bg-gray-50">{t("modifier")}</button>
       </section>
     );
   }
 
   return (
     <section className={cn("bg-white rounded-3xl border p-5 sm:p-6", manquant ? "border-amber-300" : "border-gray-100")}>
-      <h2 className="flex items-center gap-2 font-heading font-bold text-dark text-lg"><Wallet size={20} className="text-primary" /> Où recevoir mon argent</h2>
+      <h2 className="flex items-center gap-2 font-heading font-bold text-dark text-lg"><Wallet size={20} className="text-primary" /> {t("ouRecevoir")}</h2>
       <p className="text-sm text-gray-600 mt-1">
         {manquant
-          ? "Indiquez votre compte Mobile Money : sans lui, nous ne pouvons pas vous verser vos revenus."
-          : "Votre part est envoyée sur ce compte Mobile Money 24 heures après l'arrivée du voyageur."}
+          ? t("manquant")
+          : t("envoyeSur")}
       </p>
       <form onSubmit={enregistrer} className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5" noValidate>
         <div>
-          <p className="block text-xs font-bold text-dark uppercase tracking-wide mb-2" id="pays-label">Pays</p>
+          <p className="block text-xs font-bold text-dark uppercase tracking-wide mb-2" id="pays-label">{tD("pays")}</p>
           <Select
-            label="Pays" value={form.pays}
+            label={tD("pays")} value={form.pays}
             onChange={(v) => setForm({ ...form, pays: v as ProfilVersement["pays"], operateur: "" })}
-            options={config.pays.map((p) => ({ value: p.code, label: p.nom }))}
+            options={config.pays.map((p) => ({ value: p.code, label: PAYS[p.code] ?? p.nom }))}
           />
         </div>
         <div>
-          <p className="block text-xs font-bold text-dark uppercase tracking-wide mb-2">Opérateur</p>
+          <p className="block text-xs font-bold text-dark uppercase tracking-wide mb-2">{tD("operateur")}</p>
           <Select
-            label="Opérateur Mobile Money" value={operateur}
+            label={tD("operateurMM")} value={operateur}
             onChange={(v) => setForm({ ...form, operateur: v })}
             options={operateurs.map((o) => ({ value: o.code, label: o.nom }))}
           />
           {erreurs.operateur && <p className="text-xs text-red-600 mt-1.5 ml-1">{erreurs.operateur}</p>}
         </div>
         <FormField
-          label={`Numéro (+${pays?.indicatif ?? ""})`} id="v-numero" inputMode="numeric" autoComplete="tel-national"
+          label={tD("numero", { indicatif: pays?.indicatif ?? "" })} id="v-numero" inputMode="numeric" autoComplete="tel-national"
           value={form.numero} onChange={(e) => setForm({ ...form, numero: e.target.value })}
           placeholder={pays ? "0".repeat(pays.chiffres) : ""} error={erreurs.numero}
-          hint={pays ? `${pays.chiffres} chiffres, sans l'indicatif` : undefined} required
+          hint={pays ? tD("chiffres", { nombre: pays.chiffres }) : undefined} required
         />
         <FormField
-          label="Nom du titulaire" id="v-titulaire" autoComplete="name"
+          label={t("titulaire")} id="v-titulaire" autoComplete="name"
           value={form.titulaire} onChange={(e) => setForm({ ...form, titulaire: e.target.value })}
-          error={erreurs.titulaire} hint="Tel qu'enregistré chez l'opérateur" required
+          error={erreurs.titulaire} hint={t("titulaireAide")} required
         />
         <div className="sm:col-span-2 flex flex-wrap gap-3 justify-end">
           {profil && (
             <button type="button" onClick={() => { setForm(profil); setEdition(false); setErreurs({}); }} className="px-5 py-3 rounded-xl border border-gray-200 text-sm font-bold text-dark">
-              Annuler
+              {t("annuler")}
             </button>
           )}
           <button type="submit" disabled={envoi} className="px-6 py-3 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary-600 disabled:opacity-60">
-            {envoi ? "Enregistrement…" : "Enregistrer"}
+            {envoi ? t("enregistrement") : t("enregistrer")}
           </button>
         </div>
       </form>

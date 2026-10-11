@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface MobileDrawerProps {
   open: boolean;
@@ -19,6 +20,7 @@ interface MobileDrawerProps {
  * le parent (un parent avec backdrop-filter ou transform « emprisonne » sinon les éléments en position fixe).
  */
 export default function MobileDrawer({ open, onClose, label, header, children }: MobileDrawerProps) {
+  const t = useTranslations("nav");
   const [monte, setMonte] = useState(false);
   const panneau = useRef<HTMLDivElement>(null);
 
@@ -59,7 +61,7 @@ export default function MobileDrawer({ open, onClose, label, header, children }:
           >
             <div className="flex items-center justify-between gap-3 px-5 h-16 border-b border-gray-100 flex-shrink-0">
               <div className="min-w-0">{header}</div>
-              <button type="button" onClick={onClose} aria-label="Fermer le menu" className="w-10 h-10 -mr-2 rounded-full flex items-center justify-center text-dark hover:bg-gray-100">
+              <button type="button" onClick={onClose} aria-label={t("fermerMenu")} className="w-10 h-10 -mr-2 rounded-full flex items-center justify-center text-dark hover:bg-gray-100">
                 <X size={22} />
               </button>
             </div>

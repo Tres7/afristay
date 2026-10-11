@@ -5,8 +5,9 @@ import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { BadgeCheck, MessageSquareReply, Star } from "lucide-react";
 import { toast } from "sonner";
 import api, { apiErrorMessage } from "@/lib/api";
-import { cn, initials } from "@/lib/utils";
+import { cn, formatDate, initials } from "@/lib/utils";
 import type { Avis, AvisPage, CritereAvis } from "@/types/api/models";
+import { useLocale, useTranslations } from "next-intl";
 
 const PAGE = 6;
 
@@ -21,6 +22,7 @@ function Stars({ value, size = 14 }: { value: number; size?: number }) {
 }
 
 function ReponseForm({ avis, onDone }: { avis: Avis; onDone: (a: Avis) => void }) {
+  const t = useTranslations("avis");
   const [open, setOpen] = useState(false);
   const [texte, setTexte] = useState("");
   const [envoi, setEnvoi] = useState(false);
@@ -28,7 +30,7 @@ function ReponseForm({ avis, onDone }: { avis: Avis; onDone: (a: Avis) => void }
   if (!open) {
     return (
       <button onClick={() => setOpen(true)} className="mt-3 flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline">
-        <MessageSquareReply size={15} /> Répondre publiquement
+        <MessageSquareReply size={15} /> {t("repondre")}
       </button>
     );
   }
@@ -38,7 +40,7 @@ function ReponseForm({ avis, onDone }: { avis: Avis; onDone: (a: Avis) => void }
     try {
       const res = await api.post<Avis>(`/v1/avis/${avis.id}/reponse/`, { reponse: texte.trim() });
       onDone(res.data);
-      toast.success("Réponse publiée");
+      toast.success(t("reponsePubliee"));
     } catch (err) {
       toast.error(apiErrorMessage(err));
       setEnvoi(false);
@@ -49,13 +51,13 @@ function ReponseForm({ avis, onDone }: { avis: Avis; onDone: (a: Avis) => void }
     <div className="mt-3 space-y-2">
       <textarea
         value={texte} onChange={(e) => setTexte(e.target.value)} rows={3} maxLength={1000}
-        placeholder="Remerciez le voyageur ou apportez une précision. Votre réponse sera visible de tous."
+        placeholder={t("reponsePlaceholder")}
         className="w-full border border-gray-200 rounded-xl px-3 py-2 text-base sm:text-sm outline-none focus:border-primary resize-none"
       />
       <div className="flex gap-2 justify-end">
-        <button onClick={() => setOpen(false)} className="px-4 py-2 text-sm rounded-xl border border-gray-200">Annuler</button>
+        <button onClick={() => setOpen(false)} className="px-4 py-2 text-sm rounded-xl border border-gray-200">{t("annuler")}</button>
         <button onClick={envoyer} disabled={envoi || texte.trim().length < 2} className="px-4 py-2 text-sm rounded-xl bg-primary text-white font-bold disabled:opacity-50">
-          {envoi ? "Publication..." : "Publier la réponse"}
+          {envoi ? t("publication") : t("publier")}
         </button>
       </div>
     </div>
@@ -63,6 +65,7 @@ function ReponseForm({ avis, onDone }: { avis: Avis; onDone: (a: Avis) => void }
 }
 
 function AvisCard({ avis, isOwner, hostName, onUpdate }: { avis: Avis; isOwner: boolean; hostName: string; onUpdate: (a: Avis) => void }) {
+  const t = useTranslations("avis");
   const [deplie, setDeplie] = useState(false);
   const long = avis.commentaire.length > 280;
   const nom = `${avis.auteur.prenom} ${avis.auteur.initiale}`.trim();
@@ -76,8 +79,8 @@ function AvisCard({ avis, isOwner, hostName, onUpdate }: { avis: Avis; isOwner: 
         <div className="min-w-0">
           <p className="font-semibold text-dark text-sm">{nom}</p>
           <p className="text-xs text-muted flex items-center gap-1 flex-wrap">
-            <span className="inline-flex items-center gap-0.5 text-secondary font-semibold"><BadgeCheck size={12} /> Séjour vérifié</span>
-            · {new Date(avis.sejour).toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}
+            <span className="inline-flex items-center gap-0.5 text-secondary font-semibold"><BadgeCheck size={12} /> {t("sejourVerifie")}</span>
+            · {formatDate(avis.sejour, { month: "long", year: "numeric" })}
           </p>
         </div>
       </div>
@@ -85,13 +88,13 @@ function AvisCard({ avis, isOwner, hostName, onUpdate }: { avis: Avis; isOwner: 
       <p className={cn("text-sm text-gray-700 leading-relaxed mt-2 whitespace-pre-line", !deplie && long && "line-clamp-4")}>{avis.commentaire}</p>
       {long && (
         <button onClick={() => setDeplie(!deplie)} className="text-sm font-semibold text-dark underline mt-1">
-          {deplie ? "Voir moins" : "Lire la suite"}
+          {deplie ? t("voirMoins") : t("lireSuite")}
         </button>
       )}
 
       {avis.reponse_hote ? (
         <div className="mt-3 ml-4 pl-4 border-l-2 border-primary/30">
-          <p className="text-xs font-bold text-dark">Réponse de {hostName}</p>
+          <p className="text-xs font-bold text-dark">{t("reponseDe", { hote: hostName })}</p>
           <p className="text-sm text-gray-600 mt-1 whitespace-pre-line">{avis.reponse_hote}</p>
         </div>
       ) : isOwner ? (
@@ -108,6 +111,9 @@ interface AvisSectionProps {
 }
 
 export default function AvisSection({ hebergementId, isOwner, hostName }: AvisSectionProps) {
+  const t = useTranslations("avis");
+  const locale = useLocale();
+  const tNote = useTranslations("note");
   const queryClient = useQueryClient();
   const queryKey = ["avis", hebergementId];
 
@@ -134,30 +140,30 @@ export default function AvisSection({ hebergementId, isOwner, hostName }: AvisSe
 
   return (
     <section id="avis" className="bg-white rounded-2xl shadow-card p-5 sm:p-6 scroll-mt-24">
-      <h2 className="font-heading font-bold text-dark text-xl mb-1">Avis des voyageurs</h2>
+      <h2 className="font-heading font-bold text-dark text-xl mb-1">{t("titre")}</h2>
       <p className="text-xs text-muted mb-5 flex items-center gap-1">
-        <BadgeCheck size={13} className="text-secondary" /> Uniquement des voyageurs ayant réellement séjourné ici.
+        <BadgeCheck size={13} className="text-secondary" /> {t("uniquementSejournes")}
       </p>
 
       {!resume || resume.total === 0 ? (
         <div className="bg-light-muted rounded-xl p-5 text-sm text-gray-600">
-          <p className="font-semibold text-dark mb-1">Pas encore d&apos;avis</p>
-          Ce logement est nouveau sur Kwa-Ba. Les premiers voyageurs pourront le noter après leur séjour.
+          <p className="font-semibold text-dark mb-1">{t("pasEncore")}</p>
+          {t("nouveau")}
         </div>
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-[auto_1fr_1fr] gap-6 pb-6 border-b border-gray-100">
             <div className="flex md:flex-col items-center md:items-start gap-3 md:gap-1">
               <p className="font-heading font-bold text-5xl text-dark leading-none">
-                {resume.moyenne?.toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+                {resume.moyenne?.toLocaleString(locale === "en" ? "en-GB" : "fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
               </p>
               <div>
                 <Stars value={resume.moyenne ?? 0} size={16} />
-                <p className="text-sm text-muted mt-1">{resume.total} avis</p>
+                <p className="text-sm text-muted mt-1">{tNote("avis", { nombre: resume.total })}</p>
               </div>
             </div>
 
-            <div className="space-y-1.5" aria-label="Répartition des notes">
+            <div className="space-y-1.5" aria-label={t("repartition")}>
               {[5, 4, 3, 2, 1].map((n) => {
                 const nb = resume.repartition[String(n)] ?? 0;
                 return (
@@ -175,8 +181,8 @@ export default function AvisSection({ hebergementId, isOwner, hostName }: AvisSe
             <dl className="grid grid-cols-1 gap-1.5 text-sm">
               {(Object.keys(resume.libelles) as CritereAvis[]).map((c) => (
                 <div key={c} className="flex items-center justify-between gap-3">
-                  <dt className={cn("text-gray-600", c === "conformite" && "font-semibold text-dark")}>{resume.libelles[c]}</dt>
-                  <dd className="font-bold text-dark">{resume.criteres[c]?.toLocaleString("fr-FR", { minimumFractionDigits: 1 }) ?? "–"}</dd>
+                  <dt className={cn("text-gray-600", c === "conformite" && "font-semibold text-dark")}>{t(`criteres.${c}`)}</dt>
+                  <dd className="font-bold text-dark">{resume.criteres[c]?.toLocaleString(locale === "en" ? "en-GB" : "fr-FR", { minimumFractionDigits: 1 }) ?? "–"}</dd>
                 </div>
               ))}
             </dl>
@@ -188,7 +194,7 @@ export default function AvisSection({ hebergementId, isOwner, hostName }: AvisSe
 
           {hasNextPage && (
             <button onClick={() => fetchNextPage()} disabled={isFetchingNextPage} className="mt-2 w-full sm:w-auto px-6 py-3 rounded-xl border border-gray-300 text-sm font-semibold text-dark hover:bg-gray-50 disabled:opacity-50">
-              {isFetchingNextPage ? "Chargement..." : `Voir plus d'avis (${(resume.total) - avis.length})`}
+              {isFetchingNextPage ? t("chargement") : t("voirPlusAvis", { nombre: resume.total - avis.length })}
             </button>
           )}
         </>

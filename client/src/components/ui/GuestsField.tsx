@@ -6,6 +6,7 @@ import Floating from "@/components/ui/Floating";
 import Stepper from "@/components/ui/Stepper";
 import { usePopover } from "@/lib/usePopover";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface GuestsFieldProps {
   value: number;
@@ -16,10 +17,10 @@ interface GuestsFieldProps {
   className?: string;
 }
 
-const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? "s" : ""}`;
 
 /** Choix du nombre de voyageurs : panneau avec adultes et enfants, total transmis au parent. */
 export default function GuestsField({ value, onChange, max = 16, variant = "field", className }: GuestsFieldProps) {
+  const t = useTranslations("voyageurs");
   const { open, setOpen, ref, panelRef } = usePopover();
   // La réservation ne stocke qu'un total : la répartition sert au confort de saisie
   const [enfants, setEnfants] = useState(0);
@@ -42,18 +43,18 @@ export default function GuestsField({ value, onChange, max = 16, variant = "fiel
       >
         <Users size={16} className="text-primary flex-shrink-0" />
         <span className="flex-1 min-w-0 text-base md:text-sm font-medium text-dark truncate">
-          {pluriel(value, "voyageur")}
+          {t("voyageurs", { nombre: value })}
         </span>
         <ChevronDown size={16} className={cn("text-gray-400 transition-transform flex-shrink-0", open && "rotate-180")} />
       </button>
 
       {open && (
-        <Floating ref={panelRef} anchor={ref} width={320} align="end" sheetOnMobile onClose={() => setOpen(false)} label="Nombre de voyageurs" className="p-5 space-y-5">
-          <Stepper label="Adultes" hint="13 ans et plus" value={adultes} min={1} max={max - enfants} onChange={(a) => maj(a, enfants)} />
-          <Stepper label="Enfants" hint="De 2 à 12 ans" value={enfants} min={0} max={max - adultes} onChange={(e) => maj(adultes, e)} />
-          <p className="text-xs text-muted">Les bébés de moins de 2 ans ne sont pas comptés.{max < 16 ? ` Maximum ${max} voyageurs pour ce logement.` : ""}</p>
+        <Floating ref={panelRef} anchor={ref} width={320} align="end" sheetOnMobile onClose={() => setOpen(false)} label={t("nombreVoyageurs")} className="p-5 space-y-5">
+          <Stepper label={t("adultes")} hint={t("adultesAide")} value={adultes} min={1} max={max - enfants} onChange={(a) => maj(a, enfants)} />
+          <Stepper label={t("enfants")} hint={t("enfantsAide")} value={enfants} min={0} max={max - adultes} onChange={(e) => maj(adultes, e)} />
+          <p className="text-xs text-muted">{t("bebes")}{max < 16 ? ` ${t("maximum", { nombre: max })}` : ""}</p>
           <div className="flex justify-end">
-            <button type="button" onClick={() => setOpen(false)} className="px-5 py-2 rounded-xl bg-dark text-white text-sm font-bold">Valider</button>
+            <button type="button" onClick={() => setOpen(false)} className="px-5 py-2 rounded-xl bg-dark text-white text-sm font-bold">{t("valider")}</button>
           </div>
         </Floating>
       )}

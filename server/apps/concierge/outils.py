@@ -80,6 +80,11 @@ LIBELLES = {
     'devis_transfert': 'Je calcule le prix du transfert',
     'proposer_voyage_de_groupe': 'Je prépare le voyage de groupe',
 }
+LIBELLES_EN = {
+    'rechercher_logements': 'Looking for places to stay',
+    'devis_transfert': 'Working out the transfer price',
+    'proposer_voyage_de_groupe': 'Preparing the group trip',
+}
 
 
 class EntreeInvalide(Exception):

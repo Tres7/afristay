@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useSession } from "next-auth/react";
 import { useQuery } from "@tanstack/react-query";
 import { Users } from "lucide-react";
@@ -10,9 +10,12 @@ import api, { apiErrorMessage } from "@/lib/api";
 import Floating from "@/components/ui/Floating";
 import { usePopover } from "@/lib/usePopover";
 import type { VoyageResume } from "@/types/api/voyage";
+import { useTranslations } from "next-intl";
 
 /** Bouton de la fiche logement : proposer ce logement à l'un de ses voyages de groupe. */
 export default function ProposerAuGroupe({ hebergementId }: { hebergementId: string }) {
+  const t = useTranslations("proposerGroupe");
+  const router = useRouter();
   const { status } = useSession();
   const { open, setOpen, ref, panelRef } = usePopover();
   const [envoi, setEnvoi] = useState<string | null>(null);
@@ -29,10 +32,10 @@ export default function ProposerAuGroupe({ hebergementId }: { hebergementId: str
     setEnvoi(v.id);
     try {
       await api.post(`/v1/voyages/${v.id}/propositions/`, { hebergement: hebergementId });
-      toast.success(`Proposé au groupe « ${v.nom} »`, { action: { label: "Voir", onClick: () => window.location.assign(`/together/${v.id}`) } });
+      toast.success(t("propose", { nom: v.nom }), { action: { label: t("voir"), onClick: () => router.push(`/together/${v.id}`) } });
       setOpen(false);
     } catch (err) {
-      toast.error(apiErrorMessage(err, "Proposition impossible."));
+      toast.error(apiErrorMessage(err, t("erreur")));
     } finally {
       setEnvoi(null);
     }
@@ -42,13 +45,13 @@ export default function ProposerAuGroupe({ hebergementId }: { hebergementId: str
     <div ref={ref} className="relative">
       <button onClick={() => setOpen(!open)} aria-expanded={open} aria-haspopup="dialog"
         className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-gray-200 text-sm font-bold text-dark hover:bg-gray-50">
-        <Users size={16} /> Proposer à mon groupe
+        <Users size={16} /> {t("proposer")}
       </button>
       {open && (
-        <Floating ref={panelRef} anchor={ref} onClose={() => setOpen(false)} label="Proposer à un voyage de groupe" className="p-2 w-72">
+        <Floating ref={panelRef} anchor={ref} onClose={() => setOpen(false)} label={t("proposerA")} className="p-2 w-72">
           {voyages.length === 0 ? (
             <div className="p-3 text-sm text-gray-600">
-              Aucun voyage de groupe. <Link href="/together" className="text-primary font-bold">Créer un voyage</Link>
+              {t("aucunVoyage")} <Link href="/together" className="text-primary font-bold">{t("creerVoyage")}</Link>
             </div>
           ) : (
             <ul>

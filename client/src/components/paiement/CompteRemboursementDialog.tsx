@@ -9,6 +9,8 @@ import { formatPrice } from "@/lib/utils";
 import Select from "@/components/ui/Select";
 import FormField from "@/components/ui/FormField";
 import type { PaysPaiement } from "@/types/api/paiement";
+import { useTranslations } from "next-intl";
+import { PAYS } from "@/lib/give";
 
 interface Props {
   /** Route qui enregistre le compte (réservation ou transfert). */
@@ -20,6 +22,7 @@ interface Props {
 
 /** Demande au voyageur le compte Mobile Money sur lequel le rembourser (FedaPay ne communique pas le numéro débité). */
 export default function CompteRemboursementDialog({ endpoint, montant, onClose, onDone }: Props) {
+  const t = useTranslations("remboursementDialog");
   const { data: config } = useConfigPaiement();
   const [pays, setPays] = useState<PaysPaiement["code"]>("TG");
   const [operateurChoisi, setOperateur] = useState("");
@@ -57,7 +60,7 @@ export default function CompteRemboursementDialog({ endpoint, montant, onClose, 
       if (data && typeof data === "object" && !("detail" in data)) {
         setErreurs(Object.fromEntries(Object.entries(data).map(([k, v]) => [k, Array.isArray(v) ? v[0] : String(v)])));
       } else {
-        setErreurs({ general: apiErrorMessage(err, "Impossible d'enregistrer le numéro.") });
+        setErreurs({ general: apiErrorMessage(err, t("erreurNumero")) });
       }
       setEnvoi(false);
     }
@@ -70,13 +73,13 @@ export default function CompteRemboursementDialog({ endpoint, montant, onClose, 
         ref={panneau} role="dialog" aria-modal="true" aria-labelledby="remb-titre"
         className="relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 max-h-[90vh] overflow-y-auto"
       >
-        <button onClick={onClose} aria-label="Fermer" className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100">
+        <button onClick={onClose} aria-label={t("fermer")} className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100">
           <X size={18} />
         </button>
         <div className="w-12 h-12 rounded-2xl bg-secondary/10 text-secondary flex items-center justify-center mb-4"><Smartphone size={22} /></div>
-        <h2 id="remb-titre" className="font-heading font-bold text-dark text-xl pr-8">Où recevoir votre remboursement ?</h2>
+        <h2 id="remb-titre" className="font-heading font-bold text-dark text-xl pr-8">{t("titre")}</h2>
         <p className="text-sm text-gray-600 mt-2">
-          Indiquez le compte Mobile Money sur lequel vous voulez recevoir <strong>{formatPrice(montant)}</strong>. Le virement part dans les minutes qui suivent.
+          {t.rich("texte", { montant: formatPrice(montant), strong: (x) => <strong>{x}</strong> })}
         </p>
 
         {!config ? (
@@ -85,28 +88,28 @@ export default function CompteRemboursementDialog({ endpoint, montant, onClose, 
           <form onSubmit={envoyer} className="space-y-4 mt-5" noValidate>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <p className="block text-xs font-bold text-dark uppercase tracking-wide mb-2">Pays</p>
-                <Select label="Pays" value={pays} onChange={(v) => setPays(v as PaysPaiement["code"])}
-                  options={config.pays.map((p) => ({ value: p.code, label: p.nom }))} />
+                <p className="block text-xs font-bold text-dark uppercase tracking-wide mb-2">{t("pays")}</p>
+                <Select label={t("pays")} value={pays} onChange={(v) => setPays(v as PaysPaiement["code"])}
+                  options={config.pays.map((p) => ({ value: p.code, label: PAYS[p.code] ?? p.nom }))} />
               </div>
               <div>
-                <p className="block text-xs font-bold text-dark uppercase tracking-wide mb-2">Opérateur</p>
-                <Select label="Opérateur Mobile Money" value={operateur} onChange={setOperateur}
+                <p className="block text-xs font-bold text-dark uppercase tracking-wide mb-2">{t("operateur")}</p>
+                <Select label={t("operateurMM")} value={operateur} onChange={setOperateur}
                   options={operateurs.map((o) => ({ value: o.code, label: o.nom }))} />
                 {erreurs.operateur && <p className="text-xs text-red-600 mt-1.5 ml-1">{erreurs.operateur}</p>}
               </div>
             </div>
             <FormField
-              label={`Numéro (+${infos?.indicatif ?? ""})`} id="remb-numero" inputMode="numeric" autoComplete="tel-national"
+              label={t("numero", { indicatif: infos?.indicatif ?? "" })} id="remb-numero" inputMode="numeric" autoComplete="tel-national"
               value={numero} onChange={(e) => setNumero(e.target.value)} error={erreurs.numero}
-              placeholder={infos ? "0".repeat(infos.chiffres) : ""} hint={infos ? `${infos.chiffres} chiffres, sans l'indicatif` : undefined} required
+              placeholder={infos ? "0".repeat(infos.chiffres) : ""} hint={infos ? t("chiffres", { nombre: infos.chiffres }) : undefined} required
             />
             {erreurs.general && <p role="alert" className="text-sm text-red-700 bg-red-50 rounded-xl p-3">{erreurs.general}</p>}
             <button type="submit" disabled={envoi} className="w-full bg-secondary hover:bg-secondary-600 text-white font-bold py-3.5 rounded-2xl disabled:opacity-60">
-              {envoi ? "Enregistrement…" : "Recevoir mon remboursement"}
+              {envoi ? t("enregistrement") : t("recevoir")}
             </button>
             <button type="button" onClick={onClose} className="w-full text-sm font-semibold text-gray-600 py-2 hover:text-dark">
-              Plus tard (depuis Mes réservations)
+              {t("plusTard")}
             </button>
           </form>
         )}

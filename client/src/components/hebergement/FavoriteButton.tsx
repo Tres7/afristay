@@ -3,10 +3,11 @@
 import { useState } from "react";
 import { Heart } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
 import api from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface FavoriteButtonProps {
   hebergementId: string;
@@ -17,6 +18,7 @@ interface FavoriteButtonProps {
 }
 
 export default function FavoriteButton({ hebergementId, initial, onChange, variant = "icon", className }: FavoriteButtonProps) {
+  const t = useTranslations("favoris");
   const { status } = useSession();
   const router = useRouter();
   const pathname = usePathname();
@@ -39,10 +41,10 @@ export default function FavoriteButton({ hebergementId, initial, onChange, varia
       if (next) await api.post("/v1/favoris/", { hebergement: hebergementId });
       else await api.delete(`/v1/favoris/${hebergementId}/`);
       onChange?.(next);
-      toast.success(next ? "Ajouté à vos favoris" : "Retiré de vos favoris");
+      toast.success(next ? t("ajoute") : t("retire"));
     } catch {
       setIsFavorite(!next);
-      toast.error("Impossible de mettre à jour vos favoris.");
+      toast.error(t("erreur"));
     } finally {
       setPending(false);
     }
@@ -60,7 +62,7 @@ export default function FavoriteButton({ hebergementId, initial, onChange, varia
         )}
       >
         <Heart size={15} className={isFavorite ? "text-red-600 fill-red-500" : "text-dark"} />
-        <span className="hidden sm:inline">{isFavorite ? "Sauvegardé" : "Sauvegarder"}</span>
+        <span className="hidden sm:inline">{isFavorite ? t("sauvegarde") : t("sauvegarder")}</span>
       </button>
     );
   }
@@ -69,7 +71,7 @@ export default function FavoriteButton({ hebergementId, initial, onChange, varia
     <button
       type="button"
       onClick={toggle}
-      aria-label={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
+      aria-label={isFavorite ? t("retirer") : t("ajouter")}
       aria-pressed={isFavorite}
       className={cn(
         "p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm transition-colors hover:bg-white",
