@@ -1171,7 +1171,8 @@
     "gemini": "Vos messages sont traités par Gemini (Google).",
     "enSavoirPlus": "En savoir plus",
     "ecrit": "Le Concierge écrit",
-    "ia": "IA"
+    "ia": "IA",
+    "nouvelleConversation": "Nouvelle conversation"
   },
   "conciergeCartes": {
     "voir": "Voir",
