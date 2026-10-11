@@ -235,3 +235,21 @@ def test_version_anglaise_du_site(concierge, make_user, make_hebergement):
     assert services.langue_de('') == 'fr' and services.langue_de('fr-FR,fr;q=0.9') == 'fr' and services.langue_de('en-GB') == 'en'
     assert 'Réponds en anglais' not in services._systeme('fr')
     assert services._m('sollicite', 'en').startswith('The Concierge is very busy')
+
+
+def test_erreurs_en_anglais(concierge, make_user):
+    """Version anglaise : messages d'étape et d'erreur traduits (recherche web, Gemini injoignable, conversation trop longue)."""
+    recherche = [NS(event_type='step.start', index=0, step=NS(type='google_search_call'))]
+    coupure = compat_errors.APIConnectionError(request=mock.Mock())
+    faux = FauxGemini(recherche + tour('int_w', 'Here are some ideas.'), coupure)
+    client = _client(make_user())
+    cid = client.post(CONVERSATIONS).data['id']
+    url = f'{CONVERSATIONS}{cid}/messages/'
+    with mock.patch.object(services, '_client', return_value=faux):
+        evts = _evenements(client.post(url, {'texte': 'Restaurants in Lomé?'}, format='json', HTTP_ACCEPT_LANGUAGE='en'))
+        assert ('outil', {'nom': 'google_search', 'libelle': services._m('web', 'en')}) in evts
+        evts = _evenements(client.post(url, {'texte': 'And in Cotonou?'}, format='json', HTTP_ACCEPT_LANGUAGE='en'))
+        assert evts[-1] == ('erreur', {'message': 'The Concierge is temporarily unavailable. Please try again.'})
+        with mock.patch.object(services, 'MAX_MESSAGES_PAR_CONVERSATION', 0):
+            evts = _evenements(client.post(url, {'texte': 'Hello'}, format='json', HTTP_ACCEPT_LANGUAGE='en'))
+    assert evts == [('erreur', {'message': 'This conversation is long: start a new one to continue.'})]
