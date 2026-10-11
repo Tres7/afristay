@@ -164,12 +164,12 @@ export default function HebergementForm({ initial, onSaved, onCancel }: Hebergem
       <fieldset>
         <legend className={labelClass}>{t("equipements")}</legend>
         <div className="flex flex-wrap gap-2">
-          {Object.entries(AMENITIES).map(([id, { label, emoji }]) => {
+          {Object.entries(AMENITIES).map(([id, { label, Icone }]) => {
             const active = form.amenities.includes(id);
             return (
               <button key={id} type="button" aria-pressed={active} onClick={() => toggleAmenity(id)}
-                className={cn("px-3 py-2 rounded-full text-sm border transition-colors", active ? "bg-primary text-white border-primary" : "bg-white text-dark border-gray-200 hover:border-primary/40")}>
-                <span aria-hidden>{emoji}</span> {label}
+                className={cn("inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-sm border transition-colors", active ? "bg-primary text-white border-primary" : "bg-white text-dark border-gray-200 hover:border-primary/40")}>
+                <Icone size={16} aria-hidden /> {label}
               </button>
             );
           })}
