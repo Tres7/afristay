@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { getToken } from "next-auth/jwt";
 import createIntlMiddleware from "next-intl/middleware";
-import { auth } from "@/auth";
 import { routing } from "@/i18n/routing";
 
 // Pages réservées aux utilisateurs connectés (le centre d'aide reste public)
@@ -21,9 +21,16 @@ function sansLangue(pathname: string) {
   return { chemin: pathname.slice(langue.length + 1) || "/", prefixe: `/${langue}` };
 }
 
-export default auth((req) => {
+// Session lue directement dans le cookie, sans le wrapper auth() : avec AUTH_URL (indispensable en production
+// derrière nginx), ce wrapper réécrit l'origine de la requête et Next.js traite alors la réécriture de langue
+// de next-intl comme un proxy externe (erreur 500 en mode standalone). Le renouvellement des jetons reste
+// fait par les routes Auth.js et les composants serveur.
+const secureCookie = (process.env.AUTH_URL ?? "").startsWith("https://");
+
+export default async function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
-  const isLoggedIn = !!req.auth && !req.auth.error;
+  const token = await getToken({ req, secret: process.env.AUTH_SECRET, secureCookie });
+  const isLoggedIn = !!token && !token.error;
   const { chemin, prefixe } = sansLangue(pathname);
 
   const isProtected =
@@ -39,7 +46,7 @@ export default auth((req) => {
 
   // Back-office : administrateurs uniquement (l'API vérifie aussi le rôle), en français
   if (chemin.startsWith("/backoffice")) {
-    if (isLoggedIn && req.auth?.user?.role !== "admin") {
+    if (isLoggedIn && token?.role !== "admin") {
       return NextResponse.redirect(new URL(prefixe || "/", req.nextUrl.origin));
     }
     return NextResponse.next();
@@ -50,7 +57,7 @@ export default auth((req) => {
   }
 
   return intl(req);
-});
+}
 
 export const config = {
   // Toutes les pages, sauf l'API, les fichiers internes de Next.js et les fichiers statiques

@@ -1,0 +1,6 @@
+{
+  "//": "Vérification des types des sources seules (hook pre-push, CI) : les types générés dans .next/ par next dev peuvent être périmés",
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "incremental": false },
+  "include": ["next-env.d.ts", "src/**/*.ts", "src/**/*.tsx"]
+}

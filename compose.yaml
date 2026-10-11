@@ -62,6 +62,7 @@ services:
     build:
       context: ./client
       dockerfile: Dockerfile
+      target: dev # l'image de production (cible par défaut) sert au VPS
     container_name: afristay-frontend
     # Pas root : .next est écrit dans le dossier monté avec ton uid (sinon tsc et le hook pre-push échouent)
     user: node

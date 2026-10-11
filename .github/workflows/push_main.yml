@@ -1,7 +1,7 @@
 name: Main
 
-# Chaque état déployable de main est décrit par un manifest (deploy/manifests) :
-# image du serveur par digest et révision du client. Les déploiements partent d'un manifest.
+# Chaque état déployable de main est décrit par un manifest (deploy/manifests) : images du serveur
+# et du client, par digest, qui vont ensemble. Les déploiements partent d'un manifest.
 on:
   push:
     branches: [main]
@@ -28,6 +28,7 @@ jobs:
     outputs:
       changed: ${{ steps.plan.outputs.changed }}
       build_server: ${{ steps.plan.outputs.build_server }}
+      build_client: ${{ steps.plan.outputs.build_client }}
       server_revision: ${{ steps.plan.outputs.server_revision }}
       client_revision: ${{ steps.plan.outputs.client_revision }}
     steps:
@@ -47,20 +48,38 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
   server-image:
-    name: Image
+    name: Serveur
     needs: plan
     if: needs.plan.outputs.build_server == 'true'
     uses: ./.github/workflows/_main-push-image.yml
     permissions:
       contents: read
       packages: write
+    with:
+      service: server
+
+  client-image:
+    name: Client
+    needs: plan
+    if: needs.plan.outputs.build_client == 'true'
+    uses: ./.github/workflows/_main-push-image.yml
+    permissions:
+      contents: read
+      packages: write
+    with:
+      service: client
+      # Valeurs publiques figées dans le code du navigateur (variables du dépôt, non secrètes)
+      public-site-url: ${{ vars.PUBLIC_SITE_URL }}
+      google-client-id: ${{ vars.PUBLIC_GOOGLE_CLIENT_ID }}
+      contact-email: ${{ vars.PUBLIC_CONTACT_EMAIL }}
 
   manifest:
     name: Manifest
-    needs: [plan, server-image]
+    needs: [plan, server-image, client-image]
     if: >-
       always() && needs.plan.outputs.changed == 'true'
       && (needs.server-image.result == 'success' || needs.server-image.result == 'skipped')
+      && (needs.client-image.result == 'success' || needs.client-image.result == 'skipped')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -78,10 +97,11 @@ jobs:
           SERVER_REVISION: ${{ needs.plan.outputs.server_revision }}
           CLIENT_REVISION: ${{ needs.plan.outputs.client_revision }}
           SERVER_IMAGE: ${{ needs.server-image.outputs.image }}
+          CLIENT_IMAGE: ${{ needs.client-image.outputs.image }}
         run: |
           node .github/scripts/manifest/create.mjs --source-revision "$GITHUB_SHA" \
             --server-revision "$SERVER_REVISION" --client-revision "$CLIENT_REVISION" \
-            --server-image "$SERVER_IMAGE" | tee -a "$GITHUB_OUTPUT"
+            --server-image "$SERVER_IMAGE" --client-image "$CLIENT_IMAGE" | tee -a "$GITHUB_OUTPUT"
           file=$(grep '^file=' "$GITHUB_OUTPUT" | tail -1 | cut -d= -f2)
           { echo "### Manifest \`$(basename "$file")\`"; echo '```yaml'; cat "$file"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
 
@@ -133,16 +153,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Tags définitifs de l'image
+      - name: Tags définitifs des images
         env:
-          FILE: ${{ steps.create.outputs.file }}
           VERSION: ${{ steps.create.outputs.version }}
           COMMITTED: ${{ vars.CD_APP_CLIENT_ID != '' }}
         run: |
-          image=$(node .github/scripts/manifest/latest.mjs --field services.server.image)
-          repository="${image%@*}"
-          tags=(--tag "${repository}:main")
-          # manifest-N seulement pour un manifest réellement commité
-          if [ "$COMMITTED" = "true" ]; then tags+=(--tag "${repository}:manifest-$(printf '%04d' "$VERSION")"); fi
-          docker buildx imagetools create "${tags[@]}" "$image"
-          echo "Tags posés sur \`${image}\` : ${tags[*]}" >> "$GITHUB_STEP_SUMMARY"
+          for service in server client; do
+            image=$(node .github/scripts/manifest/latest.mjs --field "services.${service}.image")
+            repository="${image%@*}"
+            tags=(--tag "${repository}:main")
+            # manifest-N seulement pour un manifest réellement commité
+            if [ "$COMMITTED" = "true" ]; then tags+=(--tag "${repository}:manifest-$(printf '%04d' "$VERSION")"); fi
+            docker buildx imagetools create "${tags[@]}" "$image"
+            echo "Tags posés sur \`${image}\` : ${tags[*]}" >> "$GITHUB_STEP_SUMMARY"
+          done
