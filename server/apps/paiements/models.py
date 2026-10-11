@@ -25,15 +25,19 @@ class ProfilVersementModel(models.Model):
 
 
 class ObjetPayeMixin:
-    """Ce qui est payé : une réservation de logement ou un transfert aéroport."""
+    """Ce qui est payé : une réservation de logement, un transfert aéroport ou un don (Kwa-Ba Give)."""
 
     @property
     def objet(self):
-        return self.reservation if self.reservation_id else self.transfert
+        if self.reservation_id:
+            return self.reservation
+        return self.transfert if self.transfert_id else self.don
 
     @property
     def payeur(self):
-        return self.reservation.guest if self.reservation_id else self.transfert.voyageur
+        if self.reservation_id:
+            return self.reservation.guest
+        return self.transfert.voyageur if self.transfert_id else self.don.donateur
 
     @property
     def reference(self):
@@ -43,6 +47,8 @@ class ObjetPayeMixin:
     def libelle(self):
         if self.reservation_id:
             return self.reservation.hebergement.name
+        if not self.transfert_id:
+            return f"Don à {self.don.organisation.nom}"
         return f"Transfert depuis l'aéroport {self.transfert.aeroport.ville}"
 
 
@@ -66,6 +72,7 @@ class PaiementModel(ObjetPayeMixin, models.Model):
     transfert = models.ForeignKey(
         'transferts.TransfertModel', on_delete=models.PROTECT, related_name='paiements', null=True, blank=True,
     )
+    don = models.ForeignKey('give.DonModel', on_delete=models.PROTECT, related_name='paiements', null=True, blank=True)
     montant = models.PositiveIntegerField()
     devise = models.CharField(max_length=3, default='XOF')
     prestataire = models.CharField(max_length=20, choices=PRESTATAIRES, default='fedapay')
@@ -91,9 +98,10 @@ class PaiementModel(ObjetPayeMixin, models.Model):
         ordering = ['-cree_le']
         verbose_name = 'Paiement'
         constraints = [models.CheckConstraint(
-            condition=models.Q(reservation__isnull=False, transfert__isnull=True)
-            | models.Q(reservation__isnull=True, transfert__isnull=False),
-            name='paiement_reservation_ou_transfert',
+            condition=models.Q(reservation__isnull=False, transfert__isnull=True, don__isnull=True)
+            | models.Q(reservation__isnull=True, transfert__isnull=False, don__isnull=True)
+            | models.Q(reservation__isnull=True, transfert__isnull=True, don__isnull=False),
+            name='paiement_reservation_transfert_ou_don',
         )]
 
     def __str__(self):

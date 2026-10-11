@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Search, Menu, ArrowRight, LogIn, UserPlus, MessageCircle, Heart, CalendarCheck, User, LogOut, Home, ShieldCheck, Plane, Users, Sparkles } from "lucide-react";
+import { Search, Menu, ArrowRight, LogIn, UserPlus, MessageCircle, Heart, CalendarCheck, User, LogOut, Home, ShieldCheck, Plane, Users, Sparkles, HandHeart } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import api from "@/lib/api";
@@ -19,6 +19,7 @@ const NAV_LINKS = [
   // Affichés seulement sur grand écran (sinon la barre déborde) ; toujours présents dans le menu mobile et le pied de page
   { href: "/transfert", label: "Transferts", large: true },
   { href: "/together", label: "Together", large: true },
+  { href: "/give", label: "Give", large: true },
   { href: "/hote", label: "Devenir hôte" },
 ];
 
@@ -202,6 +203,7 @@ export default function Navbar() {
             { href: "/transfert", label: "Transfert aéroport", icon: Plane },
             { href: "/together", label: "Voyager à plusieurs", icon: Users },
             { href: "/concierge", label: "Concierge IA", icon: Sparkles },
+            { href: "/give", label: "Faire un don", icon: HandHeart },
             ...(authenticated
               ? [
                   { href: "/profil/reservations", label: "Mes réservations", icon: CalendarCheck },
