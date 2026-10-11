@@ -8,10 +8,11 @@ const { values } = parseArgs({ options: { dir: { type: 'string', default: 'deplo
 const previous = latestManifest(values.dir);
 const serverRevision = lastCommitTouching('server');
 const clientRevision = lastCommitTouching('client');
-const { buildServer, changed } = plan({ previous, serverRevision, clientRevision });
+const { buildServer, buildClient, changed } = plan({ previous, serverRevision, clientRevision });
 
 console.log(`changed=${changed}`);
 console.log(`build_server=${buildServer}`);
+console.log(`build_client=${buildClient}`);
 console.log(`server_revision=${serverRevision}`);
 console.log(`client_revision=${clientRevision}`);
 console.log(`previous_version=${previous?.data.manifestVersion ?? 0}`);
