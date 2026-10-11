@@ -4,6 +4,7 @@ import { useState } from "react";
 import { addMonths } from "date-fns";
 import MonthGrid from "@/components/calendrier/MonthGrid";
 import { addDays, cn, isoDate } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface DateRangeCalendarProps {
   checkIn: string;
@@ -23,6 +24,7 @@ function limiteDepart(depuis: string, indisponibles: Set<string>, max: string): 
 }
 
 export default function DateRangeCalendar({ checkIn, checkOut, onChange, indisponibles, count = 1, chargement = false }: DateRangeCalendarProps) {
+  const t = useTranslations("dates");
   const today = isoDate();
   const maxDate = addDays(today, 365);
   const [month, setMonth] = useState(() => new Date(`${checkIn || today}T00:00:00`));
@@ -53,7 +55,7 @@ export default function DateRangeCalendar({ checkIn, checkOut, onChange, indispo
 
     return {
       disabled: bloque && !debut,
-      title: prise && !passe ? "Indisponible" : departPossible && prise ? "Départ possible" : undefined,
+      title: prise && !passe ? t("indisponible") : departPossible && prise ? t("departPossible") : undefined,
       className: cn(
         dedans && "bg-primary/10 text-dark",
         (debut || fin) && "bg-primary text-white font-bold",
@@ -71,7 +73,7 @@ export default function DateRangeCalendar({ checkIn, checkOut, onChange, indispo
     return (
       <div className="h-80 flex items-center justify-center text-sm text-muted" role="status">
         <span className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin mr-2" />
-        Chargement des disponibilités…
+        {t("chargement")}
       </div>
     );
   }
@@ -84,9 +86,9 @@ export default function DateRangeCalendar({ checkIn, checkOut, onChange, indispo
         renderDay={renderDay} onDayClick={clic} onDayHover={setSurvol}
       />
       <div className="flex items-center justify-between mt-3 text-xs text-muted">
-        <span>{!checkIn ? "Choisissez votre date d'arrivée" : !checkOut ? "Choisissez votre date de départ" : "Dates sélectionnées"}</span>
+        <span>{!checkIn ? t("choisirArrivee") : !checkOut ? t("choisirDepart") : t("datesChoisies")}</span>
         {(checkIn || checkOut) && (
-          <button type="button" onClick={() => onChange("", "")} className="font-semibold text-dark underline">Effacer</button>
+          <button type="button" onClick={() => onChange("", "")} className="font-semibold text-dark underline">{t("effacer")}</button>
         )}
       </div>
     </div>

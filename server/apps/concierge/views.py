@@ -73,7 +73,8 @@ class MessagesView(APIView):
         except services.ConciergeErreur as exc:
             return Response({'detail': str(exc)}, status=status.HTTP_429_TOO_MANY_REQUESTS)
 
-        reponse = StreamingHttpResponse(services.repondre(conversation, texte), content_type='text/event-stream')
+        langue = services.langue_de(request.headers.get('Accept-Language', ''))
+        reponse = StreamingHttpResponse(services.repondre(conversation, texte, langue), content_type='text/event-stream')
         reponse['Cache-Control'] = 'no-cache'
         reponse['X-Accel-Buffering'] = 'no'  # pas de mise en tampon derrière nginx
         return reponse

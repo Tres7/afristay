@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { MapPin } from "lucide-react";
 import { useConsentement } from "@/providers/ConsentProvider";
+import { useTranslations } from "next-intl";
 
 interface MapEmbedProps {
   lieu: string;
@@ -14,6 +15,7 @@ interface MapEmbedProps {
  * sans consentement, aucune requête n'est envoyée à Google (ni adresse IP, ni cookie).
  */
 export default function MapEmbed({ lieu, ville }: MapEmbedProps) {
+  const t = useTranslations("carte");
   const { consentement, definir } = useConsentement();
   // « Afficher une fois » : ne modifie pas le choix global
   const [unique, setUnique] = useState(false);
@@ -36,14 +38,14 @@ export default function MapEmbed({ lieu, ville }: MapEmbedProps) {
     <div className="w-full h-full flex flex-col items-center justify-center text-center gap-3 p-5 bg-[repeating-linear-gradient(45deg,#f8f5f0,#f8f5f0_12px,#f3efe8_12px,#f3efe8_24px)]">
       <MapPin size={28} className="text-primary" aria-hidden />
       <p className="text-sm text-dark max-w-sm">
-        La carte est fournie par <strong>Google Maps</strong>. En l&apos;affichant, Google reçoit votre adresse IP et peut déposer des cookies.
+        {t.rich("avertissement", { strong: (x) => <strong>{x}</strong> })}
       </p>
       <div className="flex flex-wrap justify-center gap-2">
         <button type="button" onClick={() => setUnique(true)} className="px-4 py-2 rounded-xl bg-dark text-white text-sm font-bold">
-          Afficher la carte
+          {t("afficher")}
         </button>
         <button type="button" onClick={() => definir(true)} className="px-4 py-2 rounded-xl border border-dark text-dark text-sm font-semibold">
-          Toujours afficher les cartes
+          {t("toujours")}
         </button>
       </div>
     </div>

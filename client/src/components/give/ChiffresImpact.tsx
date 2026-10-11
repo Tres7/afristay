@@ -1,13 +1,16 @@
 import { formatPrice } from "@/lib/utils";
 import type { Impact } from "@/types/api/give";
+import { useLocale, useTranslations } from "next-intl";
 
 /** Collecté / reversé / en attente : la transparence en trois chiffres. */
 export default function ChiffresImpact({ impact, clair = false }: { impact: Impact; clair?: boolean }) {
+  const t = useTranslations("give");
+  const locale = useLocale();
   const cases = [
-    { label: "Collectés pour les ONG", valeur: formatPrice(impact.collecte) },
-    { label: "Déjà reversés", valeur: formatPrice(impact.reverse) },
-    { label: "À reverser", valeur: formatPrice(impact.en_attente) },
-    { label: "Dons", valeur: impact.nb_dons.toLocaleString("fr-FR") },
+    { label: t("collectesOng"), valeur: formatPrice(impact.collecte) },
+    { label: t("dejaReverses"), valeur: formatPrice(impact.reverse) },
+    { label: t("aReverser"), valeur: formatPrice(impact.en_attente) },
+    { label: t("dons"), valeur: impact.nb_dons.toLocaleString(locale === "en" ? "en-GB" : "fr-FR") },
   ];
   return (
     <dl className="grid grid-cols-2 sm:grid-cols-4 gap-3">

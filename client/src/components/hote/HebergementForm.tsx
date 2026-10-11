@@ -8,13 +8,10 @@ import Select from "@/components/ui/Select";
 import Stepper from "@/components/ui/Stepper";
 import { cn, TYPE_LABELS } from "@/lib/utils";
 import type { Hebergement, HebergementType } from "@/types/api/models";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 
-const TYPE_HINTS: Record<HebergementType, string> = {
-  hotel: "Chambre dans un établissement avec services",
-  villa: "Maison entière, souvent avec jardin ou piscine",
-  appartement: "Logement entier dans un immeuble",
-  auberge: "Hébergement simple et convivial, petit budget",
-};
+// Aide de chaque type de logement : messages annonce.types.<type>
 
 interface HebergementFormProps {
   initial?: Hebergement;
@@ -26,6 +23,7 @@ const inputClass = "w-full px-4 py-3 bg-white border border-gray-200 rounded-xl 
 const labelClass = "block text-xs font-bold text-dark uppercase tracking-wide mb-2";
 
 export default function HebergementForm({ initial, onSaved, onCancel }: HebergementFormProps) {
+  const t = useTranslations("annonce");
   const [form, setForm] = useState({
     name: initial?.name ?? "",
     type: initial?.type ?? "appartement",
@@ -57,11 +55,11 @@ export default function HebergementForm({ initial, onSaved, onCancel }: Hebergem
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!droitsPhotos) {
-      setErrors({ droits: "Confirmez que vous détenez les droits sur les photos publiées." });
+      setErrors({ droits: t("erreurDroits") });
       return;
     }
     if (photos.length === 0) {
-      setErrors({ photos: "Ajoutez au moins une photo : les annonces sans photo ne sont presque jamais réservées." });
+      setErrors({ photos: t("erreurPhotos") });
       return;
     }
     setSaving(true);
@@ -90,7 +88,7 @@ export default function HebergementForm({ initial, onSaved, onCancel }: Hebergem
         const msg = firstErrorMessage(v);
         if (msg) errs[k] = msg;
       }
-      if (!Object.keys(errs).length) errs.detail = "Enregistrement impossible. Vérifiez votre connexion.";
+      if (!Object.keys(errs).length) errs.detail = t("erreurEnregistrement");
       setErrors(errs);
       setSaving(false);
     }
@@ -103,53 +101,53 @@ export default function HebergementForm({ initial, onSaved, onCancel }: Hebergem
       {errors.detail && <p role="alert" className="text-sm text-red-700 bg-red-50 rounded-xl p-3">{errors.detail}</p>}
 
       <div>
-        <label className={labelClass} htmlFor="h-name">Titre de l&apos;annonce</label>
-        <input id="h-name" className={inputClass} value={form.name} onChange={set("name")} placeholder="Ex : Villa avec piscine à Assinie" required maxLength={200} />
+        <label className={labelClass} htmlFor="h-name">{t("titre")}</label>
+        <input id="h-name" className={inputClass} value={form.name} onChange={set("name")} placeholder={t("titreExemple")} required maxLength={200} />
         {err("name")}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className={labelClass} htmlFor="h-type">Type</label>
+          <label className={labelClass} htmlFor="h-type">{t("type")}</label>
           <Select
-            id="h-type" label="Type de logement" value={form.type}
+            id="h-type" label={t("typeLogement")} value={form.type}
             onChange={(v) => setForm((prev) => ({ ...prev, type: v }))}
-            options={(Object.keys(TYPE_LABELS) as HebergementType[]).map((id) => ({ value: id, label: TYPE_LABELS[id], hint: TYPE_HINTS[id] }))}
+            options={(Object.keys(TYPE_LABELS) as HebergementType[]).map((id) => ({ value: id, label: TYPE_LABELS[id], hint: t(`types.${id}`) }))}
           />
         </div>
         <div>
-          <p className={labelClass}>Capacité</p>
+          <p className={labelClass}>{t("capacite")}</p>
           <Stepper
             className="border border-gray-200 rounded-xl px-4 py-2.5 bg-white"
-            label="Voyageurs max." value={Number(form.max_guests) || 1} min={1} max={50}
+            label={t("voyageursMax")} value={Number(form.max_guests) || 1} min={1} max={50}
             onChange={(n) => setForm((prev) => ({ ...prev, max_guests: String(n) }))}
           />
           {err("max_guests")}
         </div>
         <div>
-          <label className={labelClass} htmlFor="h-city">Ville</label>
+          <label className={labelClass} htmlFor="h-city">{t("ville")}</label>
           <input id="h-city" className={inputClass} value={form.city} onChange={set("city")} placeholder="Lomé" required maxLength={100} />
           {err("city")}
         </div>
         <div>
-          <label className={labelClass} htmlFor="h-location">Quartier / adresse</label>
+          <label className={labelClass} htmlFor="h-location">{t("quartier")}</label>
           <input id="h-location" className={inputClass} value={form.location} onChange={set("location")} placeholder="Bè Kpota" maxLength={200} />
         </div>
         <div className="sm:col-span-2">
-          <label className={labelClass} htmlFor="h-price">Prix par nuit (FCFA)</label>
+          <label className={labelClass} htmlFor="h-price">{t("prix")}</label>
           <input id="h-price" type="number" min={1} step={1} inputMode="numeric" className={inputClass} value={form.price_per_night} onChange={set("price_per_night")} placeholder="35000" required />
           {err("price_per_night")}
         </div>
       </div>
 
       <div>
-        <label className={labelClass} htmlFor="h-desc">Description</label>
-        <textarea id="h-desc" rows={5} className={cn(inputClass, "resize-y")} value={form.description} onChange={set("description")} placeholder="Décrivez le logement, le quartier, ce qui le rend unique…" />
+        <label className={labelClass} htmlFor="h-desc">{t("description")}</label>
+        <textarea id="h-desc" rows={5} className={cn(inputClass, "resize-y")} value={form.description} onChange={set("description")} placeholder={t("descriptionPlaceholder")} />
       </div>
 
       <div>
-        <p className={labelClass}>Photos</p>
-        <p className="text-xs text-gray-500 -mt-1 mb-3">La première photo sert de couverture. Privilégiez la lumière du jour et des photos horizontales.</p>
+        <p className={labelClass}>{t("photos")}</p>
+        <p className="text-xs text-gray-500 -mt-1 mb-3">{t("photosAide")}</p>
         <PhotoUploader value={photos} onChange={onPhotosChange} onBusyChange={setUploading} error={errors.photos ?? errors.image_url ?? errors.images} />
         <div className="flex items-start gap-2 mt-4">
           <input
@@ -157,15 +155,14 @@ export default function HebergementForm({ initial, onSaved, onCancel }: Hebergem
             className="mt-1 accent-primary w-4 h-4 flex-shrink-0" aria-describedby={errors.droits ? "h-droits-erreur" : undefined}
           />
           <label htmlFor="h-droits" className="text-xs text-gray-600 leading-relaxed">
-            Je certifie avoir pris ces photos moi-même ou détenir l&apos;autorisation de leur auteur, et qu&apos;aucune personne
-            identifiable n&apos;y figure sans son accord (voir les <a href="/cgu#hotes" target="_blank" className="text-primary underline">CGU<span className="sr-only"> (nouvel onglet)</span></a>).
+            {t.rich("certification", { cgu: (x) => <Link href="/cgu#hotes" target="_blank" className="text-primary underline">{x}<span className="sr-only"> ({t("nouvelOnglet")})</span></Link> })}
           </label>
         </div>
         {errors.droits && <p id="h-droits-erreur" role="alert" className="text-xs text-red-600 mt-1.5">{errors.droits}</p>}
       </div>
 
       <fieldset>
-        <legend className={labelClass}>Équipements</legend>
+        <legend className={labelClass}>{t("equipements")}</legend>
         <div className="flex flex-wrap gap-2">
           {Object.entries(AMENITIES).map(([id, { label, emoji }]) => {
             const active = form.amenities.includes(id);
@@ -180,9 +177,9 @@ export default function HebergementForm({ initial, onSaved, onCancel }: Hebergem
       </fieldset>
 
       <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-gray-100">
-        <button type="button" onClick={onCancel} className="px-6 py-3 rounded-xl border border-gray-200 text-dark font-medium hover:bg-gray-50">Annuler</button>
+        <button type="button" onClick={onCancel} className="px-6 py-3 rounded-xl border border-gray-200 text-dark font-medium hover:bg-gray-50">{t("annuler")}</button>
         <button type="submit" disabled={saving || uploading} className="px-8 py-3 bg-primary text-white rounded-xl font-bold shadow-md hover:bg-primary-600 disabled:opacity-60">
-          {uploading ? "Envoi des photos..." : saving ? "Enregistrement..." : initial ? "Enregistrer les modifications" : "Publier l'annonce"}
+          {uploading ? t("envoiPhotos") : saving ? t("enregistrement") : initial ? t("enregistrerModifs") : t("publier")}
         </button>
       </div>
     </form>

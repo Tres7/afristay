@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 interface LogoProps {
@@ -28,8 +29,9 @@ export function Logotype({ inverted = false, className }: { inverted?: boolean; 
 }
 
 export default function Logo({ size = "md", inverted = false, className }: LogoProps) {
+  const t = useTranslations("logo");
   return (
-    <Link href="/" className={cn("flex-shrink-0 inline-flex items-center", className)} aria-label="Kwa-Ba — accueil">
+    <Link href="/" className={cn("flex-shrink-0 inline-flex items-center", className)} aria-label={t("accueil")}>
       <Logotype inverted={inverted} className={SIZES[size]} />
     </Link>
   );

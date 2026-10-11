@@ -1,13 +1,20 @@
-export const AMENITIES: Record<string, { label: string; emoji: string }> = {
-  piscine: { label: "Piscine", emoji: "🏊" },
-  wifi: { label: "WiFi", emoji: "📶" },
-  clim: { label: "Climatisation", emoji: "❄️" },
-  parking: { label: "Parking", emoji: "🅿️" },
-  cuisine: { label: "Cuisine", emoji: "🍳" },
-  jardin: { label: "Jardin", emoji: "🌿" },
-  gym: { label: "Salle de sport", emoji: "💪" },
-  spa: { label: "Spa", emoji: "🛁" },
-};
+import { selon } from "@/lib/utils";
+
+const EQUIPEMENTS: [string, string, string, string][] = [
+  ["piscine", "Piscine", "Swimming pool", "🏊"],
+  ["wifi", "WiFi", "Wi-Fi", "📶"],
+  ["clim", "Climatisation", "Air conditioning", "❄️"],
+  ["parking", "Parking", "Parking", "🅿️"],
+  ["cuisine", "Cuisine", "Kitchen", "🍳"],
+  ["jardin", "Jardin", "Garden", "🌿"],
+  ["gym", "Salle de sport", "Gym", "💪"],
+  ["spa", "Spa", "Spa", "🛁"],
+];
+
+/** Équipements, libellés dans la langue courante. */
+export const AMENITIES: Record<string, { label: string; emoji: string }> = Object.fromEntries(
+  EQUIPEMENTS.map(([id, fr, en, emoji]) => [id, { emoji, get label() { return selon({ fr, en }); } }]),
+);
 
 interface AmenityBadgeProps {
   amenity: string;

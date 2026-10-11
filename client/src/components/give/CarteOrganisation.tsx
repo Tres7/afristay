@@ -1,10 +1,12 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { BadgeCheck, MapPin } from "lucide-react";
 import { CAUSES, PAYS } from "@/lib/give";
 import { cn, formatPrice } from "@/lib/utils";
 import type { Organisation } from "@/types/api/give";
+import { useTranslations } from "next-intl";
 
 export default function CarteOrganisation({ o }: { o: Organisation }) {
+  const t = useTranslations("give");
   const cause = CAUSES[o.cause];
   return (
     <Link href={`/give/${o.slug}`} className="group flex flex-col bg-white rounded-3xl border border-gray-100 overflow-hidden hover:shadow-card transition-shadow">
@@ -34,8 +36,8 @@ export default function CarteOrganisation({ o }: { o: Organisation }) {
         </div>
         <p className="text-sm text-gray-600 mt-3 flex-1">{o.resume}</p>
         <div className="flex items-center justify-between gap-2 mt-4 pt-4 border-t border-gray-100 text-xs">
-          <span className="flex items-center gap-1 font-semibold text-primary"><BadgeCheck size={14} /> ONG vérifiée</span>
-          <span className="text-gray-600">{o.impact.nb_dons > 0 ? `${formatPrice(o.impact.collecte)} collectés` : "Soyez le premier à donner"}</span>
+          <span className="flex items-center gap-1 font-semibold text-primary"><BadgeCheck size={14} /> {t("verifiee")}</span>
+          <span className="text-gray-600">{o.impact.nb_dons > 0 ? t("collectes", { montant: formatPrice(o.impact.collecte) }) : t("premier")}</span>
         </div>
       </div>
     </Link>

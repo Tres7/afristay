@@ -1,16 +1,41 @@
 import { useQuery } from "@tanstack/react-query";
 import { BookOpen, Droplets, HeartPulse, Leaf } from "lucide-react";
 import api from "@/lib/api";
+import { langue, selon } from "@/lib/utils";
 import type { CodeCause, ConfigGive } from "@/types/api/give";
 
-export const CAUSES: Record<CodeCause, { nom: string; icon: typeof BookOpen; couleur: string }> = {
-  education: { nom: "Éducation", icon: BookOpen, couleur: "bg-amber-100 text-amber-800" },
-  sante: { nom: "Santé", icon: HeartPulse, couleur: "bg-rose-100 text-rose-800" },
-  eau: { nom: "Accès à l'eau", icon: Droplets, couleur: "bg-sky-100 text-sky-800" },
-  environnement: { nom: "Environnement", icon: Leaf, couleur: "bg-emerald-100 text-emerald-800" },
+const TEXTES_CAUSES: Record<CodeCause, { fr: [string, string]; en: [string, string] }> = {
+  education: { fr: ["Éducation", "Écoles, fournitures, bourses et soutien scolaire."], en: ["Education", "Schools, supplies, scholarships and tutoring."] },
+  sante: { fr: ["Santé", "Soins, centres de santé, prévention et accès aux médicaments."], en: ["Health", "Care, health centres, prevention and access to medicines."] },
+  eau: { fr: ["Accès à l'eau", "Forages, puits, assainissement et hygiène."], en: ["Water access", "Boreholes, wells, sanitation and hygiene."] },
+  environnement: { fr: ["Environnement", "Reboisement, gestion des déchets, protection des côtes."], en: ["Environment", "Reforestation, waste management, coastal protection."] },
 };
 
-export const PAYS: Record<string, string> = { TG: "Togo", BJ: "Bénin", BF: "Burkina Faso", NE: "Niger", ML: "Mali" };
+function cause(code: CodeCause, icon: typeof BookOpen, couleur: string) {
+  return {
+    icon, couleur,
+    get nom() { return selon(TEXTES_CAUSES[code])[0]; },
+    get description() { return selon(TEXTES_CAUSES[code])[1]; },
+  };
+}
+
+/** Causes soutenues : nom et description dans la langue courante. */
+export const CAUSES: Record<CodeCause, { nom: string; description: string; icon: typeof BookOpen; couleur: string }> = {
+  education: cause("education", BookOpen, "bg-amber-100 text-amber-800"),
+  sante: cause("sante", HeartPulse, "bg-rose-100 text-rose-800"),
+  eau: cause("eau", Droplets, "bg-sky-100 text-sky-800"),
+  environnement: cause("environnement", Leaf, "bg-emerald-100 text-emerald-800"),
+};
+
+const NOMS_PAYS: Record<string, { fr: string; en: string }> = {
+  TG: { fr: "Togo", en: "Togo" }, BJ: { fr: "Bénin", en: "Benin" }, BF: { fr: "Burkina Faso", en: "Burkina Faso" },
+  NE: { fr: "Niger", en: "Niger" }, ML: { fr: "Mali", en: "Mali" },
+};
+
+/** Noms des pays, dans la langue courante (PAYS[code]). */
+export const PAYS: Record<string, string> = new Proxy({} as Record<string, string>, {
+  get: (_, code: string) => (NOMS_PAYS[code] ? selon(NOMS_PAYS[code]) : undefined),
+});
 
 /** Paramètres publics des dons : montants suggérés, frais, calendrier des reversements. */
 export function useConfigGive() {
@@ -37,5 +62,5 @@ export function dateReversement(jour: number, depuis = new Date()): Date {
 }
 
 export function moisAnnee(iso: string): string {
-  return new Date(`${iso}T00:00:00`).toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+  return new Date(`${iso}T00:00:00`).toLocaleDateString(langue() === "en" ? "en-GB" : "fr-FR", { month: "long", year: "numeric" });
 }

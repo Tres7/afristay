@@ -1,30 +1,32 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { Search, Menu, ArrowRight, LogIn, UserPlus, MessageCircle, Heart, CalendarCheck, User, LogOut, Home, ShieldCheck, Plane, Users, Sparkles, HandHeart } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import api from "@/lib/api";
 import { usePolling } from "@/lib/usePolling";
-import { cn, initials, ROLE_LABELS } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+import { cn, initials } from "@/lib/utils";
 import Logo from "@/components/layout/Logo";
 import MobileDrawer, { DrawerItem } from "@/components/layout/MobileDrawer";
+import SelecteurLangue from "@/components/layout/SelecteurLangue";
 
 const UNREAD_POLL_INTERVAL_MS = 10_000;
 
 const NAV_LINKS = [
-  { href: "/recherche", label: "Hébergements" },
-  { href: "/decouvrir", label: "Expériences" },
+  { href: "/recherche", label: "hebergements" },
+  { href: "/decouvrir", label: "experiences" },
   // Affichés seulement sur grand écran (sinon la barre déborde) ; toujours présents dans le menu mobile et le pied de page
-  { href: "/transfert", label: "Transferts", large: true },
-  { href: "/together", label: "Together", large: true },
-  { href: "/give", label: "Give", large: true },
-  { href: "/hote", label: "Devenir hôte" },
+  { href: "/transfert", label: "transferts", large: true },
+  { href: "/together", label: "together", large: true },
+  { href: "/give", label: "give", large: true },
+  { href: "/hote", label: "devenirHote" },
 ];
 
 function SearchForm({ onDone, className }: { onDone?: () => void; className?: string }) {
   const router = useRouter();
+  const t = useTranslations("nav");
   const [q, setQ] = useState("");
 
   const submit = (e: React.FormEvent) => {
@@ -42,11 +44,11 @@ function SearchForm({ onDone, className }: { onDone?: () => void; className?: st
         type="search"
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="Rechercher une ville…"
-        aria-label="Rechercher une destination"
+        placeholder={t("rechercherVille")}
+        aria-label={t("rechercherDestination")}
         className="w-full bg-transparent border-none text-base md:text-sm text-dark outline-none placeholder:text-gray-400"
       />
-      <button type="submit" aria-label="Lancer la recherche" className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white flex-shrink-0 hover:bg-primary-600 transition-colors ml-2">
+      <button type="submit" aria-label={t("lancerRecherche")} className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white flex-shrink-0 hover:bg-primary-600 transition-colors ml-2">
         <ArrowRight size={16} />
       </button>
     </form>
@@ -55,6 +57,8 @@ function SearchForm({ onDone, className }: { onDone?: () => void; className?: st
 
 export default function Navbar() {
   const pathname = usePathname();
+  const t = useTranslations("nav");
+  const tRoles = useTranslations("roles");
   const [mobileOpen, setMobileOpen] = useState(false);
   const { data: session, status } = useSession();
   const authenticated = status === "authenticated" && !!session && !session.error;
@@ -80,7 +84,7 @@ export default function Navbar() {
   // Ferme le menu mobile à chaque navigation (le panneau gère lui-même le blocage du défilement)
   useEffect(() => setMobileOpen(false), [pathname]);
 
-  const roleLabel = ROLE_LABELS[session?.user?.role ?? "voyageur"];
+  const roleLabel = tRoles(session?.user?.role ?? "voyageur");
   const isHost = session?.user?.role === "hote" || session?.user?.role === "admin";
   const isAdmin = session?.user?.role === "admin";
 
@@ -104,7 +108,7 @@ export default function Navbar() {
         </div>
 
         <div className="hidden md:flex items-center gap-5 lg:gap-6">
-          <nav className="flex items-center gap-4 lg:gap-5" aria-label="Navigation principale">
+          <nav className="flex items-center gap-4 lg:gap-5" aria-label={t("navigationPrincipale")}>
             {NAV_LINKS.map(({ href, label, large }) => (
               <Link
                 key={href}
@@ -112,10 +116,12 @@ export default function Navbar() {
                 className={cn("text-sm font-medium transition-colors whitespace-nowrap", large && "hidden xl:inline",
                   pathname.startsWith(href) ? "text-primary" : "text-dark hover:text-primary")}
               >
-                {isHost && href === "/hote" ? "Espace hôte" : label}
+                {isHost && href === "/hote" ? t("espaceHote") : t(label)}
               </Link>
             ))}
           </nav>
+
+          <SelecteurLangue />
 
           <div className="w-px h-6 bg-gray-200" />
 
@@ -127,7 +133,7 @@ export default function Navbar() {
                     <ShieldCheck size={14} /> Back-office
                   </Link>
                 )}
-                <Link href="/messages" className="relative p-2 text-gray-500 hover:text-primary transition-colors" aria-label={`Messages${unread ? ` (${unread} non lus)` : ""}`}>
+                <Link href="/messages" className="relative p-2 text-gray-500 hover:text-primary transition-colors" aria-label={unread ? t("messagesNonLus", { nombre: unread }) : t("messages")}>
                   <MessageCircle size={20} />
                   {unread > 0 && (
                     <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
@@ -137,7 +143,7 @@ export default function Navbar() {
                 </Link>
                 <Link href="/profil" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                   <div className="text-right hidden xl:block">
-                    <p className="text-xs font-bold text-dark leading-tight max-w-[140px] truncate">{session.user?.name ?? "Mon profil"}</p>
+                    <p className="text-xs font-bold text-dark leading-tight max-w-[140px] truncate">{session.user?.name ?? t("monProfil")}</p>
                     <p className="text-[10px] text-gray-500">{roleLabel}</p>
                   </div>
                   <Avatar size="w-9 h-9" />
@@ -147,11 +153,11 @@ export default function Navbar() {
               <>
                 <Link href={`/login?callbackUrl=${encodeURIComponent(pathname)}`} className="flex items-center gap-1.5 text-sm font-medium text-dark hover:text-primary transition-colors whitespace-nowrap">
                   <LogIn size={16} />
-                  Se connecter
+                  {t("seConnecter")}
                 </Link>
                 <Link href="/register" className="flex items-center gap-1.5 bg-primary text-white text-sm font-bold px-4 py-2 rounded-full hover:bg-primary/90 transition-colors shadow-sm whitespace-nowrap">
                   <UserPlus size={15} />
-                  S&apos;inscrire
+                  {t("sInscrire")}
                 </Link>
               </>
             ) : (
@@ -162,12 +168,12 @@ export default function Navbar() {
 
         <div className="flex md:hidden items-center gap-1">
           {authenticated && (
-            <Link href="/messages" className="relative p-2 text-dark" aria-label="Messages">
+            <Link href="/messages" className="relative p-2 text-dark" aria-label={t("messages")}>
               <MessageCircle size={22} />
               {unread > 0 && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />}
             </Link>
           )}
-          <button className="p-2 text-dark" onClick={() => setMobileOpen(true)} aria-expanded={mobileOpen} aria-haspopup="dialog" aria-label="Ouvrir le menu">
+          <button className="p-2 text-dark" onClick={() => setMobileOpen(true)} aria-expanded={mobileOpen} aria-haspopup="dialog" aria-label={t("ouvrirMenu")}>
             <Menu size={24} />
           </button>
         </div>
@@ -178,7 +184,7 @@ export default function Navbar() {
         <SearchForm />
       </div>
 
-      <MobileDrawer open={mobileOpen} onClose={() => setMobileOpen(false)} label="Menu" header={<Logo size="sm" />}>
+      <MobileDrawer open={mobileOpen} onClose={() => setMobileOpen(false)} label={t("menu")} header={<Logo size="sm" />}>
         <DrawerItem>
           <SearchForm onDone={() => setMobileOpen(false)} className="bg-gray-50" />
         </DrawerItem>
@@ -188,31 +194,31 @@ export default function Navbar() {
             <Link href="/profil" className="flex items-center gap-3 p-3 rounded-2xl bg-light-muted">
               <Avatar size="w-11 h-11" />
               <div className="min-w-0">
-                <p className="text-sm font-bold text-dark truncate">{session.user?.name ?? "Mon profil"}</p>
+                <p className="text-sm font-bold text-dark truncate">{session.user?.name ?? t("monProfil")}</p>
                 <p className="text-xs text-gray-500">{roleLabel}</p>
               </div>
             </Link>
           </DrawerItem>
         )}
 
-        <nav className="mt-4 space-y-1" aria-label="Navigation mobile">
+        <nav className="mt-4 space-y-1" aria-label={t("navigationMobile")}>
           {[
-            { href: "/", label: "Accueil", icon: Home },
-            { href: "/recherche", label: "Hébergements", icon: Search },
-            { href: "/decouvrir", label: "Expériences", icon: ArrowRight },
-            { href: "/transfert", label: "Transfert aéroport", icon: Plane },
-            { href: "/together", label: "Voyager à plusieurs", icon: Users },
-            { href: "/concierge", label: "Concierge IA", icon: Sparkles },
-            { href: "/give", label: "Faire un don", icon: HandHeart },
+            { href: "/", label: t("accueil"), icon: Home },
+            { href: "/recherche", label: t("hebergements"), icon: Search },
+            { href: "/decouvrir", label: t("experiences"), icon: ArrowRight },
+            { href: "/transfert", label: t("transfertAeroport"), icon: Plane },
+            { href: "/together", label: t("voyagerAPlusieurs"), icon: Users },
+            { href: "/concierge", label: t("conciergeIA"), icon: Sparkles },
+            { href: "/give", label: t("faireUnDon"), icon: HandHeart },
             ...(authenticated
               ? [
-                  { href: "/profil/reservations", label: "Mes réservations", icon: CalendarCheck },
-                  { href: "/favoris", label: "Mes favoris", icon: Heart },
-                  { href: "/messages", label: `Messages${unread ? ` (${unread})` : ""}`, icon: MessageCircle },
-                  { href: "/profil", label: "Mon profil", icon: User },
+                  { href: "/profil/reservations", label: t("mesReservations"), icon: CalendarCheck },
+                  { href: "/favoris", label: t("mesFavoris"), icon: Heart },
+                  { href: "/messages", label: unread ? `${t("messages")} (${unread})` : t("messages"), icon: MessageCircle },
+                  { href: "/profil", label: t("monProfil"), icon: User },
                 ]
               : []),
-            { href: isHost ? "/hote/espace" : "/hote", label: isHost ? "Espace hôte" : "Devenir hôte", icon: Home },
+            { href: isHost ? "/hote/espace" : "/hote", label: isHost ? t("espaceHote") : t("devenirHote"), icon: Home },
             ...(isAdmin ? [{ href: "/backoffice", label: "Back-office", icon: ShieldCheck }] : []),
           ].map(({ href, label, icon: Icon }) => (
             <DrawerItem key={href + label}>
@@ -228,18 +234,22 @@ export default function Navbar() {
           ))}
         </nav>
 
+        <DrawerItem className="mt-4">
+          <SelecteurLangue complet />
+        </DrawerItem>
+
         <DrawerItem className="mt-4 pt-4 border-t border-gray-100">
           {authenticated ? (
             <button onClick={() => signOut({ callbackUrl: "/" })} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-red-100 text-red-600 text-sm font-bold">
-              <LogOut size={16} /> Se déconnecter
+              <LogOut size={16} /> {t("seDeconnecter")}
             </button>
           ) : (
             <div className="flex flex-col gap-3">
               <Link href={`/login?callbackUrl=${encodeURIComponent(pathname)}`} onClick={() => setMobileOpen(false)} className="w-full text-center py-3 rounded-xl border border-gray-200 text-sm font-bold text-dark hover:bg-gray-50 transition-colors">
-                Se connecter
+                {t("seConnecter")}
               </Link>
               <Link href="/register" onClick={() => setMobileOpen(false)} className="w-full text-center py-3 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors">
-                Créer un compte
+                {t("creerCompte")}
               </Link>
             </div>
           )}
