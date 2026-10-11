@@ -14,7 +14,7 @@ Chaque push sur une branche de travail lance un contrôle rapide (`push_branch.y
 | App / Serveur | `ruff check`, `makemigrations --check`, `check --deploy` (bloquant sur tout avertissement), tests `unit` puis `integration` (PostgreSQL 16), couverture combinée et ses deux seuils (voir plus bas) | `server/**` ou `.github/**` modifié |
 | App / Client | ESLint, `tsc` | `client/**` ou `.github/**` modifié |
 | Config | actionlint (workflows, avec shellcheck), hadolint (Dockerfiles) | Workflows, Dockerfiles ou compose modifiés |
-| Docker | `docker compose config`, build de l'image serveur, smoke test (non root, migrations, `/api/health/` contre un PostgreSQL jetable) puis scan Trivy, `next build` | Après App et Config, hors brouillon |
+| Docker | `docker compose config` ; image du serveur : build, smoke test (non root, migrations, `/api/health/` contre un PostgreSQL jetable), Trivy ; image du client : build Next.js, smoke test (non root, pages et Auth.js derrière un proxy simulé), Trivy | Après App et Config, hors brouillon |
 | Security | gitleaks sur les commits de la PR ; `npm audit --omit=dev --audit-level=high` (client) et `pip-audit` (serveur) selon la partie modifiée | Toujours, en parallèle |
 | PR status | Échoue si un job a échoué ou été annulé ; un job ignoré est toléré | Toujours |
 
@@ -26,8 +26,8 @@ gitleaks masque les valeurs dans les logs. Un faux positif vérifié s'ajoute à
 
 | Workflow | Déclencheur | Contenu |
 | --- | --- | --- |
-| `push_main.yml` | Push sur `main` (sauf documentation et manifests) | Plan par rapport au dernier manifest ; si le serveur a changé : build de l'image, smoke test, Trivy, push par digest (`sha-<commit>`) ; puis manifest de déploiement, commité par la CD App, et tags définitifs de l'image (`main`, `manifest-<N>`) |
-| `nightly.yml` | Chaque nuit à 1 h UTC, ou à la main | Scan Trivy de l'image du dernier manifest (ce qui est déployable), `pip-audit`, `npm audit`, gitleaks sur tout l'historique (toutes branches) |
+| `push_main.yml` | Push sur `main` (sauf documentation et manifests) | Plan par rapport au dernier manifest ; pour chaque service modifié (serveur, client) : build de l'image, smoke test, Trivy, push par digest (`sha-<commit>`) ; puis manifest de déploiement, commité par la CD App, et tags définitifs des images (`main`, `manifest-<N>`) |
+| `nightly.yml` | Chaque nuit à 1 h UTC, ou à la main | Scan Trivy des images (serveur et client) du dernier manifest, `pip-audit`, `npm audit`, gitleaks sur tout l'historique (toutes branches) |
 | Dependabot | Chaque jour à 3 h (Paris), sur `main` uniquement | PR de mise à jour : actions, pip, npm, images Docker de base. Les versions majeures de `node` et les mineures de `python` sont ignorées : changement volontaire uniquement |
 
 Une PR en brouillon ne lance que le lint et les tests unitaires. La passer en « prête » relance tout.
@@ -36,10 +36,10 @@ Une PR en brouillon ne lance que le lint et les tests unitaires. La passer en «
 
 ## Manifests de déploiement
 
-Chaque état déployable de `main` est décrit par un fichier `deploy/manifests/manifest-<N>-<sha7>.yaml`, validé par `deploy/manifests/schema.json` :
+Chaque état déployable de `main` est décrit par un fichier `deploy/manifests/manifest-<N>-<sha7>.yaml`, validé par `deploy/manifests/schema.json`. Il fixe des versions du serveur et du client qui vont ensemble :
 
 ```yaml
-schemaVersion: 1
+schemaVersion: 2
 manifestVersion: 42                 # strictement croissant
 sourceRevision: <commit de main>    # 40 caractères
 createdAt: 2026-10-10T16:30:00Z
@@ -49,12 +49,16 @@ services:
     sourceRevision: <dernier commit touchant server/>
     image: ghcr.io/tres7/afristay-server@sha256:<digest>
   client:
-    kind: git
+    kind: image
     sourceRevision: <dernier commit touchant client/>
+    image: ghcr.io/tres7/afristay-client@sha256:<digest>
 ```
 
+Les manifests v1 (client déployé depuis Git, avant le passage au VPS) restent valides ; le premier manifest v2 reconstruit l'image du client.
+
 - Les révisions sont celles du dernier commit qui touche `server/` ou `client/`, et non celles du manifest précédent : un run sauté ne fausse rien.
-- Une image n'est reconstruite que si la révision du serveur diffère du dernier manifest ; sinon son digest est repris. Sans changement du serveur ni du client, aucun manifest n'est créé.
+- Une image n'est reconstruite que pour un service dont la révision diffère du dernier manifest ; sinon son digest est repris. Sans changement du serveur ni du client, aucun manifest n'est créé.
+- L'image du client fige au build les valeurs publiques, lues dans les variables du dépôt : `PUBLIC_SITE_URL` (obligatoire, ex. `https://kwa-ba.com`), `PUBLIC_GOOGLE_CLIENT_ID`, `PUBLIC_CONTACT_EMAIL`. L'API est attendue sur `<PUBLIC_SITE_URL>/api`.
 - Les scripts (`.github/scripts/manifest`, testés par `npm test`) : `plan.mjs`, `create.mjs`, `validate.mjs`, `latest.mjs`.
 - Le commit du manifest sur `main` (protégée) est fait par la **CD App**, seule autorisée à contourner le ruleset. Sans elle (variable `CD_APP_CLIENT_ID` absente), le manifest est produit en artefact du run, non commité.
 

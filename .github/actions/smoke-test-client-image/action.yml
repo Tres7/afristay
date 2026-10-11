@@ -1,0 +1,44 @@
+name: Smoke test client image
+description: >-
+  Démarre l'image de production du client comme derrière nginx (AUTH_URL public, en-têtes Host et
+  X-Forwarded-Proto) : utilisateur non root, pages servies, Auth.js joignable, aucune réécriture partie
+  en proxy externe. Échoue avec les logs du conteneur en cas de problème.
+
+inputs:
+  image:
+    description: Image locale à tester (chargée par le build)
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Smoke test
+      shell: bash
+      env:
+        IMAGE: ${{ inputs.image }}
+      run: |
+        set -euo pipefail
+        cleanup() { docker rm -f smoke-client > /dev/null 2>&1 || true; }
+        trap cleanup EXIT
+
+        uid=$(docker run --rm --entrypoint id "$IMAGE" -u)
+        if [ "$uid" = "0" ]; then echo "::error::L'image tourne en root"; exit 1; fi
+        echo "Utilisateur de l'image : uid ${uid}"
+
+        docker run -d --name smoke-client -p 127.0.0.1:3000:3000 \
+          -e AUTH_SECRET=smoke-test-only-auth-secret-0123456789abcdef -e AUTH_URL=https://smoke.example \
+          "$IMAGE" > /dev/null
+        for _ in $(seq 1 30); do curl -s -o /dev/null http://localhost:3000/en && break; sleep 2; done
+
+        headers=(-H "Host: smoke.example" -H "X-Forwarded-Proto: https" -H "X-Forwarded-Host: smoke.example")
+        failed=0
+        for path in / /en /login /api/auth/providers; do
+          code=$(curl -s -o /dev/null -w '%{http_code}' "${headers[@]}" "http://localhost:3000${path}")
+          echo "${path} -> ${code}"
+          [ "$code" = "200" ] || failed=1
+        done
+        if docker logs smoke-client 2>&1 | grep -qi 'failed to proxy'; then
+          echo "::error::Une réécriture est partie en proxy externe (voir AUTH_URL et le middleware)"
+          failed=1
+        fi
+        if [ "$failed" = "1" ]; then docker logs smoke-client; exit 1; fi

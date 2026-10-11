@@ -11,7 +11,9 @@ const { values } = parseArgs({
     'source-revision': { type: 'string' },
     'server-revision': { type: 'string' },
     'client-revision': { type: 'string' },
-    'server-image': { type: 'string', default: '' }, // vide : l'image du manifest précédent est reprise
+    // Vide : l'image du manifest précédent est reprise (service inchangé)
+    'server-image': { type: 'string', default: '' },
+    'client-image': { type: 'string', default: '' },
   },
 });
 for (const required of ['source-revision', 'server-revision', 'client-revision']) {
@@ -27,6 +29,7 @@ const manifest = buildManifest({
   createdAt: new Date().toISOString().replace(/\.\d{3}Z$/, 'Z'),
   serverImage: values['server-image'],
   serverRevision: values['server-revision'],
+  clientImage: values['client-image'],
   clientRevision: values['client-revision'],
 });
 

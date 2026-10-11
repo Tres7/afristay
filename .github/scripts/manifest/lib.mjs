@@ -45,35 +45,47 @@ export function lastCommitTouching(path, cwd = '.') {
   return execFileSync('git', ['log', '-1', '--format=%H', '--', path], { cwd, encoding: 'utf8' }).trim();
 }
 
+export const SCHEMA_VERSION = 2;
+
+/** Un service doit-il être reconstruit ? Oui s'il a changé, ou si le manifest précédent ne l'avait pas en image (v1). */
+function needsImage(previousService, revision) {
+  return !previousService || previousService.kind !== 'image' || previousService.sourceRevision !== revision;
+}
+
 /**
- * Compare l'état de main au dernier manifest. Une image n'est reconstruite que si le serveur a changé ;
- * sans changement du serveur ni du client, aucun manifest n'est créé.
+ * Compare l'état de main au dernier manifest : une image n'est reconstruite que pour un service qui a changé ;
+ * sans aucun changement, aucun manifest n'est créé.
  */
 export function plan({ previous, serverRevision, clientRevision }) {
   const services = previous?.data.services;
-  const buildServer = !services || services.server.sourceRevision !== serverRevision;
-  const clientChanged = !services || services.client.sourceRevision !== clientRevision;
-  return { buildServer, changed: buildServer || clientChanged };
+  const buildServer = needsImage(services?.server, serverRevision);
+  const buildClient = needsImage(services?.client, clientRevision);
+  return { buildServer, buildClient, changed: buildServer || buildClient };
 }
 
-export function buildManifest({ previous, version, sourceRevision, createdAt, serverImage, serverRevision, clientRevision }) {
-  const server = serverImage
-    ? { kind: 'image', sourceRevision: serverRevision, image: serverImage }
-    : previous?.data.services.server;
-  if (!server) {
-    throw new Error("Aucune image serveur : ni nouvelle image, ni manifest précédent dont la reprendre");
+/** Service du nouveau manifest : nouvelle image si elle a été construite, sinon celle du manifest précédent. */
+function service(name, { image, revision, previous }) {
+  if (image) return { kind: 'image', sourceRevision: revision, image };
+  const reused = previous?.data.services[name];
+  if (!reused || reused.kind !== 'image') {
+    throw new Error(`Aucune image ${name} : ni nouvelle image, ni image à reprendre du manifest précédent`);
   }
-  if (!serverImage && server.sourceRevision !== serverRevision) {
-    throw new Error(`Le serveur a changé (${serverRevision.slice(0, 7)}) : une nouvelle image est requise`);
+  if (reused.sourceRevision !== revision) {
+    throw new Error(`Le ${name} a changé (${revision.slice(0, 7)}) : une nouvelle image est requise`);
   }
+  return reused;
+}
+
+export function buildManifest({ previous, version, sourceRevision, createdAt, serverImage, serverRevision,
+  clientImage, clientRevision }) {
   return {
-    schemaVersion: 1,
+    schemaVersion: SCHEMA_VERSION,
     manifestVersion: version,
     sourceRevision,
     createdAt,
     services: {
-      server,
-      client: { kind: 'git', sourceRevision: clientRevision },
+      server: service('server', { image: serverImage, revision: serverRevision, previous }),
+      client: service('client', { image: clientImage, revision: clientRevision, previous }),
     },
   };
 }
