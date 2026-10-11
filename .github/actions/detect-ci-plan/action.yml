@@ -45,6 +45,7 @@ runs:
             - '**/Dockerfile'
             - '.hadolint.yaml'
             - '.github/**'
+            - 'deploy/**'
           broker:
             - 'server/apps/notifications/**'
             - 'server/apps/messaging/infrastructure/**'

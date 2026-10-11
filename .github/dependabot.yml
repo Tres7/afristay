@@ -51,3 +51,14 @@ updates:
       # Python : on reste sur la mineure testée en CI (3.12), changement volontaire uniquement
       - dependency-name: python
         update-types: ['version-update:semver-minor']
+
+  - package-ecosystem: npm
+    directory: /.github/scripts/manifest
+    target-branch: main
+    schedule:
+      interval: daily
+      time: '03:00'
+      timezone: Europe/Paris
+    groups:
+      manifest-tools:
+        patterns: ['*']

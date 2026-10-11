@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schemaVersion", "manifestVersion", "sourceRevision", "createdAt", "services"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "manifestVersion": { "type": "integer", "minimum": 1 },
+    "sourceRevision": { "$ref": "#/$defs/sha" },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "services": {
+      "type": "object",
+      "required": ["server", "client"],
+      "additionalProperties": false,
+      "properties": {
+        "server": { "$ref": "#/$defs/imageService" },
+        "client": { "$ref": "#/$defs/gitService" }
+      }
+    }
+  },
+  "$defs": {
+    "sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "imageService": {
+      "type": "object",
+      "required": ["kind", "sourceRevision", "image"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "image" },
+        "sourceRevision": { "$ref": "#/$defs/sha" },
+        "image": { "type": "string", "pattern": "^ghcr\\.io/tres7/[a-z0-9._/-]+@sha256:[a-f0-9]{64}$" }
+      }
+    },
+    "gitService": {
+      "type": "object",
+      "required": ["kind", "sourceRevision"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "git" },
+        "sourceRevision": { "$ref": "#/$defs/sha" }
+      }
+    }
+  }
+}
