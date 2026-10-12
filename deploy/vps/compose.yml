@@ -10,6 +10,10 @@ x-logging: &logging
     max-size: 10m
     max-file: '3'
 
+# No process may gain privileges after start (setuid binaries, etc.)
+x-security: &security
+  - no-new-privileges:true
+
 # API, consumer, relay and payments worker: same image, different command
 x-server: &server
   image: ${SERVER_IMAGE:?SERVER_IMAGE manquant (.deploy.env)}
@@ -19,6 +23,9 @@ x-server: &server
     RABBITMQ_HOST: rabbitmq
   restart: unless-stopped
   logging: *logging
+  security_opt: *security
+  # backend: PostgreSQL and RabbitMQ; edge: Internet (SMTP, Google, payment providers, R2) and the client
+  networks: [backend, edge]
   depends_on:
     postgres: { condition: service_healthy }
     rabbitmq: { condition: service_healthy }
@@ -37,6 +44,8 @@ services:
       - letsencrypt:/etc/letsencrypt:ro
       - certbot-www:/var/www/certbot:ro
       - nginx-cache:/var/cache/nginx
+    security_opt: *security
+    networks: [edge]
     restart: unless-stopped
     logging: *logging
     mem_limit: 128m
@@ -82,6 +91,8 @@ services:
       timeout: 6s
       retries: 5
       start_period: 20s
+    security_opt: *security
+    networks: [edge]
     restart: unless-stopped
     logging: *logging
     mem_limit: 512m
@@ -96,6 +107,8 @@ services:
       timeout: 5s
       retries: 20
     shm_size: 128m
+    security_opt: *security
+    networks: [backend]
     restart: unless-stopped
     logging: *logging
     mem_limit: 768m
@@ -109,6 +122,8 @@ services:
       interval: 10s
       timeout: 10s
       retries: 10
+    security_opt: *security
+    networks: [backend]
     restart: unless-stopped
     logging: *logging
     mem_limit: 384m
@@ -129,6 +144,12 @@ services:
       - letsencrypt:/etc/letsencrypt
       - certbot-www:/var/www/certbot
     profiles: [tools]
+
+networks:
+  # No Internet access: PostgreSQL and RabbitMQ are reachable only by the API and the workers
+  backend:
+    internal: true
+  edge:
 
 volumes:
   nginx-cache:
