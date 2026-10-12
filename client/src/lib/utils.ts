@@ -34,11 +34,6 @@ const TYPES: Record<string, { fr: string; en: string }> = {
   auberge: { fr: "Auberge", en: "Guesthouse" },
 };
 
-/** Libellé d'un type de logement dans une langue donnée (côté serveur, où il n'y a pas de langue courante). */
-export function libelleType(type: string, locale: "fr" | "en"): string {
-  return TYPES[type]?.[locale] ?? type;
-}
-
 /** Libellés des types de logement, dans la langue courante (TYPE_LABELS[type]). */
 export const TYPE_LABELS: Record<string, string> = new Proxy({} as Record<string, string>, {
   get: (_, type: string) => (TYPES[type] ? TYPES[type][langueCourante] : type),
@@ -54,6 +49,11 @@ const ROLES: Record<string, { fr: string; en: string }> = {
 export const ROLE_LABELS: Record<string, string> = new Proxy({} as Record<string, string>, {
   get: (_, role: string) => (ROLES[role] ? ROLES[role][langueCourante] : role),
 });
+
+/** Libellé d'un type de logement dans une langue donnée (côté serveur, où il n'y a pas de langue courante). */
+export function libelleType(type: string, locale: "fr" | "en"): string {
+  return TYPES[type]?.[locale] ?? type;
+}
 
 export function formatPrice(price: number | string): string {
   // fr-FR sépare les milliers par une espace fine (U+202F) quasi invisible dans certaines polices :
