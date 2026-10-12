@@ -34,6 +34,11 @@ const TYPES: Record<string, { fr: string; en: string }> = {
   auberge: { fr: "Auberge", en: "Guesthouse" },
 };
 
+/** Libellé d'un type de logement dans une langue donnée (côté serveur, où il n'y a pas de langue courante). */
+export function libelleType(type: string, locale: "fr" | "en"): string {
+  return TYPES[type]?.[locale] ?? type;
+}
+
 /** Libellés des types de logement, dans la langue courante (TYPE_LABELS[type]). */
 export const TYPE_LABELS: Record<string, string> = new Proxy({} as Record<string, string>, {
   get: (_, type: string) => (TYPES[type] ? TYPES[type][langueCourante] : type),
