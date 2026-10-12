@@ -2,7 +2,50 @@
   "meta": {
     "titre": "Kwa-Ba — Le monde vous accueille",
     "description": "Plateforme de réservation d'hébergements en Afrique. Découvrez les meilleurs logements, activités et restaurants.",
-    "slogan": "Kwa-Ba — Le monde vous accueille."
+    "slogan": "Kwa-Ba — Le monde vous accueille.",
+    "pages": {
+      "recherche": {
+        "titre": "Hébergements en Afrique de l'Ouest",
+        "description": "Villas, appartements, hôtels et auberges à Lomé, Cotonou, Ouagadougou et ailleurs. Comparez les prix par nuit et réservez en Mobile Money ou par carte."
+      },
+      "decouvrir": {
+        "titre": "Activités, restaurants et sites à découvrir",
+        "description": "Les meilleures activités, tables et visites près de votre logement Kwa-Ba."
+      },
+      "transfert": {
+        "titre": "Transfert aéroport avec chauffeur",
+        "description": "Un chauffeur vous attend à l'arrivée de votre vol et vous conduit à votre logement. Prix fixe connu à l'avance, payé en ligne."
+      },
+      "together": {
+        "titre": "Kwa-Ba Together : voyager à plusieurs",
+        "description": "Organisez un voyage de groupe : proposez des logements, votez ensemble, partagez le programme et le budget par personne."
+      },
+      "give": {
+        "titre": "Kwa-Ba Give : soutenez des associations locales",
+        "description": "Faites un don à des associations vérifiées au Togo, au Bénin et ailleurs, de 500 à 5 000 FCFA. Chaque reversement est publié avec son justificatif."
+      },
+      "giveImpact": {
+        "titre": "Impact des dons Kwa-Ba Give",
+        "description": "Montants collectés et reversés aux associations, par cause, avec les preuves des reversements."
+      },
+      "concierge": {
+        "titre": "Concierge IA : votre assistant de voyage",
+        "description": "Un assistant qui trouve votre logement, prépare l'itinéraire, estime le budget et réserve votre transfert aéroport."
+      },
+      "devenirHote": {
+        "titre": "Devenir hôte sur Kwa-Ba",
+        "description": "Publiez votre logement gratuitement, recevez des voyageurs du monde entier et soyez payé en Mobile Money."
+      },
+      "aide": {
+        "titre": "Centre d'aide",
+        "description": "Réservation, paiement, annulation, transferts : les réponses aux questions fréquentes."
+      },
+      "logementIntrouvable": {
+        "titre": "Logement introuvable"
+      },
+      "logementDescription": "{type} à {ville} pour {voyageurs} voyageurs, à partir de {prix} FCFA la nuit. Réservez sur Kwa-Ba en Mobile Money ou par carte.",
+      "organisationDescription": "Soutenez {nom} ({ville}) avec Kwa-Ba Give : don de 500 à 5 000 FCFA, reversement publié avec son justificatif."
+    }
   },
   "commun": {
     "allerAuContenu": "Aller au contenu principal",

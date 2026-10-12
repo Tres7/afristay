@@ -2,7 +2,50 @@
   "meta": {
     "titre": "Kwa-Ba — The world welcomes you",
     "description": "Book places to stay in Africa. Discover the best homes, experiences and restaurants.",
-    "slogan": "Kwa-Ba — The world welcomes you."
+    "slogan": "Kwa-Ba — The world welcomes you.",
+    "pages": {
+      "recherche": {
+        "titre": "Places to stay in West Africa",
+        "description": "Villas, apartments, hotels and guesthouses in Lomé, Cotonou, Ouagadougou and beyond. Compare nightly prices and book with Mobile Money or card."
+      },
+      "decouvrir": {
+        "titre": "Things to do, restaurants and sights",
+        "description": "The best experiences, places to eat and visits near your Kwa-Ba stay."
+      },
+      "transfert": {
+        "titre": "Airport transfer with a driver",
+        "description": "A driver meets you when your flight lands and takes you to your accommodation. Fixed price known in advance, paid online."
+      },
+      "together": {
+        "titre": "Kwa-Ba Together: travel as a group",
+        "description": "Plan a group trip: suggest places to stay, vote together, share the itinerary and the budget per person."
+      },
+      "give": {
+        "titre": "Kwa-Ba Give: support local charities",
+        "description": "Donate to verified charities in Togo, Benin and beyond, from 500 to 5,000 FCFA. Every payout is published with its proof."
+      },
+      "giveImpact": {
+        "titre": "Kwa-Ba Give impact",
+        "description": "Amounts raised and paid out to charities, by cause, with proof of every payout."
+      },
+      "concierge": {
+        "titre": "AI Concierge: your travel assistant",
+        "description": "An assistant that finds your place to stay, plans the itinerary, estimates the budget and books your airport transfer."
+      },
+      "devenirHote": {
+        "titre": "Become a host on Kwa-Ba",
+        "description": "List your place for free, welcome travellers from around the world and get paid with Mobile Money."
+      },
+      "aide": {
+        "titre": "Help centre",
+        "description": "Booking, payment, cancellation, transfers: answers to frequently asked questions."
+      },
+      "logementIntrouvable": {
+        "titre": "Place not found"
+      },
+      "logementDescription": "{type} in {ville} for {voyageurs} guests, from {prix} FCFA per night. Book on Kwa-Ba with Mobile Money or card.",
+      "organisationDescription": "Support {nom} ({ville}) with Kwa-Ba Give: donate from 500 to 5,000 FCFA, payout published with its proof."
+    }
   },
   "commun": {
     "allerAuContenu": "Skip to main content",
