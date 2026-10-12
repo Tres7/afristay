@@ -82,7 +82,7 @@ services:
       - backend
 
   rabbitmq:
-    image: rabbitmq:3-management
+    image: rabbitmq:4-management
     env_file:
       - server/.env
     ports:
