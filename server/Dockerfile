@@ -16,8 +16,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Fichiers statiques (admin) servis par WhiteNoise ; clé factice, utilisée seulement le temps du build
-RUN DJANGO_SECRET_KEY=collectstatic-build-only python manage.py collectstatic --noinput \
+# Fichiers statiques (admin) servis par WhiteNoise ; clé et mot de passe factices, utilisés seulement le temps du build
+RUN DJANGO_SECRET_KEY=collectstatic-build-only POSTGRES_PASSWORD=collectstatic-build-only python manage.py collectstatic --noinput \
     && mkdir -p mediafiles && chown app:app mediafiles
 
 USER 10001:10001
@@ -26,4 +26,8 @@ EXPOSE 8000
 
 # API par défaut. Le consumer, le relais et les migrations utilisent la même image avec une autre commande.
 # Render fournit PORT ; WEB_CONCURRENCY règle le nombre de workers Gunicorn.
-CMD ["sh", "-c", "exec gunicorn config.wsgi:application --bind 0.0.0.0:${PORT} --workers ${WEB_CONCURRENCY:-2} --access-logfile - --forwarded-allow-ips '*'"]
+# FORWARDED_ALLOW_IPS : adresses des proxys dont Gunicorn accepte les en-têtes X-Forwarded-* (par défaut aucun
+# sauf la machine elle-même). Derrière le proxy de Render, dont l'adresse varie, mettre « * » dans l'environnement
+# du service, avec DJANGO_NUM_PROXIES=1.
+ENV FORWARDED_ALLOW_IPS=127.0.0.1
+CMD ["sh", "-c", "exec gunicorn config.wsgi:application --bind 0.0.0.0:${PORT} --workers ${WEB_CONCURRENCY:-2} --access-logfile - --forwarded-allow-ips \"${FORWARDED_ALLOW_IPS}\""]

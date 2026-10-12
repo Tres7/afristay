@@ -1,3 +1,5 @@
+# Développement uniquement. La base, pgAdmin et RabbitMQ n'écoutent que sur 127.0.0.1 (invisibles du réseau local) ;
+# pgAdmin et la console RabbitMQ ne doivent jamais être déployés en production.
 services:
   # ========================
   # Base de donnees
@@ -8,7 +10,7 @@ services:
     env_file:
       - server/.env
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
     volumes:
       - afristay_db:/var/lib/postgresql/data
     healthcheck:
@@ -21,7 +23,7 @@ services:
   # pgAdmin
   # ========================
   pgadmin:
-    image: dpage/pgadmin4:latest
+    image: dpage/pgadmin4:9
     container_name: afristay-pgadmin
     env_file:
       - server/.env
@@ -29,7 +31,7 @@ services:
     #   PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
     #   PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
     ports:
-      - "5051:80"
+      - "127.0.0.1:5051:80"
     depends_on:
       db:
         condition: service_healthy
@@ -82,12 +84,12 @@ services:
       - backend
 
   rabbitmq:
-    image: rabbitmq:3-management
+    image: rabbitmq:3.13-management
     env_file:
       - server/.env
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
     # environment:
     #   RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
     #   RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
