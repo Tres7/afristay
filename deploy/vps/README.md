@@ -4,13 +4,15 @@ Tout tourne sur un seul VPS (Ubuntu 24.04), en Docker Compose, dans `/opt/kwaba`
 
 | Service | Rôle | Exposé |
 | --- | --- | --- |
-| `nginx` | HTTPS (Let's Encrypt), redirections, routage : `/api/auth/*` → client, `/api/*` `/admin/*` `/static/*` → API, le reste → client | 80, 443 |
+| `nginx` | HTTPS (Let's Encrypt), redirections, routage : `/api/auth/*` → client, `/api/*` `/admin/*` `/static/*` → API, `/photos/*` → bucket R2 (avec cache), le reste → client | 80, 443 |
 | `client` | Site Next.js (image `afristay-client`, par digest) | non |
 | `api` | API Django / Gunicorn (image `afristay-server`, par digest) | non |
 | `consumer`, `relay`, `payments` | Emails (RabbitMQ), relais de la messagerie, worker des paiements (même image que l'API) | non |
 | `postgres`, `rabbitmq` | Base et broker, volumes persistants | non |
 
-Les photos sont sur Cloudflare R2. Les images GHCR sont publiques (dépôt public) : aucune authentification sur le VPS.
+Les photos sont stockées sur Cloudflare R2 et servies par nginx sous `https://kwa-ba.com/photos/` : nginx les récupère à l'adresse publique `r2.dev` du bucket et les garde en cache (30 jours). Les URL enregistrées dans les annonces ne dépendent donc pas de l'hébergement des fichiers. La configuration nginx est un template (`nginx/templates/`), complété au démarrage avec `R2_PUBLIC_ORIGIN` (`env/nginx.env`).
+
+Les images GHCR sont publiques (dépôt public) : aucune authentification sur le VPS.
 
 ## Préparation initiale (une seule fois)
 
@@ -26,7 +28,8 @@ Les photos sont sur Cloudflare R2. Les images GHCR sont publiques (dépôt publi
    ```bash
    rsync -a --exclude env/*.env deploy/vps/ deploy@<ip>:/opt/kwaba/
    ```
-5. **Secrets** : sur le VPS, dans `/opt/kwaba/env/`, créer `server.env`, `client.env`, `postgres.env`, `rabbitmq.env` et `backup.env` à partir des modèles `*.env.example`, puis `chmod 600 env/*.env`. Ils ne quittent jamais le serveur.
+5. **Secrets** : sur le VPS, dans `/opt/kwaba/env/`, créer `server.env`, `client.env`, `postgres.env`, `rabbitmq.env`, `nginx.env` et `backup.env` à partir des modèles `*.env.example`, puis `chmod 600 env/*.env`. Ils ne quittent jamais le serveur.
+   - **R2 (photos)** : créer un bucket, activer son accès public par l'adresse `r2.dev` (*Settings → Public access*), mettre cette adresse dans `nginx.env` (`R2_PUBLIC_ORIGIN`), et une clé d'API limitée à ce bucket dans `server.env` (`R2_*`). `R2_PUBLIC_DOMAIN` reste `kwa-ba.com/photos`.
 6. **Certificat** : une fois le DNS propagé (`dig +short kwa-ba.com` renvoie l'IP du VPS) :
    ```bash
    ssh deploy@<ip> /opt/kwaba/scripts/init-tls.sh info@kwa-ba.com
@@ -41,7 +44,7 @@ Workflow GitHub **deploy** (lancement manuel, avec approbation) : champ *manifes
 scripts/deploy.sh <manifest> <image serveur> <image client>
 ```
 
-Ordre fixe : sauvegarde de la base (vérifiée), images, migrations, serveur et workers, client, rechargement de nginx, test de santé (`/api/health/` et `/`). L'état déployé est dans `.deploy.env` (le précédent dans `.deploy.env.previous`), l'historique dans `deployments.log`.
+Ordre fixe : sauvegarde de la base (vérifiée), images, migrations, serveur et workers, client, nginx (configuration testée dans un conteneur jetable, puis conteneur recréé), test de santé (`/api/health/` et `/`). Si la configuration nginx est invalide, le déploiement s'arrête avant de toucher au nginx en service. L'état déployé est dans `.deploy.env` (le précédent dans `.deploy.env.previous`), l'historique dans `deployments.log`.
 
 ## Revenir en arrière
 
