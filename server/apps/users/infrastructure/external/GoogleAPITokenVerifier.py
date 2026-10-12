@@ -1,17 +1,39 @@
+from collections.abc import Iterable
+
 import requests
+from django.conf import settings
+
 from apps.users.application.ports.GoogleTokenVerifier import GoogleTokenVerifier, GoogleUserInfo
+
+INVALID_TOKEN = "Token Google invalide ou expiré."
 
 
 class GoogleAPITokenVerifier(GoogleTokenVerifier):
 
     _URL = "https://oauth2.googleapis.com/tokeninfo"
+    _ISSUERS = {"accounts.google.com", "https://accounts.google.com"}
+    _TIMEOUT_SECONDS = 5
+
+    def __init__(self, client_ids: Iterable[str] | None = None):
+        self._client_ids = set(settings.GOOGLE_CLIENT_IDS if client_ids is None else client_ids)
 
     def verify(self, id_token: str) -> GoogleUserInfo:
-        response = requests.get(self._URL, params={"id_token": id_token})
+        if not self._client_ids:
+            raise ValueError("La connexion avec Google n'est pas disponible.")
+
+        try:
+            response = requests.get(self._URL, params={"id_token": id_token}, timeout=self._TIMEOUT_SECONDS)
+        except requests.RequestException:
+            raise ValueError("Google est injoignable, réessayez dans un instant.")
         if response.status_code != 200:
-            raise ValueError("Token Google invalide ou expiré.")
+            raise ValueError(INVALID_TOKEN)
 
         data = response.json()
+        # Le jeton doit avoir été émis pour Kwa-Ba : sinon, un site tiers qui propose « Se connecter avec Google »
+        # pourrait rejouer ici le jeton de ses visiteurs et ouvrir leur compte Kwa-Ba. Même message, volontairement.
+        if data.get("aud") not in self._client_ids or data.get("iss") not in self._ISSUERS:
+            raise ValueError(INVALID_TOKEN)
+
         return GoogleUserInfo(
             google_id=data['sub'],
             email=data['email'],
