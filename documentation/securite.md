@@ -13,9 +13,9 @@ Ce que fait le code, et ce qu'il reste à régler au déploiement. Fait suite à
 | `POSTGRES_PASSWORD` | long et aléatoire | obligatoire hors développement (plus de mot de passe par défaut) |
 | `POSTGRES_USER` | `kwaba_app` | rôle à droits minimaux, voir plus bas |
 | `JWT_SIGNING_KEY` | optionnelle | à défaut, dérivée de `DJANGO_SECRET_KEY` (clé distincte pour les JWT) |
-| `DJANGO_NUM_PROXIES` | `1` derrière Render ou nginx | adresse IP réelle du client pour les limites de débit |
-| `FORWARDED_ALLOW_IPS` | `*` sur Render (proxy à adresse variable), sinon l'adresse du proxy | en-têtes `X-Forwarded-*` acceptés par Gunicorn |
-| `DJANGO_ADMIN_URL` | chemin peu prévisible, ex. `gestion-7f3k/` | les robots visent `/admin/` |
+| `DJANGO_NUM_PROXIES` | `1` (nginx du VPS ajoute l'adresse réelle dans `X-Forwarded-For`) | adresse IP réelle du client pour les limites de débit |
+| `FORWARDED_ALLOW_IPS` | `*` sur le VPS (l'API n'est joignable que par le réseau interne Docker) | en-têtes `X-Forwarded-*` acceptés par Gunicorn |
+| `DJANGO_ADMIN_URL` | `admin/` sur le VPS : nginx ne route que `/admin/` vers Django, changer les deux ensemble | les connexions à l'administration sont de toute façon limitées et journalisées |
 | `ADMINS` | `tech@kwa-ba.com` | reçoit les erreurs 500 par email |
 | `FEDAPAY_WEBHOOK_SECRET` | clé du tableau de bord FedaPay | obligatoire : sans elle, les webhooks sont refusés |
 | `GOOGLE_CLIENT_ID` | identifiant OAuth web de Kwa-Ba | sans lui, la connexion Google est désactivée |
@@ -44,9 +44,8 @@ pgAdmin et la console de gestion RabbitMQ (`compose.yaml` sert au développement
 
 ## Sauvegardes
 
-- Chaque nuit : `deploy/scripts/sauvegarde.sh`. Dump PostgreSQL chiffré (GPG AES-256), conservé 14 jours, puis copié **hors du serveur**. La phrase secrète `SAUVEGARDE_PHRASE` va dans le gestionnaire de mots de passe de l'équipe, jamais à côté des sauvegardes.
-- Chaque mois, et après chaque changement de version de PostgreSQL : `deploy/scripts/test-restauration.sh <fichier>`. Le script restaure dans un PostgreSQL jetable et compte les lignes. `PG_VERSION` doit être au moins égale à la version du `pg_dump` qui a produit la sauvegarde.
-- Si l'hébergeur propose des sauvegardes automatiques (Render, Neon…), les activer en plus, sans remplacer le test de restauration.
+- Chaque nuit et avant chaque déploiement : `deploy/vps/scripts/backup.sh` (voir `deploy/vps/README.md`). Remplir `env/backup.env` pour que les sauvegardes soient copiées **hors du VPS** (R2, bucket privé).
+- Chaque mois, et après chaque changement de version de PostgreSQL : `deploy/scripts/test-restauration.sh <fichier.dump>`. Le script restaure dans un PostgreSQL jetable, jamais dans la base de production, et compte les lignes. `PG_VERSION` doit être au moins égale à la version du `pg_dump` qui a produit la sauvegarde.
 
 ## Surveillance
 

@@ -32,15 +32,14 @@ const csp = [
   ...(isDev ? [] : ["upgrade-insecure-requests"]),
 ].join("; ");
 
+// HSTS, X-Content-Type-Options et Referrer-Policy sont posés par nginx pour tout le site (deploy/vps/nginx) :
+// les répéter ici les enverrait en double.
 const securityHeaders = [
   { key: "Content-Security-Policy", value: csp },
   { key: "X-Frame-Options", value: "DENY" },
-  { key: "X-Content-Type-Options", value: "nosniff" },
-  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()" },
   // La fenêtre Google Identity Services doit pouvoir communiquer avec la page (popup de connexion)
   { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
-  ...(isDev ? [] : [{ key: "Strict-Transport-Security", value: "max-age=31536000" }]),
 ];
 
 const nextConfig: NextConfig = {
