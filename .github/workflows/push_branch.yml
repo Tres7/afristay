@@ -23,6 +23,8 @@ jobs:
     env:
       DJANGO_SECRET_KEY: ci-only-secret-key-never-used-outside-github-actions-0123456789
       DJANGO_DEBUG: 'False'
+      # Obligatoire hors DEBUG ; les tests unitaires ne se connectent pas à la base
+      POSTGRES_PASSWORD: ci
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
