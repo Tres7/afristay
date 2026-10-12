@@ -267,6 +267,10 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
 }
 
+# Connexion Google : identifiant(s) OAuth de Kwa-Ba (séparés par des virgules). Un jeton Google émis pour une autre
+# application est refusé ; sans identifiant configuré, la connexion Google est désactivée.
+GOOGLE_CLIENT_IDS = _env_list('GOOGLE_CLIENT_ID', '')
+
 # Délai pendant lequel un refresh token qui vient d'être renouvelé renvoie encore la même nouvelle paire.
 # NextAuth renouvelle le même jeton en parallèle au chargement d'une page : sans ce délai, seul le premier
 # appel réussirait et les autres déconnecteraient l'utilisateur.

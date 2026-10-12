@@ -1,0 +1,13 @@
+schemaVersion: 2
+manifestVersion: 5
+sourceRevision: b5c6efc688c27fea350cc637c2d919b61ac11a31
+createdAt: 2026-10-11T23:18:50Z
+services:
+  server:
+    kind: image
+    sourceRevision: f94527803bd8b0b92f99e80df4f279be5db95913
+    image: ghcr.io/tres7/afristay-server@sha256:c9793651bb2096abc689a6145afd53b41f85857d65ae03f87ba0a1a96040f6b3
+  client:
+    kind: image
+    sourceRevision: 713a89741607ff95bd8aa4188d657d25acec2db8
+    image: ghcr.io/tres7/afristay-client@sha256:39f682c24594d8a97094c1d9d5d8687c952302e51ece1b6fd8611132228931fe

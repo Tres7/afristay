@@ -6,7 +6,8 @@ import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, type Variants } from "framer-motion";
-import { Search, MapPin, ChevronRight, CreditCard, MessageCircle, Zap, RotateCcw, Building2, Home, Hotel, Tent } from "lucide-react";
+import { Search, MapPin, ChevronRight } from "lucide-react";
+import { ArrowCounterClockwiseIcon, BackpackIcon, BedIcon, BuildingApartmentIcon, ChatsCircleIcon, HouseLineIcon, LightningIcon, WalletIcon } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import api from "@/lib/api";
@@ -25,17 +26,18 @@ const heroImages = [
 ];
 
 const CATEGORIES = [
-  { type: "hotel", label: "hotels", icon: Hotel, color: "bg-blue-100 text-blue-600" },
-  { type: "appartement", label: "appartements", icon: Building2, color: "bg-green-100 text-green-600" },
-  { type: "villa", label: "villas", icon: Home, color: "bg-purple-100 text-purple-600" },
-  { type: "auberge", label: "auberges", icon: Tent, color: "bg-amber-100 text-amber-600" },
+  { type: "hotel", label: "hotels", icon: BedIcon },
+  { type: "appartement", label: "appartements", icon: BuildingApartmentIcon },
+  { type: "villa", label: "villas", icon: HouseLineIcon },
+  { type: "auberge", label: "auberges", icon: BackpackIcon },
 ];
 
 const FEATURES = [
-  { title: "paiement", icon: CreditCard, color: "text-orange-500 bg-orange-100" },
-  { title: "instantanee", icon: Zap, color: "text-blue-500 bg-blue-100" },
-  { title: "contact", icon: MessageCircle, color: "text-green-500 bg-green-100" },
-  { title: "annulation", icon: RotateCcw, color: "text-purple-500 bg-purple-100" },
+  // Couleurs de la charte Kwa-Ba : vert, ambre, orange, ardoise
+  { title: "paiement", icon: WalletIcon, color: "text-primary ring-primary/20" },
+  { title: "instantanee", icon: LightningIcon, color: "text-secondary ring-secondary/20" },
+  { title: "contact", icon: ChatsCircleIcon, color: "text-accent ring-accent/30" },
+  { title: "annulation", icon: ArrowCounterClockwiseIcon, color: "text-dark ring-dark/15" },
 ];
 
 const cardVariants: Variants = {
@@ -199,13 +201,13 @@ export default function HomePage() {
         </section>
 
         <section className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-3 md:gap-4" aria-label={t("typesHebergement")}>
-          {CATEGORIES.map(({ type, label, icon: Icon, color }) => (
+          {CATEGORIES.map(({ type, label, icon: Icon }) => (
             <Link
               key={type}
               href={`/recherche?type=${type}`}
               className="bg-white px-4 md:px-6 py-3 md:py-4 rounded-full border border-gray-100 shadow-sm flex items-center gap-3 hover:border-primary/40 hover:shadow transition-all"
             >
-              <span className={`h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0 ${color}`}><Icon size={16} /></span>
+              <span className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-primary-50 text-primary"><Icon size={24} weight="duotone" aria-hidden /></span>
               <span className="font-bold text-dark text-sm">{t(`types.${label}`)}</span>
             </Link>
           ))}
@@ -239,8 +241,8 @@ export default function HomePage() {
           <motion.div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8" variants={containerVariants} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-40px" }}>
             {FEATURES.map((feat) => (
               <motion.div key={feat.title} variants={cardVariants} className="flex flex-col items-center text-center">
-                <div className={`w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center mb-4 md:mb-6 shadow-sm ${feat.color}`}>
-                  <feat.icon size={26} strokeWidth={2} />
+                <div className={`w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-white ring-1 shadow-sm flex items-center justify-center mb-4 md:mb-6 ${feat.color}`}>
+                  <feat.icon className="w-9 h-9 md:w-11 md:h-11" weight="duotone" aria-hidden />
                 </div>
                 <h3 className="font-bold text-dark text-lg mb-2">{t(`atouts.${feat.title}.titre`)}</h3>
                 <p className="text-gray-500 text-sm leading-relaxed max-w-[240px]">{t(`atouts.${feat.title}.texte`)}</p>

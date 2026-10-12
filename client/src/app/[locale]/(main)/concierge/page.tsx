@@ -154,7 +154,7 @@ function ConciergeContent() {
       <div className="max-w-6xl mx-auto px-0 sm:px-6 lg:py-6 flex gap-6 h-[calc(100dvh-4rem)] md:h-[calc(100dvh-5rem)]">
         <aside className="hidden lg:flex w-64 flex-shrink-0 flex-col bg-white rounded-3xl border border-gray-100 p-3">
           <button onClick={() => router.push("/concierge")} className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-primary text-white text-sm font-bold">
-            <MessageSquarePlus size={16} /> Nouvelle conversation
+            <MessageSquarePlus size={16} /> {t("nouvelleConversation")}
           </button>
           <ul className="mt-3 flex-1 overflow-y-auto space-y-1">
             {conversations.map((c) => (
@@ -200,7 +200,7 @@ function ConciergeContent() {
                   {SUGGESTIONS.map((s) => (
                     <button key={s} onClick={() => envoyer(t(`suggestions.${s}`))} disabled={!statut?.actif}
                       className="text-sm text-dark bg-gray-50 hover:bg-primary/5 border border-gray-100 rounded-2xl p-3 disabled:opacity-50">
-                      {s}
+                      {t(`suggestions.${s}`)}
                     </button>
                   ))}
                 </div>

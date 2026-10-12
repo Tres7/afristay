@@ -60,3 +60,32 @@ jobs:
       - name: Manifests valides
         run: node .github/scripts/manifest/validate.mjs
 
+  vps:
+    name: Infrastructure du VPS (scripts, compose, nginx)
+    if: inputs.infra
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: deploy/vps
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: shellcheck
+        run: shellcheck -x -P scripts scripts/*.sh
+      - name: docker compose config (modèles de secrets)
+        run: |
+          for f in env/*.env.example; do cp "$f" "${f%.example}"; done
+          SERVER_IMAGE=server CLIENT_IMAGE=client docker compose --profile tools config --quiet
+      - name: nginx -t (configuration de production, certificat de test)
+        run: |
+          certs=$(mktemp -d)
+          mkdir -p "$certs/live/kwa-ba.com"
+          openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj /CN=kwa-ba.com \
+            -keyout "$certs/live/kwa-ba.com/privkey.pem" -out "$certs/live/kwa-ba.com/fullchain.pem" 2> /dev/null
+          image=$(grep -m1 -oE 'nginx:[^ ]+' compose.yml)
+          docker run --rm --add-host api:127.0.0.1 --add-host client:127.0.0.1 \
+            -v "$PWD/nginx/conf.d:/etc/nginx/conf.d:ro" -v "$PWD/nginx/snippets:/etc/nginx/snippets:ro" \
+            -v "$certs:/etc/letsencrypt:ro" "$image" nginx -t
+
