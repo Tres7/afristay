@@ -2,6 +2,7 @@ from django.http import StreamingHttpResponse
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from . import services
@@ -20,6 +21,11 @@ class StatutView(APIView):
 
 class ConversationsView(APIView):
     permission_classes = [IsAuthenticated]
+    throttle_scope = 'concierge_conversation'
+
+    def get_throttles(self):
+        # Création de conversations limitée ; la lecture de la liste ne l'est pas
+        return [ScopedRateThrottle()] if self.request.method == 'POST' else []
 
     def get(self, request):
         conversations = ConversationModel.objects.filter(utilisateur=request.user)[:50]

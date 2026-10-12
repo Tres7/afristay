@@ -11,7 +11,7 @@ from apps.users.domain.exceptions import (
 )
 from datetime import timedelta
 from django.utils import timezone
-from apps.users.infrastructure.persistence.models import UserModel, VerificationCode
+from apps.users.infrastructure.persistence.models import UserModel, VerificationCode, hacher_code
 
 from apps.users.application.dto.dto import (
     GoogleAuthDTO,
@@ -157,7 +157,7 @@ class UserService:
         VerificationCode.objects.filter(user_id=user_id).delete()
         VerificationCode.objects.create(
             user_id=user_id,
-            code=code,
+            code=hacher_code(user_id, code),
             expires_at=timezone.now() + timedelta(minutes=10),
         )
 
@@ -170,13 +170,8 @@ class UserService:
         if user_model.is_verified:
             raise ValueError("Compte déjà vérifié.")
 
-        try:
-            vc = VerificationCode.objects.filter(
-                user=user_model,
-                code=code,
-                expires_at__gt=timezone.now(),
-            ).latest("expires_at")
-        except VerificationCode.DoesNotExist:
+        vc = VerificationCode.objects.filter(user=user_model, expires_at__gt=timezone.now()).order_by('-expires_at').first()
+        if not vc or not vc.correspond(code):
             raise ValueError("Code invalide ou expiré.")
 
         user_model.is_verified = True

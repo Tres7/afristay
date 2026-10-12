@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 
 from django.utils import timezone
@@ -158,7 +159,10 @@ class TransfertsView(APIView):
               .prefetch_related('paiements', 'remboursements'))
         reservation = request.query_params.get('reservation')
         if reservation:
-            qs = qs.filter(reservation_id=reservation)
+            try:
+                qs = qs.filter(reservation_id=uuid.UUID(reservation))
+            except ValueError:
+                return Response({'reservation': ['Identifiant invalide.']}, status=status.HTTP_400_BAD_REQUEST)
         data = TransfertSerializer(qs, many=True).data
         return Response({'results': data, 'count': len(data)})
 

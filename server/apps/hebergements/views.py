@@ -17,6 +17,7 @@ from .serializers import BlocageSerializer, HebergementSerializer, HebergementCr
 
 HOST_ROLES = ('hote', 'admin')
 MAX_FENETRE_JOURS = 548  # 18 mois de calendrier par requête
+MAX_RESULTATS = 200
 
 
 def _context(request):
@@ -79,9 +80,11 @@ class HebergementListView(APIView):
         elif sort == 'note':
             qs = qs.order_by('-rating')
 
+        # Au plus MAX_RESULTATS annonces par requête : la liste n'est pas paginée, une requête ne doit pas pouvoir
+        # charger (et sérialiser) toute la base
         limit = request.query_params.get('limit')
-        if limit and limit.isdigit():
-            qs = qs[:int(limit)]
+        limite = min(int(limit), MAX_RESULTATS) if limit and limit.isdigit() else MAX_RESULTATS
+        qs = qs[:limite]
 
         serializer = HebergementSerializer(qs, many=True, context=_context(request))
         return Response({'results': serializer.data, 'count': len(serializer.data)})

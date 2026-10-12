@@ -6,10 +6,13 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
+from apps.securite.admin_site import connexion_admin
 from config.health import health
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    # Avant admin.site.urls : la page de connexion de l'administration limite les tentatives
+    path(f'{settings.ADMIN_URL}login/', connexion_admin),
+    path(settings.ADMIN_URL, admin.site.urls),
     path('api/health/', health, name='health'),
     path('api/v1/', include('apps.users.infrastructure.http.routes.urls')),
     path('api/v1/hebergements/', include('apps.hebergements.urls')),
