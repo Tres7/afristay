@@ -169,7 +169,7 @@ export default function HebergementForm({ initial, onSaved, onCancel }: Hebergem
             return (
               <button key={id} type="button" aria-pressed={active} onClick={() => toggleAmenity(id)}
                 className={cn("inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-sm border transition-colors", active ? "bg-primary text-white border-primary" : "bg-white text-dark border-gray-200 hover:border-primary/40")}>
-                <Icone size={16} aria-hidden /> {label}
+                <Icone size={18} weight="duotone" aria-hidden /> {label}
               </button>
             );
           })}
