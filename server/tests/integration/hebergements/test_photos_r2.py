@@ -61,3 +61,14 @@ def test_photo_deleted_from_r2(r2_bucket, client_for, make_user):
     assert client_for(host).delete(f'{PHOTOS}{photo_id}/').status_code == 204
     assert r2_bucket.list_objects_v2(Bucket='kwaba-photos').get('KeyCount') == 0
     assert key.startswith(f'hebergements/{host.id}/')
+
+
+def test_photo_url_under_the_site_domain(r2_bucket, client_for, make_user, settings):
+    # Production: nginx serves the bucket under https://kwa-ba.com/photos/ (R2_PUBLIC_DOMAIN may contain a path)
+    settings.STORAGES = {**settings.STORAGES, 'default': r2_storage({**R2_ENV, 'R2_PUBLIC_DOMAIN': 'kwa-ba.com/photos'})}
+    host = make_user(role='hote')
+    response = client_for(host).post(PHOTOS, {'file': _jpeg()}, format='multipart')
+
+    assert response.status_code == 201
+    assert response.data['url'] == f'https://kwa-ba.com/photos/hebergements/{host.id}/{response.data["id"]}.jpg'
+

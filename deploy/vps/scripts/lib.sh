@@ -20,7 +20,7 @@ kwaba_compose() {
 
 require_env_files() {
   local missing=0
-  for f in env/server.env env/client.env env/postgres.env env/rabbitmq.env; do
+  for f in env/server.env env/client.env env/postgres.env env/rabbitmq.env env/nginx.env; do
     if [ ! -s "$f" ]; then echo "Fichier manquant ou vide : $f (modèle : $f.example)" >&2; missing=1; fi
   done
   return "$missing"

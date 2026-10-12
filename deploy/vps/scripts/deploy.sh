@@ -39,10 +39,10 @@ kwaba_compose up -d --wait api consumer relay payments
 log "Client"
 kwaba_compose up -d --wait client
 
-log "nginx (configuration rechargée : nouvelles adresses de l'API et du client)"
-kwaba_compose up -d nginx
-kwaba_compose exec -T nginx nginx -t
-kwaba_compose exec -T nginx nginx -s reload
+log "nginx (configuration vérifiée, puis conteneur recréé : templates et adresses de l'API et du client à jour)"
+# The template is rendered and tested in a throwaway container before replacing the running nginx
+kwaba_compose run --rm --no-deps nginx nginx -t
+kwaba_compose up -d --force-recreate nginx
 
 log "Test de santé"
 check() {
