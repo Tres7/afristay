@@ -33,7 +33,7 @@ const NOMS_PAYS: Record<string, { fr: string; en: string }> = {
 };
 
 /** Noms des pays, dans la langue courante (PAYS[code]). */
-export const PAYS: Record<string, string> = new Proxy({} as Record<string, string>, {
+export const PAYS: Record<string, string> = new Proxy(NOMS_PAYS as unknown as Record<string, string>, {
   get: (_, code: string) => (NOMS_PAYS[code] ? selon(NOMS_PAYS[code]) : undefined),
 });
 

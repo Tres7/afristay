@@ -34,8 +34,12 @@ const TYPES: Record<string, { fr: string; en: string }> = {
   auberge: { fr: "Auberge", en: "Guesthouse" },
 };
 
-/** Libellés des types de logement, dans la langue courante (TYPE_LABELS[type]). */
-export const TYPE_LABELS: Record<string, string> = new Proxy({} as Record<string, string>, {
+/**
+ * Libellés des types de logement, dans la langue courante (TYPE_LABELS[type]).
+ * La cible du Proxy est la table elle-même : Object.keys(TYPE_LABELS) liste les types. Sur un objet vide, la liste
+ * serait vide et le choix du type disparaîtrait du formulaire de l'hôte.
+ */
+export const TYPE_LABELS: Record<string, string> = new Proxy(TYPES as unknown as Record<string, string>, {
   get: (_, type: string) => (TYPES[type] ? TYPES[type][langueCourante] : type),
 });
 
@@ -46,7 +50,7 @@ const ROLES: Record<string, { fr: string; en: string }> = {
 };
 
 /** Libellés des rôles, dans la langue courante (ROLE_LABELS[role]). */
-export const ROLE_LABELS: Record<string, string> = new Proxy({} as Record<string, string>, {
+export const ROLE_LABELS: Record<string, string> = new Proxy(ROLES as unknown as Record<string, string>, {
   get: (_, role: string) => (ROLES[role] ? ROLES[role][langueCourante] : role),
 });
 
