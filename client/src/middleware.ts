@@ -4,7 +4,7 @@ import createIntlMiddleware from "next-intl/middleware";
 import { routing } from "@/i18n/routing";
 
 // Pages réservées aux utilisateurs connectés (le centre d'aide reste public)
-const PROTECTED = ["/profil", "/favoris", "/messages", "/reservation", "/hote/espace", "/backoffice", "/give/don"];
+const PROTECTED = ["/profil", "/favoris", "/messages", "/reservation", "/hote/espace", "/backoffice", "/agent", "/give/don"];
 const PUBLIC_EXCEPTIONS = ["/profil/aide"];
 // Pages d'accueil publiques ; leurs sous-pages (suivi d'un transfert, voyage de groupe, invitation) exigent d'être connecté
 const PROTECTED_SUBPATHS = ["/transfert", "/together"];
@@ -47,6 +47,15 @@ export default async function middleware(req: NextRequest) {
   // Back-office : administrateurs uniquement (l'API vérifie aussi le rôle), en français
   if (chemin.startsWith("/backoffice")) {
     if (isLoggedIn && token?.role !== "admin") {
+      return NextResponse.redirect(new URL(prefixe || "/", req.nextUrl.origin));
+    }
+    return NextResponse.next();
+  }
+
+  // Espace des agents de terrain (vérification des logements), en français. Confort d'affichage seulement :
+  // l'API vérifie le rôle en base à chaque requête.
+  if (chemin.startsWith("/agent")) {
+    if (isLoggedIn && token?.role !== "agent" && token?.role !== "admin") {
       return NextResponse.redirect(new URL(prefixe || "/", req.nextUrl.origin));
     }
     return NextResponse.next();

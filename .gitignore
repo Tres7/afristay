@@ -25,6 +25,7 @@ db.sqlite3
 db.sqlite3-journal
 /server/staticfiles/
 /server/mediafiles/
+/server/prive/
 *.log
 server/.venv/
 server/.env

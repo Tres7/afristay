@@ -127,7 +127,7 @@ def rechercher_logements(entree: dict):
     if arrivee and arrivee < timezone.localdate():
         raise EntreeInvalide("arrivee est dans le passé")
 
-    qs = HebergementModel.objects.filter(is_available=True).filter(
+    qs = HebergementModel.objects.publiees().filter(
         Q(city__icontains=ville) | Q(location__icontains=ville))
     if voyageurs:
         qs = qs.filter(max_guests__gte=voyageurs)
@@ -203,7 +203,7 @@ def proposer_voyage_de_groupe(entree: dict):
     ids = entree.get('logements') or []
     if not isinstance(ids, list):
         raise EntreeInvalide('logements : liste attendue')
-    logements = list(HebergementModel.objects.filter(is_available=True, pk__in=[i for i in ids[:6] if isinstance(i, str) and len(i) == 36])
+    logements = list(HebergementModel.objects.publiees().filter(pk__in=[i for i in ids[:6] if isinstance(i, str) and len(i) == 36])
                      .values('id', 'name'))
     carte = {
         'type': 'together', 'nom': nom, 'destination': destination,

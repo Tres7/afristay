@@ -5,13 +5,14 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Pencil, Trash2, Eye, EyeOff, Calendar, CalendarDays, Users, MapPin, MessageCircle } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, Calendar, CalendarDays, Users, MapPin, MessageCircle, ShieldCheck, Clock, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import api, { apiErrorMessage } from "@/lib/api";
 import { cn, FALLBACK_IMAGE, formatDate, formatPrice, isoDate, TYPE_LABELS } from "@/lib/utils";
 import HebergementForm from "@/components/hote/HebergementForm";
 import RatingBadge from "@/components/avis/RatingBadge";
 import RevenusHote from "@/components/hote/RevenusHote";
+import VerificationIdentite from "@/components/hote/VerificationIdentite";
 import type { Hebergement, Paginated, Reservation } from "@/types/api/models";
 import type { MessagingConversation } from "@/types/api/messaging";
 import { useTranslations } from "next-intl";
@@ -22,6 +23,7 @@ const PAYMENT_LABELS: Record<string, string> = { mobile_money: "mobileMoney", ca
 
 function EspaceHoteContent() {
   const t = useTranslations("espaceHote");
+  const tVerif = useTranslations("espaceHote.verification");
   const tRes = useTranslations("reservation");
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -176,10 +178,11 @@ function EspaceHoteContent() {
           </div>
         ) : (
           <div className="space-y-4">
+            <VerificationIdentite />
             {annonces.map((h) => (
               <article key={h.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col sm:flex-row">
                 <Link href={`/hebergements/${h.id}`} className="sm:w-48 h-40 sm:h-auto flex-shrink-0 relative">
-                  <img src={h.image_url || FALLBACK_IMAGE} alt={h.name} className={cn("w-full h-full object-cover", !h.is_available && "grayscale opacity-60")} />
+                  <img src={h.image_url || FALLBACK_IMAGE} alt={h.name} className={cn("w-full h-full object-cover", (!h.is_available || h.statut_verification !== "verifiee") && "grayscale opacity-60")} />
                   {!h.is_available && <span className="absolute top-3 left-3 bg-dark text-white text-[10px] font-bold uppercase px-2 py-1 rounded-full">{t("masqueeBadge")}</span>}
                 </Link>
                 <div className="flex-1 p-5 min-w-0 flex flex-col">
@@ -191,6 +194,20 @@ function EspaceHoteContent() {
                     <p className="font-heading font-bold text-primary whitespace-nowrap">{formatPrice(h.price_per_night)}<span className="text-xs text-gray-400 font-normal">/nuit</span></p>
                   </div>
                   <RatingBadge rating={h.rating} count={h.review_count} variant="full" className="mt-2" />
+                  {h.statut_verification === "verifiee" ? (
+                    <p className="flex items-center gap-1.5 text-xs font-bold text-green-700 mt-2"><ShieldCheck size={14} /> {tVerif("verifiee")}</p>
+                  ) : h.statut_verification === "refusee" ? (
+                    <div role="alert" className="mt-3 text-sm bg-red-50 text-red-800 rounded-xl px-3 py-2">
+                      <p className="flex items-center gap-1.5 font-bold"><AlertTriangle size={14} /> {tVerif("refusee")}</p>
+                      {h.motif_refus && <p className="mt-1">« {h.motif_refus} »</p>}
+                      <p className="mt-1 text-xs">{tVerif("refuseeAide")}</p>
+                    </div>
+                  ) : (
+                    <div className="mt-3 text-sm bg-amber-50 text-amber-900 rounded-xl px-3 py-2">
+                      <p className="flex items-center gap-1.5 font-bold"><Clock size={14} /> {tVerif("enAttente")}</p>
+                      <p className="mt-1 text-xs">{tVerif("enAttenteAide")}</p>
+                    </div>
+                  )}
                   <div className="flex flex-wrap gap-2 mt-auto pt-4">
                     <button onClick={() => setEditing(h)} className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gray-100 text-dark text-sm font-medium hover:bg-gray-200"><Pencil size={14} /> {t("modifierCourt")}</button>
                     <Link href={`/hote/espace/calendrier/${h.id}`} className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gray-100 text-dark text-sm font-medium hover:bg-gray-200"><CalendarDays size={14} /> {t("calendrier")}</Link>

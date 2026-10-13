@@ -69,7 +69,7 @@ def detail(voyage, user, request) -> dict:
         h = p.hebergement
         disponible = None
         if voyage.date_debut and voyage.date_fin:
-            disponible = h.is_available and est_disponible(h.id, voyage.date_debut, voyage.date_fin)
+            disponible = h.est_publiee and est_disponible(h.id, voyage.date_debut, voyage.date_fin)
         propositions.append({
             'id': p.id, 'commentaire': p.commentaire, 'propose_par': _nom(p.propose_par),
             'peut_supprimer': user.id in (p.propose_par_id, voyage.organisateur_id),
@@ -252,7 +252,7 @@ class PropositionsView(APIView):
         voyage = _voyage(pk, request.user)
         if not voyage:
             return _introuvable()
-        hebergement = HebergementModel.objects.filter(pk=_uuid(request.data.get('hebergement')), is_available=True).first()
+        hebergement = HebergementModel.objects.publiees().filter(pk=_uuid(request.data.get('hebergement'))).first()
         if not hebergement:
             return Response({'hebergement': ['Logement introuvable.']}, status=status.HTTP_400_BAD_REQUEST)
         try:

@@ -18,7 +18,7 @@ COPY . .
 
 # Fichiers statiques (admin) servis par WhiteNoise ; clé et mot de passe factices, utilisés seulement le temps du build
 RUN DJANGO_SECRET_KEY=collectstatic-build-only POSTGRES_PASSWORD=collectstatic-build-only python manage.py collectstatic --noinput \
-    && mkdir -p mediafiles && chown app:app mediafiles
+    && mkdir -p mediafiles prive && chown app:app mediafiles prive
 
 USER 10001:10001
 

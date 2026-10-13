@@ -12,7 +12,7 @@ from urllib.parse import urlsplit
 
 from django.core.exceptions import ImproperlyConfigured
 
-from config.storage import r2_storage
+from config.storage import r2_storage, r2_storage_prive
 
 load_dotenv()
 
@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     'apps.concierge.apps.ConciergeConfig',
     'apps.give.apps.GiveConfig',
     'apps.securite.apps.SecuriteConfig',
+    'apps.verifications.apps.VerificationsConfig',
 ]
 
 MIDDLEWARE = [
@@ -161,6 +162,14 @@ STORAGES = {
 if (_r2 := r2_storage(os.environ)) is not None:
     STORAGES['default'] = _r2
 
+# Documents privés (pièces d'identité des hôtes, photos des visites de vérification) : jamais servis directement,
+# lus seulement par l'API après contrôle du rôle. Bucket R2 privé en production, sinon un dossier hors MEDIA_ROOT.
+PRIVE_ROOT = Path(os.getenv('PRIVE_ROOT', BASE_DIR / 'prive'))
+STORAGES['prive'] = r2_storage_prive(os.environ) or {
+    'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    'OPTIONS': {'location': PRIVE_ROOT, 'base_url': None},
+}
+
 
 # Default primary key field type
 
@@ -185,6 +194,7 @@ REST_FRAMEWORK = {
         'messaging_message_send': '30/min',
         'hebergement_photo_upload': '120/hour',
         'concierge_conversation': '30/hour',
+        'verification_piece': '20/hour',
     },
 }
 

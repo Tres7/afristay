@@ -101,6 +101,11 @@ class ConversationListCreateView(WriteGuardsMixin, APIView):
         if hebergement_id is None:
             return Response({'detail': 'hebergement_id invalide ou manquant.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        from apps.hebergements.models import HebergementModel  # contrôle propre à cette route, comme ci-dessous
+        # Annonce pas encore vérifiée ou masquée : on ne peut pas encore contacter son hôte
+        if not HebergementModel.objects.publiees().filter(pk=hebergement_id).exists():
+            return Response({'detail': 'Hébergement introuvable.'}, status=status.HTTP_404_NOT_FOUND)
+
         try:
             conversation, created = messaging_service().start_conversation(request.user.id, hebergement_id)
         except HebergementNotFoundException as e:

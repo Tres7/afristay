@@ -152,6 +152,14 @@ function HebergementContent() {
               <span className="flex items-center gap-1 text-muted"><MapPin size={14} />{hebergement.location ? `${hebergement.location}, ` : ""}{hebergement.city}</span>
               <span className="text-muted">·</span>
               <span className="text-muted">{TYPE_LABELS[hebergement.type]} · {t("jusquA", { nombre: hebergement.max_guests })}</span>
+              {hebergement.statut_verification === "verifiee" && (
+                <>
+                  <span className="text-muted">·</span>
+                  <span className="flex items-center gap-1 font-semibold text-primary" title={t("verifieAide")}>
+                    <BadgeCheck size={15} /> {t("verifieBadge")}
+                  </span>
+                </>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">

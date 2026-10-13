@@ -34,6 +34,7 @@ class UserModel(AbstractUser):
         ('voyageur', 'Voyageur'),
         ('hote', 'Hôte'),
         ('admin', 'Administrateur'),
+        ('agent', 'Agent de terrain'),
     ]
 
     username    = None

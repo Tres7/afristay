@@ -47,6 +47,7 @@ const ROLES: Record<string, { fr: string; en: string }> = {
   voyageur: { fr: "Voyageur", en: "Traveller" },
   hote: { fr: "Hôte", en: "Host" },
   admin: { fr: "Administrateur", en: "Administrator" },
+  agent: { fr: "Agent de terrain", en: "Field agent" },
 };
 
 /** Libellés des rôles, dans la langue courante (ROLE_LABELS[role]). */

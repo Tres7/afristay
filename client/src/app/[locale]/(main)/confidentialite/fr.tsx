@@ -45,6 +45,7 @@ export default function ContenuFr() {
                 <tr><td>Transferts aéroport : aéroport, heure et numéro de vol, passagers, bagages, adresse de destination, numéro de téléphone, message au chauffeur</td><td>Organiser la prise en charge à l&apos;aéroport</td><td>Exécution du contrat</td></tr>
                 <tr><td>Chauffeurs partenaires : identité, téléphone, véhicule, immatriculation, compte Mobile Money</td><td>Attribuer les courses et payer les chauffeurs</td><td>Exécution du contrat</td></tr>
                 <tr><td>Hôtes : pays, opérateur, numéro Mobile Money et nom du titulaire</td><td>Verser à l&apos;hôte le prix de ses séjours</td><td>Exécution du contrat</td></tr>
+                <tr><td>Hôtes : pièce d&apos;identité (type et copie), compte rendu de la visite du logement par un agent Kwa-Ba (points contrôlés, commentaire, photos prises sur place)</td><td>Vérifier l&apos;identité de l&apos;hôte et la conformité du logement avant publication, pour protéger les voyageurs. La copie n&apos;est visible que des agents Kwa-Ba, jamais des voyageurs</td><td>Intérêt légitime (prévention de la fraude)</td></tr>
                 <tr><td>Messages échangés avec les hôtes ou les voyageurs</td><td>Messagerie et notifications par email</td><td>Exécution du contrat</td></tr>
                 <tr><td>Avis et notes (publiés avec votre prénom et l&apos;initiale de votre nom)</td><td>Informer les autres voyageurs</td><td>Intérêt légitime (fiabilité des avis)</td></tr>
                 <tr><td>Voyages de groupe (Kwa-Ba Together) : nom du voyage, destination, dates, membres, logements proposés et votes, itinéraire, informations pratiques, réservations que vous choisissez de partager</td><td>Préparer un voyage à plusieurs</td><td>Exécution du contrat</td></tr>
@@ -103,6 +104,7 @@ export default function ContenuFr() {
               <li>Messages : <AValider>3 ans après le dernier message de la conversation.</AValider></li>
               <li>Avis : tant que le logement est publié, ou jusqu&apos;à leur suppression par modération.</li>
               <li>Journaux techniques de sécurité : <AValider>1 an.</AValider></li>
+              <li>Copie de la pièce d&apos;identité d&apos;un hôte : supprimée dès que l&apos;agent a vérifié l&apos;identité (seuls le type de pièce et le résultat du contrôle sont conservés). Compte rendu et photos de la visite : <AValider>tant que l&apos;annonce est publiée, puis 3 ans.</AValider></li>
             </ul>
           ),
         },

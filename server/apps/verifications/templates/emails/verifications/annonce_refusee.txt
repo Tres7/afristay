@@ -1,0 +1,13 @@
+{% autoescape off %}Bonjour {{ prenom }},
+
+Notre agent a visité votre logement « {{ hebergement }} », mais nous ne pouvons pas encore publier l'annonce :
+
+  {{ motif }}
+
+Corrigez ce point depuis votre espace hôte : l'annonce repassera en vérification.
+{{ url_espace }}
+
+Une question ? Répondez simplement à cet email.
+
+L'équipe Kwa-Ba
+{% endautoescape %}
