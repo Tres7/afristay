@@ -123,6 +123,30 @@ export function validateAll(dir, validate) {
   return errors;
 }
 
+/**
+ * Manifest to deploy: the given file name, or the latest one when empty. Only a strict file name is accepted
+ * (no path), and both services must be images: the result is passed to a remote shell on the VPS.
+ */
+export function deployTarget(dir, name = '') {
+  const manifests = readManifests(dir);
+  if (name && !FILE_PATTERN.test(name)) {
+    throw new Error(`Nom de manifest invalide : « ${name} » (attendu : manifest-0008-2cf8427.yaml)`);
+  }
+  const manifest = name ? manifests.find((m) => m.file === name) : manifests.at(-1);
+  if (!manifest) throw new Error(name ? `Manifest introuvable : ${name}` : `Aucun manifest dans ${dir}`);
+  const images = {};
+  for (const service of ['server', 'client']) {
+    const entry = manifest.data.services?.[service];
+    if (entry?.kind !== 'image' || !IMAGE_PATTERN.test(entry.image ?? '')) {
+      throw new Error(`${manifest.file} : pas d'image ${service} par digest (manifest v1, non déployable sur le VPS)`);
+    }
+    images[service] = entry.image;
+  }
+  return { file: manifest.file, serverImage: images.server, clientImage: images.client };
+}
+
+const IMAGE_PATTERN = /^ghcr\.io\/[a-z0-9._/-]+@sha256:[a-f0-9]{64}$/;
+
 /** Lit un champ pointé (« services.server.image ») d'un manifest. */
 export function field(manifest, path) {
   return path.split('.').reduce((value, key) => value?.[key], manifest.data);

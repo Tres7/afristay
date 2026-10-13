@@ -11,6 +11,7 @@ import { Toaster } from "sonner";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
 import type { Langue } from "@/i18n/routing";
+import { IMAGE_PARTAGE, SITE_URL } from "@/lib/seo";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -24,11 +25,10 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-const IMAGE_PARTAGE = "/brand/kwaba-partage-1200x630.png";
-
-// Adresse publique du site : les aperçus de lien (WhatsApp, Facebook…) exigent des URL absolues
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.AUTH_URL || "http://localhost:3000";
-
+/**
+ * Valeurs par défaut de toutes les pages. Pas d'URL canonique ni de versions linguistiques ici : elles sont
+ * propres à chaque page (lib/seo.ts), sinon toutes les pages se déclareraient variantes de l'accueil.
+ */
 export async function metadataDuSite(locale: Langue): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: "meta" });
   const titre = t("titre");
@@ -37,13 +37,11 @@ export async function metadataDuSite(locale: Langue): Promise<Metadata> {
     title: { default: titre, template: "%s · Kwa-Ba" },
     description: t("description"),
     applicationName: "Kwa-Ba",
-    alternates: { languages: { fr: "/", en: "/en" } },
     openGraph: {
       type: "website",
       locale: locale === "en" ? "en_GB" : "fr_FR",
       alternateLocale: locale === "en" ? "fr_FR" : "en_GB",
       siteName: "Kwa-Ba",
-      url: locale === "en" ? "/en" : "/",
       title: titre,
       description: t("description"),
       images: [{ url: IMAGE_PARTAGE, width: 1200, height: 630, alt: t("slogan") }],

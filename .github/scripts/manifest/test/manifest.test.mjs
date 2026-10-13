@@ -6,7 +6,7 @@ import { dirname, join } from 'node:path';
 import { describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-import { buildManifest, fileName, loadValidator, plan, toYaml, validateAll } from '../lib.mjs';
+import { buildManifest, deployTarget, fileName, loadValidator, plan, toYaml, validateAll } from '../lib.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRIPTS = dirname(HERE);
@@ -157,6 +157,33 @@ describe('validateAll', () => {
     const errors = validateAll(dir, validate).join('\n');
     assert.match(errors, /must match format "date-time"/);
     assert.match(errors, /nom attendu/);
+  });
+});
+
+describe('deployTarget', () => {
+  const dir = manifestsDir(['manifest-0001-aaaaaaa.yaml', legacyManifest(1)], ['manifest-0002-aaaaaaa.yaml', manifest(2)],
+    ['manifest-0003-aaaaaaa.yaml', manifest(3)]);
+
+  test('defaults to the latest manifest', () => {
+    assert.deepEqual(deployTarget(dir), { file: 'manifest-0003-aaaaaaa.yaml', serverImage: IMAGE, clientImage: CLIENT_IMAGE });
+  });
+
+  test('returns an older manifest by file name (rollback)', () => {
+    assert.equal(deployTarget(dir, 'manifest-0002-aaaaaaa.yaml').file, 'manifest-0002-aaaaaaa.yaml');
+  });
+
+  test('rejects anything but a plain manifest file name', () => {
+    for (const name of ['../schema.json', 'manifest-0002-aaaaaaa.yaml; rm -rf /', 'deploy/manifests/manifest-0002-aaaaaaa.yaml']) {
+      assert.throws(() => deployTarget(dir, name), /Nom de manifest invalide/);
+    }
+  });
+
+  test('rejects an unknown manifest', () => {
+    assert.throws(() => deployTarget(dir, 'manifest-0009-aaaaaaa.yaml'), /introuvable/);
+  });
+
+  test('rejects a v1 manifest whose client is deployed from Git', () => {
+    assert.throws(() => deployTarget(dir, 'manifest-0001-aaaaaaa.yaml'), /pas d'image client/);
   });
 });
 

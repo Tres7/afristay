@@ -54,6 +54,11 @@ export const ROLE_LABELS: Record<string, string> = new Proxy(ROLES as unknown as
   get: (_, role: string) => (ROLES[role] ? ROLES[role][langueCourante] : role),
 });
 
+/** Libellé d'un type de logement dans une langue donnée (côté serveur, où il n'y a pas de langue courante). */
+export function libelleType(type: string, locale: "fr" | "en"): string {
+  return TYPES[type]?.[locale] ?? type;
+}
+
 export function formatPrice(price: number | string): string {
   // fr-FR sépare les milliers par une espace fine (U+202F) quasi invisible dans certaines polices :
   // on la remplace par une espace insécable classique (U+00A0)
