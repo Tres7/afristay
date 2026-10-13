@@ -1563,5 +1563,11 @@
       "hybride": "Hybrid",
       "electrique": "Electric"
     }
+  },
+  "suggestions": {
+    "populaires": "Popular destinations",
+    "villes": "Cities",
+    "logements": "Stays",
+    "logementsDispo": "{nombre, plural, =1 {1 stay} other {# stays}}"
   }
 }

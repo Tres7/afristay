@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (
-    HebergementListView, HebergementDetailView, MyHebergementsView, CityListView,
+    HebergementListView, HebergementDetailView, MyHebergementsView, CityListView, SuggestionsView,
     PhotoUploadView, PhotoDetailView,
     DisponibiliteView, BlocageCreateView, BlocageDetailView,
 )
@@ -9,6 +9,7 @@ urlpatterns = [
     path('', HebergementListView.as_view(), name='hebergement-list'),
     path('mine/', MyHebergementsView.as_view(), name='hebergement-mine'),
     path('villes/', CityListView.as_view(), name='hebergement-villes'),
+    path('suggestions/', SuggestionsView.as_view(), name='hebergement-suggestions'),
     path('photos/', PhotoUploadView.as_view(), name='hebergement-photo-upload'),
     path('photos/<uuid:pk>/', PhotoDetailView.as_view(), name='hebergement-photo-detail'),
     path('blocages/<uuid:pk>/', BlocageDetailView.as_view(), name='blocage-detail'),

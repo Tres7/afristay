@@ -1,3 +1,4 @@
+import unicodedata
 from datetime import date, timedelta
 
 from django.db import transaction
@@ -144,6 +145,47 @@ class CityListView(APIView):
             )
             results.append({**row, 'image_url': cover or ''})
         return Response({'results': results})
+
+
+def _sans_accents(texte):
+    """« Lomé » → « lome » : les voyageurs tapent souvent sans accents."""
+    decompose = unicodedata.normalize('NFKD', texte.casefold())
+    return ''.join(c for c in decompose if not unicodedata.combining(c)).strip()
+
+
+class SuggestionsView(APIView):
+    """Autocomplétion de la barre de recherche : villes puis logements dont le nom correspond.
+
+    Les villes publiées sont peu nombreuses : on les compare en Python, sans accents ni casse
+    (« lome » trouve « Lomé »), celles qui commencent par la saisie en premier.
+    """
+    permission_classes = [AllowAny]
+    MAX_VILLES = 5
+    MAX_LOGEMENTS = 4
+
+    def get(self, request):
+        saisie = request.query_params.get('q', '')[:100]
+        cle = _sans_accents(saisie)
+        if not cle:
+            return Response({'villes': [], 'logements': []})
+
+        publiees = HebergementModel.objects.publiees()
+        villes = []
+        for ligne in publiees.values('city').annotate(count=Count('id')):
+            nom = _sans_accents(ligne['city'])
+            if cle in nom:
+                villes.append((not nom.startswith(cle), -ligne['count'], ligne['city'], ligne['count']))
+        villes.sort()
+
+        logements = (
+            publiees.filter(name__icontains=saisie.strip())
+            .order_by('-rating', 'name')
+            .values('id', 'name', 'city', 'image_url')[:self.MAX_LOGEMENTS]
+        )
+        return Response({
+            'villes': [{'city': ville, 'count': nombre} for _, _, ville, nombre in villes[:self.MAX_VILLES]],
+            'logements': list(logements),
+        })
 
 
 class HebergementDetailView(APIView):

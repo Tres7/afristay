@@ -15,6 +15,7 @@ import GuestsField from "@/components/ui/GuestsField";
 import Select from "@/components/ui/Select";
 import type { Hebergement, Paginated } from "@/types/api/models";
 import { useTranslations } from "next-intl";
+import ChampDestination from "@/components/hebergement/ChampDestination";
 
 const SORTS = [
   { id: "", label: "pertinence" },
@@ -155,11 +156,15 @@ function RechercheContent() {
         <form onSubmit={submitSearch} className="max-w-7xl mx-auto grid grid-cols-2 lg:flex gap-2 sm:gap-3 items-stretch">
           <label className="col-span-2 lg:flex-1 flex items-center gap-3 border border-gray-200 rounded-xl px-4 py-3 bg-light-muted">
             <Search size={16} className="text-muted flex-shrink-0" />
-            <input
-              type="text" value={city} onChange={(e) => setCity(e.target.value)}
+            <ChampDestination
+              value={city} onChange={setCity}
+              // Ville proposée choisie : la recherche part tout de suite
+              onVille={(ville) => pushParams({ city: ville })}
               placeholder={t("destinationExemple")}
-              aria-label={t("destination")}
-              className="flex-1 min-w-0 text-base sm:text-sm text-dark placeholder:text-muted outline-none bg-transparent"
+              ariaLabel={t("destination")}
+              className="flex-1 min-w-0"
+              inputClassName="w-full text-base sm:text-sm text-dark placeholder:text-muted outline-none bg-transparent"
+              listeClassName="-left-11 -right-4"
             />
           </label>
           <DateRangeField
