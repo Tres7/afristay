@@ -70,7 +70,8 @@
   "roles": {
     "voyageur": "Traveller",
     "hote": "Host",
-    "admin": "Administrator"
+    "admin": "Administrator",
+    "agent": "Field agent"
   },
   "nav": {
     "hebergements": "Stays",
@@ -455,7 +456,9 @@
     "nuitsFraisInclus": "{nombre, plural, one {# night} other {# nights}}, fees included",
     "parNuit": "per night",
     "votreAnnonce": "Your listing",
-    "choisirDates": "Choose dates"
+    "choisirDates": "Choose dates",
+    "verifieBadge": "Verified by Kwa-Ba",
+    "verifieAide": "A Kwa-Ba agent visited this place and checked the host's identity."
   },
   "avis": {
     "repondre": "Reply publicly",
@@ -1312,7 +1315,7 @@
     "supprimee": "Listing deleted",
     "nouvelle": "New listing",
     "modifier": "Edit listing",
-    "publiee": "Listing published!",
+    "publiee": "Listing sent! It will go live after our agent visits.",
     "miseAJour": "Listing updated",
     "titre": "Host space",
     "sousTitre": "Manage your listings and track your bookings.",
@@ -1345,7 +1348,33 @@
     "afficher": "Show",
     "publier": "Publish",
     "ouverture": "Opening...",
-    "contacterNom": "Contact {nom}"
+    "contacterNom": "Contact {nom}",
+    "verification": {
+      "enAttente": "Awaiting verification",
+      "enAttenteAide": "A Kwa-Ba agent will contact you to visit the place. Travellers will see the listing after the visit.",
+      "refusee": "Declined",
+      "refuseeAide": "Fix this, then save the listing: it will be checked again.",
+      "verifiee": "Verified",
+      "identiteTitre": "Identity check",
+      "identiteAide": "To protect travellers, every host is verified. Send an ID document: our agent will compare it with the person met during the visit, then it will be deleted.",
+      "identiteSoumise": "ID document received: it will be checked during the visit.",
+      "identiteVerifiee": "Identity verified",
+      "identiteRefusee": "ID document declined: {motif}",
+      "typePiece": "Document type",
+      "types": {
+        "cni": "National ID card",
+        "passeport": "Passport",
+        "permis": "Driving licence",
+        "sejour": "Residence permit"
+      },
+      "fichier": "Photo or scan (JPEG, PNG or PDF, 10 MB max)",
+      "envoyer": "Send",
+      "remplacer": "Replace",
+      "envoi": "Sending…",
+      "envoyee": "ID document sent",
+      "choisirFichier": "Choose a file.",
+      "confidentialite": "Only Kwa-Ba agents can see this document, never travellers."
+    }
   },
   "annonce": {
     "types": {

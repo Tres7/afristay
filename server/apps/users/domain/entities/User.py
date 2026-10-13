@@ -11,6 +11,7 @@ class UserRole(Enum):
     VOYAGEUR = 'voyageur'
     HOTE = 'hote'
     ADMIN = 'admin'
+    AGENT = 'agent'
 
 @dataclass
 class User:

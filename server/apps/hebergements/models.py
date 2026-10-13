@@ -3,7 +3,21 @@ from django.conf import settings
 from django.db import models
 
 
+class HebergementQuerySet(models.QuerySet):
+    def publiees(self):
+        """Annonces visibles du public : vérifiées par un agent de terrain et non masquées par l'hôte."""
+        return self.filter(is_available=True, statut_verification='verifiee')
+
+
 class HebergementModel(models.Model):
+    STATUTS_VERIFICATION = [
+        ('en_attente', 'En attente de vérification'),
+        ('verifiee', 'Vérifiée'),
+        ('refusee', 'Refusée'),
+    ]
+    # Modifier l'un de ces champs après la visite remet l'annonce en vérification (ce que l'agent a contrôlé)
+    CHAMPS_VERIFIES = ('city', 'location', 'image_url', 'images')
+
     TYPE_CHOICES = [
         ('hotel', 'Hôtel'),
         ('villa', 'Villa'),
@@ -25,6 +39,10 @@ class HebergementModel(models.Model):
     max_guests = models.PositiveIntegerField(default=4)
     amenities = models.JSONField(default=list)
     is_available = models.BooleanField(default=True)
+    # Publiée seulement après la visite d'un agent de terrain (apps.verifications)
+    statut_verification = models.CharField(max_length=20, choices=STATUTS_VERIFICATION, default='en_attente', db_index=True)
+    verifiee_le = models.DateTimeField(null=True, blank=True)
+    motif_refus = models.TextField(blank=True)
     host = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -33,12 +51,18 @@ class HebergementModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    objects = HebergementQuerySet.as_manager()
+
     class Meta:
         app_label = 'hebergements'
         ordering = ['-created_at']
 
     def __str__(self):
         return f"{self.name} ({self.city})"
+
+    @property
+    def est_publiee(self) -> bool:
+        return self.is_available and self.statut_verification == 'verifiee'
 
 
 def _photo_upload_path(instance, filename):

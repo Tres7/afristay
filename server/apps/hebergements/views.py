@@ -14,19 +14,23 @@ from .disponibilites import a_des_reservations, filtre_actives, periodes_indispo
 from .models import BlocageModel, HebergementModel, HebergementPhotoModel
 from .photos import InvalidPhoto, normalize_photo
 from .serializers import BlocageSerializer, HebergementSerializer, HebergementCreateSerializer, RechercheSerializer
+from apps.verifications import services as verifications
 
 HOST_ROLES = ('hote', 'admin')
 MAX_FENETRE_JOURS = 548  # 18 mois de calendrier par requête
 MAX_RESULTATS = 200
 
 
-def _context(request):
-    """Ajoute les ids favoris de l'utilisateur connecté pour calculer is_favorite."""
+def _context(request, proprietaire=False):
+    """Ajoute les ids favoris de l'utilisateur connecté pour calculer is_favorite.
+
+    `proprietaire` : l'hôte voit en plus le motif d'un refus de vérification.
+    """
+    contexte = {'request': request, 'proprietaire': proprietaire}
     if request.user and request.user.is_authenticated:
         from apps.favoris.models import FavoriModel
-        ids = set(FavoriModel.objects.filter(user=request.user).values_list('hebergement_id', flat=True))
-        return {'request': request, 'favorite_ids': ids}
-    return {'request': request}
+        contexte['favorite_ids'] = set(FavoriModel.objects.filter(user=request.user).values_list('hebergement_id', flat=True))
+    return contexte
 
 
 class HebergementListView(APIView):
@@ -38,7 +42,7 @@ class HebergementListView(APIView):
             return Response(recherche.errors, status=status.HTTP_400_BAD_REQUEST)
         filtres = recherche.validated_data
 
-        qs = HebergementModel.objects.filter(is_available=True).select_related('host')
+        qs = HebergementModel.objects.publiees().select_related('host')
 
         city = request.query_params.get('city')
         if city:
@@ -101,8 +105,10 @@ class HebergementListView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         hebergement = serializer.save(host=request.user)
+        # Visible des voyageurs seulement après la visite d'un agent de terrain
+        verifications.visite_a_planifier(hebergement)
         return Response(
-            HebergementSerializer(hebergement, context=_context(request)).data,
+            HebergementSerializer(hebergement, context=_context(request, proprietaire=True)).data,
             status=status.HTTP_201_CREATED,
         )
 
@@ -112,7 +118,7 @@ class MyHebergementsView(APIView):
 
     def get(self, request):
         qs = HebergementModel.objects.filter(host=request.user).select_related('host')
-        serializer = HebergementSerializer(qs, many=True, context=_context(request))
+        serializer = HebergementSerializer(qs, many=True, context=_context(request, proprietaire=True))
         return Response({'results': serializer.data, 'count': len(serializer.data)})
 
 
@@ -122,7 +128,7 @@ class CityListView(APIView):
 
     def get(self, request):
         rows = (
-            HebergementModel.objects.filter(is_available=True)
+            HebergementModel.objects.publiees()
             .values('city')
             .annotate(count=Count('id'), min_price=Min('price_per_night'))
             .order_by('-count', 'city')[:8]
@@ -130,7 +136,7 @@ class CityListView(APIView):
         results = []
         for row in rows:
             cover = (
-                HebergementModel.objects.filter(city=row['city'], is_available=True)
+                HebergementModel.objects.publiees().filter(city=row['city'])
                 .exclude(image_url='')
                 .order_by('-rating')
                 .values_list('image_url', flat=True)
@@ -151,9 +157,12 @@ class HebergementDetailView(APIView):
 
     def get(self, request, pk):
         obj = self._get_object(pk)
-        if not obj:
+        proprietaire = request.user.is_authenticated and obj is not None and obj.host_id == request.user.id
+        verificateur = request.user.is_authenticated and request.user.role in verifications.ROLES_VERIFICATEURS
+        # Annonce pas encore vérifiée (ou masquée) : visible seulement de son hôte et des agents
+        if not obj or not (obj.est_publiee or proprietaire or verificateur):
             return Response({'detail': 'Hébergement introuvable.'}, status=status.HTTP_404_NOT_FOUND)
-        return Response(HebergementSerializer(obj, context=_context(request)).data)
+        return Response(HebergementSerializer(obj, context=_context(request, proprietaire=proprietaire)).data)
 
     def patch(self, request, pk):
         obj = self._get_object(pk)
@@ -165,8 +174,10 @@ class HebergementDetailView(APIView):
         serializer = HebergementCreateSerializer(obj, data=request.data, partial=True)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        avant = {champ: getattr(obj, champ) for champ in HebergementModel.CHAMPS_VERIFIES}
         serializer.save()
-        return Response(HebergementSerializer(obj, context=_context(request)).data)
+        verifications.remettre_en_verification(obj, avant)
+        return Response(HebergementSerializer(obj, context=_context(request, proprietaire=True)).data)
 
     def delete(self, request, pk):
         obj = self._get_object(pk)

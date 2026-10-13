@@ -46,6 +46,7 @@ export default function ContenuEn() {
                 <tr><td>Airport transfers: airport, flight time and number, passengers, luggage, destination address, phone number, message to the driver</td><td>Arrange your airport pick-up</td><td>Performance of the contract</td></tr>
                 <tr><td>Partner drivers: identity, phone, vehicle, number plate, Mobile Money account</td><td>Assign rides and pay drivers</td><td>Performance of the contract</td></tr>
                 <tr><td>Hosts: country, operator, Mobile Money number and account holder name</td><td>Pay hosts for their stays</td><td>Performance of the contract</td></tr>
+                <tr><td>Hosts: ID document (type and copy), report of the visit of the place by a Kwa-Ba agent (checks made, comment, photos taken on site)</td><td>Check the host&apos;s identity and that the place matches the listing before it goes live, to protect travellers. Only Kwa-Ba agents can see the copy, never travellers</td><td>Legitimate interest (fraud prevention)</td></tr>
                 <tr><td>Messages exchanged with hosts or travellers</td><td>Messaging and email notifications</td><td>Performance of the contract</td></tr>
                 <tr><td>Reviews and ratings (published with your first name and last initial)</td><td>Inform other travellers</td><td>Legitimate interest (reliable reviews)</td></tr>
                 <tr><td>Group trips (Kwa-Ba Together): trip name, destination, dates, members, proposed places and votes, itinerary, practical information, bookings you choose to share</td><td>Plan a trip with others</td><td>Performance of the contract</td></tr>
@@ -104,6 +105,7 @@ export default function ContenuEn() {
               <li>Messages: <AValider>3 years after the last message in the conversation.</AValider></li>
               <li>Reviews: as long as the place is published, or until removed by moderation.</li>
               <li>Technical security logs: <AValider>1 year.</AValider></li>
+              <li>Copy of a host&apos;s ID document: deleted as soon as the agent has checked the identity (only the document type and the result of the check are kept). Visit report and photos: <AValider>as long as the listing is published, then 3 years.</AValider></li>
             </ul>
           ),
         },

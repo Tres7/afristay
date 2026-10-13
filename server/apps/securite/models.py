@@ -34,6 +34,9 @@ class JournalAuditModel(models.Model):
         ('profil_versement_modifie', 'Compte de versement modifié'),
         ('webhook_refuse', 'Webhook refusé'),
         ('admin_connexion_echec', "Échec de connexion à l'administration"),
+        ('piece_consultee', "Pièce d'identité consultée"),
+        ('annonce_verifiee', 'Annonce validée après visite'),
+        ('annonce_refusee', 'Annonce refusée après visite'),
     ]
 
     cree_le = models.DateTimeField(auto_now_add=True, db_index=True)

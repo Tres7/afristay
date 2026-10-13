@@ -76,6 +76,8 @@ def make_hebergement(make_user):
         fields.setdefault('name', 'Villa test')
         fields.setdefault('city', 'Lomé')
         fields.setdefault('price_per_night', 25000)
+        # Annonce déjà vérifiée par un agent (publiée) ; les tests de la vérification passent statut_verification
+        fields.setdefault('statut_verification', 'verifiee')
         return HebergementModel.objects.create(host=host or make_user(role='hote'), **fields)
 
     return _make

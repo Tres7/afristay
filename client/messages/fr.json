@@ -70,7 +70,8 @@
   "roles": {
     "voyageur": "Voyageur",
     "hote": "Hôte",
-    "admin": "Administrateur"
+    "admin": "Administrateur",
+    "agent": "Agent de terrain"
   },
   "nav": {
     "hebergements": "Hébergements",
@@ -455,7 +456,9 @@
     "nuitsFraisInclus": "{nombre, plural, one {# nuit} other {# nuits}}, frais inclus",
     "parNuit": "par nuit",
     "votreAnnonce": "Votre annonce",
-    "choisirDates": "Choisir les dates"
+    "choisirDates": "Choisir les dates",
+    "verifieBadge": "Vérifié par Kwa-Ba",
+    "verifieAide": "Un agent Kwa-Ba a visité ce logement et contrôlé l'identité de l'hôte."
   },
   "avis": {
     "repondre": "Répondre publiquement",
@@ -1312,7 +1315,7 @@
     "supprimee": "Annonce supprimée",
     "nouvelle": "Nouvelle annonce",
     "modifier": "Modifier l'annonce",
-    "publiee": "Annonce publiée !",
+    "publiee": "Annonce envoyée ! Elle sera publiée après la visite de notre agent.",
     "miseAJour": "Annonce mise à jour",
     "titre": "Espace hôte",
     "sousTitre": "Gérez vos annonces et suivez vos réservations.",
@@ -1345,7 +1348,33 @@
     "afficher": "Afficher",
     "publier": "Publier",
     "ouverture": "Ouverture...",
-    "contacterNom": "Contacter {nom}"
+    "contacterNom": "Contacter {nom}",
+    "verification": {
+      "enAttente": "En attente de vérification",
+      "enAttenteAide": "Un agent Kwa-Ba va vous contacter pour visiter le logement. L'annonce sera visible des voyageurs après sa visite.",
+      "refusee": "Refusée",
+      "refuseeAide": "Corrigez ce point puis enregistrez l'annonce : elle repassera en vérification.",
+      "verifiee": "Vérifiée",
+      "identiteTitre": "Vérification de votre identité",
+      "identiteAide": "Pour protéger les voyageurs, chaque hôte est vérifié. Envoyez une pièce d'identité : notre agent la comparera à la personne rencontrée lors de la visite, puis elle sera supprimée.",
+      "identiteSoumise": "Pièce d'identité reçue : elle sera contrôlée lors de la visite.",
+      "identiteVerifiee": "Identité vérifiée",
+      "identiteRefusee": "Pièce d'identité refusée : {motif}",
+      "typePiece": "Type de pièce",
+      "types": {
+        "cni": "Carte nationale d'identité",
+        "passeport": "Passeport",
+        "permis": "Permis de conduire",
+        "sejour": "Titre de séjour"
+      },
+      "fichier": "Photo ou scan (JPEG, PNG ou PDF, 10 Mo maximum)",
+      "envoyer": "Envoyer",
+      "remplacer": "Remplacer",
+      "envoi": "Envoi…",
+      "envoyee": "Pièce d'identité envoyée",
+      "choisirFichier": "Choisissez un fichier.",
+      "confidentialite": "Document visible uniquement par les agents Kwa-Ba, jamais par les voyageurs."
+    }
   },
   "annonce": {
     "types": {

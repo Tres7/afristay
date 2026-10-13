@@ -15,6 +15,11 @@ export interface Hebergement {
   max_guests: number;
   amenities: string[];
   is_available: boolean;
+  /** Vérification par un agent de terrain : seules les annonces « verifiee » sont publiques */
+  statut_verification: "en_attente" | "verifiee" | "refusee";
+  verifiee_le: string | null;
+  /** Motif de refus de l'agent : rempli seulement pour l'hôte de l'annonce */
+  motif_refus: string;
   host_id: string;
   host_name: string;
   is_favorite: boolean;

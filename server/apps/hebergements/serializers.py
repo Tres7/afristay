@@ -14,6 +14,7 @@ class HebergementSerializer(serializers.ModelSerializer):
     host_id = serializers.UUIDField(source='host.id', read_only=True)
     host_name = serializers.SerializerMethodField()
     is_favorite = serializers.SerializerMethodField()
+    motif_refus = serializers.SerializerMethodField()
 
     class Meta:
         model = HebergementModel
@@ -21,12 +22,16 @@ class HebergementSerializer(serializers.ModelSerializer):
             'id', 'name', 'description', 'type', 'city', 'location',
             'price_per_night', 'rating', 'review_count', 'image_url', 'images',
             'max_guests', 'amenities', 'is_available', 'host_id', 'host_name',
-            'is_favorite', 'created_at',
+            'is_favorite', 'created_at', 'statut_verification', 'verifiee_le', 'motif_refus',
         ]
-        read_only_fields = ['id', 'rating', 'review_count', 'host_id', 'created_at']
+        read_only_fields = ['id', 'rating', 'review_count', 'host_id', 'created_at', 'statut_verification', 'verifiee_le']
 
     def get_host_name(self, obj):
         return f"{obj.host.first_name} {obj.host.last_name}".strip()
+
+    def get_motif_refus(self, obj):
+        # Message de l'agent destiné à l'hôte : jamais montré aux voyageurs
+        return obj.motif_refus if self.context.get('proprietaire') else ''
 
     def get_is_favorite(self, obj):
         favorite_ids = self.context.get('favorite_ids')

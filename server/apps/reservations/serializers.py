@@ -89,7 +89,7 @@ class ReservationCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {'guests_count': f"Ce logement accueille au maximum {hebergement.max_guests} voyageurs."}
             )
-        if not hebergement.is_available:
+        if not hebergement.est_publiee:
             raise serializers.ValidationError({'hebergement': "Cet hébergement n'est plus disponible."})
         if request and hebergement.host_id == request.user.id:
             raise serializers.ValidationError({'hebergement': "Vous ne pouvez pas réserver votre propre hébergement."})
