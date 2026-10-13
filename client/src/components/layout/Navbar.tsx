@@ -11,6 +11,7 @@ import { cn, initials } from "@/lib/utils";
 import Logo from "@/components/layout/Logo";
 import MobileDrawer, { DrawerItem } from "@/components/layout/MobileDrawer";
 import SelecteurLangue from "@/components/layout/SelecteurLangue";
+import ChampDestination from "@/components/hebergement/ChampDestination";
 
 const UNREAD_POLL_INTERVAL_MS = 10_000;
 
@@ -35,25 +36,33 @@ function SearchForm({ onDone, className, focus }: { onDone?: () => void; classNa
     if (focus) champ.current?.focus();
   }, [focus]);
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const city = q.trim();
+  const aller = (ville: string) => {
+    const city = ville.trim();
     router.push(city ? `/recherche?city=${encodeURIComponent(city)}` : "/recherche");
     setQ("");
     onDone?.();
   };
 
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    aller(q);
+  };
+
   return (
     <form onSubmit={submit} role="search" className={cn("relative w-full flex items-center bg-white border border-gray-200 rounded-full py-1.5 pl-4 pr-1.5 shadow-sm hover:shadow transition-shadow", className)}>
       <Search size={18} className="text-gray-400 flex-shrink-0 mr-3" />
-      <input
+      <ChampDestination
         type="search"
         value={q}
-        onChange={(e) => setQ(e.target.value)}
+        onChange={setQ}
+        onVille={(ville) => aller(ville)}
+        onLogement={() => { setQ(""); onDone?.(); }}
         placeholder={t("rechercherVille")}
-        aria-label={t("rechercherDestination")}
-        ref={champ}
-        className="w-full bg-transparent border-none text-base md:text-sm text-dark outline-none placeholder:text-gray-400"
+        ariaLabel={t("rechercherDestination")}
+        inputRef={champ}
+        className="w-full"
+        inputClassName="w-full bg-transparent border-none text-base md:text-sm text-dark outline-none placeholder:text-gray-400"
+        listeClassName="-left-12 -right-1.5"
       />
       <button type="submit" aria-label={t("lancerRecherche")} className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white flex-shrink-0 hover:bg-primary-600 transition-colors ml-2">
         <ArrowRight size={16} />

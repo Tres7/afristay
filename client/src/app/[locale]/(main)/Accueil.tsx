@@ -15,6 +15,7 @@ import { formatPrice } from "@/lib/utils";
 import DateRangeField from "@/components/ui/DateRangeField";
 import GuestsField from "@/components/ui/GuestsField";
 import PropertyCard from "@/components/hebergement/PropertyCard";
+import ChampDestination from "@/components/hebergement/ChampDestination";
 import type { City, Hebergement, Paginated } from "@/types/api/models";
 
 // Photos du diaporama : 960 px sur mobile, 1920 px à partir de la tablette (public/accueil). Classes écrites en
@@ -85,7 +86,11 @@ function HeroSearch() {
         <span className={labelClass}>{t("destination")}</span>
         <span className="flex items-center gap-2 mt-1">
           <MapPin size={16} className="text-primary flex-shrink-0" />
-          <input type="text" value={city} onChange={(e) => setCity(e.target.value)} placeholder={t("ouAllezVous")} className={inputClass} />
+          <ChampDestination
+            value={city} onChange={setCity} onVille={setCity}
+            placeholder={t("ouAllezVous")} ariaLabel={t("destination")}
+            className="flex-1 min-w-0" inputClassName={inputClass} listeClassName="-left-12 w-[min(22rem,calc(100vw-3rem))]"
+          />
         </span>
       </label>
       <DateRangeField
