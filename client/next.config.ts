@@ -50,7 +50,12 @@ const nextConfig: NextConfig = {
   // N'embarque que les icônes Phosphor réellement importées
   experimental: { optimizePackageImports: ["@phosphor-icons/react"] },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // Photos de l'accueil gardées une semaine par le navigateur (Next.js sert public/ avec max-age=0).
+      // Pour changer une photo, lui donner un nouveau nom : l'ancienne resterait sinon en cache.
+      { source: "/accueil/:fichier*", headers: [{ key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" }] },
+    ];
   },
 };
 
