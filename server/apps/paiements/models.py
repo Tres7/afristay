@@ -25,19 +25,23 @@ class ProfilVersementModel(models.Model):
 
 
 class ObjetPayeMixin:
-    """Ce qui est payé : une réservation de logement, un transfert aéroport ou un don (Kwa-Ba Give)."""
+    """Ce qui est payé : une réservation de logement, un transfert aéroport, une location de voiture ou un don."""
 
     @property
     def objet(self):
         if self.reservation_id:
             return self.reservation
-        return self.transfert if self.transfert_id else self.don
+        if self.transfert_id:
+            return self.transfert
+        return self.location if getattr(self, 'location_id', None) else self.don
 
     @property
     def payeur(self):
         if self.reservation_id:
             return self.reservation.guest
-        return self.transfert.voyageur if self.transfert_id else self.don.donateur
+        if self.transfert_id:
+            return self.transfert.voyageur
+        return self.location.voyageur if getattr(self, 'location_id', None) else self.don.donateur
 
     @property
     def reference(self):
@@ -47,9 +51,11 @@ class ObjetPayeMixin:
     def libelle(self):
         if self.reservation_id:
             return self.reservation.hebergement.name
-        if not self.transfert_id:
-            return f"Don à {self.don.organisation.nom}"
-        return f"Transfert depuis l'aéroport {self.transfert.aeroport.ville}"
+        if self.transfert_id:
+            return f"Transfert depuis l'aéroport {self.transfert.aeroport.ville}"
+        if getattr(self, 'location_id', None):
+            return f"Location {self.location.categorie.nom} — {self.location.lieu_prise.ville}"
+        return f"Don à {self.don.organisation.nom}"
 
 
 class PaiementModel(ObjetPayeMixin, models.Model):
@@ -73,6 +79,9 @@ class PaiementModel(ObjetPayeMixin, models.Model):
         'transferts.TransfertModel', on_delete=models.PROTECT, related_name='paiements', null=True, blank=True,
     )
     don = models.ForeignKey('give.DonModel', on_delete=models.PROTECT, related_name='paiements', null=True, blank=True)
+    location = models.ForeignKey(
+        'locations.LocationModel', on_delete=models.PROTECT, related_name='paiements', null=True, blank=True,
+    )
     montant = models.PositiveIntegerField()
     devise = models.CharField(max_length=3, default='XOF')
     prestataire = models.CharField(max_length=20, choices=PRESTATAIRES, default='fedapay')
@@ -97,11 +106,13 @@ class PaiementModel(ObjetPayeMixin, models.Model):
         app_label = 'paiements'
         ordering = ['-cree_le']
         verbose_name = 'Paiement'
+        # Exactement un objet payé
         constraints = [models.CheckConstraint(
-            condition=models.Q(reservation__isnull=False, transfert__isnull=True, don__isnull=True)
-            | models.Q(reservation__isnull=True, transfert__isnull=False, don__isnull=True)
-            | models.Q(reservation__isnull=True, transfert__isnull=True, don__isnull=False),
-            name='paiement_reservation_transfert_ou_don',
+            condition=models.Q(reservation__isnull=False, transfert__isnull=True, don__isnull=True, location__isnull=True)
+            | models.Q(reservation__isnull=True, transfert__isnull=False, don__isnull=True, location__isnull=True)
+            | models.Q(reservation__isnull=True, transfert__isnull=True, don__isnull=False, location__isnull=True)
+            | models.Q(reservation__isnull=True, transfert__isnull=True, don__isnull=True, location__isnull=False),
+            name='paiement_un_seul_objet',
         )]
 
     def __str__(self):
@@ -163,6 +174,9 @@ class RemboursementModel(ObjetPayeMixin, models.Model):
     )
     transfert = models.ForeignKey(
         'transferts.TransfertModel', on_delete=models.PROTECT, related_name='remboursements', null=True, blank=True,
+    )
+    location = models.ForeignKey(
+        'locations.LocationModel', on_delete=models.PROTECT, related_name='remboursements', null=True, blank=True,
     )
     paiement = models.ForeignKey(PaiementModel, on_delete=models.PROTECT, related_name='remboursements')
     montant = models.PositiveIntegerField()

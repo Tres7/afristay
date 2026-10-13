@@ -7,7 +7,7 @@ import { routing } from "@/i18n/routing";
 const PROTECTED = ["/profil", "/favoris", "/messages", "/reservation", "/hote/espace", "/backoffice", "/agent", "/give/don"];
 const PUBLIC_EXCEPTIONS = ["/profil/aide"];
 // Pages d'accueil publiques ; leurs sous-pages (suivi d'un transfert, voyage de groupe, invitation) exigent d'être connecté
-const PROTECTED_SUBPATHS = ["/transfert", "/together"];
+const PROTECTED_SUBPATHS = ["/transfert", "/together", "/location"];
 // Pages d'authentification inutiles une fois connecté
 const GUEST_ONLY = ["/login", "/register"];
 

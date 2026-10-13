@@ -12,6 +12,7 @@ const COLUMNS = [
       { href: "/decouvrir", label: "experiences" },
       { href: "/recherche?sort=note", label: "mieuxNotes" },
       { href: "/transfert", label: "transfert" },
+      { href: "/location", label: "location" },
       { href: "/together", label: "together" },
       { href: "/give", label: "give" },
       { href: "/concierge", label: "concierge" },
