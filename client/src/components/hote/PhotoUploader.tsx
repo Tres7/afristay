@@ -36,6 +36,10 @@ export default function PhotoUploader({ value, onChange, onBusyChange, error }: 
   const inputRef = useRef<HTMLInputElement>(null);
 
   const busy = items.some((i) => i.status === "uploading");
+  const complet = items.length >= MAX_PHOTOS;
+  const ouvrirChoix = () => {
+    if (!complet) inputRef.current?.click();
+  };
 
   // Le formulaire ne connaît que les photos envoyées, dans l'ordre affiché
   useEffect(() => {
@@ -122,21 +126,29 @@ export default function PhotoUploader({ value, onChange, onBusyChange, error }: 
 
   return (
     <div>
+      {/* Toute la zone ouvre le choix des fichiers (pas seulement le mot « parcourez »), à la souris comme au clavier */}
       <div
+        role="button"
+        tabIndex={complet ? -1 : 0}
+        aria-disabled={complet}
+        aria-label={t("ajouterPhotos")}
+        onClick={ouvrirChoix}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); ouvrirChoix(); } }}
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
         onDrop={(e) => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files); }}
         className={cn(
-          "rounded-2xl border-2 border-dashed p-6 text-center transition-colors",
+          "rounded-2xl border-2 border-dashed p-6 text-center transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+          complet ? "cursor-not-allowed opacity-60" : "cursor-pointer hover:border-primary/50 hover:bg-primary/5",
           dragOver ? "border-primary bg-primary/5" : error ? "border-red-300 bg-red-50/40" : "border-gray-200 bg-gray-50/60"
         )}
       >
         <ImagePlus size={28} className="mx-auto text-primary mb-2" />
         <p className="text-sm text-dark font-medium">
           <span className="hidden sm:inline">{t("glissez")} </span>
-          <button type="button" onClick={() => inputRef.current?.click()} disabled={items.length >= MAX_PHOTOS} className="text-primary font-bold hover:underline disabled:opacity-50">
+          <span className="text-primary font-bold underline-offset-2 hover:underline">
             <span className="sm:hidden">{t("ajouterPhotos")}</span><span className="hidden sm:inline">{t("parcourez")}</span>
-          </button>
+          </span>
         </p>
         <p className="text-xs text-gray-500 mt-1">{t("limites", { nombre: items.length, max: MAX_PHOTOS })}</p>
         <input
@@ -145,6 +157,8 @@ export default function PhotoUploader({ value, onChange, onBusyChange, error }: 
           accept={ACCEPTED.join(",")}
           multiple
           className="hidden"
+          // Le clic programmatique sur ce champ ne doit pas remonter à la zone (qui le rouvrirait)
+          onClick={(e) => e.stopPropagation()}
           onChange={(e) => { if (e.target.files) addFiles(e.target.files); e.target.value = ""; }}
         />
       </div>
