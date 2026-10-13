@@ -29,11 +29,11 @@ Les images GHCR sont publiques (dépôt public) : aucune authentification sur le
    ```bash
    ssh <ton-utilisateur>@<ip> "sudo tee -a /home/deploy/.ssh/authorized_keys" < kwaba-deploy.pub
    ```
-   La partie privée et l'empreinte du serveur (`ssh-keyscan -t ed25519 <ip>`, vérifiée une fois) vont dans l'environnement GitHub `production` (étape du workflow `deploy`). Supprime ensuite la clé privée de ton poste.
+   La partie privée et l'empreinte du serveur (`ssh-keyscan -t ed25519 <ip>`, à comparer une fois avec `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` sur le serveur) vont dans l'environnement GitHub `production` (voir *Déployer*). Supprime ensuite la clé privée de ton poste.
 6. **Fichiers** : copier `deploy/vps/` dans `/opt/kwaba` (le workflow `deploy` le refait ensuite à chaque déploiement). Les étapes manuelles passent par ton compte admin, `deploy` n'ayant que la clé de la CI :
    ```bash
    rsync -a --exclude 'env/*.env' deploy/vps/ <ton-utilisateur>@<ip>:/tmp/kwaba/
-   ssh -t <ton-utilisateur>@<ip> 'sudo rsync -a /tmp/kwaba/ /opt/kwaba/ && sudo chown -R deploy:deploy /opt/kwaba && rm -rf /tmp/kwaba'
+   ssh -t <ton-utilisateur>@<ip> 'sudo rsync -a /tmp/kwaba/ /opt/kwaba/ && sudo chown -R deploy:deploy /opt/kwaba && sudo chmod 700 /opt/kwaba/env && rm -rf /tmp/kwaba'
    ```
 7. **Secrets** : sur le VPS, dans `/opt/kwaba/env/`, créer `server.env`, `client.env`, `postgres.env`, `rabbitmq.env`, `nginx.env` et `backup.env` à partir des modèles `*.env.example` (par exemple `sudo -u deploy cp env/server.env.example env/server.env` puis `sudo -u deploy nano env/server.env`), puis `sudo -u deploy chmod 600 env/*.env`. Ils ne quittent jamais le serveur.
    - **R2 (photos)** : créer un bucket, activer son accès public par l'adresse `r2.dev` (*Settings → Public access*), mettre cette adresse dans `nginx.env` (`R2_PUBLIC_ORIGIN`), et une clé d'API limitée à ce bucket dans `server.env` (`R2_*`). `R2_PUBLIC_DOMAIN` reste `kwa-ba.com/photos`.
@@ -50,7 +50,17 @@ Les images GHCR sont publiques (dépôt public) : aucune authentification sur le
 
 ## Déployer
 
-Workflow GitHub **deploy** (lancement manuel, avec approbation) : champ *manifest* vide pour le dernier, ou un nom de fichier de `deploy/manifests/`. Il appelle sur le VPS :
+Workflow GitHub **deploy** (*Actions → Deploy → Run workflow*, sur `main`) : champ *manifest* vide pour le dernier, ou un nom de fichier de `deploy/manifests/`. Un seul déploiement à la fois, jamais annulé en cours. Il :
+
+1. vérifie le manifest (nom exact, images par digest) ;
+2. se connecte en SSH à `deploy` (empreinte du serveur imposée, jamais acceptée à la volée) ;
+3. copie `deploy/vps/` de `main` dans `/opt/kwaba` (`rsync --delete`, sans jamais toucher à `env/`, `backups/`, `logs/`, `.deploy.env*`, `deployments.log`) ;
+4. lance `scripts/deploy.sh` sur le VPS ;
+5. vérifie `/api/health/` et `/` depuis Internet.
+
+Environnement GitHub `production` (*Settings → Environments*) : branche `main` seulement ; secrets `DEPLOY_SSH_KEY` (clé privée `kwaba-deploy`) et `DEPLOY_SSH_KNOWN_HOSTS` (sortie de `ssh-keyscan -t ed25519 <ip>`) ; variable `DEPLOY_HOST` (IP du VPS). La variable du dépôt `PUBLIC_SITE_URL` sert au test de santé.
+
+Sur le VPS, le workflow appelle :
 
 ```bash
 scripts/deploy.sh <manifest> <image serveur> <image client>
@@ -60,7 +70,7 @@ Ordre fixe : sauvegarde de la base (vérifiée), images, migrations, serveur et 
 
 ## Revenir en arrière
 
-Relancer le workflow **deploy** avec un manifest antérieur. Les migrations ne sont pas annulées : elles doivent rester rétro-compatibles (ajouter avant de supprimer), ce qui permet à l'ancien code de tourner sur le nouveau schéma.
+Relancer le workflow **deploy** avec un manifest antérieur (les images changent ; la configuration `deploy/vps` reste celle de `main`). Les migrations ne sont pas annulées : elles doivent rester rétro-compatibles (ajouter avant de supprimer), ce qui permet à l'ancien code de tourner sur le nouveau schéma.
 
 ## Sauvegardes et restauration
 
