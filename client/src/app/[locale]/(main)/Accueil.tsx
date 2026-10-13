@@ -17,12 +17,14 @@ import GuestsField from "@/components/ui/GuestsField";
 import PropertyCard from "@/components/hebergement/PropertyCard";
 import type { City, Hebergement, Paginated } from "@/types/api/models";
 
+// Photos du diaporama : 960 px sur mobile, 1920 px à partir de la tablette (public/accueil). Classes écrites en
+// entier pour que Tailwind les génère ; le navigateur ne télécharge que l'image de la taille d'écran courante.
 const heroImages = [
-  "/backgrounghome.jpg",
-  "/backgrounghome1.jpg",
-  "/backgroundhome2.jpg",
-  "/backgroundhome3.jpg",
-  "/backgroundhome4.jpg",
+  "bg-[url('/accueil/hero-1-mobile.jpg')] md:bg-[url('/accueil/hero-1.jpg')]",
+  "bg-[url('/accueil/hero-2-mobile.jpg')] md:bg-[url('/accueil/hero-2.jpg')]",
+  "bg-[url('/accueil/hero-3-mobile.jpg')] md:bg-[url('/accueil/hero-3.jpg')]",
+  "bg-[url('/accueil/hero-4-mobile.jpg')] md:bg-[url('/accueil/hero-4.jpg')]",
+  "bg-[url('/accueil/hero-5-mobile.jpg')] md:bg-[url('/accueil/hero-5.jpg')]",
 ];
 
 const CATEGORIES = [
@@ -119,12 +121,16 @@ function WelcomeToast() {
 }
 
 export default function HomePage() {
-  const [currentBg, setCurrentBg] = useState(0);
+  // Photo affichée et précédente (gardée le temps du fondu) ; aucune précédente avant le premier changement
+  const [{ currentBg, previousBg }, setDiaporama] = useState({ currentBg: 0, previousBg: -1 });
   const { status } = useSession();
   const t = useTranslations("accueil");
 
   useEffect(() => {
-    const interval = setInterval(() => setCurrentBg((prev) => (prev + 1) % heroImages.length), 12000);
+    const interval = setInterval(
+      () => setDiaporama(({ currentBg: c }) => ({ currentBg: (c + 1) % heroImages.length, previousBg: c })),
+      12000,
+    );
     return () => clearInterval(interval);
   }, []);
 
@@ -144,13 +150,19 @@ export default function HomePage() {
       <Suspense><WelcomeToast /></Suspense>
 
       <section className="relative pt-16 pb-36 md:pt-28 md:pb-48 px-4 sm:px-6 text-white min-h-[560px] md:min-h-[620px] flex items-center justify-center overflow-hidden">
-        {heroImages.map((img, i) => (
-          <div
-            key={img}
-            className={`absolute inset-0 z-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ${i === currentBg ? "animate-ken-burns" : ""}`}
-            style={{ backgroundImage: `url('${img}')`, opacity: i === currentBg ? 1 : 0 }}
-          />
-        ))}
+        {heroImages.map((img, i) => {
+          // Seules la photo affichée, la précédente (fondu de sortie) et la suivante (préchargée) sont dans la page :
+          // les autres ne sont téléchargées qu'à leur tour
+          const n = heroImages.length;
+          if (i !== currentBg && i !== (currentBg + 1) % n && i !== previousBg) return null;
+          return (
+            <div
+              key={i}
+              className={`absolute inset-0 z-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ${img} ${i === currentBg ? "animate-ken-burns" : ""}`}
+              style={{ opacity: i === currentBg ? 1 : 0 }}
+            />
+          );
+        })}
         <div className="absolute inset-0 z-[1] bg-dark/45" />
         <div className="absolute bottom-0 left-0 right-0 h-40 md:h-52 bg-gradient-to-b from-transparent to-white z-[2]" />
 
