@@ -32,7 +32,7 @@ export DEBIAN_FRONTEND=noninteractive
 log "Mises à jour et paquets de base"
 apt-get update -q
 apt-get -y -q full-upgrade
-apt-get install -y -q ca-certificates curl ufw fail2ban python3-systemd unattended-upgrades age
+apt-get install -y -q ca-certificates curl ufw fail2ban python3-systemd unattended-upgrades age rsync
 
 log "Administrateur ${admin} (sudo, clé SSH de root)"
 id "$admin" > /dev/null 2>&1 || adduser --disabled-password --gecos "" "$admin"
