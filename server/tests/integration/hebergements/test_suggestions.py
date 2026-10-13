@@ -32,7 +32,7 @@ def test_logements_par_nom(api_client, make_hebergement):
 
     reponse = api_client.get(URL, {'q': 'océane'})
 
-    assert [str(l['id']) for l in reponse.data['logements']] == [str(villa.id)]
+    assert [str(logement['id']) for logement in reponse.data['logements']] == [str(villa.id)]
     assert reponse.data['logements'][0]['city'] == 'Lomé'
 
 
