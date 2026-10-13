@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, ImagePlus, Link2, Loader2, Star, Trash2, TriangleAlert } from "lucide-react";
+import { ArrowLeft, ArrowRight, ImagePlus, Loader2, Star, Trash2, TriangleAlert } from "lucide-react";
 import api, { apiErrorMessage } from "@/lib/api";
 import { compressImage } from "@/lib/compressImage";
 import { cn } from "@/lib/utils";
@@ -30,8 +30,6 @@ export default function PhotoUploader({ value, onChange, onBusyChange, error }: 
   const t = useTranslations("photos");
   const [items, setItems] = useState<Item[]>(() => value.map((url) => ({ key: nextKey(), status: "done", url })));
   const [dragOver, setDragOver] = useState(false);
-  const [linkOpen, setLinkOpen] = useState(false);
-  const [link, setLink] = useState("");
   const [notice, setNotice] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -108,21 +106,6 @@ export default function PhotoUploader({ value, onChange, onBusyChange, error }: 
 
   const makeCover = (index: number) =>
     setItems((prev) => [prev[index], ...prev.filter((_, i) => i !== index)]);
-
-  const addLink = () => {
-    const url = link.trim();
-    if (!/^https?:\/\/\S+$/.test(url)) {
-      setNotice(t("lienInvalide"));
-      return;
-    }
-    if (items.length >= MAX_PHOTOS) {
-      setNotice(`${MAX_PHOTOS} photos maximum par annonce.`);
-      return;
-    }
-    setItems((prev) => [...prev, { key: nextKey(), status: "done", url }]);
-    setLink("");
-    setNotice("");
-  };
 
   return (
     <div>
@@ -216,24 +199,6 @@ export default function PhotoUploader({ value, onChange, onBusyChange, error }: 
           })}
         </ul>
       )}
-
-      <div className="mt-3">
-        {linkOpen ? (
-          <div className="flex gap-2">
-            <input
-              type="url" value={link} onChange={(e) => setLink(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addLink(); } }}
-              placeholder="https://…" aria-label={t("lienPhoto")}
-              className="flex-1 min-w-0 px-3 py-2 border border-gray-200 rounded-xl text-base sm:text-sm outline-none focus:border-primary"
-            />
-            <button type="button" onClick={addLink} className="px-4 py-2 rounded-xl bg-gray-100 text-sm font-medium text-dark hover:bg-gray-200">{t("ajouter")}</button>
-          </div>
-        ) : (
-          <button type="button" onClick={() => setLinkOpen(true)} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-primary">
-            <Link2 size={13} /> {t("ajouterParLien")}
-          </button>
-        )}
-      </div>
     </div>
   );
 }
