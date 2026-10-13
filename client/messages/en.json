@@ -1296,7 +1296,6 @@
   "photos": {
     "envoiImpossible": "Upload failed.",
     "formats": "Accepted formats: JPEG, PNG or WebP (iPhone HEIC photos must be exported as JPEG).",
-    "lienInvalide": "Invalid link: it must start with http:// or https://",
     "glissez": "Drag your photos here or",
     "ajouterPhotos": "Add photos",
     "parcourez": "browse",
@@ -1305,10 +1304,7 @@
     "gauche": "Move left",
     "droite": "Move right",
     "definirCouverture": "Set as cover",
-    "retirer": "Remove photo",
-    "lienPhoto": "Photo link",
-    "ajouter": "Add",
-    "ajouterParLien": "Add a photo by link"
+    "retirer": "Remove photo"
   },
   "espaceHote": {
     "erreurConversation": "Could not open the conversation.",
