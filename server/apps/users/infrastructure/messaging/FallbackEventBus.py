@@ -40,5 +40,6 @@ class FallbackEventBus(EventPublisher):
             elif event.event == 'users.welcome_email_requested':
                 self._notifications.send_welcome_email(data['email'], data['first_name'])
         except Exception as e:
-            # En dev sans SMTP : le code reste visible dans les logs du backend
-            logger.warning("Email non envoyé pour %s (%s). Données : %s", data.get('email'), e, data)
+            # Jamais le contenu de l'événement : il contient le code (en développement, il est déjà dans les logs
+            # ci-dessus). Pas d'email non plus, l'identifiant suffit pour retrouver le compte.
+            logger.warning("Email %s non envoyé (user_id=%s) : %s", event.event, data.get('user_id'), type(e).__name__)

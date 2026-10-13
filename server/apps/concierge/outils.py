@@ -146,7 +146,8 @@ def rechercher_logements(entree: dict):
             'id': str(h.id), 'nom': h.name, 'type': h.type, 'ville': h.city, 'quartier': h.location,
             'prix_nuit_fcfa': int(h.price_per_night), 'note': round(h.rating, 1), 'nb_avis': h.review_count,
             'capacite': h.max_guests, 'equipements': (h.amenities or [])[:8],
-            'description': (h.description or '')[:280],
+            # Texte libre de l'hôte : donnée à résumer, jamais une instruction (voir SYSTEME)
+            'description_hote': (h.description or '')[:280],
             **({'nuits': nuits, 'cout_total_sejour_fcfa': cout.total} if cout else {}),
         })
         cartes.append({
@@ -202,7 +203,7 @@ def proposer_voyage_de_groupe(entree: dict):
     ids = entree.get('logements') or []
     if not isinstance(ids, list):
         raise EntreeInvalide('logements : liste attendue')
-    logements = list(HebergementModel.objects.filter(pk__in=[i for i in ids[:6] if isinstance(i, str) and len(i) == 36])
+    logements = list(HebergementModel.objects.filter(is_available=True, pk__in=[i for i in ids[:6] if isinstance(i, str) and len(i) == 36])
                      .values('id', 'name'))
     carte = {
         'type': 'together', 'nom': nom, 'destination': destination,

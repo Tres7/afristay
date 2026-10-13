@@ -77,11 +77,7 @@ export default function GoogleButton({ label, callbackUrl, onError }: GoogleButt
           const data = await authenticateWithGoogle(response.credential);
           const res = await signIn("backend-session", {
             redirect: false,
-            id: data.user.id,
-            name: `${data.user.first_name} ${data.user.last_name}`,
-            email: data.user.email,
-            image: data.user.avatar_url ?? "",
-            role: data.user.role,
+            // Identité et rôle relus par le serveur auprès de l'API (voir backend-session.ts)
             accessToken: data.access,
             refreshToken: data.refresh,
           });

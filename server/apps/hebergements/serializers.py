@@ -3,6 +3,8 @@ from datetime import timedelta
 
 from django.utils import timezone
 
+from apps.securite.images import MESSAGE as IMAGE_REFUSEE, url_image_autorisee
+
 from .models import BlocageModel, HebergementModel
 
 AMENITIES = ['piscine', 'wifi', 'clim', 'parking', 'cuisine', 'jardin', 'gym', 'spa']
@@ -59,9 +61,16 @@ class HebergementCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(f"Équipements inconnus : {', '.join(unknown)}")
         return value
 
+    def validate_image_url(self, value):
+        if value and not url_image_autorisee(value):
+            raise serializers.ValidationError(IMAGE_REFUSEE)
+        return value
+
     def validate_images(self, value):
         if not isinstance(value, list) or not all(isinstance(u, str) for u in value):
             raise serializers.ValidationError("Liste d'URL attendue.")
+        if not all(url_image_autorisee(u) for u in value):
+            raise serializers.ValidationError(IMAGE_REFUSEE)
         return value[:10]
 
 

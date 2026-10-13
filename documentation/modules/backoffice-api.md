@@ -7,6 +7,7 @@ Le frontend est déjà construit sur ce contrat : les noms de champs, les codes 
 
 - **Préfixe** : toutes les routes sont sous `/api/v1/admin/`.
 - **Accès** : utilisateur authentifié (JWT) **et** `role == "admin"`. Sinon : `401` (non connecté) ou `403` `{"detail": "Accès réservé aux administrateurs."}`.
+  Utiliser `permission_classes = [EstAdministrateur]` (`apps/securite/permissions.py`) sur **chaque** vue : le rôle est lu en base à chaque requête. Ne jamais se fier au rôle de la session NextAuth ni à un rôle envoyé par le client ; la redirection du middleware Next.js n'est qu'un confort d'affichage, pas une protection.
 - **Pagination** des listes : paramètres `page` (défaut 1) et `page_size` (défaut 20, maximum 100). Réponse :
   ```json
   { "results": [ ... ], "count": 134, "page": 1, "page_size": 20 }

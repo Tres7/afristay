@@ -1,35 +1,33 @@
 import Credentials from "next-auth/providers/credentials";
+import { fetchBackendUser } from "@/lib/api/auth/me";
 
+/**
+ * Ouvre la session avec des jetons déjà obtenus de l'API (vérification d'email, connexion Google).
+ * Seuls les jetons sont pris au navigateur : identifiant, email, nom et rôle sont relus auprès de l'API avec le
+ * jeton d'accès, sinon n'importe qui pourrait se fabriquer une session « admin ».
+ */
 export const backendSessionProvider = Credentials({
   id: "backend-session",
   name: "Backend Session",
   credentials: {
-    id: { label: "Id", type: "text" },
-    name: { label: "Name", type: "text" },
-    email: { label: "Email", type: "email" },
-    image: { label: "Image", type: "text" },
-    role: { label: "Role", type: "text" },
     accessToken: { label: "Access Token", type: "text" },
     refreshToken: { label: "Refresh Token", type: "text" },
   },
   async authorize(credentials) {
-    if (
-      !credentials?.id ||
-      !credentials?.email ||
-      !credentials?.accessToken ||
-      !credentials?.refreshToken
-    ) {
-      return null;
-    }
+    if (!credentials?.accessToken || !credentials?.refreshToken) return null;
+
+    const accessToken = String(credentials.accessToken);
+    const user = await fetchBackendUser(accessToken);
+    if (!user) return null;
 
     return {
-      id: String(credentials.id),
-      name: String(credentials.name ?? ""),
-      email: String(credentials.email),
-      image: credentials.image ? String(credentials.image) : null,
-      accessToken: String(credentials.accessToken),
+      id: user.id,
+      name: `${user.first_name} ${user.last_name}`.trim(),
+      email: user.email,
+      image: user.avatar_url,
+      accessToken,
       refreshToken: String(credentials.refreshToken),
-      role: String(credentials.role ?? "voyageur"),
+      role: user.role,
     };
   },
 });

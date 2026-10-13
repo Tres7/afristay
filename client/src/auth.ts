@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import { getApiBaseUrl } from "@/lib/api-url";
+import { fetchBackendUser } from "@/lib/api/auth/me";
 import { credentialsProvider } from "@/lib/providers/auth/credentials";
 import { backendSessionProvider } from "@/lib/providers/auth/backend-session";
 
@@ -54,15 +55,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.error = undefined;
       }
 
-      // Mise à jour côté client via useSession().update({...})
-      if (trigger === "update" && session) {
-        if (session.name) token.name = session.name;
-        if (session.role) token.role = session.role;
+      if (token.refreshToken && Date.now() >= (token.accessTokenExpires ?? 0) - REFRESH_MARGIN_MS) {
+        token = await refreshAccessToken(token);
       }
 
-      if (!token.refreshToken) return token;
-      if (Date.now() < (token.accessTokenExpires ?? 0) - REFRESH_MARGIN_MS) return token;
-      return refreshAccessToken(token);
+      // useSession().update() (nouveau nom, devenir hôte) : on relit le profil auprès de l'API au lieu de croire
+      // les valeurs envoyées par le navigateur, qui pourrait sinon s'attribuer le rôle « admin »
+      if (trigger === "update" && session && token.accessToken && !token.error) {
+        const me = await fetchBackendUser(token.accessToken);
+        if (me) {
+          token.name = `${me.first_name} ${me.last_name}`.trim();
+          token.role = me.role;
+          token.picture = me.avatar_url;
+        }
+      }
+      return token;
     },
     async session({ session, token }) {
       session.accessToken = token.accessToken ?? "";

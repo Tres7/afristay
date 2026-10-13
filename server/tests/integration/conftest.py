@@ -1,6 +1,8 @@
+import re
 from datetime import timedelta
 
 import pytest
+from django.core import mail
 from django.utils import timezone
 from rest_framework.test import APIClient
 
@@ -52,6 +54,20 @@ def make_user():
         return UserModel.objects.create_user(password=PASSWORD, role=role, is_verified=is_verified, **fields)
 
     return _make
+
+
+@pytest.fixture
+def code_envoye():
+    """Dernier code à 6 chiffres envoyé par email à cette adresse (la base n'en garde que l'empreinte)."""
+    def _lire(email):
+        for message in reversed(mail.outbox):
+            if email.lower() in [d.lower() for d in message.to]:
+                trouve = re.search(r'\b(\d{6})\b', message.body)
+                if trouve:
+                    return trouve.group(1)
+        raise AssertionError(f'Aucun code envoyé à {email}')
+
+    return _lire
 
 
 @pytest.fixture
