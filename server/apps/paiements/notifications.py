@@ -138,7 +138,8 @@ def envoyer_notifications() -> int:
         lambda v: alerte_admin('Versement à un hôte', v, f"{v.hote.email} ({nom_operateur(v.mode)} {v.numero})",
                                reference=v.reservation.reference, libelle=v.reservation.hebergement.name),
     )
-    relations_remb = ('paiement', 'reservation__guest', 'reservation__hebergement', 'transfert__voyageur', 'transfert__aeroport')
+    relations_remb = ('paiement', 'reservation__guest', 'reservation__hebergement', 'transfert__voyageur', 'transfert__aeroport',
+                      'location__voyageur', 'location__categorie', 'location__lieu_prise')
     total += _traiter(
         RemboursementModel.objects.filter(statut='envoye', notifie=False).select_related(*relations_remb),
         remboursement_envoye,

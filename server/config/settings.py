@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     'apps.give.apps.GiveConfig',
     'apps.securite.apps.SecuriteConfig',
     'apps.verifications.apps.VerificationsConfig',
+    'apps.locations.apps.LocationsConfig',
 ]
 
 MIDDLEWARE = [

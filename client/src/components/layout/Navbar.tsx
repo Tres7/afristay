@@ -1,7 +1,7 @@
 "use client";
 
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
-import { Search, Menu, ArrowRight, LogIn, UserPlus, MessageCircle, Heart, CalendarCheck, User, LogOut, Home, ShieldCheck, Plane, Users, Sparkles, HandHeart } from "lucide-react";
+import { Search, Menu, ArrowRight, LogIn, UserPlus, MessageCircle, Heart, CalendarCheck, User, LogOut, Home, ShieldCheck, Plane, Car, Users, Sparkles, HandHeart } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import api from "@/lib/api";
@@ -232,6 +232,7 @@ export default function Navbar() {
             { href: "/recherche", label: t("hebergements"), icon: Search },
             { href: "/decouvrir", label: t("experiences"), icon: ArrowRight },
             { href: "/transfert", label: t("transfertAeroport"), icon: Plane },
+            { href: "/location", label: t("location"), icon: Car },
             { href: "/together", label: t("voyagerAPlusieurs"), icon: Users },
             { href: "/concierge", label: t("conciergeIA"), icon: Sparkles },
             { href: "/give", label: t("faireUnDon"), icon: HandHeart },

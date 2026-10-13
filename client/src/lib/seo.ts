@@ -10,7 +10,7 @@ export const IMAGE_PARTAGE = "/brand/kwaba-partage-1200x630.png";
 
 /** Pages publiques indexables (sans préfixe de langue). Les fiches de logement et d'associations s'y ajoutent. */
 export const PAGES_PUBLIQUES = [
-  "/", "/recherche", "/decouvrir", "/transfert", "/together", "/concierge", "/hote",
+  "/", "/recherche", "/decouvrir", "/transfert", "/location", "/together", "/concierge", "/hote",
   "/give", "/give/impact", "/profil/aide",
   "/cgu", "/confidentialite", "/cookies", "/mentions-legales", "/remboursement",
 ] as const;
@@ -20,7 +20,7 @@ export const PAGES_PUBLIQUES = [
  * n'affichent que les données de l'utilisateur. /profil/aide (centre d'aide) reste public.
  */
 export const CHEMINS_PRIVES = [
-  "/profil", "/favoris", "/messages", "/reservation", "/hote/espace", "/give/don", "/together/", "/transfert/",
+  "/profil", "/favoris", "/messages", "/reservation", "/hote/espace", "/give/don", "/together/", "/transfert/", "/location/",
   "/login", "/register", "/verify", "/mot-de-passe-oublie", "/backoffice", "/api/",
 ] as const;
 

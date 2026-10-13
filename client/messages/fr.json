@@ -44,7 +44,11 @@
         "titre": "Logement introuvable"
       },
       "logementDescription": "{type} à {ville} pour {voyageurs} voyageurs, à partir de {prix} FCFA la nuit. Réservez sur Kwa-Ba en Mobile Money ou par carte.",
-      "organisationDescription": "Soutenez {nom} ({ville}) avec Kwa-Ba Give : don de 500 à 5 000 FCFA, reversement publié avec son justificatif."
+      "organisationDescription": "Soutenez {nom} ({ville}) avec Kwa-Ba Give : don de 500 à 5 000 FCFA, reversement publié avec son justificatif.",
+      "location": {
+        "titre": "Location de voiture avec ou sans chauffeur",
+        "description": "Louez une citadine, une berline, un SUV, un 4x4 ou un minibus, avec ou sans chauffeur, remis à l'aéroport ou à votre adresse. Prix par jour connu à l'avance, paiement en ligne."
+      }
     }
   },
   "commun": {
@@ -102,7 +106,8 @@
     "faireUnDon": "Faire un don",
     "mesReservations": "Mes réservations",
     "mesFavoris": "Mes favoris",
-    "fermerMenu": "Fermer le menu"
+    "fermerMenu": "Fermer le menu",
+    "location": "Location de voiture"
   },
   "logo": {
     "accueil": "Kwa-Ba — accueil"
@@ -127,7 +132,8 @@
       "devenirHote": "Devenir hôte",
       "espaceHote": "Espace hôte",
       "aide": "Centre d'aide",
-      "remboursement": "Annulation et remboursement"
+      "remboursement": "Annulation et remboursement",
+      "location": "Location de voiture"
     },
     "legal": {
       "mentions": "Mentions légales",
@@ -1460,5 +1466,106 @@
     "rienAVenir": "Aucune réservation ni fermeture à venir.",
     "rouvrir": "Rouvrir",
     "voirToutes": "Voir toutes les réservations"
+  },
+  "location": {
+    "titre": "Louez une voiture",
+    "sousTitre": "Avec ou sans chauffeur, remise à l'aéroport ou à votre adresse, par nos loueurs partenaires.",
+    "bientot": "La location de voitures arrive bientôt sur Kwa-Ba.",
+    "bientotAide": "En attendant, réservez un transfert depuis l’aéroport.",
+    "formule": "Formule",
+    "formules": {
+      "sans_chauffeur": "Je conduis",
+      "avec_chauffeur": "Avec chauffeur"
+    },
+    "tous": "Tous",
+    "boite": "Boîte",
+    "boites": {
+      "manuelle": "Manuelle",
+      "automatique": "Automatique"
+    },
+    "placesMin": "{nombre} places min.",
+    "aucun": "Aucun véhicule ne correspond à ces filtres.",
+    "places": "{nombre, plural, one {# place} other {# places}}",
+    "bagages": "{nombre, plural, one {# valise} other {# valises}}",
+    "clim": "Climatisation",
+    "parJour": "/jour",
+    "nonProposee": "Non proposée",
+    "choisir": "Choisir",
+    "ouSimilaire": "ou similaire",
+    "reserverTitre": "Votre location : {nom}",
+    "changer": "Changer de véhicule",
+    "prise": "Prise du véhicule",
+    "retour": "Retour du véhicule",
+    "lieu": "Lieu",
+    "adresse": "Adresse de livraison",
+    "adressePlaceholder": "Quartier, rue, repère",
+    "dateHeure": "Date et heure",
+    "passagers": "Personnes",
+    "telephone": "Téléphone (WhatsApp)",
+    "precisions": "Précisez votre besoin",
+    "precisionsAide": "Trajets prévus, horaires, siège enfant, bagages encombrants… Le loueur prépare le véhicule en conséquence.",
+    "precisionsPlaceholder": "Ex. : trajets Lomé – Kpalimé – Lomé, un siège enfant pour 2 ans, départ tôt le matin.",
+    "conducteurTitre": "Conducteur",
+    "conducteur": "Nom du conducteur",
+    "permisNumero": "Numéro du permis",
+    "permisPays": "Pays de délivrance",
+    "delai": "Réservez au moins {jours} jours avant la prise du véhicule : le loueur a besoin de ce délai pour le préparer.",
+    "conditions": "Conditions de location",
+    "annulationRegle": "Annulation gratuite jusqu'à {heures} h avant la prise du véhicule ; ensuite, la location n'est plus remboursée.",
+    "devisJours": "{nombre, plural, one {# jour} other {# jours}} × {prix}",
+    "frais": "Frais de remise et de retour",
+    "total": "Total",
+    "caution": "Caution à régler au loueur à la remise du véhicule : {montant}",
+    "calcul": "Calcul du prix…",
+    "reserver": "Réserver et payer",
+    "envoi": "Envoi…",
+    "connexion": "Connectez-vous pour réserver",
+    "mesLocations": "Mes locations",
+    "statuts": {
+      "en_attente_paiement": "En attente de paiement",
+      "confirmee": "Payée, véhicule en préparation",
+      "partenaire_assigne": "Véhicule attribué",
+      "terminee": "Terminée",
+      "annulee": "Annulée"
+    },
+    "detail": {
+      "introuvable": "Location introuvable",
+      "recu": "Paiement reçu. Nous attribuons votre véhicule à l'un de nos loueurs partenaires : vous recevrez ses coordonnées par email.",
+      "expire": "Le délai de paiement est dépassé.",
+      "nouvelle": "Faire une nouvelle demande",
+      "votreLoueur": "Votre loueur",
+      "chauffeur": "Votre chauffeur : {nom}",
+      "appeler": "Appeler le {telephone}",
+      "du": "Du {debut}",
+      "au": "au {fin}",
+      "prixPaye": "Payé",
+      "prix": "Prix",
+      "annuler": "Annuler la location",
+      "annulation": "Annulation…",
+      "annulerQuestion": "Annuler cette location ?",
+      "annulerTardif": "Le délai d'annulation gratuite est passé : la location ne sera pas remboursée. Annuler quand même ?",
+      "annulationGratuite": "Annulation gratuite encore possible.",
+      "plusDeRemboursement": "Le délai d'annulation gratuite est passé.",
+      "annuleToast": "Location annulée",
+      "annuleRembourse": "Location annulée : {montant} remboursés",
+      "erreurAnnulation": "Impossible d'annuler la location.",
+      "paiementNonDemarre": "Le paiement n’a pas pu démarrer.",
+      "payerPar": "Payer par {moyen}",
+      "carte": "carte"
+    },
+    "gammes": {
+      "citadine": "Citadine",
+      "berline": "Berline",
+      "suv": "SUV",
+      "4x4": "4x4 tout-terrain",
+      "minibus": "Minibus",
+      "utilitaire": "Utilitaire"
+    },
+    "carburants": {
+      "essence": "Essence",
+      "diesel": "Diesel",
+      "hybride": "Hybride",
+      "electrique": "Électrique"
+    }
   }
 }

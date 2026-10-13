@@ -44,7 +44,11 @@
         "titre": "Place not found"
       },
       "logementDescription": "{type} in {ville} for {voyageurs} guests, from {prix} FCFA per night. Book on Kwa-Ba with Mobile Money or card.",
-      "organisationDescription": "Support {nom} ({ville}) with Kwa-Ba Give: donate from 500 to 5,000 FCFA, payout published with its proof."
+      "organisationDescription": "Support {nom} ({ville}) with Kwa-Ba Give: donate from 500 to 5,000 FCFA, payout published with its proof.",
+      "location": {
+        "titre": "Car hire with or without a driver",
+        "description": "Hire a small car, saloon, SUV, 4x4 or minibus, with or without a driver, handed over at the airport or at your address. Daily price known in advance, paid online."
+      }
     }
   },
   "commun": {
@@ -102,7 +106,8 @@
     "faireUnDon": "Donate",
     "mesReservations": "My bookings",
     "mesFavoris": "My favourites",
-    "fermerMenu": "Close menu"
+    "fermerMenu": "Close menu",
+    "location": "Car hire"
   },
   "logo": {
     "accueil": "Kwa-Ba — home"
@@ -127,7 +132,8 @@
       "devenirHote": "Become a host",
       "espaceHote": "Host space",
       "aide": "Help centre",
-      "remboursement": "Cancellation and refunds"
+      "remboursement": "Cancellation and refunds",
+      "location": "Car hire"
     },
     "legal": {
       "mentions": "Legal notice",
@@ -1460,5 +1466,106 @@
     "rienAVenir": "No upcoming bookings or closures.",
     "rouvrir": "Reopen",
     "voirToutes": "See all bookings"
+  },
+  "location": {
+    "titre": "Hire a car",
+    "sousTitre": "With or without a driver, handed over at the airport or at your address, by our partner rental companies.",
+    "bientot": "Car hire is coming soon to Kwa-Ba.",
+    "bientotAide": "In the meantime, book an airport transfer.",
+    "formule": "Option",
+    "formules": {
+      "sans_chauffeur": "I drive",
+      "avec_chauffeur": "With a driver"
+    },
+    "tous": "All",
+    "boite": "Gearbox",
+    "boites": {
+      "manuelle": "Manual",
+      "automatique": "Automatic"
+    },
+    "placesMin": "{nombre}+ seats",
+    "aucun": "No vehicle matches these filters.",
+    "places": "{nombre, plural, one {# seat} other {# seats}}",
+    "bagages": "{nombre, plural, one {# suitcase} other {# suitcases}}",
+    "clim": "Air conditioning",
+    "parJour": "/day",
+    "nonProposee": "Not available",
+    "choisir": "Choose",
+    "ouSimilaire": "or similar",
+    "reserverTitre": "Your rental: {nom}",
+    "changer": "Change vehicle",
+    "prise": "Pick-up",
+    "retour": "Return",
+    "lieu": "Place",
+    "adresse": "Delivery address",
+    "adressePlaceholder": "Area, street, landmark",
+    "dateHeure": "Date and time",
+    "passagers": "People",
+    "telephone": "Phone (WhatsApp)",
+    "precisions": "Tell us what you need",
+    "precisionsAide": "Planned trips, times, child seat, bulky luggage… The rental company prepares the vehicle accordingly.",
+    "precisionsPlaceholder": "E.g. Lomé – Kpalimé – Lomé, a child seat for a 2-year-old, early morning departure.",
+    "conducteurTitre": "Driver",
+    "conducteur": "Driver's name",
+    "permisNumero": "Licence number",
+    "permisPays": "Issuing country",
+    "delai": "Book at least {jours} days before pick-up: the rental company needs this time to prepare the vehicle.",
+    "conditions": "Rental conditions",
+    "annulationRegle": "Free cancellation up to {heures} h before pick-up; after that, the rental is not refunded.",
+    "devisJours": "{nombre, plural, one {# day} other {# days}} × {prix}",
+    "frais": "Pick-up and return fees",
+    "total": "Total",
+    "caution": "Deposit paid to the rental company at pick-up: {montant}",
+    "calcul": "Calculating the price…",
+    "reserver": "Book and pay",
+    "envoi": "Sending…",
+    "connexion": "Sign in to book",
+    "mesLocations": "My rentals",
+    "statuts": {
+      "en_attente_paiement": "Awaiting payment",
+      "confirmee": "Paid, vehicle being prepared",
+      "partenaire_assigne": "Vehicle assigned",
+      "terminee": "Completed",
+      "annulee": "Cancelled"
+    },
+    "detail": {
+      "introuvable": "Rental not found",
+      "recu": "Payment received. We are assigning your vehicle to one of our partner rental companies: you will receive their details by email.",
+      "expire": "The payment deadline has passed.",
+      "nouvelle": "Make a new request",
+      "votreLoueur": "Your rental company",
+      "chauffeur": "Your driver: {nom}",
+      "appeler": "Call {telephone}",
+      "du": "From {debut}",
+      "au": "to {fin}",
+      "prixPaye": "Paid",
+      "prix": "Price",
+      "annuler": "Cancel the rental",
+      "annulation": "Cancelling…",
+      "annulerQuestion": "Cancel this rental?",
+      "annulerTardif": "The free cancellation period has passed: the rental will not be refunded. Cancel anyway?",
+      "annulationGratuite": "Free cancellation still possible.",
+      "plusDeRemboursement": "The free cancellation period has passed.",
+      "annuleToast": "Rental cancelled",
+      "annuleRembourse": "Rental cancelled: {montant} refunded",
+      "erreurAnnulation": "Unable to cancel the rental.",
+      "paiementNonDemarre": "The payment could not start.",
+      "payerPar": "Pay by {moyen}",
+      "carte": "card"
+    },
+    "gammes": {
+      "citadine": "Small car",
+      "berline": "Saloon",
+      "suv": "SUV",
+      "4x4": "4x4 off-road",
+      "minibus": "Minibus",
+      "utilitaire": "Pick-up / van"
+    },
+    "carburants": {
+      "essence": "Petrol",
+      "diesel": "Diesel",
+      "hybride": "Hybrid",
+      "electrique": "Electric"
+    }
   }
 }

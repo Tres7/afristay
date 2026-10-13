@@ -1,0 +1,11 @@
+{% autoescape off %}Bonjour {{ contact }},
+
+Nous venons de vous envoyer {{ montant }} pour la location {{ reference }} du {{ debut }}.
+
+  Prix de la location : {{ montant_brut }}
+  Commission Kwa-Ba : {{ commission }}
+  Versé : {{ montant }}
+
+Merci pour votre confiance,
+L'équipe Kwa-Ba
+{% endautoescape %}
