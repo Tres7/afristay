@@ -15,7 +15,7 @@ export interface AdminStats {
   reservations_par_jour: { date: string; nombre: number; volume: number }[];
 }
 
-export type Role = "voyageur" | "hote" | "admin";
+export type Role = "voyageur" | "hote" | "agent" | "admin";
 
 export interface AdminUser {
   id: string;
@@ -42,7 +42,9 @@ export interface AdminHebergement {
   price_per_night: number;
   image_url: string;
   is_available: boolean;
+  /** Vérifiée par un agent (ou validée par un admin) : seule une annonce vérifiée et visible est publiée. */
   est_verifie: boolean;
+  statut_verification: "en_attente" | "verifiee" | "refusee";
   rating: number;
   review_count: number;
   nb_reservations: number;

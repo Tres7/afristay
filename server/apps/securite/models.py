@@ -37,6 +37,11 @@ class JournalAuditModel(models.Model):
         ('piece_consultee', "Pièce d'identité consultée"),
         ('annonce_verifiee', 'Annonce validée après visite'),
         ('annonce_refusee', 'Annonce refusée après visite'),
+        ('compte_reactive', 'Compte réactivé'),
+        ('annonce_modifiee', 'Annonce modifiée par un administrateur'),
+        ('annonce_supprimee', 'Annonce supprimée par un administrateur'),
+        ('reservation_annulee', 'Réservation annulée par un administrateur'),
+        ('avis_supprime', 'Avis supprimé par un administrateur'),
     ]
 
     cree_le = models.DateTimeField(auto_now_add=True, db_index=True)
