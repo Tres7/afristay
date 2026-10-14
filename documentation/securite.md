@@ -19,6 +19,7 @@ Ce que fait le code, et ce qu'il reste à régler au déploiement. Fait suite à
 | `ADMINS` | `tech@kwa-ba.com` | reçoit les erreurs 500 par email |
 | `FEDAPAY_WEBHOOK_SECRET` | clé du tableau de bord FedaPay | obligatoire : sans elle, les webhooks sont refusés |
 | `GOOGLE_CLIENT_ID` | identifiant OAuth web de Kwa-Ba | sans lui, la connexion Google est désactivée |
+| `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | clés Cloudflare Turnstile (tableau de bord Cloudflare → Turnstile, domaine `kwa-ba.com`, mode « Managed ») | captcha à la connexion et à l'inscription ; sans elles, il est désactivé. Lues à l'exécution : pas de rebuild du frontend |
 | `CORS_ALLOWED_ORIGINS` | l'URL exacte du site | jamais `*` |
 
 ### Frontend

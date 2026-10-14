@@ -1,6 +1,7 @@
 import json
 
-from django.db.models import Prefetch
+from django.contrib.auth import get_user_model
+from django.db.models import Count, Prefetch
 from django.http import FileResponse, Http404
 from rest_framework import status
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
@@ -72,6 +73,7 @@ class MaPieceIdentiteView(APIView):
         piece.type_piece, piece.type_contenu, piece.statut, piece.motif_refus = type_piece, type_contenu, 'soumise', ''
         piece.fichier.save(f'piece.{extension}', contenu, save=False)
         piece.save()
+        services.piece_a_controler(piece)
         return Response(_piece_json(piece), status=status.HTTP_201_CREATED)
 
 
@@ -91,12 +93,51 @@ def _visite_json(h: HebergementModel) -> dict:
     }
 
 
+class PiecesView(APIView):
+    """Pièces d'identité à contrôler à distance, les plus anciennes d'abord."""
+    permission_classes = [EstVerificateur]
+
+    def get(self, request):
+        pieces = (PieceIdentiteModel.objects.filter(statut='soumise').select_related('hote')
+                  .annotate(nb_annonces=Count('hote__hebergements'))
+                  .order_by('soumise_le')[:100])
+        resultats = [{
+            'hote': {
+                'id': str(p.hote_id), 'nom': f"{p.hote.first_name} {p.hote.last_name}".strip(),
+                'email': p.hote.email, 'telephone': p.hote.phone, 'inscrit_le': p.hote.date_joined,
+            },
+            'type_piece': p.type_piece, 'type_libelle': p.get_type_piece_display(),
+            'soumise_le': p.soumise_le, 'nb_annonces': p.nb_annonces,
+        } for p in pieces]
+        return Response({'results': resultats, 'count': len(resultats)})
+
+
+class PieceDecisionView(APIView):
+    """POST {decision: verifiee | refusee, motif} : résultat du contrôle de la pièce d'identité d'un hôte."""
+    permission_classes = [EstVerificateur]
+
+    def post(self, request, user_id):
+        hote = get_user_model().objects.filter(pk=user_id).first()
+        if not hote:
+            return Response({'detail': 'Hôte introuvable.'}, status=status.HTTP_404_NOT_FOUND)
+        decision = str(request.data.get('decision', ''))
+        try:
+            piece = services.decider_piece(hote, request.user, decision=decision,
+                                           motif=str(request.data.get('motif', '')))
+        except services.VerificationErreur as exc:
+            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        journaliser('identite_verifiee' if piece.statut == 'verifiee' else 'identite_refusee', request,
+                    utilisateur=request.user, hote=str(hote.pk), hote_email=hote.email)
+        return Response(_piece_json(piece))
+
+
 class VisitesView(APIView):
     """Annonces qui attendent la visite d'un agent, les plus anciennes d'abord (?ville= pour filtrer)."""
     permission_classes = [EstVerificateur]
 
     def get(self, request):
-        qs = (HebergementModel.objects.filter(statut_verification='en_attente')
+        # Seulement les hôtes dont l'identité est déjà vérifiée : pas de déplacement pour un hôte non contrôlé
+        qs = (HebergementModel.objects.filter(statut_verification='en_attente', host__piece_identite__statut='verifiee')
               .select_related('host', 'host__piece_identite')
               .prefetch_related(Prefetch('visites', queryset=VisiteModel.objects.only('id', 'decision', 'hebergement')))
               .order_by('created_at'))

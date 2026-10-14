@@ -3,12 +3,13 @@ import { LoginResponse } from "@/types/api/auth";
 
 export async function authenticateWithCredentials(
   email: string,
-  password: string
+  password: string,
+  captcha = ""
 ): Promise<LoginResponse> {
   const res = await fetch(`${getApiBaseUrl()}/v1/auth/login/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password, captcha }),
   });
 
   const data = await res.json();

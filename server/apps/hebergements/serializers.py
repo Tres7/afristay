@@ -13,6 +13,7 @@ AMENITIES = ['piscine', 'wifi', 'clim', 'parking', 'cuisine', 'jardin', 'gym', '
 class HebergementSerializer(serializers.ModelSerializer):
     host_id = serializers.UUIDField(source='host.id', read_only=True)
     host_name = serializers.SerializerMethodField()
+    hote_verifie = serializers.SerializerMethodField()
     is_favorite = serializers.SerializerMethodField()
     motif_refus = serializers.SerializerMethodField()
 
@@ -21,13 +22,18 @@ class HebergementSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'description', 'type', 'city', 'location',
             'price_per_night', 'rating', 'review_count', 'image_url', 'images',
-            'max_guests', 'amenities', 'is_available', 'host_id', 'host_name',
+            'max_guests', 'amenities', 'is_available', 'host_id', 'host_name', 'hote_verifie',
             'is_favorite', 'created_at', 'statut_verification', 'verifiee_le', 'motif_refus',
         ]
         read_only_fields = ['id', 'rating', 'review_count', 'host_id', 'created_at', 'statut_verification', 'verifiee_le']
 
     def get_host_name(self, obj):
         return f"{obj.host.first_name} {obj.host.last_name}".strip()
+
+    def get_hote_verifie(self, obj):
+        # Badge « Hôte vérifié » : pièce d'identité contrôlée par Kwa-Ba
+        piece = getattr(obj.host, 'piece_identite', None)
+        return bool(piece and piece.statut == 'verifiee')
 
     def get_motif_refus(self, obj):
         # Message de l'agent destiné à l'hôte : jamais montré aux voyageurs

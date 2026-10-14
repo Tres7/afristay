@@ -1,9 +1,11 @@
 import secrets
 from datetime import timedelta
+from django.conf import settings
 from django.contrib.auth.hashers import make_password, check_password
 from django.core.cache import cache
 from django.db import IntegrityError
 from django.utils import timezone
+from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -11,6 +13,7 @@ from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, Ou
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
+from apps.securite import captcha
 from apps.securite.audit import journaliser
 from apps.securite.limites import Tentatives, incrementer, limite_ip
 from apps.users.application.dto.dto import GoogleAuthDTO, RegisterDTO, UserRole
@@ -108,6 +111,19 @@ def _echec_code(email: str, vc: VerificationCode | None) -> None:
         journaliser('code_bloque', utilisateur=vc.user_id, email=email)
 
 
+def _captcha_refuse() -> Response:
+    return Response({'detail': captcha.MESSAGE, 'code': 'captcha'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CaptchaView(APIView):
+    """Clé publique du captcha pour le widget (vide : captcha désactivé). Lue au chargement, sans rebuild du frontend."""
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        return Response({'site_key': settings.TURNSTILE_SITE_KEY if captcha.actif() else ''})
+
+
 class RegisterView(APIView):
     authentication_classes = []
     throttle_classes = [LimiteInscription]
@@ -116,6 +132,9 @@ class RegisterView(APIView):
         serializer = RegisterSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        if not captcha.valide(request.data.get('captcha')):
+            return _captcha_refuse()
 
         data = serializer.validated_data
         dto = RegisterDTO(
@@ -149,6 +168,8 @@ class LoginView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         data = serializer.validated_data
+        if not captcha.valide(request.data.get('captcha')):
+            return _captcha_refuse()
 
         # Compté avant la vérification : des essais simultanés ne peuvent pas dépasser la limite
         essais = Tentatives(f"connexion:{data['email']}", MAX_ESSAIS_CONNEXION, FENETRE_CONNEXION)

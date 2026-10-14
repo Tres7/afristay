@@ -51,6 +51,9 @@ def make_user():
         fields.setdefault('email', f'{role}{n}@test.afristay')
         fields.setdefault('first_name', 'Test')
         fields.setdefault('last_name', f'{role.capitalize()} {n}')
+        if role == 'hote':
+            # Téléphone exigé pour publier une annonce (l'agent appelle l'hôte pour la visite)
+            fields.setdefault('phone', f'+22991{n:06d}')
         return UserModel.objects.create_user(password=PASSWORD, role=role, is_verified=is_verified, **fields)
 
     return _make

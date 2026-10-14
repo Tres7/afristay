@@ -12,7 +12,7 @@ import { cn, FALLBACK_IMAGE, formatDate, formatPrice, isoDate, TYPE_LABELS } fro
 import HebergementForm from "@/components/hote/HebergementForm";
 import RatingBadge from "@/components/avis/RatingBadge";
 import RevenusHote from "@/components/hote/RevenusHote";
-import VerificationIdentite from "@/components/hote/VerificationIdentite";
+import CandidatureHote from "@/components/hote/CandidatureHote";
 import type { Hebergement, Paginated, Reservation } from "@/types/api/models";
 import type { MessagingConversation } from "@/types/api/messaging";
 import { useTranslations } from "next-intl";
@@ -144,6 +144,8 @@ function EspaceHoteContent() {
         </button>
       </div>
 
+      <CandidatureHote nbAnnonces={annonces.length} onNouvelle={() => setEditing("new")} />
+
       <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-8">
         {[
           { label: t("stats.annonces"), value: annonces.length },
@@ -178,7 +180,6 @@ function EspaceHoteContent() {
           </div>
         ) : (
           <div className="space-y-4">
-            <VerificationIdentite />
             {annonces.map((h) => (
               <article key={h.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col sm:flex-row">
                 <Link href={`/hebergements/${h.id}`} className="sm:w-48 h-40 sm:h-auto flex-shrink-0 relative">

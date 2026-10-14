@@ -15,6 +15,7 @@ from apps.verifications.models import PhotoVisiteModel, PieceIdentiteModel, Visi
 HEBERGEMENTS = '/api/v1/hebergements/'
 IDENTITE = '/api/v1/verifications/identite/'
 VISITES = '/api/v1/verifications/visites/'
+IDENTITES = '/api/v1/verifications/identites/'
 TOUT_CONFORME = {'identite': True, 'adresse': True, 'photos': True, 'equipements': True}
 
 
@@ -57,6 +58,10 @@ def en_attente(make_hebergement, hote):
     return make_hebergement(host=hote, statut_verification='en_attente', city='Lomé', location='Bè Kpota')
 
 
+def _identite_verifiee(hote):
+    return PieceIdentiteModel.objects.update_or_create(hote=hote, defaults={'type_piece': 'cni', 'statut': 'verifiee'})[0]
+
+
 def _envoyer_piece(client, fichier=None, type_piece='cni'):
     return client.post(IDENTITE, {'type_piece': type_piece, 'fichier': fichier or _image()}, format='multipart')
 
@@ -72,6 +77,7 @@ def _decider(client, hebergement, decision='validee', controles=None, commentair
 class TestPublication:
     def test_new_listing_waits_for_a_visit_and_agents_are_told(self, client_for, hote, agent, api_client,
                                                                  django_capture_on_commit_callbacks):
+        _identite_verifiee(hote)
         with django_capture_on_commit_callbacks(execute=True):
             response = client_for(hote).post(HEBERGEMENTS, _annonce(), format='json')
         assert response.status_code == 201
@@ -84,6 +90,13 @@ class TestPublication:
         assert client_for(agent).get(f'{HEBERGEMENTS}{identifiant}/').status_code == 200
         assert [m.to for m in mail.outbox] == [[agent.email]]
         assert 'Visite à planifier' in mail.outbox[0].subject
+
+    def test_no_visit_requested_before_identity_is_verified(self, client_for, hote, agent,
+                                                             django_capture_on_commit_callbacks):
+        with django_capture_on_commit_callbacks(execute=True):
+            assert client_for(hote).post(HEBERGEMENTS, _annonce(), format='json').status_code == 201
+        assert mail.outbox == []
+        assert client_for(agent).get(VISITES).data['count'] == 0
 
     def test_unpublished_listing_cannot_be_booked_liked_or_contacted(self, client_for, make_user, en_attente):
         voyageur = client_for(make_user())
@@ -170,34 +183,43 @@ class TestVisite:
     def test_only_verifiers_see_the_visits(self, client_for, agent, make_user, hote, en_attente):
         assert client_for(hote).get(VISITES).status_code == 403
         assert client_for(make_user()).get(VISITES).status_code == 403
+        # Identité pas encore vérifiée : aucun déplacement proposé
+        assert client_for(agent).get(VISITES).data['count'] == 0
+        _identite_verifiee(hote)
         data = client_for(agent).get(VISITES).data
         assert [v['id'] for v in data['results']] == [str(en_attente.id)]
         assert data['results'][0]['hote']['telephone'] == '+22890000001'
-        assert data['results'][0]['hote']['piece']['statut'] == 'absente'
+        assert data['results'][0]['hote']['piece']['statut'] == 'verifiee'
 
-    def test_validation_publishes_and_deletes_the_identity_document(self, client_for, agent, hote, en_attente,
-                                                                     api_client, stockage_temporaire,
-                                                                     django_capture_on_commit_callbacks):
-        _envoyer_piece(client_for(hote))
-        fichier = PieceIdentiteModel.objects.get(hote=hote).fichier.name
+    def test_validation_publishes_the_listing(self, client_for, agent, hote, en_attente, api_client,
+                                              django_capture_on_commit_callbacks):
+        _identite_verifiee(hote)
         with django_capture_on_commit_callbacks(execute=True):
             response = _decider(client_for(agent), en_attente, photos=[_image('a.jpg'), _image('b.jpg')])
         assert response.status_code == 201
 
         en_attente.refresh_from_db()
         assert en_attente.statut_verification == 'verifiee' and en_attente.verifiee_le
-        assert api_client.get(HEBERGEMENTS).data['count'] == 1
-        piece = PieceIdentiteModel.objects.get(hote=hote)
-        assert piece.statut == 'verifiee' and piece.verifiee_par == agent and not piece.fichier
-        assert not (stockage_temporaire / fichier).exists()
+        publiees = api_client.get(HEBERGEMENTS).data
+        assert publiees['count'] == 1 and publiees['results'][0]['hote_verifie'] is True
         visite = VisiteModel.objects.get()
         assert visite.controles == TOUT_CONFORME and visite.photos.count() == 2
         assert mail.outbox[-1].to == [hote.email] and 'vérifié' in mail.outbox[-1].subject
+
+    def test_identity_mismatch_at_the_visit_refuses_the_identity(self, client_for, agent, hote, en_attente):
+        _identite_verifiee(hote)
+        response = _decider(client_for(agent), en_attente, decision='refusee',
+                            commentaire="La personne rencontrée n'est pas celle de la pièce.",
+                            controles={**TOUT_CONFORME, 'identite': False})
+        assert response.status_code == 201
+        assert PieceIdentiteModel.objects.get(hote=hote).statut == 'refusee'
 
     def test_cannot_validate_without_every_check_or_identity(self, client_for, agent, hote, en_attente):
         client = client_for(agent)
         assert _decider(client, en_attente).status_code == 400  # pas de pièce d'identité
         _envoyer_piece(client_for(hote))
+        assert _decider(client, en_attente).status_code == 400  # pièce envoyée mais pas encore contrôlée
+        _identite_verifiee(hote)
         assert _decider(client, en_attente, controles={**TOUT_CONFORME, 'photos': False}).status_code == 400
         en_attente.refresh_from_db()
         assert en_attente.statut_verification == 'en_attente'
@@ -216,13 +238,87 @@ class TestVisite:
         assert motif in mail.outbox[-1].body
 
     def test_an_already_decided_listing_cannot_be_decided_again(self, client_for, agent, hote, en_attente):
-        _envoyer_piece(client_for(hote))
+        _identite_verifiee(hote)
         assert _decider(client_for(agent), en_attente).status_code == 201
         assert _decider(client_for(agent), en_attente).status_code == 400
 
     def test_hosts_cannot_validate_their_own_listing(self, client_for, hote, en_attente):
         _envoyer_piece(client_for(hote))
         assert _decider(client_for(hote), en_attente).status_code == 403
+
+
+class TestControleIdentite:
+    def test_sending_a_document_alerts_the_verifiers(self, client_for, hote, agent, django_capture_on_commit_callbacks):
+        with django_capture_on_commit_callbacks(execute=True):
+            _envoyer_piece(client_for(hote))
+        assert mail.outbox[-1].to == [agent.email]
+        assert "Pièce d'identité à contrôler" in mail.outbox[-1].subject
+
+    def test_only_verifiers_list_and_decide(self, client_for, hote, agent, make_user):
+        _envoyer_piece(client_for(hote))
+        assert client_for(hote).get(IDENTITES).status_code == 403
+        refus = client_for(make_user()).post(f'{IDENTITES}{hote.id}/decision/', {'decision': 'verifiee'}, format='json')
+        assert refus.status_code == 403
+        data = client_for(agent).get(IDENTITES).data
+        assert data['count'] == 1
+        assert data['results'][0]['hote']['email'] == hote.email
+
+    def test_verified_identity_deletes_the_document_and_requests_the_visits(
+            self, client_for, hote, agent, en_attente, stockage_temporaire, django_capture_on_commit_callbacks):
+        _envoyer_piece(client_for(hote))
+        fichier = PieceIdentiteModel.objects.get(hote=hote).fichier.name
+        url = f'{IDENTITES}{hote.id}/decision/'
+        with django_capture_on_commit_callbacks(execute=True):
+            response = client_for(agent).post(url, {'decision': 'verifiee'}, format='json')
+        assert response.status_code == 200 and response.data['statut'] == 'verifiee'
+        piece = PieceIdentiteModel.objects.get(hote=hote)
+        assert piece.verifiee_par == agent and not piece.fichier
+        assert not (stockage_temporaire / fichier).exists()
+        sujets = [m.subject for m in mail.outbox]
+        assert any('Visite à planifier' in sujet for sujet in sujets)
+        assert any('identité est vérifiée' in sujet for sujet in sujets)
+        assert client_for(agent).get(VISITES).data['count'] == 1
+        assert client_for(agent).get(IDENTITES).data['count'] == 0
+        assert JournalAuditModel.objects.filter(action='identite_verifiee').exists()
+        # Déjà contrôlée : plus de décision possible
+        assert client_for(agent).post(url, {'decision': 'refusee', 'motif': 'Trop tard ici'},
+                                      format='json').status_code == 400
+
+    def test_refusal_needs_a_reason_and_lets_the_host_send_another(
+            self, client_for, hote, agent, django_capture_on_commit_callbacks):
+        _envoyer_piece(client_for(hote))
+        url = f'{IDENTITES}{hote.id}/decision/'
+        assert client_for(agent).post(url, {'decision': 'refusee', 'motif': 'Flou'}, format='json').status_code == 400
+        with django_capture_on_commit_callbacks(execute=True):
+            response = client_for(agent).post(url, {'decision': 'refusee', 'motif': 'Photo floue, nom illisible.'},
+                                              format='json')
+        assert response.status_code == 200 and response.data['statut'] == 'refusee'
+        assert 'Photo floue' in mail.outbox[-1].body and mail.outbox[-1].to == [hote.email]
+        assert not PieceIdentiteModel.objects.get(hote=hote).fichier
+        assert _envoyer_piece(client_for(hote)).data['statut'] == 'soumise'
+
+
+class TestCandidatureHote:
+    def test_phone_required_to_publish(self, client_for, make_user):
+        sans_telephone = make_user(role='hote', phone=None)
+        response = client_for(sans_telephone).post(HEBERGEMENTS, _annonce(), format='json')
+        assert response.status_code == 400
+        assert 'téléphone' in response.data['detail']
+
+    def test_unverified_host_limited_to_three_pending_listings(self, client_for, hote):
+        client = client_for(hote)
+        for _ in range(3):
+            assert client.post(HEBERGEMENTS, _annonce(), format='json').status_code == 201
+        refus = client.post(HEBERGEMENTS, _annonce(), format='json')
+        assert refus.status_code == 400 and 'vérification de votre identité' in refus.data['detail']
+        _identite_verifiee(hote)
+        assert client.post(HEBERGEMENTS, _annonce(), format='json').status_code == 201
+
+    def test_host_badge_only_after_identity_check(self, api_client, make_hebergement, hote):
+        h = make_hebergement(host=hote)
+        assert api_client.get(f'{HEBERGEMENTS}{h.id}/').data['hote_verifie'] is False
+        _identite_verifiee(hote)
+        assert api_client.get(f'{HEBERGEMENTS}{h.id}/').data['hote_verifie'] is True
 
 
 def test_agent_role_cannot_be_chosen_at_registration(api_client):

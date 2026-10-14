@@ -4,7 +4,7 @@
   Hôte : {{ hote }}
   Téléphone : {{ telephone }}
   Email : {{ email }}
-  Pièce d'identité : {{ piece }}
+  Identité : vérifiée
 
 Visites à faire : {{ url }}
 

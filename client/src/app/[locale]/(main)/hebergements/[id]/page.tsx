@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { useParams, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, BadgeCheck, MapPin, ChevronDown, ChevronUp, Share2, Calendar, MessageCircle, Pencil } from "lucide-react";
+import { ArrowLeft, BadgeCheck, MapPin, ChevronDown, ChevronUp, Share2, Calendar, MessageCircle, Pencil, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import AmenityBadge from "@/components/hebergement/AmenityBadge";
 import FavoriteButton from "@/components/hebergement/FavoriteButton";
@@ -199,6 +199,11 @@ function HebergementContent() {
                 <div className="min-w-0">
                   <p className="text-sm text-muted">{t("hote")}</p>
                   <p className="font-heading font-bold text-dark truncate">{hebergement.host_name || t("hoteKwaba")}</p>
+                  {hebergement.hote_verifie && (
+                    <p className="flex items-center gap-1 text-xs font-bold text-green-700 mt-0.5" title={t("hoteVerifieAide")}>
+                      <ShieldCheck size={13} /> {t("hoteVerifie")}
+                    </p>
+                  )}
                 </div>
               </div>
               {isOwner ? (

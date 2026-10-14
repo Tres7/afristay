@@ -1,12 +1,13 @@
 from django.urls import path
 from apps.users.infrastructure.http.controllers.AuthController import (
-    RegisterView, LoginView, GoogleAuthView, VerifyEmailView, ResendCodeView,
+    CaptchaView, RegisterView, LoginView, GoogleAuthView, VerifyEmailView, ResendCodeView,
     PasswordResetRequestView, PasswordResetConfirmView, RefreshView,
 )
 from apps.users.infrastructure.http.controllers.UserController import MeView
 
 urlpatterns = [
     path('auth/register/',    RegisterView.as_view(),    name='auth-register'),
+    path('auth/captcha/',     CaptchaView.as_view(),     name='auth-captcha'),
     path('auth/login/',       LoginView.as_view(),       name='auth-login'),
     path('auth/refresh/',     RefreshView.as_view(),     name='token-refresh'),
     path('auth/verify/',      VerifyEmailView.as_view(), name='auth-verify'),
