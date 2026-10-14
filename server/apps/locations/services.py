@@ -112,6 +112,8 @@ def creer(*, voyageur, categorie: CategorieVehiculeModel, formule: str, lieu_pri
         raise LocationErreur("Pour conduire vous-même, indiquez le nom du conducteur et son permis de conduire.")
     verifier_dates(params, debut, fin)
 
+    if not paiements.reservation_possible():
+        raise LocationErreur(paiements.INDISPONIBLE)
     devis = chiffrer(params, categorie, formule, lieu_prise, lieu_retour, debut, fin)
     en_ligne = paiements.paiement_actif()
     return LocationModel.objects.create(

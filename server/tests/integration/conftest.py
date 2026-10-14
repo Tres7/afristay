@@ -21,6 +21,12 @@ def _db_and_fast_hasher(db, settings):
 
 
 @pytest.fixture(autouse=True)
+def _paiement_hors_ligne(settings):
+    # Sans FedaPay configuré, les tests réservent sans paiement (comme en développement) ; voir test_paiement_obligatoire
+    settings.PAIEMENT_HORS_LIGNE = True
+
+
+@pytest.fixture(autouse=True)
 def _broker_down(monkeypatch):
     """Sans RabbitMQ, FallbackEventBus envoie l'email directement (mail.outbox).
 

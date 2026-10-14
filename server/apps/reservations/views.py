@@ -25,6 +25,8 @@ class ReservationListCreateView(APIView):
         return Response({'results': serializer.data, 'count': len(serializer.data)})
 
     def post(self, request):
+        if not paiements.reservation_possible():
+            return Response({'detail': paiements.INDISPONIBLE}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         serializer = ReservationCreateSerializer(data=request.data, context={'request': request})
         with transaction.atomic():
             if not serializer.is_valid():

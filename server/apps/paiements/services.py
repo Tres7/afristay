@@ -42,6 +42,9 @@ class PaiementErreur(Exception):
     """Erreur dont le message peut être affiché tel quel à l'utilisateur."""
 
 
+INDISPONIBLE = "Le paiement en ligne est momentanément indisponible : la réservation n'est pas possible pour l'instant. Réessayez un peu plus tard."
+
+
 # Moyen choisi par le voyageur → prestataire qui encaisse
 MOYENS = {
     'mobile_money': 'fedapay',
@@ -69,6 +72,11 @@ def moyens_actifs() -> list[str]:
 
 def paiement_actif() -> bool:
     return fedapay_actif() or paypal_actif()
+
+
+def reservation_possible() -> bool:
+    """Une réservation se paie en ligne ; sans prestataire configuré, seulement en développement (PAIEMENT_HORS_LIGNE)."""
+    return paiement_actif() or settings.PAIEMENT_HORS_LIGNE
 
 
 def delai_paiement() -> timedelta:
@@ -537,6 +545,9 @@ def passe() -> dict:
         **locations.passe(),
         **give.passe(),
     }
+    from . import relances
+    # Après les expirations : l'email « annulée faute de paiement » part dans la même passe
+    stats['relances'] = relances.envoyer_relances()
     stats['emails'] = notifications.envoyer_notifications()
     return {k: v for k, v in stats.items() if v}
 

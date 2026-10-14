@@ -106,6 +106,8 @@ class TransfertModel(models.Model):
 
     statut = models.CharField(max_length=20, choices=STATUTS, default='en_attente_paiement')
     expire_le = models.DateTimeField(null=True, blank=True)
+    # Emails du paiement en attente : 0 aucun, 1 « à payer avant », 2 rappel envoyé, 3 annulation notifiée
+    relance_paiement = models.PositiveSmallIntegerField(default=0, editable=False)
     annule_par = models.CharField(max_length=20, choices=ANNULE_PAR, blank=True)
     annule_le = models.DateTimeField(null=True, blank=True)
     chauffeur = models.ForeignKey(ChauffeurModel, on_delete=models.PROTECT, null=True, blank=True, related_name='transferts')
