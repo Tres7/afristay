@@ -1,0 +1,12 @@
+{% autoescape off %}Bonjour {{ prenom }},
+
+Votre réservation est enregistrée : {{ quoi }}.
+
+Elle sera confirmée dès réception de votre paiement de {{ montant }}, à effectuer avant {{ avant }} (heure de Lomé). D'ici là, nous vous la gardons.
+
+Payer maintenant : {{ url }}
+
+Sans paiement à temps, elle sera annulée automatiquement et les dates seront libérées.
+
+L'équipe Kwa-Ba
+{% endautoescape %}

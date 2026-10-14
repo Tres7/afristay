@@ -241,6 +241,10 @@ FEDAPAY = {
     'EXPIRATION_MINUTES': int(os.getenv('PAIEMENT_EXPIRATION_MINUTES', '30')),
 }
 
+# Sans FedaPay ni PayPal configuré, une réservation ne peut être confirmée sans paiement qu'en développement :
+# en production, elle est refusée (« paiement momentanément indisponible ») au lieu d'être confirmée gratuitement.
+PAIEMENT_HORS_LIGNE = _env_bool('PAIEMENT_HORS_LIGNE', str(DEBUG))
+
 # PayPal (paiement en euros). Sans identifiants, PayPal n'est pas proposé.
 # Les versements aux hôtes passent toujours par FedaPay.
 PAYPAL = {

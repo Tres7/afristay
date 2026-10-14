@@ -186,6 +186,8 @@ class LocationModel(models.Model):
 
     statut = models.CharField(max_length=20, choices=STATUTS, default='en_attente_paiement')
     expire_le = models.DateTimeField(null=True, blank=True)
+    # Emails du paiement en attente : 0 aucun, 1 « à payer avant », 2 rappel envoyé, 3 annulation notifiée
+    relance_paiement = models.PositiveSmallIntegerField(default=0, editable=False)
     annulee_par = models.CharField(max_length=20, choices=ANNULEE_PAR, blank=True)
     annulee_le = models.DateTimeField(null=True, blank=True)
     # Attribués par l'équipe

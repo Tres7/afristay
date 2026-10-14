@@ -61,6 +61,8 @@ def creer(*, voyageur, aeroport: AeroportModel, arrivee: datetime, categorie: st
     if motif:
         raise TransfertErreur(f"Ce véhicule ne convient pas : {motif}.")
 
+    if not paiements.reservation_possible():
+        raise TransfertErreur(paiements.INDISPONIBLE)
     prix = tarifs.calculer(tarif.prix, arrivee.astimezone(ZoneInfo(aeroport.fuseau)))
     en_ligne = paiements.paiement_actif()
     return TransfertModel.objects.create(

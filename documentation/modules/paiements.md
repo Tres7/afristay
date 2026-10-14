@@ -43,8 +43,9 @@ Pays ouverts aux versements : Togo, Bénin, Burkina Faso, Niger, Mali (`operateu
    - le webhook FedaPay `POST /api/v1/paiements/webhooks/fedapay/` ;
    - le worker, à chaque passe (il rattrape les webhooks perdus, et leur absence en local).
    Paiement réussi → réservation `confirmed` + versement `planifie` à l'arrivée + 24 h (arrivée = 14 h le jour du check-in).
-4. **Sans paiement à temps** : le worker annule la réservation (`annule_par = expiration`) et libère les dates. Un paiement qui arrive après coup confirme la réservation si les dates sont encore libres, sinon il est remboursé intégralement.
-5. **Versement** : à l'échéance, le worker envoie la part de l'hôte sur son compte Mobile Money (profil saisi dans Espace hôte → Revenus). Sans profil, le versement attend, et l'hôte voit le message.
+4. **Relances** (`relances.py`, même principe pour les transferts et les locations) : dès la réservation, email « Payez avant HH:MM » avec le lien de paiement ; à mi-délai (15 min), rappel s'il n'a pas payé ; après l'annulation, email « Réservation annulée : paiement non reçu ». L'étape atteinte est gardée dans `relance_paiement`.
+5. **Sans paiement à temps** : le worker annule la réservation (`annule_par = expiration`) et libère les dates. Un paiement qui arrive après coup confirme la réservation si les dates sont encore libres, sinon il est remboursé intégralement.
+6. **Versement** : à l'échéance, le worker envoie la part de l'hôte sur son compte Mobile Money (profil saisi dans Espace hôte → Revenus). Sans profil, le versement attend, et l'hôte voit le message.
 
 ## Annulation
 
@@ -76,6 +77,8 @@ Envoyés par le worker (`notifications.py`, gabarits dans `templates/emails/paie
 
 | Événement | Destinataire |
 |---|---|
+| Réservation en attente : « Payez avant HH:MM » | voyageur |
+| Rappel à mi-délai, puis annulation faute de paiement | voyageur |
 | Paiement reçu, séjour confirmé | voyageur |
 | Nouvelle réservation payée (montant et date du versement, rappel si le compte de versement manque) | hôte |
 | Versement envoyé (détail de la commission) | hôte |
@@ -94,11 +97,14 @@ PAYPAL_CLIENT_ID=...                   # vides = PayPal non proposé
 PAYPAL_CLIENT_SECRET=...
 PAYPAL_ENV=sandbox
 PAIEMENT_EXPIRATION_MINUTES=30
+PAIEMENT_HORS_LIGNE=False              # True seulement en développement (défaut = DJANGO_DEBUG)
 BACKEND_URL=https://api.afristay…        # liens vers l'admin dans les alertes (défaut http://localhost:8000)
 PAIEMENTS_PAUSE_EMAIL=1                  # secondes entre deux emails du worker (0 avec un vrai fournisseur d'emails)
 ```
 
-Sans aucune clé, le paiement en ligne est désactivé : les réservations sont confirmées immédiatement, comme avant.
+Sans aucune clé :
+- **en production** (`PAIEMENT_HORS_LIGNE` faux, par défaut hors `DJANGO_DEBUG`), logements, transferts et locations ne peuvent pas être réservés (`503` / message « paiement momentanément indisponible ») : rien n'est jamais confirmé sans paiement ;
+- **en développement** (`PAIEMENT_HORS_LIGNE=True`), les réservations sont confirmées immédiatement, sans paiement.
 
 Webhook à déclarer dans le tableau de bord FedaPay : `https://<domaine-api>/api/v1/paiements/webhooks/fedapay/`, événements `transaction.*` et `payout.*`. En local, FedaPay ne peut pas joindre `localhost` : la page de retour et le worker suffisent.
 
