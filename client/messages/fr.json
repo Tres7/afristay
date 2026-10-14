@@ -1267,7 +1267,7 @@
     "etapes": {
       "publier": {
         "titre": "Publiez votre annonce",
-        "texte": "Photos, prix, équipements : votre logement est en ligne en quelques minutes."
+        "texte": "Photos, prix, équipements et pièce d'identité : un agent Kwa-Ba visite votre logement, puis l'annonce est publiée."
       },
       "echanger": {
         "titre": "Échangez avec les voyageurs",
@@ -1275,7 +1275,7 @@
       },
       "recevoir": {
         "titre": "Recevez des réservations",
-        "texte": "Suivez les séjours réservés et le mode de paiement choisi."
+        "texte": "Les voyageurs paient en ligne ; votre part vous est versée par Mobile Money 24 h après leur arrivée."
       }
     },
     "active": "Votre compte hôte est activé !",
@@ -1290,8 +1290,9 @@
     "etape": "Étape {numero}",
     "ceQuIlFaut": "Ce qu'il vous faut",
     "besoins": {
-      "compte": "Un compte Kwa-Ba vérifié",
-      "photos": "Des photos de votre logement (liens d'images)",
+      "compte": "Un compte Kwa-Ba et un numéro de téléphone",
+      "identite": "Une pièce d'identité (contrôlée par Kwa-Ba, puis supprimée)",
+      "photos": "Des photos de votre logement",
       "prix": "Un prix par nuit en FCFA",
       "capacite": "La capacité d'accueil et les équipements"
     }
