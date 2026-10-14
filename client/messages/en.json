@@ -1267,7 +1267,7 @@
     "etapes": {
       "publier": {
         "titre": "List your place",
-        "texte": "Photos, price, amenities: your place is online in minutes."
+        "texte": "Photos, price, amenities and ID document: a Kwa-Ba agent visits your place, then the listing goes live."
       },
       "echanger": {
         "titre": "Talk with guests",
@@ -1275,7 +1275,7 @@
       },
       "recevoir": {
         "titre": "Get bookings",
-        "texte": "Track booked stays and the payment method chosen."
+        "texte": "Travellers pay online; your share is sent to your Mobile Money account 24 hours after their arrival."
       }
     },
     "active": "Your host account is active!",
@@ -1290,8 +1290,9 @@
     "etape": "Step {numero}",
     "ceQuIlFaut": "What you need",
     "besoins": {
-      "compte": "A verified Kwa-Ba account",
-      "photos": "Photos of your place (image links)",
+      "compte": "A Kwa-Ba account and a phone number",
+      "identite": "An ID document (checked by Kwa-Ba, then deleted)",
+      "photos": "Photos of your place",
       "prix": "A nightly price in FCFA",
       "capacite": "Capacity and amenities"
     }

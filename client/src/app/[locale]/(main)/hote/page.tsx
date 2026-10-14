@@ -82,7 +82,7 @@ export default function DevenirHotePage() {
         <div className="mt-12 bg-white rounded-3xl p-6 md:p-8 border border-gray-100">
           <h3 className="font-heading font-bold text-dark text-lg mb-4">{t("ceQuIlFaut")}</h3>
           <ul className="grid sm:grid-cols-2 gap-3 text-sm text-gray-600">
-            {["compte", "photos", "prix", "capacite"].map((cle) => t(`besoins.${cle}`)).map((item) => (
+            {["compte", "identite", "photos", "prix", "capacite"].map((cle) => t(`besoins.${cle}`)).map((item) => (
               <li key={item} className="flex items-start gap-2"><CheckCircle size={16} className="text-secondary flex-shrink-0 mt-0.5" />{item}</li>
             ))}
           </ul>
