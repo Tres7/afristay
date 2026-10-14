@@ -208,7 +208,10 @@ function ConciergeContent() {
             ) : (
               <>
                 {messages.map((m) => <Bulle key={m.id} role={m.role} texte={m.texte} cartes={m.cartes} />)}
-                {enAttente && <Bulle role="user" texte={enAttente} cartes={[]} />}
+                {/* Premier message d'une conversation : l'historique rechargé le contient déjà, ne pas l'afficher deux fois */}
+                {enAttente && !(messages.at(-1)?.role === "user" && messages.at(-1)?.texte === enAttente) && (
+                  <Bulle role="user" texte={enAttente} cartes={[]} />
+                )}
                 {enCours && (
                   <div className="space-y-3">
                     {(enCours.texte || !enCours.outil) && (
