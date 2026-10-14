@@ -23,7 +23,7 @@ const VISIBILITE = [
 const VERIFICATION = [
   { value: "", label: "Toutes" },
   { value: "true", label: "Vérifiées" },
-  { value: "false", label: "À vérifier" },
+  { value: "false", label: "Non vérifiées" },
 ];
 
 function Annonces() {
@@ -56,7 +56,7 @@ function Annonces() {
           <img src={h.image_url || FALLBACK_IMAGE} alt="" className="w-14 h-11 rounded-lg object-cover flex-shrink-0" />
           <div className="min-w-0">
             <p className="font-semibold text-dark truncate flex items-center gap-1">
-              {h.name} {h.est_verifie && <BadgeCheck size={14} className="text-secondary flex-shrink-0" aria-label="Logement vérifié" />}
+              {h.name} {h.est_verifie && <BadgeCheck size={14} className="text-secondary flex-shrink-0" aria-label="Vérifiée par Kwa-Ba" />}
             </p>
             <p className="text-xs text-muted truncate">{TYPE_LABELS[h.type] ?? h.type} · {h.city}</p>
           </div>
@@ -66,7 +66,15 @@ function Annonces() {
     { titre: "Hôte", cellule: (h) => <div className="text-xs min-w-0"><p className="text-dark font-medium truncate">{h.host.nom}</p><p className="text-muted truncate">{h.host.email}</p></div> },
     { titre: "Prix / nuit", cellule: (h) => <span className="whitespace-nowrap tabular-nums">{formatPrice(h.price_per_night)}</span> },
     { titre: "Note", cellule: (h) => <RatingBadge rating={h.rating} count={h.review_count} variant="full" className="whitespace-nowrap" /> },
-    { titre: "Statut", cellule: (h) => <Pill ton={h.is_available ? "vert" : "gris"}>{h.is_available ? "Visible" : "Masquée"}</Pill> },
+    {
+      titre: "Statut",
+      cellule: (h) => (
+        <div className="flex flex-col items-start gap-1">
+          <Pill ton={h.is_available ? "vert" : "gris"}>{h.is_available ? "Visible" : "Masquée"}</Pill>
+          {!h.est_verifie && <Pill ton={h.statut_verification === "refusee" ? "rouge" : "orange"}>{h.statut_verification === "refusee" ? "Refusée" : "À vérifier"}</Pill>}
+        </div>
+      ),
+    },
     { titre: "Créée le", className: "hidden 2xl:table-cell", cellule: (h) => <span className="text-xs text-gray-600 whitespace-nowrap">{formatDate(h.created_at)}</span> },
   ];
 
@@ -76,18 +84,19 @@ function Annonces() {
         Voir <ExternalLink size={12} />
       </Link>
       <ActionButton onClick={() => setConfirmation({
-        titre: h.est_verifie ? "Retirer le badge « vérifié »" : "Marquer comme vérifiée",
+        titre: h.est_verifie ? "Retirer la validation" : "Valider sans visite",
         message: h.est_verifie
-          ? <>Le badge « Logement vérifié » ne s&apos;affichera plus sur <strong>{h.name}</strong>.</>
-          : <>Confirmez qu&apos;une visite a validé <strong>{h.name}</strong> (photos, adresse, équipements). Le badge « Logement vérifié » sera affiché aux voyageurs.</>,
-        libelle: h.est_verifie ? "Retirer le badge" : "Marquer vérifiée",
-        action: () => executer(api.patch(`/v1/admin/hebergements/${h.id}/`, { est_verifie: !h.est_verifie }), h.est_verifie ? "Badge retiré" : "Annonce vérifiée"),
-      })}>{h.est_verifie ? "Retirer badge" : "Vérifier"}</ActionButton>
+          ? <><strong>{h.name}</strong> sera retirée du site et repassera en attente de vérification. Les agents de terrain seront prévenus qu&apos;une visite est à faire.</>
+          : <>Normalement, un agent de terrain valide l&apos;annonce après sa visite. Confirmez que <strong>{h.name}</strong> a bien été contrôlée (photos, adresse, équipements) : elle sera publiée avec le badge « Vérifié par Kwa-Ba ».</>,
+        libelle: h.est_verifie ? "Retirer la validation" : "Valider",
+        danger: h.est_verifie,
+        action: () => executer(api.patch(`/v1/admin/hebergements/${h.id}/`, { est_verifie: !h.est_verifie }), h.est_verifie ? "Annonce remise en vérification" : "Annonce validée"),
+      })}>{h.est_verifie ? "Retirer validation" : "Valider"}</ActionButton>
       <ActionButton onClick={() => setConfirmation({
         titre: h.is_available ? "Masquer l'annonce" : "Republier l'annonce",
         message: h.is_available
           ? <><strong>{h.name}</strong> n&apos;apparaîtra plus dans les recherches. Les réservations existantes sont conservées.</>
-          : <><strong>{h.name}</strong> sera de nouveau visible par les voyageurs.</>,
+          : <><strong>{h.name}</strong> sera de nouveau visible par les voyageurs{h.est_verifie ? "" : ", dès qu'elle aura été vérifiée"}.</>,
         libelle: h.is_available ? "Masquer" : "Republier",
         action: () => executer(api.patch(`/v1/admin/hebergements/${h.id}/`, { is_available: !h.is_available }), h.is_available ? "Annonce masquée" : "Annonce republiée"),
       })}>{h.is_available ? "Masquer" : "Republier"}</ActionButton>

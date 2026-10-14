@@ -26,6 +26,7 @@ urlpatterns = [
     path('api/v1/give/', include('apps.give.urls')),
     path('api/v1/verifications/', include('apps.verifications.urls')),
     path('api/v1/locations/', include('apps.locations.urls')),
+    path('api/v1/admin/', include('apps.backoffice.urls')),
     path('api/v1/messaging/', include('apps.messaging.infrastructure.http.routes.urls')),
 ]
 
