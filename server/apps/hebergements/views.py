@@ -43,7 +43,7 @@ class HebergementListView(APIView):
             return Response(recherche.errors, status=status.HTTP_400_BAD_REQUEST)
         filtres = recherche.validated_data
 
-        qs = HebergementModel.objects.publiees().select_related('host')
+        qs = HebergementModel.objects.publiees().select_related('host', 'host__piece_identite')
 
         city = request.query_params.get('city')
         if city:
@@ -101,12 +101,17 @@ class HebergementListView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        try:
+            verifications.verifier_limite_annonces(request.user)
+        except verifications.VerificationErreur as exc:
+            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
         serializer = HebergementCreateSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         hebergement = serializer.save(host=request.user)
-        # Visible des voyageurs seulement après la visite d'un agent de terrain
+        # Visible des voyageurs seulement après la visite d'un agent (proposée une fois l'identité de l'hôte vérifiée)
         verifications.visite_a_planifier(hebergement)
         return Response(
             HebergementSerializer(hebergement, context=_context(request, proprietaire=True)).data,
@@ -118,7 +123,7 @@ class MyHebergementsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        qs = HebergementModel.objects.filter(host=request.user).select_related('host')
+        qs = HebergementModel.objects.filter(host=request.user).select_related('host', 'host__piece_identite')
         serializer = HebergementSerializer(qs, many=True, context=_context(request, proprietaire=True))
         return Response({'results': serializer.data, 'count': len(serializer.data)})
 
@@ -193,7 +198,7 @@ class HebergementDetailView(APIView):
 
     def _get_object(self, pk):
         try:
-            return HebergementModel.objects.select_related('host').get(pk=pk)
+            return HebergementModel.objects.select_related('host', 'host__piece_identite').get(pk=pk)
         except HebergementModel.DoesNotExist:
             return None
 

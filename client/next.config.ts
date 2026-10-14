@@ -17,13 +17,13 @@ function apiOrigin(): string {
 // 'unsafe-inline' reste nécessaire aux scripts d'hydratation de Next.js sans nonce.
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/client${isDev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/client https://challenges.cloudflare.com${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style",
   // Photos : API, stockage R2, avatars Google, démo Unsplash (les URL sont filtrées par l'API à l'enregistrement)
   `img-src 'self' data: blob: https:${isDev ? " http:" : ""}`,
   "font-src 'self' data:",
   `connect-src 'self' ${apiOrigin()} https://accounts.google.com${isDev ? " ws: http://localhost:8000" : ""}`,
-  "frame-src https://accounts.google.com https://maps.google.com https://www.google.com",
+  "frame-src https://accounts.google.com https://maps.google.com https://www.google.com https://challenges.cloudflare.com",
   "frame-ancestors 'none'",
   "object-src 'none'",
   "base-uri 'self'",

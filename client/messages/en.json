@@ -311,7 +311,8 @@
     "renvoyerUnCode": "Resend a code",
     "retourConnexion": "Back to log in",
     "mdpVisuelTitre": "Don't worry",
-    "mdpVisuelTexte": "A code sent by email is all you need to get back into your account."
+    "mdpVisuelTexte": "A code sent by email is all you need to get back into your account.",
+    "captchaRequis": "Tick the “I am human” box, then try again."
   },
   "logement": {
     "verifie": "Verified place"
@@ -464,7 +465,9 @@
     "votreAnnonce": "Your listing",
     "choisirDates": "Choose dates",
     "verifieBadge": "Verified by Kwa-Ba",
-    "verifieAide": "A Kwa-Ba agent visited this place and checked the host's identity."
+    "verifieAide": "A Kwa-Ba agent visited this place and checked the host's identity.",
+    "hoteVerifie": "Verified host",
+    "hoteVerifieAide": "Kwa-Ba has checked this host's ID document."
   },
   "avis": {
     "repondre": "Reply publicly",
@@ -619,7 +622,7 @@
       "aide": "Help & support",
       "aideTexte": "FAQ, cancellation, contact"
     },
-    "verifie": "Verified",
+    "verifie": "Email confirmed",
     "membreDepuis": "Member since {date}",
     "stats": {
       "sejours": "Stays",
@@ -1353,13 +1356,13 @@
     "contacterNom": "Contact {nom}",
     "verification": {
       "enAttente": "Awaiting verification",
-      "enAttenteAide": "A Kwa-Ba agent will contact you to visit the place. Travellers will see the listing after the visit.",
+      "enAttenteAide": "Once your identity is verified, a Kwa-Ba agent will call you to visit the place. Travellers will see the listing after the visit.",
       "refusee": "Declined",
       "refuseeAide": "Fix this, then save the listing: it will be checked again.",
       "verifiee": "Verified",
       "identiteTitre": "Identity check",
-      "identiteAide": "To protect travellers, every host is verified. Send an ID document: our agent will compare it with the person met during the visit, then it will be deleted.",
-      "identiteSoumise": "ID document received: it will be checked during the visit.",
+      "identiteAide": "To protect travellers, every host is verified. Send an ID document: a Kwa-Ba agent checks it remotely, then it is deleted. During the visit, the agent will confirm it is really you.",
+      "identiteSoumise": "ID document received: a Kwa-Ba agent is checking it, usually within 48 hours.",
       "identiteVerifiee": "Identity verified",
       "identiteRefusee": "ID document declined: {motif}",
       "typePiece": "Document type",
@@ -1376,6 +1379,21 @@
       "envoyee": "ID document sent",
       "choisirFichier": "Choose a file.",
       "confidentialite": "Only Kwa-Ba agents can see this document, never travellers."
+    },
+    "candidature": {
+      "titre": "Becoming a Kwa-Ba host: 3 steps",
+      "texte": "For travellers' safety, every host is verified before publishing. Your listings stay hidden until these steps are complete.",
+      "telephoneTitre": "Your phone number",
+      "telephoneTexte": "The Kwa-Ba agent will call you to arrange the visit.",
+      "telephoneAction": "Add my number",
+      "identiteTitre": "Your ID document",
+      "identiteTexte": "Send it below: it is checked before any visit.",
+      "identiteEnCours": "Received, being checked (usually within 48 hours).",
+      "identiteRefusee": "Declined: send a new document below.",
+      "annonceTitre": "Your place, visited by an agent",
+      "annonceTexte": "Prepare your listing (3 at most before your identity is verified).",
+      "annonceAction": "Create my listing",
+      "annonceEnAttente": "Listing ready. An agent will call you for the visit as soon as your identity is verified."
     }
   },
   "annonce": {

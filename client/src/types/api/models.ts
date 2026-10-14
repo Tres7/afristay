@@ -22,6 +22,8 @@ export interface Hebergement {
   motif_refus: string;
   host_id: string;
   host_name: string;
+  /** Pièce d'identité de l'hôte contrôlée par Kwa-Ba (badge « Hôte vérifié »). */
+  hote_verifie?: boolean;
   is_favorite: boolean;
   /** Visite de contrôle validée par Kwa-Ba (absent tant que le backend ne l'expose pas). */
   est_verifie?: boolean;
@@ -87,7 +89,7 @@ export interface Me {
   email: string;
   first_name: string;
   last_name: string;
-  role: "voyageur" | "hote" | "admin";
+  role: "voyageur" | "hote" | "agent" | "admin";
   phone: string | null;
   avatar_url: string | null;
   is_verified: boolean;

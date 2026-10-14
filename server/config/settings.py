@@ -339,6 +339,11 @@ SIMPLE_JWT = {
 # application est refusé ; sans identifiant configuré, la connexion Google est désactivée.
 GOOGLE_CLIENT_IDS = _env_list('GOOGLE_CLIENT_ID', '')
 
+# Captcha Cloudflare Turnstile à la connexion et à l'inscription (case « Je suis humain »). Clés créées dans le
+# tableau de bord Cloudflare (Turnstile), sans héberger le domaine chez Cloudflare. Sans clé secrète : désactivé.
+TURNSTILE_SITE_KEY = os.getenv('TURNSTILE_SITE_KEY', '')
+TURNSTILE_SECRET_KEY = os.getenv('TURNSTILE_SECRET_KEY', '')
+
 # Délai pendant lequel un refresh token qui vient d'être renouvelé renvoie encore la même nouvelle paire.
 # NextAuth renouvelle le même jeton en parallèle au chargement d'une page : sans ce délai, seul le premier
 # appel réussirait et les autres déconnecteraient l'utilisateur.

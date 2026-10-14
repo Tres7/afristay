@@ -2,13 +2,14 @@
 
 import { Link, useRouter } from "@/i18n/navigation";
 import { Mail, Lock, User, Phone, Eye, EyeOff, Plane, Home } from "lucide-react";
-import { Suspense, useState } from "react";
+import { Suspense, useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { getApiBaseUrl } from "@/lib/api-url";
 import { firstErrorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import AuthShell from "@/components/auth/AuthShell";
 import GoogleButton from "@/components/auth/GoogleButton";
+import Captcha, { type CaptchaHandle } from "@/components/auth/Captcha";
 import FormField from "@/components/ui/FormField";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -42,6 +43,9 @@ function RegisterForm() {
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [existingAccount, setExistingAccount] = useState(false);
+  const [captcha, setCaptcha] = useState<string | null>(null);
+  const [captchaRequis, setCaptchaRequis] = useState(true);
+  const captchaRef = useRef<CaptchaHandle>(null);
 
   const strength = passwordStrength(form.password);
   const mismatch = form.password_confirm.length > 0 && form.password !== form.password_confirm;
@@ -74,12 +78,16 @@ function RegisterForm() {
       const res = await fetch(`${getApiBaseUrl()}/v1/auth/register/`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Accept-Language": locale },
-        body: JSON.stringify({ ...form, email, role, phone: form.phone.trim() || null }),
+        body: JSON.stringify({ ...form, email, role, phone: form.phone.trim() || null, captcha: captcha ?? "" }),
       });
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        if (res.status === 400 || res.status === 409) {
+        // Le jeton du captcha ne sert qu'une fois
+        captchaRef.current?.reset();
+        if ((data as { code?: string }).code === "captcha") {
+          setError(t("captchaRequis"));
+        } else if (res.status === 400 || res.status === 409) {
           const errs: FieldErrors = {};
           for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
             const msg = firstErrorMessage(value);
@@ -216,9 +224,11 @@ function RegisterForm() {
           </Link>
         </p>
 
+        <Captcha ref={captchaRef} onToken={setCaptcha} onInactif={() => setCaptchaRequis(false)} />
+
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || (captchaRequis && !captcha)}
           className="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-button hover:shadow-lg transform hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:transform-none text-sm mt-2"
         >
           {loading ? t("creationEnCours") : t("creerMonCompte")}

@@ -311,7 +311,8 @@
     "renvoyerUnCode": "Renvoyer un code",
     "retourConnexion": "Retour à la connexion",
     "mdpVisuelTitre": "Pas de panique",
-    "mdpVisuelTexte": "Un code par e-mail suffit pour retrouver l'accès à votre compte."
+    "mdpVisuelTexte": "Un code par e-mail suffit pour retrouver l'accès à votre compte.",
+    "captchaRequis": "Cochez la case « Je suis humain », puis réessayez."
   },
   "logement": {
     "verifie": "Logement vérifié"
@@ -464,7 +465,9 @@
     "votreAnnonce": "Votre annonce",
     "choisirDates": "Choisir les dates",
     "verifieBadge": "Vérifié par Kwa-Ba",
-    "verifieAide": "Un agent Kwa-Ba a visité ce logement et contrôlé l'identité de l'hôte."
+    "verifieAide": "Un agent Kwa-Ba a visité ce logement et contrôlé l'identité de l'hôte.",
+    "hoteVerifie": "Hôte vérifié",
+    "hoteVerifieAide": "Kwa-Ba a contrôlé la pièce d'identité de cet hôte."
   },
   "avis": {
     "repondre": "Répondre publiquement",
@@ -619,7 +622,7 @@
       "aide": "Aide & support",
       "aideTexte": "FAQ, annulation, contact"
     },
-    "verifie": "Vérifié",
+    "verifie": "Email confirmé",
     "membreDepuis": "Membre depuis {date}",
     "stats": {
       "sejours": "Séjours",
@@ -1353,13 +1356,13 @@
     "contacterNom": "Contacter {nom}",
     "verification": {
       "enAttente": "En attente de vérification",
-      "enAttenteAide": "Un agent Kwa-Ba va vous contacter pour visiter le logement. L'annonce sera visible des voyageurs après sa visite.",
+      "enAttenteAide": "Un agent Kwa-Ba vous appellera pour visiter le logement, une fois votre identité vérifiée. L'annonce sera visible des voyageurs après sa visite.",
       "refusee": "Refusée",
       "refuseeAide": "Corrigez ce point puis enregistrez l'annonce : elle repassera en vérification.",
       "verifiee": "Vérifiée",
       "identiteTitre": "Vérification de votre identité",
-      "identiteAide": "Pour protéger les voyageurs, chaque hôte est vérifié. Envoyez une pièce d'identité : notre agent la comparera à la personne rencontrée lors de la visite, puis elle sera supprimée.",
-      "identiteSoumise": "Pièce d'identité reçue : elle sera contrôlée lors de la visite.",
+      "identiteAide": "Pour protéger les voyageurs, chaque hôte est vérifié. Envoyez une pièce d'identité : un agent Kwa-Ba la contrôle à distance, puis elle est supprimée. Lors de la visite, il vérifiera que c'est bien vous.",
+      "identiteSoumise": "Pièce d'identité reçue : un agent Kwa-Ba la contrôle, en général sous 48 heures.",
       "identiteVerifiee": "Identité vérifiée",
       "identiteRefusee": "Pièce d'identité refusée : {motif}",
       "typePiece": "Type de pièce",
@@ -1376,6 +1379,21 @@
       "envoyee": "Pièce d'identité envoyée",
       "choisirFichier": "Choisissez un fichier.",
       "confidentialite": "Document visible uniquement par les agents Kwa-Ba, jamais par les voyageurs."
+    },
+    "candidature": {
+      "titre": "Devenir hôte Kwa-Ba : 3 étapes",
+      "texte": "Pour la sécurité des voyageurs, chaque hôte est vérifié avant de publier. Vos annonces restent invisibles jusqu'à la fin des étapes.",
+      "telephoneTitre": "Votre numéro de téléphone",
+      "telephoneTexte": "L'agent Kwa-Ba vous appellera pour organiser la visite.",
+      "telephoneAction": "Ajouter mon numéro",
+      "identiteTitre": "Votre pièce d'identité",
+      "identiteTexte": "Envoyez-la ci-dessous : elle est contrôlée avant toute visite.",
+      "identiteEnCours": "Reçue, en cours de contrôle (en général sous 48 heures).",
+      "identiteRefusee": "Refusée : envoyez une nouvelle pièce ci-dessous.",
+      "annonceTitre": "Votre logement, visité par un agent",
+      "annonceTexte": "Préparez votre annonce (3 au maximum avant la vérification de votre identité).",
+      "annonceAction": "Créer mon annonce",
+      "annonceEnAttente": "Annonce prête. Un agent vous appellera pour la visite dès que votre identité sera vérifiée."
     }
   },
   "annonce": {

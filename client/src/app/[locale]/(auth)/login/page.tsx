@@ -2,11 +2,12 @@
 
 import { Link, useRouter } from "@/i18n/navigation";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
-import { Suspense, useState } from "react";
+import { Suspense, useRef, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import AuthShell from "@/components/auth/AuthShell";
 import GoogleButton from "@/components/auth/GoogleButton";
+import Captcha, { type CaptchaHandle } from "@/components/auth/Captcha";
 import FormField from "@/components/ui/FormField";
 import { useTranslations } from "next-intl";
 
@@ -26,6 +27,9 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [unverified, setUnverified] = useState(false);
+  const [captcha, setCaptcha] = useState<string | null>(null);
+  const [captchaRequis, setCaptchaRequis] = useState(true);
+  const captchaRef = useRef<CaptchaHandle>(null);
 
   const notice =
     searchParams.get("verified") === "1"
@@ -46,10 +50,15 @@ function LoginForm() {
       redirect: false,
       email: email.trim().toLowerCase(),
       password,
+      captcha: captcha ?? "",
     });
 
     if (res?.error) {
-      if (res.code === "unverified_email") {
+      // Le jeton du captcha ne sert qu'une fois
+      captchaRef.current?.reset();
+      if (res.code === "captcha") {
+        setError(t("captchaRequis"));
+      } else if (res.code === "unverified_email") {
         setUnverified(true);
         setError(t("nonVerifie"));
       } else if (res.code === "inactive") {
@@ -117,9 +126,11 @@ function LoginForm() {
           </div>
         </div>
 
+        <Captcha ref={captchaRef} onToken={setCaptcha} onInactif={() => setCaptchaRequis(false)} />
+
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || (captchaRequis && !captcha)}
           className="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-button hover:shadow-lg transform hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:transform-none text-sm"
         >
           {loading ? t("connexionEnCours") : t("seConnecter")}

@@ -1,4 +1,11 @@
-"""Vérification des annonces : visite d'un agent de terrain avant publication."""
+"""Vérification des hôtes et des annonces, dans cet ordre :
+
+1. l'hôte envoie sa pièce d'identité, contrôlée à distance par un agent ou un admin ;
+2. une fois l'identité vérifiée seulement, ses annonces sont proposées aux agents pour une visite ;
+3. l'agent visite le logement et publie (ou refuse) l'annonce.
+
+Aucun déplacement n'est donc demandé pour un hôte dont l'identité n'a pas été contrôlée.
+"""
 import logging
 
 from django.conf import settings
@@ -16,6 +23,8 @@ logger = logging.getLogger('apps.verifications')
 
 ROLES_VERIFICATEURS = ('agent', 'admin')
 MAX_PHOTOS_VISITE = 10
+# Annonces non vérifiées qu'un hôte peut avoir tant que son identité n'est pas vérifiée (contre les abus)
+MAX_ANNONCES_HOTE_NON_VERIFIE = 3
 
 
 class VerificationErreur(Exception):
@@ -45,18 +54,92 @@ def statut_piece(hote) -> str:
     return piece.statut if piece else 'absente'
 
 
+def identite_verifiee(hote) -> bool:
+    return PieceIdentiteModel.objects.filter(hote=hote, statut='verifiee').exists()
+
+
+def verifier_limite_annonces(hote) -> None:
+    """Avant une nouvelle annonce : téléphone obligatoire (l'agent doit pouvoir joindre l'hôte), et pas plus de
+    MAX_ANNONCES_HOTE_NON_VERIFIE annonces en attente tant que l'identité n'est pas vérifiée."""
+    from apps.hebergements.models import HebergementModel  # import local : hebergements importe ce module
+
+    if hote.role == 'admin':
+        return
+    if not hote.phone:
+        raise VerificationErreur(
+            "Ajoutez votre numéro de téléphone dans votre profil : l'agent Kwa-Ba vous appellera pour la visite.")
+    if identite_verifiee(hote):
+        return
+    en_attente = HebergementModel.objects.filter(host=hote).exclude(statut_verification='verifiee').count()
+    if en_attente >= MAX_ANNONCES_HOTE_NON_VERIFIE:
+        raise VerificationErreur(
+            f"Vous avez déjà {en_attente} annonces en attente. Attendez la vérification de votre identité "
+            "avant d'en ajouter d'autres.")
+
+
 def visite_a_planifier(hebergement, modification: bool = False) -> None:
-    """Prévient les agents qu'une annonce attend une visite (nouvelle, ou modifiée après vérification)."""
+    """Prévient les agents qu'une annonce attend une visite (nouvelle, ou modifiée après vérification).
+
+    Seulement si l'identité de l'hôte est vérifiée : sinon, ses annonces leur seront envoyées à ce moment-là
+    (decider_piece)."""
     hote = hebergement.host
-    libelles = {'absente': 'pas encore envoyée', 'soumise': 'envoyée, à contrôler', 'verifiee': 'déjà vérifiée',
-                'refusee': 'refusée, à renvoyer'}
+    if not identite_verifiee(hote):
+        return
     _envoyer('visite_a_planifier', f"[Kwa-Ba] Visite à planifier — {hebergement.name} ({hebergement.city})",
              _verificateurs(), {
                  'modification': modification, 'hebergement': hebergement.name, 'ville': hebergement.city,
                  'adresse': hebergement.location, 'hote': f"{hote.first_name} {hote.last_name}".strip(),
-                 'telephone': hote.phone or '—', 'email': hote.email, 'piece': libelles[statut_piece(hote)],
+                 'telephone': hote.phone or '—', 'email': hote.email,
                  'url': f"{settings.FRONTEND_URL}/agent",
              })
+
+
+def piece_a_controler(piece) -> None:
+    """Prévient les agents qu'une pièce d'identité vient d'être envoyée (ou remplacée)."""
+    hote = piece.hote
+    _envoyer('piece_a_controler', f"[Kwa-Ba] Pièce d'identité à contrôler — {hote.first_name} {hote.last_name}".strip(),
+             _verificateurs(), {
+                 'hote': f"{hote.first_name} {hote.last_name}".strip(), 'email': hote.email,
+                 'telephone': hote.phone or '—', 'type_piece': piece.get_type_piece_display(),
+                 'url': f"{settings.FRONTEND_URL}/agent",
+             })
+
+
+@transaction.atomic
+def decider_piece(hote, verificateur, *, decision: str, motif: str = '') -> PieceIdentiteModel:
+    """Contrôle à distance de la pièce d'identité. Vérifiée : le document est effacé (seul le résultat est
+    conservé) et les annonces en attente de l'hôte sont envoyées aux agents pour une visite."""
+    from apps.hebergements.models import HebergementModel
+
+    piece = PieceIdentiteModel.objects.select_for_update().select_related('hote').filter(hote=hote).first()
+    if not piece or piece.statut != 'soumise':
+        raise VerificationErreur("Aucune pièce d'identité à contrôler pour cet hôte.")
+    motif = motif.strip()
+    contexte = {'prenom': hote.first_name, 'url_espace': f"{settings.FRONTEND_URL}/hote/espace"}
+
+    if decision == 'verifiee':
+        piece.statut, piece.verifiee_le, piece.verifiee_par, piece.motif_refus = (
+            'verifiee', timezone.now(), verificateur, '')
+        if piece.fichier:
+            piece.fichier.delete(save=False)
+        piece.save()
+        annonces = list(HebergementModel.objects.filter(host=hote, statut_verification='en_attente').select_related('host'))
+        for annonce in annonces:
+            visite_a_planifier(annonce)
+        _envoyer('identite_verifiee', "Votre identité est vérifiée", [hote.email],
+                 {**contexte, 'nb_annonces': len(annonces)})
+    elif decision == 'refusee':
+        if len(motif) < 10:
+            raise VerificationErreur("Expliquez le motif du refus à l'hôte (10 caractères au moins).")
+        piece.statut, piece.motif_refus = 'refusee', motif
+        if piece.fichier:
+            piece.fichier.delete(save=False)
+        piece.save()
+        _envoyer('identite_refusee', "Votre pièce d'identité n'a pas pu être vérifiée", [hote.email],
+                 {**contexte, 'motif': motif})
+    else:
+        raise VerificationErreur("Décision inconnue.")
+    return piece
 
 
 def remettre_en_verification(hebergement, avant: dict) -> bool:
@@ -92,8 +175,8 @@ def decider(hebergement, agent, *, decision: str, controles: dict, commentaire: 
     if decision == 'validee':
         if not all(controles.values()):
             raise VerificationErreur("Pour valider, tous les points de contrôle doivent être vérifiés.")
-        if not piece or piece.statut == 'refusee':
-            raise VerificationErreur("L'hôte n'a pas encore envoyé de pièce d'identité valable.")
+        if not piece or piece.statut != 'verifiee':
+            raise VerificationErreur("L'identité de l'hôte doit être vérifiée avant de valider son logement.")
     elif decision == 'refusee':
         if len(commentaire) < 10:
             raise VerificationErreur("Expliquez le motif du refus à l'hôte (10 caractères au moins).")
@@ -109,16 +192,10 @@ def decider(hebergement, agent, *, decision: str, controles: dict, commentaire: 
         photo.save()
 
     maintenant = timezone.now()
-    if piece and piece.statut != 'verifiee':
-        if controles['identite']:
-            # Identité contrôlée : on ne garde que le résultat, jamais le document
-            piece.statut, piece.verifiee_le, piece.verifiee_par, piece.motif_refus = 'verifiee', maintenant, agent, ''
-            if piece.fichier:
-                piece.fichier.delete(save=False)
-            piece.save()
-        elif decision == 'refusee':
-            piece.statut, piece.motif_refus = 'refusee', commentaire
-            piece.save(update_fields=['statut', 'motif_refus'])
+    if piece and decision == 'refusee' and not controles['identite']:
+        # La personne rencontrée ne correspond pas à la pièce : l'hôte devra prouver à nouveau son identité
+        piece.statut, piece.motif_refus = 'refusee', commentaire
+        piece.save(update_fields=['statut', 'motif_refus'])
 
     contexte = {'prenom': hote.first_name, 'hebergement': hebergement.name,
                 'url_espace': f"{settings.FRONTEND_URL}/hote/espace",

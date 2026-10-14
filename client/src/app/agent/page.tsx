@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Camera, CheckCircle2, ChevronDown, FileText, MapPin, Phone, Search, XCircle } from "lucide-react";
 import api, { apiErrorMessage } from "@/lib/api";
 import { cn, formatDate, formatPrice, libelleType } from "@/lib/utils";
+import PiecesAControler, { ouvrirPiece } from "@/components/agent/PiecesAControler";
 
 interface Visite {
   id: string;
@@ -42,21 +43,6 @@ const PIECE: Record<Visite["hote"]["piece"]["statut"], { libelle: string; classe
   verifiee: { libelle: "Identité déjà vérifiée", classe: "bg-green-50 text-green-700" },
   refusee: { libelle: "Pièce d'identité refusée, à renvoyer", classe: "bg-red-50 text-red-700" },
 };
-
-/** Ouvre la pièce d'identité : lue avec le jeton de l'agent (jamais d'URL publique), affichée dans un nouvel onglet. */
-async function ouvrirPiece(hoteId: string) {
-  const onglet = window.open("", "_blank");
-  try {
-    const res = await api.get<Blob>(`/v1/verifications/identite/${hoteId}/fichier/`, { responseType: "blob" });
-    const url = URL.createObjectURL(res.data);
-    if (onglet) onglet.location.href = url;
-    else window.location.href = url;
-    setTimeout(() => URL.revokeObjectURL(url), 60_000);
-  } catch (err) {
-    onglet?.close();
-    toast.error(apiErrorMessage(err, "Document introuvable."));
-  }
-}
 
 function FicheVisite({ visite, controlesLibelles, maxPhotos, onTerminee }: {
   visite: Visite;
@@ -195,8 +181,10 @@ export default function VisitesPage() {
 
   return (
     <div>
+      <PiecesAControler />
+
       <h1 className="font-heading font-bold text-2xl text-dark">Logements à visiter</h1>
-      <p className="text-sm text-gray-500 mt-1">Une annonce n&apos;est publiée qu&apos;après votre visite. Les plus anciennes d&apos;abord.</p>
+      <p className="text-sm text-gray-500 mt-1">Une annonce n&apos;est publiée qu&apos;après votre visite. Seuls les hôtes dont l&apos;identité est vérifiée apparaissent ici. Les plus anciennes d&apos;abord.</p>
 
       <label className="relative block mt-5">
         <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
