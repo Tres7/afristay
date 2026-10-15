@@ -97,7 +97,7 @@ export default function HebergementForm({ initial, onSaved, onCancel }: Hebergem
   const err = (k: string) => errors[k] && <p className="text-xs text-red-600 mt-1.5">{errors[k]}</p>;
 
   return (
-    <form onSubmit={submit} className="space-y-5">
+    <form method="post" onSubmit={submit} className="space-y-5">
       {errors.detail && <p role="alert" className="text-sm text-red-700 bg-red-50 rounded-xl p-3">{errors.detail}</p>}
 
       <div>

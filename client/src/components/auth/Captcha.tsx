@@ -44,19 +44,20 @@ export interface CaptchaHandle {
 interface CaptchaProps {
   /** Jeton à envoyer avec le formulaire, ou null tant que la case n'est pas validée (ou après expiration). */
   onToken: (jeton: string | null) => void;
-  /** Captcha désactivé côté serveur (pas de clé) : le formulaire peut partir sans jeton. */
-  onInactif?: () => void;
+  /** Captcha actif (clé reçue) : le formulaire doit attendre un jeton. Tant qu'il n'est pas appelé, rien n'est exigé
+   *  côté navigateur (le serveur refuse de toute façon un jeton manquant quand le captcha est actif). */
+  onActif?: () => void;
 }
 
 /** Case « Je suis humain » (Cloudflare Turnstile), souvent validée sans clic. Clé lue sur l'API au chargement. */
-const Captcha = forwardRef<CaptchaHandle, CaptchaProps>(function Captcha({ onToken, onInactif }, ref) {
+const Captcha = forwardRef<CaptchaHandle, CaptchaProps>(function Captcha({ onToken, onActif }, ref) {
   const locale = useLocale();
   const zone = useRef<HTMLDivElement>(null);
   const widget = useRef<string | null>(null);
   const [indisponible, setIndisponible] = useState(false);
   // Les callbacks changent à chaque rendu du parent : le widget lit toujours la dernière version
-  const rappels = useRef({ onToken, onInactif });
-  rappels.current = { onToken, onInactif };
+  const rappels = useRef({ onToken, onActif });
+  rappels.current = { onToken, onActif };
 
   useImperativeHandle(ref, () => ({
     reset: () => {
@@ -73,15 +74,11 @@ const Captcha = forwardRef<CaptchaHandle, CaptchaProps>(function Captcha({ onTok
     api.get<{ site_key: string }>("/v1/auth/captcha/")
       .then(({ data }) => {
         if (annule) return;
-        if (!data.site_key) rappels.current.onInactif?.();
+        if (data.site_key) rappels.current.onActif?.();
         setCle(data.site_key);
       })
       // API injoignable : on laisse envoyer, le serveur décidera (il refuse un jeton manquant si le captcha est actif)
-      .catch(() => {
-        if (annule) return;
-        setIndisponible(true);
-        rappels.current.onInactif?.();
-      });
+      .catch(() => !annule && setIndisponible(true));
     return () => { annule = true; };
   }, []);
 
@@ -100,11 +97,7 @@ const Captcha = forwardRef<CaptchaHandle, CaptchaProps>(function Captcha({ onTok
           "error-callback": () => rappels.current.onToken(null),
         });
       })
-      .catch(() => {
-        if (annule) return;
-        setIndisponible(true);
-        rappels.current.onInactif?.();
-      });
+      .catch(() => !annule && setIndisponible(true));
     return () => {
       annule = true;
       if (widget.current && window.turnstile) window.turnstile.remove(widget.current);

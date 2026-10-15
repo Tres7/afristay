@@ -76,7 +76,7 @@ export default function TogetherPage() {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-8">
         {creation && (
-          <form onSubmit={creer} noValidate className="bg-white rounded-3xl border border-gray-100 shadow-card p-5 sm:p-8 space-y-4">
+          <form method="post" onSubmit={creer} noValidate className="bg-white rounded-3xl border border-gray-100 shadow-card p-5 sm:p-8 space-y-4">
             <h2 className="font-heading font-bold text-dark text-xl">{t("nouveau")}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField label={t("nomVoyage")} id="v-nom" value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })}

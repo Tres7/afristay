@@ -78,7 +78,7 @@ function HeroSearch() {
   const inputClass = "w-full text-base md:text-sm font-medium text-dark outline-none bg-transparent placeholder:text-gray-400";
 
   return (
-    <form
+    <form method="post"
       onSubmit={submit}
       className="animate-fade-up-delay-2 bg-white rounded-3xl md:rounded-full p-2 max-w-4xl mx-auto shadow-card flex flex-col md:flex-row md:items-center divide-y md:divide-y-0 md:divide-x divide-gray-100"
     >
@@ -189,7 +189,7 @@ export default function HomePage() {
               <h2 className="font-heading font-bold text-dark text-2xl md:text-3xl">{t("destinationsPopulaires")}</h2>
               <p className="text-gray-500 text-sm mt-1">{t("destinationsTexte")}</p>
             </div>
-            <Link href="/recherche" aria-label={t("voirDestinations")} className="flex items-center gap-1 text-primary text-sm font-bold hover:underline flex-shrink-0">
+            <Link href="/recherche" aria-label={t("voirDestinations")} className="relative zone-tactile flex items-center gap-1 text-primary text-sm font-bold hover:underline flex-shrink-0">
               {t("voirTout")} <ChevronRight size={16} />
             </Link>
           </div>
@@ -233,7 +233,7 @@ export default function HomePage() {
         <section>
           <div className="flex items-end justify-between mb-6 md:mb-8 gap-4">
             <h2 className="font-heading font-bold text-dark text-2xl md:text-3xl">{t("mieuxNotes")}</h2>
-            <Link href="/recherche?sort=note" aria-label={t("voirMieuxNotes")} className="flex items-center gap-1 text-primary text-sm font-bold hover:underline flex-shrink-0">
+            <Link href="/recherche?sort=note" aria-label={t("voirMieuxNotes")} className="relative zone-tactile flex items-center gap-1 text-primary text-sm font-bold hover:underline flex-shrink-0">
               {t("voirTout")} <ChevronRight size={16} />
             </Link>
           </div>

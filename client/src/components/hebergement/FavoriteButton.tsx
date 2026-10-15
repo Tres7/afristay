@@ -56,8 +56,9 @@ export default function FavoriteButton({ hebergementId, initial, onChange, varia
         type="button"
         onClick={toggle}
         aria-pressed={isFavorite}
+        aria-label={isFavorite ? t("sauvegarde") : t("sauvegarder")}
         className={cn(
-          "flex items-center gap-2 border border-gray-200 rounded-xl px-4 py-2 text-sm text-dark transition-colors hover:bg-light-muted",
+          "relative zone-tactile flex items-center gap-2 border border-gray-200 rounded-xl px-4 py-2 text-sm text-dark transition-colors hover:bg-light-muted",
           className
         )}
       >
@@ -74,7 +75,7 @@ export default function FavoriteButton({ hebergementId, initial, onChange, varia
       aria-label={isFavorite ? t("retirer") : t("ajouter")}
       aria-pressed={isFavorite}
       className={cn(
-        "p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm transition-colors hover:bg-white",
+        "zone-tactile p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm transition-colors hover:bg-white",
         isFavorite ? "text-red-600" : "text-gray-500 hover:text-red-600",
         className
       )}

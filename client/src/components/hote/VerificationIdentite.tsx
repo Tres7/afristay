@@ -76,7 +76,7 @@ export default function VerificationIdentite() {
         <p role="alert" className="text-sm text-red-700 bg-red-50 rounded-xl px-3 py-2 mt-3">{t("identiteRefusee", { motif: piece.motif_refus })}</p>
       )}
 
-      <form onSubmit={envoyer} className="mt-4 grid grid-cols-1 sm:grid-cols-[220px_1fr_auto] gap-3 sm:items-end">
+      <form method="post" onSubmit={envoyer} className="mt-4 grid grid-cols-1 sm:grid-cols-[220px_1fr_auto] gap-3 sm:items-end">
         <div>
           <p className="block text-xs font-bold text-dark uppercase tracking-wide mb-2">{t("typePiece")}</p>
           <Select label={t("typePiece")} value={typePiece} onChange={setTypePiece} options={TYPES.map((id) => ({ value: id, label: t(`types.${id}`) }))} />

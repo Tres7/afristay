@@ -137,6 +137,24 @@ body {
   box-shadow: 0 0 0 2px #fff;
 }
 
+/* Zone tactile d'au moins 44 × 44 px (WCAG 2.5.8, Apple HIG) sans changer l'apparence :
+   la zone cliquable déborde, invisible, autour des petits boutons et liens. L'élément doit être positionné
+   (relative, absolute…). */
+.zone-tactile::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100%, 44px);
+  height: max(100%, 44px);
+  transform: translate(-50%, -50%);
+}
+
+/* Pas de délai de 300 ms au toucher, double-tap pour zoomer toujours possible ailleurs */
+a, button, input, select, textarea, label, [role="button"], [role="tab"], [role="option"] {
+  touch-action: manipulation;
+}
+
 /* Respect du réglage système « réduire les animations » (WCAG 2.3.3) */
 @media (prefers-reduced-motion: reduce) {
   *,
