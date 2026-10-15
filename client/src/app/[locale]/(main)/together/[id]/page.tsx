@@ -322,7 +322,7 @@ function Itineraire({ v, appliquer, recharger }: SectionProps) {
           </section>
         ))}
       </div>
-      <form onSubmit={ajouter} className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 p-5 space-y-3 h-fit">
+      <form method="post" onSubmit={ajouter} className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 p-5 space-y-3 h-fit">
         <h3 className="font-heading font-bold text-dark">{t("ajouterEtape")}</h3>
         <div className="grid grid-cols-2 gap-3">
           <FormField label={t("jour")} id="e-date" type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })}

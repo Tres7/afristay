@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Link } from "@/i18n/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, BadgeCheck, CalendarClock, HandHeart, Percent, Receipt } from "lucide-react";
+import { ArrowRight, BadgeCheck, BadgePercent, CalendarClock, FileCheck2, HandHeart } from "lucide-react";
 import api from "@/lib/api";
 import { CAUSES, useConfigGive } from "@/lib/give";
 import { cn } from "@/lib/utils";
@@ -14,9 +14,10 @@ import { useTranslations } from "next-intl";
 
 const ENGAGEMENTS = [
   { icon: BadgeCheck, id: "verifiees" },
-  { icon: Percent, id: "commission" },
+  { icon: BadgePercent, id: "commission" },
   { icon: CalendarClock, id: "mensuel" },
-  { icon: Receipt, id: "preuves" },
+  // Preuve de virement publiée (pas l'icône « reçu » de Lucide, qui affiche un $)
+  { icon: FileCheck2, id: "preuves" },
 ];
 
 export default function GivePage() {
@@ -95,7 +96,8 @@ export default function GivePage() {
           <ul className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {ENGAGEMENTS.map(({ icon: Icon, id }) => (
               <li key={id} className="bg-white rounded-2xl border border-gray-100 p-5">
-                <Icon size={22} className="text-primary" />
+                {/* Même pastille que les causes : une seule famille d'icônes sur la page */}
+                <span className="inline-flex w-10 h-10 rounded-xl items-center justify-center bg-primary/10 text-primary"><Icon size={20} /></span>
                 <p className="font-heading font-bold text-dark mt-3">{t(`engagementsListe.${id}.titre`)}</p>
                 <p className="text-sm text-gray-600 mt-1">{t(`engagementsListe.${id}.texte`)}</p>
               </li>

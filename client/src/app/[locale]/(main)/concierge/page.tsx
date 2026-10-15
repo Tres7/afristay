@@ -228,7 +228,7 @@ function ConciergeContent() {
             <div ref={finRef} />
           </div>
 
-          <form onSubmit={(e) => { e.preventDefault(); envoyer(saisie); }} className="border-t border-gray-100 p-3 sm:p-4">
+          <form method="post" onSubmit={(e) => { e.preventDefault(); envoyer(saisie); }} className="border-t border-gray-100 p-3 sm:p-4">
             <div className="flex items-end gap-2 bg-gray-50 border border-gray-200 rounded-2xl px-3 py-2 focus-within:border-primary/50">
               <label htmlFor="concierge-saisie" className="sr-only">{t("votreMessage")}</label>
               <textarea
@@ -240,12 +240,12 @@ function ConciergeContent() {
                 className="flex-1 resize-none bg-transparent outline-none text-base sm:text-sm text-dark max-h-40 py-1.5"
               />
               <button type="submit" disabled={!saisie.trim() || !!enCours || !statut?.actif} aria-label={t("envoyer")}
-                className="w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 disabled:opacity-40">
+                className="relative zone-tactile w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 disabled:opacity-40">
                 {enCours ? <Loader2 size={16} className="animate-spin" /> : <ArrowUp size={18} />}
               </button>
             </div>
             <p className="text-[11px] text-gray-600 mt-1.5 text-center">
-              {t("gemini")} <Link href="/confidentialite#destinataires" className="underline">{t("enSavoirPlus")}</Link>
+              {t("gemini")} <Link href="/confidentialite#destinataires" className="relative zone-tactile underline">{t("enSavoirPlus")}</Link>
             </p>
           </form>
         </section>

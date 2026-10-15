@@ -49,7 +49,7 @@ function SearchForm({ onDone, className, focus }: { onDone?: () => void; classNa
   };
 
   return (
-    <form onSubmit={submit} role="search" className={cn("relative w-full flex items-center bg-white border border-gray-200 rounded-full py-1.5 pl-4 pr-1.5 shadow-sm hover:shadow transition-shadow", className)}>
+    <form method="post" onSubmit={submit} role="search" className={cn("relative w-full flex items-center bg-white border border-gray-200 rounded-full py-1.5 pl-4 pr-1.5 shadow-sm hover:shadow transition-shadow", className)}>
       <Search size={18} className="text-gray-400 flex-shrink-0 mr-3" />
       <ChampDestination
         type="search"
@@ -200,12 +200,12 @@ export default function Navbar() {
 
         <div className="flex md:hidden items-center gap-1">
           {authenticated && (
-            <Link href="/messages" className="relative p-2 text-dark" aria-label={t("messages")}>
+            <Link href="/messages" className="relative zone-tactile p-2 text-dark" aria-label={t("messages")}>
               <MessageCircle size={22} />
               {unread > 0 && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />}
             </Link>
           )}
-          <button className="p-2 text-dark" onClick={() => setMobileOpen(true)} aria-expanded={mobileOpen} aria-haspopup="dialog" aria-label={t("ouvrirMenu")}>
+          <button className="relative zone-tactile p-2 text-dark" onClick={() => setMobileOpen(true)} aria-expanded={mobileOpen} aria-haspopup="dialog" aria-label={t("ouvrirMenu")}>
             <Menu size={24} />
           </button>
         </div>

@@ -117,7 +117,7 @@ export default function LaisserAvisPage() {
         </div>
       </div>
 
-      <form onSubmit={envoyer} className="bg-white rounded-3xl shadow-card p-5 sm:p-8 space-y-8">
+      <form method="post" onSubmit={envoyer} className="bg-white rounded-3xl shadow-card p-5 sm:p-8 space-y-8">
         <div className="text-center">
           <p className="font-heading font-bold text-dark text-lg mb-3">{t("noteGlobale")}</p>
           <div className="flex justify-center"><StarInput value={note} onChange={setNote} size={38} label={t("noteGlobaleCourt")} /></div>

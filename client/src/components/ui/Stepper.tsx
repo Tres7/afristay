@@ -18,7 +18,7 @@ interface StepperProps {
 /** Compteur − / + (voyageurs, chambres…), utilisable au clavier et au toucher. */
 export default function Stepper({ value, onChange, min = 0, max = 99, label, hint, className }: StepperProps) {
   const t = useTranslations("voyageurs");
-  const bouton = "w-9 h-9 rounded-full border flex items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed";
+  const bouton = "relative zone-tactile w-9 h-9 rounded-full border flex items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed";
   return (
     <div className={cn("flex items-center justify-between gap-4", className)}>
       <div>

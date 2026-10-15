@@ -153,7 +153,7 @@ function RechercheContent() {
   return (
     <div className="min-h-screen bg-light">
       <div className="bg-white border-b border-gray-100 shadow-sm px-4 sm:px-6 py-4">
-        <form onSubmit={submitSearch} className="max-w-7xl mx-auto grid grid-cols-2 lg:flex gap-2 sm:gap-3 items-stretch">
+        <form method="post" onSubmit={submitSearch} className="max-w-7xl mx-auto grid grid-cols-2 lg:flex gap-2 sm:gap-3 items-stretch">
           <label className="col-span-2 lg:flex-1 flex items-center gap-3 border border-gray-200 rounded-xl px-4 py-3 bg-light-muted">
             <Search size={16} className="text-muted flex-shrink-0" />
             <ChampDestination
@@ -197,12 +197,12 @@ function RechercheContent() {
               {isLoading ? (
                 <p className="text-muted text-sm">{t("rechercheEnCours")}</p>
               ) : (
-                <p className="text-dark font-medium">
+                <h1 className="text-dark font-medium">
                   <span className="font-heading font-bold text-2xl">{results.length}</span>{" "}
                   {t("hebergements", { nombre: results.length })}
                   {params.city && <span className="text-muted font-normal"> {t("aVille", { ville: params.city })}</span>}
                   {params.check_in && params.check_out && <span className="text-muted font-normal text-sm"> · {t("disponiblesDu", { debut: formatDate(params.check_in, { day: "numeric", month: "numeric", year: "numeric" }), fin: formatDate(params.check_out, { day: "numeric", month: "numeric", year: "numeric" }) })}</span>}
-                </p>
+                </h1>
               )}
               <button onClick={() => setFiltersOpen(true)} className="lg:hidden flex items-center gap-2 border border-gray-200 bg-white rounded-full px-4 py-2 text-sm font-semibold text-dark flex-shrink-0">
                 <SlidersHorizontal size={15} /> {t("filtres")}{activeCount > 0 && <span className="bg-primary text-white text-[10px] rounded-full w-5 h-5 flex items-center justify-center">{activeCount}</span>}
@@ -228,9 +228,10 @@ function RechercheContent() {
                 <button onClick={() => router.push(pathname)} className="mt-4 text-primary font-bold hover:underline">{t("voirTous")}</button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+              <section aria-labelledby="liste-resultats" className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+                <h2 id="liste-resultats" className="sr-only">{t("listeResultats")}</h2>
                 {results.map((h) => <PropertyCard key={h.id} property={h} query={stayQuery} />)}
-              </div>
+              </section>
             )}
           </div>
         </div>

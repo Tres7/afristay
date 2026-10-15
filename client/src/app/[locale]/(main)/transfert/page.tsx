@@ -145,7 +145,7 @@ function TransfertContent() {
         </div>
       </section>
 
-      <form onSubmit={reserver} noValidate className="max-w-6xl mx-auto px-4 sm:px-6 py-8 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-10">
+      <form method="post" onSubmit={reserver} noValidate className="max-w-6xl mx-auto px-4 sm:px-6 py-8 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-10">
         <div className="lg:col-span-3 space-y-6">
           <section className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 sm:p-8 space-y-5">
             <h2 className="font-heading font-bold text-dark text-xl">{t("votreVol")}</h2>

@@ -417,7 +417,8 @@
     "aucunResultat": "No results",
     "aucunResultatTexte": "Try another destination, other dates or remove some filters.",
     "voirTous": "See all stays",
-    "fermer": "Close"
+    "fermer": "Close",
+    "listeResultats": "Stays found"
   },
   "fiche": {
     "introuvable": "Place not found",

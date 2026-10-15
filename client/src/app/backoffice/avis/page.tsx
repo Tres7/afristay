@@ -73,7 +73,7 @@ function Avis() {
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="inline-flex gap-0.5" aria-label={`${a.note} sur 5`}>
+                    <span className="inline-flex gap-0.5" role="img" aria-label={`${a.note} sur 5`}>
                       {[1, 2, 3, 4, 5].map((i) => <Star key={i} size={14} className={i <= a.note ? "fill-accent text-accent" : "text-gray-300"} />)}
                     </span>
                     <Link href={`/hebergements/${a.hebergement.id}#avis`} target="_blank" className="text-sm font-semibold text-dark hover:text-primary truncate">{a.hebergement.name}</Link>

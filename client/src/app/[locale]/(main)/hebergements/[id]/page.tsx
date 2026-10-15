@@ -127,7 +127,7 @@ function HebergementContent() {
     <div className="bg-light pb-28 lg:pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
         <div className="flex items-center gap-2 text-sm text-muted min-w-0">
-          <button onClick={() => router.back()} className="flex items-center gap-1 hover:text-primary transition-colors flex-shrink-0">
+          <button onClick={() => router.back()} className="relative zone-tactile flex items-center gap-1 hover:text-primary transition-colors flex-shrink-0">
             <ArrowLeft size={14} /> {t("retour")}
           </button>
           <span>/</span>
@@ -163,7 +163,7 @@ function HebergementContent() {
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <button onClick={handleShare} className="flex items-center gap-2 border border-gray-200 rounded-xl px-4 py-2 text-sm text-dark hover:bg-light-muted transition-colors">
+            <button onClick={handleShare} aria-label={t("partager")} className="relative zone-tactile flex items-center gap-2 border border-gray-200 rounded-xl px-4 py-2 text-sm text-dark hover:bg-light-muted transition-colors">
               <Share2 size={15} /><span className="hidden sm:inline">{t("partager")}</span>
             </button>
             <FavoriteButton variant="button" hebergementId={hebergement.id} initial={hebergement.is_favorite} />
@@ -171,7 +171,7 @@ function HebergementContent() {
         </div>
 
         {/* Galerie : carrousel horizontal sur mobile, mosaïque sur desktop */}
-        <div className="md:hidden -mx-4 mb-8 flex overflow-x-auto snap-x snap-mandatory scrollbar-hide">
+        <div className="md:hidden -mx-4 mb-8 flex overflow-x-auto snap-x snap-mandatory scrollbar-hide" tabIndex={0} role="region" aria-label={hebergement.name}>
           {photos.map((img, i) => (
             <div key={img + i} className="snap-center flex-shrink-0 w-full px-4">
               <div className="relative">

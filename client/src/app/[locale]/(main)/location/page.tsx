@@ -27,7 +27,7 @@ function dansJours(jours: number, heure = "10:00") {
 function Puce({ actif, onClick, children }: { actif: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button type="button" aria-pressed={actif} onClick={onClick}
-      className={cn("px-4 py-2 rounded-full text-sm font-semibold border transition-colors whitespace-nowrap",
+      className={cn("relative zone-tactile px-4 py-2 rounded-full text-sm font-semibold border transition-colors whitespace-nowrap",
         actif ? "bg-primary text-white border-primary" : "bg-white text-dark border-gray-200 hover:border-primary/40")}>
       {children}
     </button>
@@ -44,7 +44,7 @@ function CarteVehicule({ c, formule, onChoisir }: { c: CategorieVehicule; formul
       </div>
       <div className="p-5 flex flex-col flex-1">
         <p className="text-xs font-bold uppercase tracking-wide text-primary">{t(`gammes.${c.gamme}`)}</p>
-        <h3 className="font-heading font-bold text-dark text-lg mt-1">{c.nom}</h3>
+        <h2 className="font-heading font-bold text-dark text-lg mt-1">{c.nom}</h2>
         {c.exemple_modele && <p className="text-sm text-gray-500">{c.exemple_modele}</p>}
         <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600 mt-3">
           <li className="flex items-center gap-1.5"><Users size={15} /> {t("places", { nombre: c.places })}</li>
@@ -60,7 +60,7 @@ function CarteVehicule({ c, formule, onChoisir }: { c: CategorieVehicule; formul
             <p className="text-sm text-gray-400">{t("nonProposee")}</p>
           )}
           <button onClick={onChoisir} disabled={prix === null}
-            className="flex items-center gap-1 px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-bold disabled:opacity-40">
+            className="relative zone-tactile flex items-center gap-1 px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-bold disabled:opacity-40">
             {t("choisir")} <ChevronRight size={16} />
           </button>
         </div>
@@ -128,7 +128,7 @@ function FormulaireLocation({ catalogue, categorie, formule, onChanger }: {
   const erreurDevis = devis.error ? apiErrorMessage(devis.error) : null;
 
   return (
-    <form onSubmit={reserver} className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 sm:p-8 space-y-6">
+    <form method="post" onSubmit={reserver} className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 sm:p-8 space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="font-heading font-bold text-dark text-xl">{t("reserverTitre", { nom: categorie.nom })}</h2>
@@ -298,7 +298,7 @@ export default function LocationPage() {
               <div className="inline-flex bg-white border border-gray-200 rounded-full p-1" role="group" aria-label={t("formule")}>
                 {(["avec_chauffeur", "sans_chauffeur"] as const).map((f) => (
                   <button key={f} type="button" aria-pressed={formule === f} onClick={() => setFormule(f)}
-                    className={cn("px-5 py-2 rounded-full text-sm font-bold transition-colors", formule === f ? "bg-primary text-white" : "text-dark")}>
+                    className={cn("relative zone-tactile px-5 py-2 rounded-full text-sm font-bold transition-colors", formule === f ? "bg-primary text-white" : "text-dark")}>
                     {t(`formules.${f}`)}
                   </button>
                 ))}

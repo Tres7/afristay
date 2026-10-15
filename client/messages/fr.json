@@ -417,7 +417,8 @@
     "aucunResultat": "Aucun résultat",
     "aucunResultatTexte": "Essayez une autre destination, d'autres dates ou retirez des filtres.",
     "voirTous": "Voir tous les hébergements",
-    "fermer": "Fermer"
+    "fermer": "Fermer",
+    "listeResultats": "Hébergements trouvés"
   },
   "fiche": {
     "introuvable": "Hébergement introuvable",
