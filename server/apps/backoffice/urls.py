@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import locations, views
+from . import locations, transferts, views
 
 urlpatterns = [
     path('stats/', views.StatsView.as_view(), name='admin-stats'),
@@ -24,4 +24,14 @@ urlpatterns = [
     path('location/locations/<uuid:pk>/loueurs/', locations.LocationPartenairesView.as_view(), name='admin-location-loueurs-dispo'),
     path('location/locations/<uuid:pk>/attribuer/', locations.LocationAttribuerView.as_view(), name='admin-location-attribuer'),
     path('location/locations/<uuid:pk>/annuler/', locations.LocationAnnulerView.as_view(), name='admin-location-annuler'),
+    # Transferts aéroport
+    path('transferts/aeroports/', transferts.AeroportsView.as_view(), name='admin-aeroports'),
+    path('transferts/aeroports/<str:pk>/', transferts.AeroportView.as_view(), name='admin-aeroport'),
+    path('transferts/aeroports/<str:code>/tarifs/', transferts.TarifsView.as_view(), name='admin-aeroport-tarifs'),
+    path('transferts/chauffeurs/', transferts.ChauffeursView.as_view(), name='admin-chauffeurs'),
+    path('transferts/chauffeurs/<int:pk>/', transferts.ChauffeurView.as_view(), name='admin-chauffeur'),
+    path('transferts/transferts/', transferts.TransfertsView.as_view(), name='admin-transferts'),
+    path('transferts/transferts/<uuid:pk>/chauffeurs/', transferts.TransfertChauffeursView.as_view(), name='admin-transfert-chauffeurs'),
+    path('transferts/transferts/<uuid:pk>/attribuer/', transferts.TransfertAttribuerView.as_view(), name='admin-transfert-attribuer'),
+    path('transferts/transferts/<uuid:pk>/annuler/', transferts.TransfertAnnulerView.as_view(), name='admin-transfert-annuler'),
 ]

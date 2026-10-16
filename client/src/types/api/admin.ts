@@ -164,3 +164,56 @@ export interface AdminLocation {
   chauffeur_telephone: string;
   cree_le: string;
 }
+
+// --- Transferts aéroport (back-office) ---------------------------------------------------------
+
+export type CategorieTransfert = "berline" | "confort" | "van";
+
+export interface AeroportAdmin {
+  code: string;
+  nom: string;
+  ville: string;
+  pays: string;
+  fuseau: string;
+  actif: boolean;
+  tarifs: { categorie: CategorieTransfert; prix: number; actif: boolean }[];
+}
+
+export interface ChauffeurAdmin {
+  id: number;
+  prenom: string;
+  nom: string;
+  telephone: string;
+  email: string;
+  aeroports: string[];
+  categorie: CategorieTransfert;
+  vehicule: string;
+  immatriculation: string;
+  actif: boolean;
+  pays_versement: string;
+  operateur_versement: string;
+  numero_versement: string;
+  nb_transferts: number;
+}
+
+export interface AdminTransfert {
+  id: string;
+  reference: string;
+  statut: "en_attente_paiement" | "confirme" | "chauffeur_assigne" | "termine" | "annule";
+  statut_libelle: string;
+  voyageur: { nom: string; email: string };
+  telephone: string;
+  aeroport: { code: string; ville: string };
+  arrivee: string;
+  numero_vol: string;
+  passagers: number;
+  bagages: number;
+  categorie: CategorieTransfert;
+  categorie_libelle: string;
+  destination: string;
+  message: string;
+  prix: number;
+  majoration_nuit: boolean;
+  chauffeur: { id: number; nom: string; telephone: string; vehicule: string } | null;
+  cree_le: string;
+}
