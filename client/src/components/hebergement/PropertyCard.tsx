@@ -5,6 +5,7 @@ import FavoriteButton from "@/components/hebergement/FavoriteButton";
 import RatingBadge from "@/components/avis/RatingBadge";
 import { FALLBACK_IMAGE, TYPE_LABELS, formatPrice } from "@/lib/utils";
 import { useTranslations } from "next-intl";
+import { useResumeDetails } from "@/components/hebergement/DetailsLogement";
 
 interface PropertyCardProps {
   property: Hebergement;
@@ -13,6 +14,7 @@ interface PropertyCardProps {
 }
 
 export default function PropertyCard({ property, query = "", onFavoriteChange }: PropertyCardProps) {
+  const resume = useResumeDetails();
   const t = useTranslations("logement");
   return (
     <Link
@@ -49,6 +51,7 @@ export default function PropertyCard({ property, query = "", onFavoriteChange }:
           <MapPin size={11} className="flex-shrink-0" />
           <span className="text-xs truncate">{property.location ? `${property.location}, ` : ""}{property.city}</span>
         </div>
+        {resume(property) && <p className="text-xs text-gray-600 mt-1 truncate">{resume(property)}</p>}
         <p className="mt-auto pt-3 text-sm">
           <span className="font-heading font-bold text-primary">{formatPrice(property.price_per_night)}</span>
           <span className="text-gray-400 text-xs"> / nuit</span>
