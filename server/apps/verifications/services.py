@@ -49,6 +49,19 @@ def _verificateurs() -> list[str]:
                 .values_list('email', flat=True))
 
 
+def contrats_disponibles() -> bool:
+    """Le contrat hôte devient obligatoire dès que Kwa-Ba a renseigné ses informations légales."""
+    from apps.documents.models import ParametresSocieteModel
+
+    return ParametresSocieteModel.courants().complets
+
+
+def contrat_manquant(hote) -> bool:
+    from apps.contrats.services import hote_a_signe
+
+    return contrats_disponibles() and not hote_a_signe(hote)
+
+
 def statut_piece(hote) -> str:
     piece = PieceIdentiteModel.objects.filter(hote=hote).first()
     return piece.statut if piece else 'absente'
@@ -80,10 +93,10 @@ def verifier_limite_annonces(hote) -> None:
 def visite_a_planifier(hebergement, modification: bool = False) -> None:
     """Prévient les agents qu'une annonce attend une visite (nouvelle, ou modifiée après vérification).
 
-    Seulement si l'identité de l'hôte est vérifiée : sinon, ses annonces leur seront envoyées à ce moment-là
-    (decider_piece)."""
+    Seulement si l'identité de l'hôte est vérifiée et son contrat signé : sinon, ses annonces leur seront envoyées
+    à ce moment-là (decider_piece, contrat_hote_signe)."""
     hote = hebergement.host
-    if not identite_verifiee(hote):
+    if not identite_verifiee(hote) or contrat_manquant(hote):
         return
     _envoyer('visite_a_planifier', f"[Kwa-Ba] Visite à planifier — {hebergement.name} ({hebergement.city})",
              _verificateurs(), {
@@ -92,6 +105,14 @@ def visite_a_planifier(hebergement, modification: bool = False) -> None:
                  'telephone': hote.phone or '—', 'email': hote.email,
                  'url': f"{settings.FRONTEND_URL}/agent",
              })
+
+
+def contrat_hote_signe(hote) -> None:
+    """L'hôte vient de signer son contrat : ses annonces en attente sont proposées aux agents."""
+    from apps.hebergements.models import HebergementModel
+
+    for annonce in HebergementModel.objects.filter(host=hote, statut_verification='en_attente').select_related('host'):
+        visite_a_planifier(annonce)
 
 
 def piece_a_controler(piece) -> None:
@@ -127,7 +148,7 @@ def decider_piece(hote, verificateur, *, decision: str, motif: str = '') -> Piec
         for annonce in annonces:
             visite_a_planifier(annonce)
         _envoyer('identite_verifiee', "Votre identité est vérifiée", [hote.email],
-                 {**contexte, 'nb_annonces': len(annonces)})
+                 {**contexte, 'nb_annonces': len(annonces), 'contrat_a_signer': contrat_manquant(hote)})
     elif decision == 'refusee':
         if len(motif) < 10:
             raise VerificationErreur("Expliquez le motif du refus à l'hôte (10 caractères au moins).")
@@ -177,6 +198,8 @@ def decider(hebergement, agent, *, decision: str, controles: dict, commentaire: 
             raise VerificationErreur("Pour valider, tous les points de contrôle doivent être vérifiés.")
         if not piece or piece.statut != 'verifiee':
             raise VerificationErreur("L'identité de l'hôte doit être vérifiée avant de valider son logement.")
+        if contrat_manquant(hote):
+            raise VerificationErreur("L'hôte doit d'abord signer son contrat (depuis son espace hôte).")
     elif decision == 'refusee':
         if len(commentaire) < 10:
             raise VerificationErreur("Expliquez le motif du refus à l'hôte (10 caractères au moins).")

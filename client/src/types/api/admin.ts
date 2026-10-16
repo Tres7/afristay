@@ -1,3 +1,5 @@
+import type { StatutContrat, TypeContrat } from "./contrat";
+
 // Contrat : documentation/modules/backoffice-api.md
 
 export interface AdminPage<T> {
@@ -308,7 +310,10 @@ export interface SocieteAdmin {
   assujetti_tva: boolean;
   taux_tva: string;
   mentions: string;
+  representant_nom: string;
+  representant_qualite: string;
   complets: boolean;
+  signature_presente: boolean;
 }
 
 export interface FactureAdmin {
@@ -322,4 +327,44 @@ export interface FactureAdmin {
   client_email: string;
   total_ttc: number;
   tva: number;
+}
+
+export interface ContratAdmin {
+  id: string;
+  reference: string;
+  type: TypeContrat;
+  type_libelle: string;
+  titre: string;
+  statut: StatutContrat;
+  statut_libelle: string;
+  partie_nom: string;
+  partie_email: string;
+  partie_telephone: string;
+  cree_le: string;
+  envoye_le: string | null;
+  expire_le: string;
+  expire: boolean;
+  signe_le: string | null;
+  signataire_nom: string;
+  ip: string | null;
+  methode: string;
+  empreinte_pdf: string;
+  motif_annulation: string;
+  version_modele: number;
+}
+
+export interface PartieContrat {
+  id: string;
+  nom: string;
+  email: string;
+  contrat: StatutContrat | null;
+}
+
+export interface ModeleContrat {
+  type: TypeContrat;
+  type_libelle: string;
+  titre: string;
+  corps: string;
+  version: number;
+  modifie_le: string;
 }

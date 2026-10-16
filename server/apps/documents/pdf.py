@@ -5,7 +5,7 @@ from pathlib import Path
 
 from django.utils import formats, timezone
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_RIGHT
+from reportlab.lib.enums import TA_JUSTIFY, TA_RIGHT
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
@@ -27,6 +27,7 @@ STYLES = {
     'gras': ParagraphStyle('gras', parent=_base, fontName='Helvetica-Bold'),
     'emetteur': ParagraphStyle('emetteur', parent=_base, fontSize=8, leading=10.5, textColor=GRIS, alignment=TA_RIGHT),
     'total': ParagraphStyle('total', parent=_base, alignment=TA_RIGHT, fontName='Helvetica-Bold', textColor=colors.white),
+    'justifie': ParagraphStyle('justifie', parent=_base, alignment=TA_JUSTIFY, spaceAfter=4),
 }
 
 
@@ -82,6 +83,10 @@ class Document:
         ]))
         self.elements.append(Spacer(0, 4 * mm))
         self.elements.append(tableau)
+
+    def ajouter(self, *elements):
+        """Éléments ReportLab quelconques (tableaux, images, sauts de page…)."""
+        self.elements.extend(elements)
 
     def paragraphe(self, texte: str, style='base'):
         self.elements.append(Spacer(0, 3 * mm))

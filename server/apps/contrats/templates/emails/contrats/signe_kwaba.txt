@@ -1,0 +1,9 @@
+{% autoescape off %}Contrat signé : {{ titre }} ({{ type }})
+
+Référence : {{ reference }}
+Partie : {{ nom }}
+Signé le : {{ signe_le }}
+Empreinte SHA-256 du PDF : {{ empreinte }}
+
+Le PDF signé est joint et consultable dans le back-office (Documents → Contrats).
+{% endautoescape %}
