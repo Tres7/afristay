@@ -61,6 +61,8 @@ class HebergementListView(APIView):
         guests = request.query_params.get('guests')
         if guests and guests.isdigit():
             qs = qs.filter(max_guests__gte=int(guests))
+        if request.query_params.get('petit_dejeuner') == 'inclus':
+            qs = qs.filter(petit_dejeuner='inclus')
 
         search = request.query_params.get('q')
         if search:

@@ -32,7 +32,7 @@ const TYPES = [
   { id: "auberge", label: "auberges" },
 ];
 
-const FILTER_KEYS = ["city", "check_in", "check_out", "guests", "type", "sort", "price_min", "price_max"] as const;
+const FILTER_KEYS = ["city", "check_in", "check_out", "guests", "type", "sort", "price_min", "price_max", "petit_dejeuner"] as const;
 
 function RechercheContent() {
   const t = useTranslations("recherche");
@@ -99,7 +99,7 @@ function RechercheContent() {
   const stayQuery = params.check_in && params.check_out
     ? `?check_in=${params.check_in}&check_out=${params.check_out}&guests=${params.guests || 1}`
     : "";
-  const activeCount = [params.type, params.sort, params.price_min, params.price_max].filter(Boolean).length;
+  const activeCount = [params.type, params.sort, params.price_min, params.price_max, params.petit_dejeuner].filter(Boolean).length;
 
   const filtersPanel = (
     <div className="space-y-6">
@@ -127,6 +127,12 @@ function RechercheContent() {
         />
       </div>
 
+      <label className="flex items-center gap-3 cursor-pointer">
+        <input type="checkbox" className="accent-primary w-5 h-5" checked={params.petit_dejeuner === "inclus"}
+          onChange={(e) => pushParams({ petit_dejeuner: e.target.checked ? "inclus" : "" })} />
+        <span className="text-sm font-semibold text-dark">{t("petitDejInclus")}</span>
+      </label>
+
       <div>
         <p className="text-xs text-muted font-bold uppercase tracking-wider mb-2">{t("prixParNuit")}</p>
         <div className="flex items-center gap-2">
@@ -141,7 +147,7 @@ function RechercheContent() {
 
       {activeCount > 0 && (
         <button
-          onClick={() => { setPriceMin(""); setPriceMax(""); pushParams({ type: "", sort: "", price_min: "", price_max: "" }); }}
+          onClick={() => { setPriceMin(""); setPriceMax(""); pushParams({ type: "", sort: "", price_min: "", price_max: "", petit_dejeuner: "" }); }}
           className="w-full text-sm font-semibold text-gray-500 hover:text-primary"
         >
           {t("effacerFiltres")}

@@ -12,6 +12,7 @@ def _listing(**overrides):
         'type': 'villa',
         'price_per_night': 45000,
         'max_guests': 4,
+        'surface_m2': 70, 'chambres': 2, 'lits_doubles': 1, 'lits_simples': 1, 'petit_dejeuner': 'non',
         **overrides,
     }
 

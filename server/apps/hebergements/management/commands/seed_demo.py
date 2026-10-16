@@ -55,6 +55,18 @@ DEMO = [
 ]
 
 
+# Détails typiques par type de logement (surface, chambres, lits, petit-déjeuner)
+DETAILS = {
+    'villa': {'surface_m2': 180, 'chambres': 4, 'salles_de_bain': 3, 'lits_doubles': 3, 'lits_simples': 2,
+              'petit_dejeuner': 'option', 'petit_dejeuner_prix': 5000},
+    'appartement': {'surface_m2': 75, 'chambres': 2, 'salles_de_bain': 1, 'lits_doubles': 1, 'lits_simples': 1,
+                    'petit_dejeuner': 'non'},
+    'hotel': {'surface_m2': 32, 'chambres': 1, 'salles_de_bain': 1, 'lits_doubles': 1, 'petit_dejeuner': 'inclus'},
+    'auberge': {'surface_m2': 28, 'chambres': 1, 'salles_de_bain': 1, 'lits_simples': 2, 'petit_dejeuner': 'inclus'},
+}
+HORAIRES = {'arrivee_a_partir': '14:00', 'depart_avant': '11:00'}
+
+
 class Command(BaseCommand):
     help = "Crée un hôte de démonstration et des hébergements réalistes (idempotent)."
 
@@ -82,7 +94,7 @@ class Command(BaseCommand):
                     'price_per_night': price,
                     'max_guests': guests, 'image_url': cover,
                     'images': [cover, *INTERIORS], 'amenities': amenities,
-                    'description': desc,
+                    'description': desc, **DETAILS[type_], **HORAIRES,
                 },
             )
             added += was_created

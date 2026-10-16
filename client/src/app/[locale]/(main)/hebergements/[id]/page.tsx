@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, BadgeCheck, MapPin, ChevronDown, ChevronUp, Share2, Calendar, MessageCircle, Pencil, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import AmenityBadge from "@/components/hebergement/AmenityBadge";
+import DetailsLogement from "@/components/hebergement/DetailsLogement";
 import FavoriteButton from "@/components/hebergement/FavoriteButton";
 import RatingBadge from "@/components/avis/RatingBadge";
 import AvisSection from "@/components/avis/AvisSection";
@@ -230,6 +231,8 @@ function HebergementContent() {
                 )}
               </div>
             </section>
+
+            <DetailsLogement h={hebergement} />
 
             <section className="bg-white rounded-2xl shadow-card p-5 sm:p-6">
               <h2 className="font-heading font-bold text-dark text-xl mb-4">{t("equipements")}</h2>
