@@ -15,6 +15,17 @@ export interface Hebergement {
   max_guests: number;
   amenities: string[];
   is_available: boolean;
+  /** Détails (null pour les annonces publiées avant leur ajout) */
+  surface_m2: number | null;
+  chambres: number | null;
+  salles_de_bain: number | null;
+  lits_doubles: number;
+  lits_simples: number;
+  canapes_lits: number;
+  petit_dejeuner: "" | "non" | "inclus" | "option";
+  petit_dejeuner_prix: number | null;
+  arrivee_a_partir: string | null;
+  depart_avant: string | null;
   /** Vérification par un agent de terrain : seules les annonces « verifiee » sont publiques */
   statut_verification: "en_attente" | "verifiee" | "refusee";
   verifiee_le: string | null;

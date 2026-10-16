@@ -24,6 +24,7 @@ const PAYMENT_LABELS: Record<string, string> = { mobile_money: "mobileMoney", ca
 function EspaceHoteContent() {
   const t = useTranslations("espaceHote");
   const tVerif = useTranslations("espaceHote.verification");
+  const tAnnonce = useTranslations("annonce");
   const tRes = useTranslations("reservation");
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -195,6 +196,11 @@ function EspaceHoteContent() {
                     <p className="font-heading font-bold text-primary whitespace-nowrap">{formatPrice(h.price_per_night)}<span className="text-xs text-gray-400 font-normal">/nuit</span></p>
                   </div>
                   <RatingBadge rating={h.rating} count={h.review_count} variant="full" className="mt-2" />
+                  {h.surface_m2 == null && (
+                    <button type="button" onClick={() => setEditing(h)} className="relative zone-tactile flex items-start gap-1.5 text-left text-xs font-semibold text-amber-800 mt-2 hover:underline">
+                      <AlertTriangle size={14} className="flex-shrink-0 mt-px" /> {tAnnonce("detailsManquants")}
+                    </button>
+                  )}
                   {h.statut_verification === "verifiee" ? (
                     <p className="flex items-center gap-1.5 text-xs font-bold text-green-700 mt-2"><ShieldCheck size={14} /> {tVerif("verifiee")}</p>
                   ) : h.statut_verification === "refusee" ? (
