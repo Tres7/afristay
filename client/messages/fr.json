@@ -192,11 +192,11 @@
     "atouts": {
       "paiement": {
         "titre": "Paiement flexible",
-        "texte": "Mobile Money (MTN, Orange, Wave), carte bancaire ou PayPal."
+        "texte": "Mobile Money : Mixx by Yas (T-Money), Moov Money (Flooz), MTN MoMo, Orange Money, Celtiis, Airtel… Carte Visa ou Mastercard, ou PayPal."
       },
       "instantanee": {
-        "titre": "Réservation instantanée",
-        "texte": "Votre séjour est confirmé immédiatement, sans attente."
+        "titre": "Confirmation immédiate",
+        "texte": "Votre séjour est confirmé dès le paiement, sans attendre la réponse de l'hôte."
       },
       "contact": {
         "titre": "Contact direct avec l'hôte",
