@@ -192,11 +192,11 @@
     "atouts": {
       "paiement": {
         "titre": "Paiement flexible",
-        "texte": "Mobile Money (MTN, Orange, Wave), carte bancaire ou PayPal."
+        "texte": "Mobile Money : Mixx by Yas (T-Money), Moov Money (Flooz), MTN MoMo, Orange Money, Celtiis, Airtel… Carte Visa ou Mastercard, ou PayPal."
       },
       "instantanee": {
-        "titre": "Réservation instantanée",
-        "texte": "Votre séjour est confirmé immédiatement, sans attente."
+        "titre": "Confirmation immédiate",
+        "texte": "Votre séjour est confirmé dès le paiement, sans attendre la réponse de l'hôte."
       },
       "contact": {
         "titre": "Contact direct avec l'hôte",
@@ -418,7 +418,8 @@
     "aucunResultatTexte": "Essayez une autre destination, d'autres dates ou retirez des filtres.",
     "voirTous": "Voir tous les hébergements",
     "fermer": "Fermer",
-    "listeResultats": "Hébergements trouvés"
+    "listeResultats": "Hébergements trouvés",
+    "petitDejInclus": "Petit-déjeuner inclus"
   },
   "fiche": {
     "introuvable": "Hébergement introuvable",
@@ -1428,7 +1429,24 @@
     "envoiPhotos": "Envoi des photos...",
     "enregistrement": "Enregistrement...",
     "enregistrerModifs": "Enregistrer les modifications",
-    "publier": "Publier l'annonce"
+    "publier": "Publier l'annonce",
+    "detailsTitre": "Le logement en détail",
+    "detailsAide": "Ces informations s'affichent sur votre annonce et rassurent les voyageurs.",
+    "surface": "Surface (m²)",
+    "chambres": "Chambres",
+    "sallesDeBain": "Salles de bain",
+    "lits": "Lits",
+    "litsDoubles": "Lits doubles",
+    "litsSimples": "Lits simples",
+    "canapesLits": "Canapés-lits",
+    "petitDejeuner": "Petit-déjeuner",
+    "petitDejNon": "Non proposé",
+    "petitDejInclus": "Inclus",
+    "petitDejOption": "En option",
+    "petitDejPrix": "Prix par personne (FCFA)",
+    "arrivee": "Arrivée à partir de",
+    "depart": "Départ avant",
+    "detailsManquants": "Complétez les détails (surface, chambres, lits, petit-déjeuner) : ils s'afficheront sur l'annonce."
   },
   "revenus": {
     "statuts": {
@@ -1589,5 +1607,26 @@
     "villes": "Villes",
     "logements": "Logements",
     "logementsDispo": "{nombre, plural, =1 {1 logement} other {# logements}}"
+  },
+  "details": {
+    "titre": "Le logement en détail",
+    "surfaceTitre": "Surface",
+    "surface": "{m2} m²",
+    "chambresTitre": "Chambres",
+    "chambres": "{nombre, plural, =1 {1 chambre} other {# chambres}}",
+    "litsTitre": "{nombre, plural, =1 {1 lit} other {# lits}}",
+    "litsDoubles": "{nombre, plural, =1 {1 lit double} other {# lits doubles}}",
+    "litsSimples": "{nombre, plural, =1 {1 lit simple} other {# lits simples}}",
+    "canapesLits": "{nombre, plural, =1 {1 canapé-lit} other {# canapés-lits}}",
+    "sallesTitre": "Salles de bain",
+    "salles": "{nombre, plural, =1 {1 salle de bain} other {# salles de bain}}",
+    "petitDejTitre": "Petit-déjeuner",
+    "petitDejInclus": "Inclus dans le prix",
+    "petitDejInclusCourt": "Petit-déj. inclus",
+    "petitDejOption": "En option · {prix} par personne",
+    "petitDejNon": "Non proposé",
+    "horairesTitre": "Arrivée et départ",
+    "arrivee": "Arrivée dès {heure}",
+    "depart": "départ avant {heure}"
   }
 }
