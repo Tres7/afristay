@@ -217,3 +217,79 @@ export interface AdminTransfert {
   chauffeur: { id: number; nom: string; telephone: string; vehicule: string } | null;
   cree_le: string;
 }
+
+// --- Kwa-Ba Give (back-office) -----------------------------------------------------------------
+
+export type CauseGive = "education" | "sante" | "eau" | "environnement";
+
+export interface OngAdmin {
+  id: string;
+  nom: string;
+  slug: string;
+  cause: CauseGive;
+  pays: string;
+  ville: string;
+  resume: string;
+  description: string;
+  logo: string | null;
+  image: string | null;
+  site_web: string;
+  numero_enregistrement: string;
+  verifiee_le: string | null;
+  verification: string;
+  contact_nom: string;
+  contact_email: string;
+  contact_telephone: string;
+  coordonnees_reversement: string;
+  actif: boolean;
+  collecte: number;
+  nb_dons: number;
+  nb_projets: number;
+}
+
+export interface ProjetAdmin {
+  id: string;
+  organisation: string;
+  titre: string;
+  cause: CauseGive;
+  resume: string;
+  description: string;
+  lieu: string;
+  objectif: number | null;
+  image: string | null;
+  actif: boolean;
+}
+
+export interface ReversementAdmin {
+  id: string;
+  reference: string;
+  organisation: { id: string; nom: string };
+  coordonnees_reversement: string;
+  periode: string;
+  montant: number;
+  nb_dons: number;
+  date_prevue: string;
+  statut: "a_effectuer" | "effectue";
+  statut_libelle: string;
+  moyen: string;
+  reference_operation: string;
+  note: string;
+  effectue_le: string | null;
+  justificatif: string | null;
+}
+
+export interface DonAdmin {
+  id: string;
+  reference: string;
+  donateur: { nom: string; email: string };
+  organisation: string;
+  projet: string | null;
+  montant: number;
+  total: number;
+  montant_ong: number;
+  moyen: string;
+  statut: "en_attente" | "paye" | "echoue";
+  statut_libelle: string;
+  paye_le: string | null;
+  cree_le: string;
+}
