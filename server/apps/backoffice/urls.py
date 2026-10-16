@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import locations, transferts, views
+from . import give, locations, transferts, views
 
 urlpatterns = [
     path('stats/', views.StatsView.as_view(), name='admin-stats'),
@@ -34,4 +34,13 @@ urlpatterns = [
     path('transferts/transferts/<uuid:pk>/chauffeurs/', transferts.TransfertChauffeursView.as_view(), name='admin-transfert-chauffeurs'),
     path('transferts/transferts/<uuid:pk>/attribuer/', transferts.TransfertAttribuerView.as_view(), name='admin-transfert-attribuer'),
     path('transferts/transferts/<uuid:pk>/annuler/', transferts.TransfertAnnulerView.as_view(), name='admin-transfert-annuler'),
+    # Kwa-Ba Give
+    path('give/organisations/', give.OrganisationsView.as_view(), name='admin-give-organisations'),
+    path('give/organisations/<uuid:pk>/', give.OrganisationView.as_view(), name='admin-give-organisation'),
+    path('give/organisations/<uuid:pk>/projets/', give.ProjetsView.as_view(), name='admin-give-projets'),
+    path('give/projets/<uuid:pk>/', give.ProjetView.as_view(), name='admin-give-projet'),
+    path('give/reversements/', give.ReversementsView.as_view(), name='admin-give-reversements'),
+    path('give/reversements/preparer/', give.ReversementsPreparerView.as_view(), name='admin-give-preparer'),
+    path('give/reversements/<uuid:pk>/effectuer/', give.ReversementEffectuerView.as_view(), name='admin-give-effectuer'),
+    path('give/dons/', give.DonsView.as_view(), name='admin-give-dons'),
 ]
