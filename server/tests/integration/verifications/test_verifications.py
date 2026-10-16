@@ -38,6 +38,7 @@ def _annonce(**extra):
     return {
         'name': 'Villa des cocotiers', 'type': 'villa', 'city': 'Lomé', 'location': 'Bè Kpota',
         'price_per_night': 35000, 'max_guests': 4, 'amenities': ['wifi'],
+        'surface_m2': 90, 'chambres': 2, 'lits_doubles': 2, 'petit_dejeuner': 'inclus',
         'image_url': 'https://images.unsplash.com/photo-1.jpg', 'images': ['https://images.unsplash.com/photo-1.jpg'],
         **extra,
     }

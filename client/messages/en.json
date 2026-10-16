@@ -192,11 +192,11 @@
     "atouts": {
       "paiement": {
         "titre": "Flexible payment",
-        "texte": "Mobile Money (MTN, Orange, Wave), bank card or PayPal."
+        "texte": "Mobile Money: Mixx by Yas (T-Money), Moov Money (Flooz), MTN MoMo, Orange Money, Celtiis, Airtel… Visa or Mastercard, or PayPal."
       },
       "instantanee": {
-        "titre": "Instant booking",
-        "texte": "Your stay is confirmed right away, no waiting."
+        "titre": "Instant confirmation",
+        "texte": "Your stay is confirmed as soon as you pay, no need to wait for the host."
       },
       "contact": {
         "titre": "Talk directly to your host",
@@ -418,7 +418,8 @@
     "aucunResultatTexte": "Try another destination, other dates or remove some filters.",
     "voirTous": "See all stays",
     "fermer": "Close",
-    "listeResultats": "Stays found"
+    "listeResultats": "Stays found",
+    "petitDejInclus": "Breakfast included"
   },
   "fiche": {
     "introuvable": "Place not found",
@@ -1428,7 +1429,24 @@
     "envoiPhotos": "Uploading photos...",
     "enregistrement": "Saving...",
     "enregistrerModifs": "Save changes",
-    "publier": "Publish listing"
+    "publier": "Publish listing",
+    "detailsTitre": "The place in detail",
+    "detailsAide": "Shown on your listing: these details reassure travellers.",
+    "surface": "Floor area (m²)",
+    "chambres": "Bedrooms",
+    "sallesDeBain": "Bathrooms",
+    "lits": "Beds",
+    "litsDoubles": "Double beds",
+    "litsSimples": "Single beds",
+    "canapesLits": "Sofa beds",
+    "petitDejeuner": "Breakfast",
+    "petitDejNon": "Not offered",
+    "petitDejInclus": "Included",
+    "petitDejOption": "Optional",
+    "petitDejPrix": "Price per person (FCFA)",
+    "arrivee": "Check-in from",
+    "depart": "Check-out by",
+    "detailsManquants": "Add the details (floor area, bedrooms, beds, breakfast): they will appear on the listing."
   },
   "revenus": {
     "statuts": {
@@ -1589,5 +1607,26 @@
     "villes": "Cities",
     "logements": "Stays",
     "logementsDispo": "{nombre, plural, =1 {1 stay} other {# stays}}"
+  },
+  "details": {
+    "titre": "The place in detail",
+    "surfaceTitre": "Floor area",
+    "surface": "{m2} m²",
+    "chambresTitre": "Bedrooms",
+    "chambres": "{nombre, plural, =1 {1 bedroom} other {# bedrooms}}",
+    "litsTitre": "{nombre, plural, =1 {1 bed} other {# beds}}",
+    "litsDoubles": "{nombre, plural, =1 {1 double bed} other {# double beds}}",
+    "litsSimples": "{nombre, plural, =1 {1 single bed} other {# single beds}}",
+    "canapesLits": "{nombre, plural, =1 {1 sofa bed} other {# sofa beds}}",
+    "sallesTitre": "Bathrooms",
+    "salles": "{nombre, plural, =1 {1 bathroom} other {# bathrooms}}",
+    "petitDejTitre": "Breakfast",
+    "petitDejInclus": "Included in the price",
+    "petitDejInclusCourt": "Breakfast included",
+    "petitDejOption": "Optional · {prix} per person",
+    "petitDejNon": "Not offered",
+    "horairesTitre": "Check-in and check-out",
+    "arrivee": "Check-in from {heure}",
+    "depart": "check-out by {heure}"
   }
 }
