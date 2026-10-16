@@ -9,6 +9,7 @@ import { CheckCircle, Calendar, MapPin, Users, ArrowRight, MessageCircle, Plane 
 import api from "@/lib/api";
 import { FALLBACK_IMAGE, formatDate, formatPrice } from "@/lib/utils";
 import type { Reservation } from "@/types/api/models";
+import Documents from "@/components/documents/Documents";
 import { useTranslations } from "next-intl";
 
 const PAYMENT_LABELS: Record<string, string> = {
@@ -118,6 +119,7 @@ export default function ConfirmationPage() {
               <div className="mt-4 pt-4 border-t border-gray-100">
                 <p className="text-xs text-gray-500">{t("numero")}</p>
                 <p className="text-sm font-mono font-bold text-dark">{reservation.reference}</p>
+                {reservation.paiement === "reussi" && <Documents objet="reservation" id={reservation.id} className="mt-3" />}
               </div>
             </div>
           </div>

@@ -8,6 +8,7 @@ import { formatDate, formatPrice } from "@/lib/utils";
 import { PAGE_SIZE, useAdminList, useDebounced } from "@/lib/useAdminList";
 import AdminTable, { ActionButton, Pagination, Pill, SearchInput, type Colonne } from "@/components/backoffice/AdminTable";
 import ConfirmDialog, { type Confirmation } from "@/components/backoffice/ConfirmDialog";
+import BoutonFacture from "@/components/backoffice/documents/BoutonFacture";
 import Panneau, { Champ, Liste, Saisie, erreursApi } from "@/components/backoffice/Panneau";
 import Select from "@/components/ui/Select";
 import type { AdminLocation } from "@/types/api/admin";
@@ -78,6 +79,7 @@ export default function Suivi() {
 
   const actions = (l: AdminLocation) => (
     <>
+      {["confirmee", "partenaire_assigne", "terminee"].includes(l.statut) && <BoutonFacture objet="location" id={l.id} />}
       {(l.statut === "confirmee" || l.statut === "partenaire_assigne") && (
         <ActionButton onClick={() => ouvrir(l)}>{l.partenaire ? "Modifier le loueur" : "Attribuer"}</ActionButton>
       )}

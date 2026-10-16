@@ -12,6 +12,7 @@ import { minutesRestantes, payerLocation, useConfigPaiement } from "@/lib/paieme
 import { cn, formatPrice } from "@/lib/utils";
 import { dateVol } from "@/lib/transfert";
 import CompteRemboursementDialog from "@/components/paiement/CompteRemboursementDialog";
+import Documents from "@/components/documents/Documents";
 import type { MoyenPaiement } from "@/types/api/paiement";
 import type { Location, StatutLocation } from "@/types/api/location";
 
@@ -172,6 +173,7 @@ function LocationDetail() {
               </p>
             )
           )}
+          {l.paiement === "reussi" && <Documents objet="location" id={l.id} className="mt-4 pt-4 border-t border-gray-100" />}
         </section>
 
         {aPayer && (

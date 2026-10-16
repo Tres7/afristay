@@ -27,7 +27,7 @@ def _date(valeur) -> str:
     return formats.date_format(valeur, 'j F Y')
 
 
-def _envoyer(gabarit: str, sujet: str, destinataires: list[str], contexte: dict):
+def _envoyer(gabarit: str, sujet: str, destinataires: list[str], contexte: dict, pieces_jointes=None):
     # Les SMTP de test (Mailtrap) et certains fournisseurs limitent le nombre d'emails par seconde
     time.sleep(settings.PAIEMENTS_PAUSE_EMAIL)
     send_mail(
@@ -36,7 +36,14 @@ def _envoyer(gabarit: str, sujet: str, destinataires: list[str], contexte: dict)
         message=render_to_string(gabarit if '/' in gabarit else f'emails/paiements/{gabarit}.txt', contexte),
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=destinataires,
+        pieces_jointes=pieces_jointes,
     )
+
+
+def _documents(objet):
+    """Bon et reçu en PDF joints à l'email de confirmation."""
+    from apps.documents.services import pieces_confirmation  # import local : documents dépend des paiements
+    return pieces_confirmation(objet)
 
 
 def _admins() -> list[str]:
@@ -57,7 +64,7 @@ def reservation_payee_voyageur(paiement: PaiementModel):
         **_sejour(r), 'prenom': voyageur.first_name, 'montant': _fcfa(paiement.montant),
         'url': f"{settings.FRONTEND_URL}/reservation/confirmation/{r.id}",
         'url_remboursement': f"{settings.FRONTEND_URL}/remboursement",
-    })
+    }, pieces_jointes=_documents(r))
 
 
 def reservation_payee_hote(paiement: PaiementModel):
