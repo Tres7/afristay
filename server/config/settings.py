@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     'apps.verifications.apps.VerificationsConfig',
     'apps.locations.apps.LocationsConfig',
     'apps.documents.apps.DocumentsConfig',
+    'apps.contrats.apps.ContratsConfig',
 ]
 
 MIDDLEWARE = [

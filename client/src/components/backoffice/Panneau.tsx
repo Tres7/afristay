@@ -71,7 +71,7 @@ export function Saisie(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={cn(champClasse, props.className)} />;
 }
 
-export function Zone(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+export function Zone(props: React.ComponentProps<"textarea">) {
   return <textarea rows={3} {...props} className={cn(champClasse, "resize-y", props.className)} />;
 }
 

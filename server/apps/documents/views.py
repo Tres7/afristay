@@ -1,6 +1,8 @@
 """Téléchargement des documents (voyageur, donateur, admin) et gestion des factures dans le back-office."""
+from django.core.files.base import ContentFile
 from django.http import HttpResponse
 from rest_framework import serializers, status
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -66,26 +68,66 @@ class DocumentView(APIView):
 
 class SocieteSerializer(serializers.ModelSerializer):
     complets = serializers.BooleanField(read_only=True)
+    signature_presente = serializers.SerializerMethodField()
 
     class Meta:
         model = ParametresSocieteModel
         fields = ['raison_sociale', 'nom_commercial', 'forme_juridique', 'adresse', 'pays', 'nif', 'rccm', 'telephone',
-                  'email', 'site', 'assujetti_tva', 'taux_tva', 'mentions', 'complets']
+                  'email', 'site', 'assujetti_tva', 'taux_tva', 'mentions', 'representant_nom', 'representant_qualite',
+                  'complets', 'signature_presente']
+
+    def get_signature_presente(self, obj) -> bool:
+        return bool(obj.signature_representant)
+
+
+MAX_SIGNATURE_SCAN = 5 * 1024 * 1024
 
 
 class SocieteView(APIView):
-    """Informations légales imprimées sur les documents."""
+    """Informations légales imprimées sur les documents. PUT en JSON ou en multipart avec la signature scannée du
+    représentant (`signature_representant`, fond clair rendu transparent) ; `supprimer_signature=true` la retire."""
     permission_classes = [EstAdministrateur]
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
 
     def get(self, request):
         return Response(SocieteSerializer(ParametresSocieteModel.courants()).data)
 
     def put(self, request):
-        serializer = SocieteSerializer(ParametresSocieteModel.courants(), data=request.data, partial=True)
+        from apps.contrats.services import ContratErreur, signature_png
+
+        societe = ParametresSocieteModel.courants()
+        serializer = SocieteSerializer(societe, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        fichier = request.FILES.get('signature_representant')
+        contenu = None
+        if fichier:
+            if fichier.size > MAX_SIGNATURE_SCAN:
+                return Response({'signature_representant': ['Image trop lourde (5 Mo au plus).']}, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                contenu = signature_png(fichier.read(), fond_blanc_transparent=True)
+            except ContratErreur as exc:
+                return Response({'signature_representant': [str(exc)]}, status=status.HTTP_400_BAD_REQUEST)
+        societe = serializer.save()
+        if contenu:
+            societe.signature_representant.save('signature-representant.png', ContentFile(contenu), save=True)
+        elif str(request.data.get('supprimer_signature')).lower() == 'true' and societe.signature_representant:
+            societe.signature_representant.delete(save=True)
         journaliser("backoffice_modification", request, utilisateur=request.user, objet="societe", champs=sorted(request.data.keys()))
-        return Response(serializer.data)
+        return Response(SocieteSerializer(societe).data)
+
+
+class SignatureRepresentantView(APIView):
+    """Aperçu de la signature enregistrée (espace privé, lu par l'API)."""
+    permission_classes = [EstAdministrateur]
+
+    def get(self, request):
+        societe = ParametresSocieteModel.courants()
+        if not societe.signature_representant:
+            return Response({'detail': 'Aucune signature.'}, status=status.HTTP_404_NOT_FOUND)
+        with societe.signature_representant.open('rb') as f:
+            reponse = HttpResponse(f.read(), content_type='image/png')
+        reponse['Cache-Control'] = 'no-store'
+        return reponse
 
 
 def _facture(f: FactureModel) -> dict:

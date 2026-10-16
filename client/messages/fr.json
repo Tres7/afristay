@@ -1384,7 +1384,7 @@
       "confidentialite": "Document visible uniquement par les agents Kwa-Ba, jamais par les voyageurs."
     },
     "candidature": {
-      "titre": "Devenir hôte Kwa-Ba : 3 étapes",
+      "titre": "Devenir hôte Kwa-Ba : {nombre} étapes",
       "texte": "Pour la sécurité des voyageurs, chaque hôte est vérifié avant de publier. Vos annonces restent invisibles jusqu'à la fin des étapes.",
       "telephoneTitre": "Votre numéro de téléphone",
       "telephoneTexte": "L'agent Kwa-Ba vous appellera pour organiser la visite.",
@@ -1396,7 +1396,14 @@
       "annonceTitre": "Votre logement, visité par un agent",
       "annonceTexte": "Préparez votre annonce (3 au maximum avant la vérification de votre identité).",
       "annonceAction": "Créer mon annonce",
-      "annonceEnAttente": "Annonce prête. Un agent vous appellera pour la visite dès que votre identité sera vérifiée."
+      "annonceEnAttente": "Annonce prête. Un agent vous appellera pour la visite dès que votre identité sera vérifiée.",
+      "identiteVerifiee": "Vérifiée.",
+      "contratTitre": "Votre contrat hôte",
+      "contratTexte": "Lisez-le et signez-le en ligne, en deux minutes.",
+      "contratAction": "Lire et signer",
+      "contratSigne": "Signé.",
+      "contratTelecharger": "Voir le contrat",
+      "annonceContrat": "Annonce prête. Un agent vous appellera pour la visite dès que votre identité sera vérifiée et votre contrat signé."
     }
   },
   "annonce": {
@@ -1628,5 +1635,36 @@
     "horairesTitre": "Arrivée et départ",
     "arrivee": "Arrivée dès {heure}",
     "depart": "départ avant {heure}"
+  },
+  "contrat": {
+    "surtitre": "Contrat Kwa-Ba",
+    "reference": "Référence",
+    "pour": "Pour : {nom}",
+    "signeTitre": "Contrat signé",
+    "signeTexte": "Signé par {nom} le {date}. Le PDF signé vous a été envoyé par email.",
+    "expire": "Ce lien a expiré. Répondez à l'email reçu ou écrivez à Kwa-Ba pour recevoir un nouveau lien.",
+    "enFrancais": "Le contrat est rédigé en français ; seule la version française fait foi.",
+    "telechargerProjet": "Télécharger le contrat (PDF)",
+    "telechargerSigne": "Télécharger le contrat signé (PDF)",
+    "signerTitre": "Signer le contrat",
+    "nomComplet": "Votre nom complet",
+    "votreSignature": "Votre signature",
+    "zoneSignature": "Zone de signature : dessinez votre signature au doigt, au stylet ou à la souris",
+    "signezIci": "Signez ici",
+    "effacer": "Effacer",
+    "signerAvecNom": "Signer avec mon nom",
+    "consentement": "J'ai lu le contrat et je l'accepte. Je reconnais que ma signature électronique a la même valeur qu'une signature manuscrite.",
+    "signer": "Signer le contrat",
+    "signatureEnCours": "Signature…",
+    "preuves": "À la signature, la date et l'heure, votre adresse IP, votre navigateur et l'empreinte du document sont enregistrés comme preuves.",
+    "erreurNom": "Tapez votre nom complet.",
+    "erreurSignature": "Dessinez votre signature (ou utilisez « Signer avec mon nom »).",
+    "erreurAccepte": "Cochez la case pour accepter le contrat.",
+    "merci": "Merci, votre contrat est signé.",
+    "introuvable": "Ce lien n'est pas valide ou le contrat a été annulé.",
+    "indisponible": "Le contrat hôte sera bientôt disponible.",
+    "versionModifiee": "Le contrat vient d'être mis à jour : relisez-le avant de signer.",
+    "retourEspace": "Retour à mon espace hôte",
+    "reserveHotes": "Cette page est réservée aux hôtes."
   }
 }

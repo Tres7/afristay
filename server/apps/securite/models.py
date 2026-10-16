@@ -46,6 +46,7 @@ class JournalAuditModel(models.Model):
         ('identite_refusee', "Pièce d'identité refusée"),
         ('backoffice_creation', 'Création depuis le back-office'),
         ('backoffice_modification', 'Modification depuis le back-office'),
+        ('contrat_signe', 'Contrat signé électroniquement'),
     ]
 
     cree_le = models.DateTimeField(auto_now_add=True, db_index=True)
