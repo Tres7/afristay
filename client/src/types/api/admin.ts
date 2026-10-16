@@ -77,3 +77,90 @@ export interface AdminAvis {
   reponse_hote: string;
   created_at: string;
 }
+
+// --- Location de voiture (back-office) ---------------------------------------------------------
+
+export interface ReglesLocation {
+  commission_pourcent: string;
+  delai_min_jours: number;
+  duree_max_jours: number;
+  annulation_gratuite_heures: number;
+  conditions: string;
+}
+
+export interface CategorieVehicule {
+  id: number;
+  nom: string;
+  gamme: "citadine" | "berline" | "suv" | "4x4" | "minibus" | "utilitaire";
+  exemple_modele: string;
+  description: string;
+  places: number;
+  bagages: number;
+  boite: "manuelle" | "automatique";
+  carburant: "essence" | "diesel" | "hybride" | "electrique";
+  climatisation: boolean;
+  image: string | null;
+  prix_jour_sans_chauffeur: number | null;
+  prix_jour_avec_chauffeur: number | null;
+  caution: number;
+  actif: boolean;
+  ordre: number;
+}
+
+export interface LieuRemise {
+  id: number;
+  nom: string;
+  ville: string;
+  fuseau: "Africa/Lome" | "Africa/Porto-Novo";
+  adresse_requise: boolean;
+  frais: number;
+  actif: boolean;
+  ordre: number;
+}
+
+export interface Loueur {
+  id: number;
+  nom: string;
+  contact: string;
+  telephone: string;
+  email: string;
+  categories: number[];
+  lieux: number[];
+  actif: boolean;
+  pays_versement: string;
+  operateur_versement: string;
+  numero_versement: string;
+  nb_locations: number;
+}
+
+export interface AdminLocation {
+  id: string;
+  reference: string;
+  statut: "en_attente_paiement" | "confirmee" | "partenaire_assigne" | "terminee" | "annulee";
+  statut_libelle: string;
+  voyageur: { nom: string; email: string };
+  telephone: string;
+  categorie: string;
+  formule: "sans_chauffeur" | "avec_chauffeur";
+  formule_libelle: string;
+  lieu_prise: string;
+  adresse_prise: string;
+  lieu_retour: string;
+  adresse_retour: string;
+  debut: string;
+  fin: string;
+  jours: number;
+  passagers: number;
+  prix: number;
+  caution: number;
+  precisions: string;
+  conducteur: string;
+  permis_numero: string;
+  permis_pays: string;
+  partenaire: { id: number; nom: string } | null;
+  vehicule: string;
+  immatriculation: string;
+  chauffeur_nom: string;
+  chauffeur_telephone: string;
+  cree_le: string;
+}
