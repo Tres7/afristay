@@ -11,6 +11,7 @@ import { payerTransfert, minutesRestantes, useConfigPaiement } from "@/lib/paiem
 import { cn, formatPrice } from "@/lib/utils";
 import { dateVol } from "@/lib/transfert";
 import CompteRemboursementDialog from "@/components/paiement/CompteRemboursementDialog";
+import Documents from "@/components/documents/Documents";
 import type { MoyenPaiement } from "@/types/api/paiement";
 import type { StatutTransfert, Transfert } from "@/types/api/transfert";
 import { useTranslations } from "next-intl";
@@ -175,6 +176,7 @@ function TransfertDetail() {
               </p>
             )
           )}
+          {t.paiement === "reussi" && <Documents objet="transfert" id={t.id} className="mt-4 pt-4 border-t border-gray-100" />}
         </section>
 
         {aPayer && (

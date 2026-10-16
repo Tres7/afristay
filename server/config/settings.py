@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     'apps.securite.apps.SecuriteConfig',
     'apps.verifications.apps.VerificationsConfig',
     'apps.locations.apps.LocationsConfig',
+    'apps.documents.apps.DocumentsConfig',
 ]
 
 MIDDLEWARE = [
@@ -319,6 +320,8 @@ SILENCED_SYSTEM_CHECKS = ['security.W005', 'security.W021']
 # CORS
 
 CORS_ALLOWED_ORIGINS = _env_list('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000')
+# Nom des PDF téléchargés (bons, reçus, factures), lu par le site
+CORS_EXPOSE_HEADERS = ['Content-Disposition']
 
 
 # Clé de signature des JWT distincte de SECRET_KEY (sessions de l'administration, signatures Django) :

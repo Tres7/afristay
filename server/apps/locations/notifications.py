@@ -6,7 +6,7 @@ from zoneinfo import ZoneInfo
 from django.conf import settings
 from django.utils import formats, timezone
 
-from apps.paiements.notifications import _admins, _envoyer, _fcfa, alerte_admin
+from apps.paiements.notifications import _admins, _documents, _envoyer, _fcfa, alerte_admin
 
 from .models import LocationModel, VersementPartenaireModel
 
@@ -36,7 +36,7 @@ def _location(loc: LocationModel) -> dict:
 def confirmee(loc: LocationModel):
     _envoyer('emails/locations/location_confirmee.txt', f"Location confirmée — {loc.lieu_prise.ville}", [loc.voyageur.email], {
         **_location(loc), 'prenom': loc.voyageur.first_name, 'montant': _fcfa(loc.prix),
-    })
+    }, pieces_jointes=_documents(loc))
 
 
 def a_attribuer(loc: LocationModel, urgent: bool = False):

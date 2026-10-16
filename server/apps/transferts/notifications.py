@@ -6,7 +6,7 @@ from zoneinfo import ZoneInfo
 from django.conf import settings
 from django.utils import formats, timezone
 
-from apps.paiements.notifications import _admins, _envoyer, _fcfa, alerte_admin
+from apps.paiements.notifications import _admins, _documents, _envoyer, _fcfa, alerte_admin
 
 from . import tarifs
 from .models import TransfertModel, VersementChauffeurModel
@@ -31,7 +31,7 @@ def _course(t: TransfertModel) -> dict:
 def confirme(t: TransfertModel):
     _envoyer('emails/transferts/transfert_confirme.txt', f"Transfert confirmé — {t.aeroport.ville}", [t.voyageur.email], {
         **_course(t), 'prenom': t.voyageur.first_name, 'montant': _fcfa(t.prix),
-    })
+    }, pieces_jointes=_documents(t))
 
 
 def a_attribuer(t: TransfertModel, urgent: bool = False):

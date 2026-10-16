@@ -293,3 +293,33 @@ export interface DonAdmin {
   paye_le: string | null;
   cree_le: string;
 }
+
+export interface SocieteAdmin {
+  raison_sociale: string;
+  nom_commercial: string;
+  forme_juridique: string;
+  adresse: string;
+  pays: string;
+  nif: string;
+  rccm: string;
+  telephone: string;
+  email: string;
+  site: string;
+  assujetti_tva: boolean;
+  taux_tva: string;
+  mentions: string;
+  complets: boolean;
+}
+
+export interface FactureAdmin {
+  id: string;
+  numero: string;
+  emise_le: string;
+  objet_type: "reservation" | "transfert" | "location" | "libre";
+  objet_libelle: string;
+  objet_id: string | null;
+  client_nom: string;
+  client_email: string;
+  total_ttc: number;
+  tva: number;
+}
