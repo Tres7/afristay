@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { ArrowLeft, CalendarCheck, Home, LayoutDashboard, Menu, ShieldAlert, Star, Users } from "lucide-react";
+import { ArrowLeft, CalendarCheck, Car, Home, LayoutDashboard, Menu, ShieldAlert, Star, Users } from "lucide-react";
 import Logo from "@/components/layout/Logo";
 import MobileDrawer, { DrawerItem } from "@/components/layout/MobileDrawer";
 import { cn } from "@/lib/utils";
@@ -15,6 +15,7 @@ const NAV = [
   { href: "/backoffice/annonces", label: "Annonces", icon: Home },
   { href: "/backoffice/reservations", label: "Réservations", icon: CalendarCheck },
   { href: "/backoffice/avis", label: "Avis", icon: Star },
+  { href: "/backoffice/location", label: "Location de voiture", icon: Car },
 ];
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
