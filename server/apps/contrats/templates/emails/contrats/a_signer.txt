@@ -1,0 +1,12 @@
+{% autoescape off %}Bonjour {{ nom }},
+
+Kwa-Ba vous adresse votre contrat à signer en ligne : « {{ titre }} » (référence {{ reference }}).
+
+Lisez-le puis signez-le en quelques secondes, depuis votre téléphone ou votre ordinateur :
+{{ lien }}
+
+Ce lien vous est personnel : ne le transférez pas. Il est valable jusqu'au {{ expire_le }}.
+Une question sur le contrat ? Répondez simplement à cet email.
+
+L'équipe Kwa-Ba
+{% endautoescape %}

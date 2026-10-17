@@ -1,3 +1,5 @@
+import type { StatutContrat, TypeContrat } from "./contrat";
+
 // Contrat : documentation/modules/backoffice-api.md
 
 export interface AdminPage<T> {
@@ -76,4 +78,308 @@ export interface AdminAvis {
   hebergement: { id: string; name: string };
   reponse_hote: string;
   created_at: string;
+}
+
+// --- Location de voiture (back-office) ---------------------------------------------------------
+
+export interface ReglesLocation {
+  commission_pourcent: string;
+  delai_min_jours: number;
+  duree_max_jours: number;
+  annulation_gratuite_heures: number;
+  conditions: string;
+}
+
+export interface CategorieVehicule {
+  id: number;
+  nom: string;
+  gamme: "citadine" | "berline" | "suv" | "4x4" | "minibus" | "utilitaire";
+  exemple_modele: string;
+  description: string;
+  places: number;
+  bagages: number;
+  boite: "manuelle" | "automatique";
+  carburant: "essence" | "diesel" | "hybride" | "electrique";
+  climatisation: boolean;
+  image: string | null;
+  prix_jour_sans_chauffeur: number | null;
+  prix_jour_avec_chauffeur: number | null;
+  caution: number;
+  actif: boolean;
+  ordre: number;
+}
+
+export interface LieuRemise {
+  id: number;
+  nom: string;
+  ville: string;
+  fuseau: "Africa/Lome" | "Africa/Porto-Novo";
+  adresse_requise: boolean;
+  frais: number;
+  actif: boolean;
+  ordre: number;
+}
+
+export interface Loueur {
+  id: number;
+  nom: string;
+  contact: string;
+  telephone: string;
+  email: string;
+  categories: number[];
+  lieux: number[];
+  actif: boolean;
+  pays_versement: string;
+  operateur_versement: string;
+  numero_versement: string;
+  nb_locations: number;
+}
+
+export interface AdminLocation {
+  id: string;
+  reference: string;
+  statut: "en_attente_paiement" | "confirmee" | "partenaire_assigne" | "terminee" | "annulee";
+  statut_libelle: string;
+  voyageur: { nom: string; email: string };
+  telephone: string;
+  categorie: string;
+  formule: "sans_chauffeur" | "avec_chauffeur";
+  formule_libelle: string;
+  lieu_prise: string;
+  adresse_prise: string;
+  lieu_retour: string;
+  adresse_retour: string;
+  debut: string;
+  fin: string;
+  jours: number;
+  passagers: number;
+  prix: number;
+  caution: number;
+  precisions: string;
+  conducteur: string;
+  permis_numero: string;
+  permis_pays: string;
+  partenaire: { id: number; nom: string } | null;
+  vehicule: string;
+  immatriculation: string;
+  chauffeur_nom: string;
+  chauffeur_telephone: string;
+  cree_le: string;
+}
+
+// --- Transferts aéroport (back-office) ---------------------------------------------------------
+
+export type CategorieTransfert = "berline" | "confort" | "van";
+
+export interface AeroportAdmin {
+  code: string;
+  nom: string;
+  ville: string;
+  pays: string;
+  fuseau: string;
+  actif: boolean;
+  tarifs: { categorie: CategorieTransfert; prix: number; actif: boolean }[];
+}
+
+export interface ChauffeurAdmin {
+  id: number;
+  prenom: string;
+  nom: string;
+  telephone: string;
+  email: string;
+  aeroports: string[];
+  categorie: CategorieTransfert;
+  vehicule: string;
+  immatriculation: string;
+  actif: boolean;
+  pays_versement: string;
+  operateur_versement: string;
+  numero_versement: string;
+  nb_transferts: number;
+}
+
+export interface AdminTransfert {
+  id: string;
+  reference: string;
+  statut: "en_attente_paiement" | "confirme" | "chauffeur_assigne" | "termine" | "annule";
+  statut_libelle: string;
+  voyageur: { nom: string; email: string };
+  telephone: string;
+  aeroport: { code: string; ville: string };
+  arrivee: string;
+  numero_vol: string;
+  passagers: number;
+  bagages: number;
+  categorie: CategorieTransfert;
+  categorie_libelle: string;
+  destination: string;
+  message: string;
+  prix: number;
+  majoration_nuit: boolean;
+  chauffeur: { id: number; nom: string; telephone: string; vehicule: string } | null;
+  cree_le: string;
+}
+
+// --- Kwa-Ba Give (back-office) -----------------------------------------------------------------
+
+export type CauseGive = "education" | "sante" | "eau" | "environnement";
+
+export interface OngAdmin {
+  id: string;
+  nom: string;
+  slug: string;
+  cause: CauseGive;
+  pays: string;
+  ville: string;
+  resume: string;
+  description: string;
+  logo: string | null;
+  image: string | null;
+  site_web: string;
+  numero_enregistrement: string;
+  verifiee_le: string | null;
+  verification: string;
+  contact_nom: string;
+  contact_email: string;
+  contact_telephone: string;
+  coordonnees_reversement: string;
+  actif: boolean;
+  collecte: number;
+  nb_dons: number;
+  nb_projets: number;
+}
+
+export interface ProjetAdmin {
+  id: string;
+  organisation: string;
+  titre: string;
+  cause: CauseGive;
+  resume: string;
+  description: string;
+  lieu: string;
+  objectif: number | null;
+  image: string | null;
+  actif: boolean;
+}
+
+export interface ReversementAdmin {
+  id: string;
+  reference: string;
+  organisation: { id: string; nom: string };
+  coordonnees_reversement: string;
+  periode: string;
+  montant: number;
+  nb_dons: number;
+  date_prevue: string;
+  statut: "a_effectuer" | "effectue";
+  statut_libelle: string;
+  moyen: string;
+  reference_operation: string;
+  note: string;
+  effectue_le: string | null;
+  justificatif: string | null;
+}
+
+export interface DonAdmin {
+  id: string;
+  reference: string;
+  donateur: { nom: string; email: string };
+  organisation: string;
+  projet: string | null;
+  montant: number;
+  total: number;
+  montant_ong: number;
+  moyen: string;
+  statut: "en_attente" | "paye" | "echoue";
+  statut_libelle: string;
+  paye_le: string | null;
+  cree_le: string;
+}
+
+export interface SocieteAdmin {
+  raison_sociale: string;
+  nom_commercial: string;
+  forme_juridique: string;
+  adresse: string;
+  pays: string;
+  nif: string;
+  rccm: string;
+  telephone: string;
+  email: string;
+  site: string;
+  assujetti_tva: boolean;
+  taux_tva: string;
+  mentions: string;
+  representant_nom: string;
+  representant_qualite: string;
+  complets: boolean;
+  signature_presente: boolean;
+}
+
+export interface FactureAdmin {
+  id: string;
+  numero: string;
+  emise_le: string;
+  objet_type: "reservation" | "transfert" | "location" | "libre";
+  objet_libelle: string;
+  objet_id: string | null;
+  client_nom: string;
+  client_email: string;
+  total_ttc: number;
+  tva: number;
+}
+
+export interface ContratAdmin {
+  id: string;
+  reference: string;
+  type: TypeContrat;
+  type_libelle: string;
+  titre: string;
+  statut: StatutContrat;
+  statut_libelle: string;
+  partie_nom: string;
+  partie_email: string;
+  partie_telephone: string;
+  cree_le: string;
+  envoye_le: string | null;
+  expire_le: string;
+  expire: boolean;
+  signe_le: string | null;
+  signataire_nom: string;
+  ip: string | null;
+  methode: string;
+  empreinte_pdf: string;
+  motif_annulation: string;
+  version_modele: number;
+}
+
+export interface PartieContrat {
+  id: string;
+  nom: string;
+  email: string;
+  contrat: StatutContrat | null;
+}
+
+export interface ModeleContrat {
+  type: TypeContrat;
+  type_libelle: string;
+  titre: string;
+  corps: string;
+  version: number;
+  modifie_le: string;
+}
+
+export interface AlerteFraude {
+  id: number;
+  cree_le: string;
+  contexte: "message" | "annonce";
+  contexte_libelle: string;
+  objet_id: string;
+  types: string[];
+  extraits: string[];
+  masquee: boolean;
+  traitee: boolean;
+  traitee_le: string | null;
+  note: string;
+  utilisateur: { id: string; nom: string; email: string; role: string; nb_alertes: number | null };
 }

@@ -1,0 +1,203 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { usePathname } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
+import { AnimatePresence, motion } from "framer-motion";
+import { Car, CheckCircle2, HandHeart, Home, Loader2, Plane, X } from "lucide-react";
+import { Link } from "@/i18n/navigation";
+import api, { apiErrorMessage } from "@/lib/api";
+import { EVENEMENT, lireConsentement } from "@/lib/consentement";
+import { langue } from "@/lib/utils";
+
+const CLE_FERME = "kwaba_bientot_ferme";
+// Laisse passer l'écran d'accueil animé (2 s) avant d'ouvrir la fenêtre
+const DELAI_MS = 2400;
+// Pages où la fenêtre gênerait : devenir hôte, signature d'un contrat
+const PAGES_EXCLUES = /^\/(en\/)?(hote|contrat)(\/|$)/;
+
+/** Vrai tant qu'aucun logement n'est publié (la fenêtre et le bandeau disparaissent d'eux-mêmes au premier). */
+export function useAucunLogement(): boolean {
+  const { data } = useQuery({
+    queryKey: ["lancement", "aucun-logement"],
+    queryFn: async () => (await api.get<{ count: number }>("/v1/hebergements/", { params: { limit: 1 } })).data.count === 0,
+    staleTime: 5 * 60_000,
+  });
+  return data === true;
+}
+
+function dejaFermee(): boolean {
+  try {
+    return window.localStorage.getItem(CLE_FERME) === "1";
+  } catch {
+    return false;
+  }
+}
+
+/** Formulaire « Prévenez-moi » : l'email n'est utilisé que pour annoncer l'ouverture. */
+export function PrevenezMoi({ compact }: { compact?: boolean }) {
+  const t = useTranslations("bientot");
+  const [email, setEmail] = useState("");
+  const [etat, setEtat] = useState<"saisie" | "envoi" | "ok">("saisie");
+  const [erreur, setErreur] = useState("");
+
+  const envoyer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErreur("");
+    setEtat("envoi");
+    try {
+      await api.post("/v1/hebergements/lancement/", { email: email.trim(), langue: langue() });
+      setEtat("ok");
+    } catch (err) {
+      setErreur(apiErrorMessage(err, t("erreur")));
+      setEtat("saisie");
+    }
+  };
+
+  if (etat === "ok") {
+    return (
+      <p role="status" className="flex items-start gap-2 text-sm text-dark bg-green-50 border border-green-100 rounded-xl px-4 py-3">
+        <CheckCircle2 size={18} className="text-green-600 flex-shrink-0 mt-px" aria-hidden /> {t("merci")}
+      </p>
+    );
+  }
+  return (
+    <form method="post" onSubmit={envoyer}>
+      <label htmlFor={compact ? "bientot-email-bandeau" : "bientot-email"} className="sr-only">{t("email")}</label>
+      <div className="flex flex-col sm:flex-row gap-2">
+        <input id={compact ? "bientot-email-bandeau" : "bientot-email"} type="email" required autoComplete="email" value={email}
+          onChange={(e) => setEmail(e.target.value)} placeholder={t("email")}
+          className="flex-1 min-w-0 px-4 py-3 bg-white border border-gray-200 rounded-xl text-base sm:text-sm text-dark focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+        <button type="submit" disabled={etat === "envoi"}
+          className="inline-flex items-center justify-center gap-2 min-h-[48px] px-5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary-600 disabled:opacity-60 whitespace-nowrap">
+          {etat === "envoi" && <Loader2 size={16} className="animate-spin" aria-hidden />} {t("prevenir")}
+        </button>
+      </div>
+      {erreur && <p role="alert" className="text-xs text-red-600 mt-1.5">{erreur}</p>}
+      {!compact && <p className="text-xs text-gray-500 mt-2">{t("rgpd")}</p>}
+    </form>
+  );
+}
+
+/** Fenêtre affichée une fois par visiteur tant que le site n'a aucun logement publié. */
+export default function BientotDisponible() {
+  const t = useTranslations("bientot");
+  const pathname = usePathname();
+  const aucunLogement = useAucunLogement();
+  const [ouverte, setOuverte] = useState(false);
+  // Rendu côté client seulement (portail) : pas d'écart avec le HTML du serveur
+  const [monte, setMonte] = useState(false);
+  useEffect(() => setMonte(true), []);
+  const panneau = useRef<HTMLDivElement>(null);
+  const exclue = PAGES_EXCLUES.test(pathname);
+
+  // Après le choix des cookies (le bandeau de consentement passe en premier) et l'écran d'accueil
+  useEffect(() => {
+    if (!aucunLogement || exclue || dejaFermee()) return;
+    let minuteur: ReturnType<typeof setTimeout> | undefined;
+    const planifier = () => { minuteur = setTimeout(() => setOuverte(true), DELAI_MS); };
+    if (lireConsentement()) planifier();
+    else window.addEventListener(EVENEMENT, planifier, { once: true });
+    return () => {
+      clearTimeout(minuteur);
+      window.removeEventListener(EVENEMENT, planifier);
+    };
+  }, [aucunLogement, exclue]);
+
+  const fermer = useCallback(() => {
+    setOuverte(false);
+    try {
+      window.localStorage.setItem(CLE_FERME, "1");
+    } catch { /* stockage indisponible : la fenêtre reviendra à la prochaine visite */ }
+  }, []);
+
+  useEffect(() => {
+    if (!ouverte) return;
+    const precedent = document.activeElement as HTMLElement | null;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && fermer();
+    document.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    requestAnimationFrame(() => panneau.current?.querySelector<HTMLElement>("input")?.focus());
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+      precedent?.focus();
+    };
+  }, [ouverte, fermer]);
+
+  if (!monte) return null;
+  const services = [
+    { href: "/transfert", icone: Plane, libelle: t("transfert") },
+    { href: "/location", icone: Car, libelle: t("location") },
+    { href: "/give", icone: HandHeart, libelle: t("give") },
+  ];
+
+  return createPortal(
+    <AnimatePresence>
+      {ouverte && (
+        <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center sm:p-4">
+          <motion.div className="absolute inset-0 bg-black/50" onClick={fermer} aria-hidden
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
+          <motion.div ref={panneau} role="dialog" aria-modal="true" aria-labelledby="bientot-titre" aria-describedby="bientot-texte"
+            initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }} transition={{ duration: 0.25, ease: "easeOut" }}
+            className="relative w-full sm:max-w-md max-h-[92dvh] overflow-y-auto bg-white rounded-t-3xl sm:rounded-3xl shadow-card-hover">
+            <div className="relative bg-gradient-to-br from-primary to-primary-600 text-white px-6 pt-8 pb-7 text-center">
+              <button type="button" onClick={fermer} aria-label={t("fermer")}
+                className="absolute top-3 right-3 w-10 h-10 rounded-full flex items-center justify-center text-white/90 hover:bg-white/15">
+                <X size={20} aria-hidden />
+              </button>
+              <span className="mx-auto w-14 h-14 rounded-2xl bg-white/15 flex items-center justify-center"><Home size={28} aria-hidden /></span>
+              <p className="mt-4 text-xs font-bold uppercase tracking-wider text-white/80">{t("surtitre")}</p>
+              <h2 id="bientot-titre" className="font-heading font-bold text-2xl mt-1">{t("titre")}</h2>
+            </div>
+            <div className="px-6 py-6 space-y-5">
+              <p id="bientot-texte" className="text-sm text-gray-600 leading-relaxed">{t("texte")}</p>
+              <PrevenezMoi />
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-dark mb-2">{t("enAttendant")}</p>
+                <ul className="grid grid-cols-3 gap-2">
+                  {services.map(({ href, icone: Icone, libelle }) => (
+                    <li key={href}>
+                      <Link href={href} onClick={fermer}
+                        className="flex flex-col items-center gap-1.5 min-h-[76px] justify-center rounded-2xl border border-gray-100 bg-light px-2 py-3 text-center text-xs font-semibold text-dark hover:border-primary hover:text-primary transition-colors">
+                        <Icone size={20} className="text-primary" aria-hidden /> {libelle}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <p className="text-sm text-center text-gray-600">
+                {t("proprietaire")}{" "}
+                <Link href="/hote" onClick={fermer} className="font-bold text-primary underline">{t("devenirHote")}</Link>
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>,
+    document.body,
+  );
+}
+
+/** Bandeau des pages de recherche tant qu'aucun logement n'est publié. */
+export function BandeauBientot() {
+  const t = useTranslations("bientot");
+  const aucunLogement = useAucunLogement();
+  if (!aucunLogement) return null;
+  return (
+    <section aria-labelledby="bandeau-bientot" className="bg-white border border-primary/15 rounded-3xl p-5 sm:p-6 shadow-sm">
+      <div className="flex items-start gap-4">
+        <span className="w-11 h-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0"><Home size={22} aria-hidden /></span>
+        <div className="flex-1 min-w-0 space-y-3">
+          <div>
+            <h2 id="bandeau-bientot" className="font-heading font-bold text-dark text-lg">{t("titre")}</h2>
+            <p className="text-sm text-gray-600 mt-1">{t("texte")}</p>
+          </div>
+          <PrevenezMoi compact />
+        </div>
+      </div>
+    </section>
+  );
+}

@@ -6,8 +6,9 @@ import IconeKwaba from "@/components/layout/IconeKwaba";
 import { Logotype } from "@/components/layout/Logo";
 import { useTranslations } from "next-intl";
 
-// Durée d'affichage : le temps de voir la marque (un clic, une touche ou un toucher le passe)
-const DUREE_MS = 4500;
+// Durée d'affichage : juste le temps de voir la marque (retour des utilisateurs : 4,5 s était trop long).
+// Un clic, une touche ou un toucher la passe.
+const DUREE_MS = 2000;
 
 export default function SplashScreen() {
   const t = useTranslations("commun");
@@ -35,7 +36,7 @@ export default function SplashScreen() {
           key="splash"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, scale: 1.05 }}
-          transition={{ duration: 0.5, ease: "easeInOut" }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
           onClick={() => setVisible(false)}
           className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white dark:bg-[#0f172a] cursor-pointer"
         >
@@ -43,11 +44,11 @@ export default function SplashScreen() {
           <motion.div
             initial={{ scale: 0.6, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.6, ease: "backOut" }}
+            transition={{ duration: 0.4, ease: "backOut" }}
             className="flex flex-col items-center gap-4"
           >
             {/* Pictogramme */}
-            <motion.div initial={{ y: 8 }} animate={{ y: 0 }} transition={{ delay: 0.3, duration: 0.5, ease: "easeOut" }}>
+            <motion.div initial={{ y: 8 }} animate={{ y: 0 }} transition={{ delay: 0.15, duration: 0.35, ease: "easeOut" }}>
               <IconeKwaba taille={76} className="rounded-[18px] shadow-card" />
             </motion.div>
 
@@ -55,7 +56,7 @@ export default function SplashScreen() {
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.55, duration: 0.45 }}
+              transition={{ delay: 0.25, duration: 0.3 }}
             >
               <Logotype className="text-4xl" />
             </motion.div>
@@ -64,7 +65,7 @@ export default function SplashScreen() {
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.85, duration: 0.4 }}
+              transition={{ delay: 0.4, duration: 0.3 }}
               className="text-sm text-gray-600 dark:text-slate-300 font-body tracking-[0.18em]"
             >
               {t("slogan")}
@@ -75,13 +76,13 @@ export default function SplashScreen() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1, duration: 0.3 }}
+            transition={{ delay: 0.2, duration: 0.2 }}
             className="absolute bottom-16 w-40 h-1 bg-gray-100 rounded-full overflow-hidden"
           >
             <motion.div
               initial={{ width: "0%" }}
               animate={{ width: "100%" }}
-              transition={{ delay: 1, duration: DUREE_MS / 1000 - 1.3, ease: "easeInOut" }}
+              transition={{ delay: 0.2, duration: DUREE_MS / 1000 - 0.45, ease: "easeOut" }}
               className="h-full rounded-full"
               style={{ background: "linear-gradient(90deg, #0E4D47, #F59E0B)" }}
             />

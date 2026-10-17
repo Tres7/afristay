@@ -192,11 +192,11 @@
     "atouts": {
       "paiement": {
         "titre": "Paiement flexible",
-        "texte": "Mobile Money (MTN, Orange, Wave), carte bancaire ou PayPal."
+        "texte": "Mobile Money : Mixx by Yas (T-Money), Moov Money (Flooz), MTN MoMo, Orange Money, Celtiis, Airtel… Carte Visa ou Mastercard, ou PayPal."
       },
       "instantanee": {
-        "titre": "Réservation instantanée",
-        "texte": "Votre séjour est confirmé immédiatement, sans attente."
+        "titre": "Confirmation immédiate",
+        "texte": "Votre séjour est confirmé dès le paiement, sans attendre la réponse de l'hôte."
       },
       "contact": {
         "titre": "Contact direct avec l'hôte",
@@ -418,7 +418,8 @@
     "aucunResultatTexte": "Essayez une autre destination, d'autres dates ou retirez des filtres.",
     "voirTous": "Voir tous les hébergements",
     "fermer": "Fermer",
-    "listeResultats": "Hébergements trouvés"
+    "listeResultats": "Hébergements trouvés",
+    "petitDejInclus": "Petit-déjeuner inclus"
   },
   "fiche": {
     "introuvable": "Hébergement introuvable",
@@ -1262,7 +1263,12 @@
     "envoi": "Envoi...",
     "placeholder": "Écrivez votre message...",
     "votreMessage": "Votre message",
-    "envoyer": "Envoyer le message"
+    "envoyer": "Envoyer le message",
+    "securite": "Pour votre sécurité, tout passe par la messagerie Kwa-Ba : numéros, emails et liens sont masqués. Ne payez jamais en dehors du site.",
+    "anonymeHote": "Ce voyageur n'a pas encore réservé : son nom s'affichera après son paiement.",
+    "anonymeVoyageur": "L'hôte ne voit pas votre nom tant que vous n'avez pas réservé et payé sur Kwa-Ba.",
+    "masque": "Coordonnées masquées par Kwa-Ba",
+    "masqueEnvoi": "Coordonnées masquées : sur Kwa-Ba, les échanges et les paiements passent uniquement par le site."
   },
   "devenirHote": {
     "etapes": {
@@ -1383,7 +1389,7 @@
       "confidentialite": "Document visible uniquement par les agents Kwa-Ba, jamais par les voyageurs."
     },
     "candidature": {
-      "titre": "Devenir hôte Kwa-Ba : 3 étapes",
+      "titre": "Devenir hôte Kwa-Ba : {nombre} étapes",
       "texte": "Pour la sécurité des voyageurs, chaque hôte est vérifié avant de publier. Vos annonces restent invisibles jusqu'à la fin des étapes.",
       "telephoneTitre": "Votre numéro de téléphone",
       "telephoneTexte": "L'agent Kwa-Ba vous appellera pour organiser la visite.",
@@ -1395,7 +1401,14 @@
       "annonceTitre": "Votre logement, visité par un agent",
       "annonceTexte": "Préparez votre annonce (3 au maximum avant la vérification de votre identité).",
       "annonceAction": "Créer mon annonce",
-      "annonceEnAttente": "Annonce prête. Un agent vous appellera pour la visite dès que votre identité sera vérifiée."
+      "annonceEnAttente": "Annonce prête. Un agent vous appellera pour la visite dès que votre identité sera vérifiée.",
+      "identiteVerifiee": "Vérifiée.",
+      "contratTitre": "Votre contrat hôte",
+      "contratTexte": "Lisez-le et signez-le en ligne, en deux minutes.",
+      "contratAction": "Lire et signer",
+      "contratSigne": "Signé.",
+      "contratTelecharger": "Voir le contrat",
+      "annonceContrat": "Annonce prête. Un agent vous appellera pour la visite dès que votre identité sera vérifiée et votre contrat signé."
     }
   },
   "annonce": {
@@ -1428,7 +1441,24 @@
     "envoiPhotos": "Envoi des photos...",
     "enregistrement": "Enregistrement...",
     "enregistrerModifs": "Enregistrer les modifications",
-    "publier": "Publier l'annonce"
+    "publier": "Publier l'annonce",
+    "detailsTitre": "Le logement en détail",
+    "detailsAide": "Ces informations s'affichent sur votre annonce et rassurent les voyageurs.",
+    "surface": "Surface (m²)",
+    "chambres": "Chambres",
+    "sallesDeBain": "Salles de bain",
+    "lits": "Lits",
+    "litsDoubles": "Lits doubles",
+    "litsSimples": "Lits simples",
+    "canapesLits": "Canapés-lits",
+    "petitDejeuner": "Petit-déjeuner",
+    "petitDejNon": "Non proposé",
+    "petitDejInclus": "Inclus",
+    "petitDejOption": "En option",
+    "petitDejPrix": "Prix par personne (FCFA)",
+    "arrivee": "Arrivée à partir de",
+    "depart": "Départ avant",
+    "detailsManquants": "Complétez les détails (surface, chambres, lits, petit-déjeuner) : ils s'afficheront sur l'annonce."
   },
   "revenus": {
     "statuts": {
@@ -1589,5 +1619,80 @@
     "villes": "Villes",
     "logements": "Logements",
     "logementsDispo": "{nombre, plural, =1 {1 logement} other {# logements}}"
+  },
+  "details": {
+    "titre": "Le logement en détail",
+    "surfaceTitre": "Surface",
+    "surface": "{m2} m²",
+    "chambresTitre": "Chambres",
+    "chambres": "{nombre, plural, =1 {1 chambre} other {# chambres}}",
+    "litsTitre": "{nombre, plural, =1 {1 lit} other {# lits}}",
+    "litsDoubles": "{nombre, plural, =1 {1 lit double} other {# lits doubles}}",
+    "litsSimples": "{nombre, plural, =1 {1 lit simple} other {# lits simples}}",
+    "canapesLits": "{nombre, plural, =1 {1 canapé-lit} other {# canapés-lits}}",
+    "sallesTitre": "Salles de bain",
+    "salles": "{nombre, plural, =1 {1 salle de bain} other {# salles de bain}}",
+    "petitDejTitre": "Petit-déjeuner",
+    "petitDejInclus": "Inclus dans le prix",
+    "petitDejInclusCourt": "Petit-déj. inclus",
+    "petitDejOption": "En option · {prix} par personne",
+    "petitDejNon": "Non proposé",
+    "horairesTitre": "Arrivée et départ",
+    "arrivee": "Arrivée dès {heure}",
+    "depart": "départ avant {heure}"
+  },
+  "contrat": {
+    "surtitre": "Contrat Kwa-Ba",
+    "reference": "Référence",
+    "pour": "Pour : {nom}",
+    "signeTitre": "Contrat signé",
+    "signeTexte": "Signé par {nom} le {date}. Le PDF signé vous a été envoyé par email.",
+    "expire": "Ce lien a expiré. Répondez à l'email reçu ou écrivez à Kwa-Ba pour recevoir un nouveau lien.",
+    "enFrancais": "Le contrat est rédigé en français ; seule la version française fait foi.",
+    "telechargerProjet": "Télécharger le contrat (PDF)",
+    "telechargerSigne": "Télécharger le contrat signé (PDF)",
+    "signerTitre": "Signer le contrat",
+    "nomComplet": "Votre nom complet",
+    "votreSignature": "Votre signature",
+    "zoneSignature": "Zone de signature : dessinez votre signature au doigt, au stylet ou à la souris",
+    "signezIci": "Signez ici",
+    "effacer": "Effacer",
+    "signerAvecNom": "Signer avec mon nom",
+    "consentement": "J'ai lu le contrat et je l'accepte. Je reconnais que ma signature électronique a la même valeur qu'une signature manuscrite.",
+    "signer": "Signer le contrat",
+    "signatureEnCours": "Signature…",
+    "preuves": "À la signature, la date et l'heure, votre adresse IP, votre navigateur et l'empreinte du document sont enregistrés comme preuves.",
+    "erreurNom": "Tapez votre nom complet.",
+    "erreurSignature": "Dessinez votre signature (ou utilisez « Signer avec mon nom »).",
+    "erreurAccepte": "Cochez la case pour accepter le contrat.",
+    "merci": "Merci, votre contrat est signé.",
+    "introuvable": "Ce lien n'est pas valide ou le contrat a été annulé.",
+    "indisponible": "Le contrat hôte sera bientôt disponible.",
+    "versionModifiee": "Le contrat vient d'être mis à jour : relisez-le avant de signer.",
+    "retourEspace": "Retour à mon espace hôte",
+    "reserveHotes": "Cette page est réservée aux hôtes."
+  },
+  "bientot": {
+    "surtitre": "Ouverture imminente",
+    "titre": "Les logements arrivent très bientôt",
+    "texte": "Nous vérifions un par un nos premiers hôtes : identité contrôlée et visite du logement sur place. Les premiers logements seront en ligne dans les jours à venir.",
+    "email": "Votre adresse email",
+    "prevenir": "Prévenez-moi",
+    "merci": "Merci ! Nous vous écrirons dès l'ouverture.",
+    "erreur": "Inscription impossible pour le moment. Réessayez.",
+    "rgpd": "Un seul email, le jour de l'ouverture. Rien d'autre.",
+    "enAttendant": "Déjà disponible",
+    "transfert": "Transfert aéroport",
+    "location": "Location de voiture",
+    "give": "Kwa-Ba Give",
+    "proprietaire": "Vous avez un logement à louer ?",
+    "devenirHote": "Devenez hôte",
+    "fermer": "Fermer"
+  },
+  "devise": {
+    "choisir": "Devise d'affichage des prix",
+    "fcfa": "Franc CFA",
+    "euro": "Euro",
+    "debite": "Débité en FCFA : {montant}"
   }
 }

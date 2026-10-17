@@ -3,6 +3,7 @@ from django.conf import settings
 
 from apps.messaging.application.service.MessagingService import MessagingService
 from apps.messaging.application.service.OutboxRelayService import OutboxRelayService
+from apps.messaging.infrastructure.lookups.DjangoBookingLookup import DjangoBookingLookup
 from apps.messaging.infrastructure.lookups.DjangoHebergementLookup import DjangoHebergementLookup
 from apps.messaging.infrastructure.lookups.DjangoUserLookup import DjangoUserLookup
 from apps.messaging.infrastructure.messaging.RabbitMQEventBus import RabbitMQEventBus
@@ -10,6 +11,7 @@ from apps.messaging.infrastructure.persistence.DjangoConversationRepository impo
 from apps.messaging.infrastructure.persistence.DjangoMessageRepository import DjangoMessageRepository
 from apps.messaging.infrastructure.persistence.DjangoNotificationOutbox import DjangoNotificationOutbox
 from apps.messaging.infrastructure.persistence.DjangoTransactionManager import DjangoTransactionManager
+from apps.messaging.infrastructure.securite.DjangoContactGuard import DjangoContactGuard
 
 
 def messaging_service() -> MessagingService:
@@ -21,6 +23,8 @@ def messaging_service() -> MessagingService:
         outbox=DjangoNotificationOutbox(),
         tx=DjangoTransactionManager(),
         email_delay_seconds=settings.MESSAGING['EMAIL_DELAY_SECONDS'],
+        guard=DjangoContactGuard(),
+        bookings=DjangoBookingLookup(),
     )
 
 

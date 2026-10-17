@@ -10,6 +10,7 @@ import api from "@/lib/api";
 import { cn, formatDate } from "@/lib/utils";
 import Chargement from "@/components/ui/Chargement";
 import PropertyCard from "@/components/hebergement/PropertyCard";
+import { BandeauBientot, useAucunLogement } from "@/components/lancement/BientotDisponible";
 import DateRangeField from "@/components/ui/DateRangeField";
 import GuestsField from "@/components/ui/GuestsField";
 import Select from "@/components/ui/Select";
@@ -32,10 +33,11 @@ const TYPES = [
   { id: "auberge", label: "auberges" },
 ];
 
-const FILTER_KEYS = ["city", "check_in", "check_out", "guests", "type", "sort", "price_min", "price_max"] as const;
+const FILTER_KEYS = ["city", "check_in", "check_out", "guests", "type", "sort", "price_min", "price_max", "petit_dejeuner"] as const;
 
 function RechercheContent() {
   const t = useTranslations("recherche");
+  const aucunLogement = useAucunLogement();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -99,7 +101,7 @@ function RechercheContent() {
   const stayQuery = params.check_in && params.check_out
     ? `?check_in=${params.check_in}&check_out=${params.check_out}&guests=${params.guests || 1}`
     : "";
-  const activeCount = [params.type, params.sort, params.price_min, params.price_max].filter(Boolean).length;
+  const activeCount = [params.type, params.sort, params.price_min, params.price_max, params.petit_dejeuner].filter(Boolean).length;
 
   const filtersPanel = (
     <div className="space-y-6">
@@ -127,6 +129,12 @@ function RechercheContent() {
         />
       </div>
 
+      <label className="flex items-center gap-3 cursor-pointer">
+        <input type="checkbox" className="accent-primary w-5 h-5" checked={params.petit_dejeuner === "inclus"}
+          onChange={(e) => pushParams({ petit_dejeuner: e.target.checked ? "inclus" : "" })} />
+        <span className="text-sm font-semibold text-dark">{t("petitDejInclus")}</span>
+      </label>
+
       <div>
         <p className="text-xs text-muted font-bold uppercase tracking-wider mb-2">{t("prixParNuit")}</p>
         <div className="flex items-center gap-2">
@@ -141,7 +149,7 @@ function RechercheContent() {
 
       {activeCount > 0 && (
         <button
-          onClick={() => { setPriceMin(""); setPriceMax(""); pushParams({ type: "", sort: "", price_min: "", price_max: "" }); }}
+          onClick={() => { setPriceMin(""); setPriceMax(""); pushParams({ type: "", sort: "", price_min: "", price_max: "", petit_dejeuner: "" }); }}
           className="w-full text-sm font-semibold text-gray-500 hover:text-primary"
         >
           {t("effacerFiltres")}
@@ -218,6 +226,8 @@ function RechercheContent() {
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
                 {[0, 1, 2, 3, 4, 5].map((i) => <div key={i} className="h-72 rounded-2xl skeleton" />)}
               </div>
+            ) : results.length === 0 && aucunLogement ? (
+              <BandeauBientot />
             ) : results.length === 0 ? (
               <div className="bg-white rounded-2xl shadow-card p-10 sm:p-16 text-center">
                 <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">

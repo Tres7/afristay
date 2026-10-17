@@ -141,6 +141,9 @@ class VisitesView(APIView):
               .select_related('host', 'host__piece_identite')
               .prefetch_related(Prefetch('visites', queryset=VisiteModel.objects.only('id', 'decision', 'hebergement')))
               .order_by('created_at'))
+        if services.contrats_disponibles():
+            # …et qui ont signé leur contrat hôte
+            qs = qs.filter(host__contrats__type='hote', host__contrats__statut='signe')
         ville = request.query_params.get('ville', '').strip()
         if ville:
             qs = qs.filter(city__icontains=ville)

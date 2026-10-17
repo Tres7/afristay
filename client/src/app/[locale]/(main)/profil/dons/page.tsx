@@ -8,6 +8,7 @@ import { CAUSES } from "@/lib/give";
 import { formatDate, formatPrice } from "@/lib/utils";
 import SubPageHeader from "@/components/layout/SubPageHeader";
 import type { Don } from "@/types/api/give";
+import Documents from "@/components/documents/Documents";
 import { useTranslations } from "next-intl";
 
 interface ReponseDons {
@@ -78,6 +79,7 @@ export default function MesDonsPage() {
                       {don.reference} · {formatDate(don.paye_le ?? don.cree_le)}{don.projet && <> · {don.projet.titre}</>} · {formatPrice(don.montant_ong)} {t("pourOng")}
                     </p>
                     <div className="text-xs mt-2"><Suivi don={don} /></div>
+                    {don.statut === "paye" && <Documents objet="don" id={don.id} className="mt-3" />}
                   </div>
                 </li>
               );
