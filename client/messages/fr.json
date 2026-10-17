@@ -1263,7 +1263,12 @@
     "envoi": "Envoi...",
     "placeholder": "Écrivez votre message...",
     "votreMessage": "Votre message",
-    "envoyer": "Envoyer le message"
+    "envoyer": "Envoyer le message",
+    "securite": "Pour votre sécurité, tout passe par la messagerie Kwa-Ba : numéros, emails et liens sont masqués. Ne payez jamais en dehors du site.",
+    "anonymeHote": "Ce voyageur n'a pas encore réservé : son nom s'affichera après son paiement.",
+    "anonymeVoyageur": "L'hôte ne voit pas votre nom tant que vous n'avez pas réservé et payé sur Kwa-Ba.",
+    "masque": "Coordonnées masquées par Kwa-Ba",
+    "masqueEnvoi": "Coordonnées masquées : sur Kwa-Ba, les échanges et les paiements passent uniquement par le site."
   },
   "devenirHote": {
     "etapes": {

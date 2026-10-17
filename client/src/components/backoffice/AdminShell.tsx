@@ -15,6 +15,7 @@ const NAV = [
   { href: "/backoffice/annonces", label: "Annonces", icon: Home },
   { href: "/backoffice/reservations", label: "Réservations", icon: CalendarCheck },
   { href: "/backoffice/avis", label: "Avis", icon: Star },
+  { href: "/backoffice/anti-fraude", label: "Anti-fraude", icon: ShieldAlert },
   { href: "/backoffice/transferts", label: "Transferts aéroport", icon: Plane },
   { href: "/backoffice/location", label: "Location de voiture", icon: Car },
   { href: "/backoffice/give", label: "Kwa-Ba Give", icon: HandHeart },

@@ -14,6 +14,8 @@ from rest_framework.throttling import ScopedRateThrottle
 from .disponibilites import a_des_reservations, filtre_actives, periodes_indisponibles, verrouiller
 from .models import BlocageModel, HebergementModel, HebergementPhotoModel
 from .photos import InvalidPhoto, normalize_photo
+from apps.securite import fraude
+
 from .serializers import BlocageSerializer, HebergementSerializer, HebergementCreateSerializer, RechercheSerializer
 from apps.verifications import services as verifications
 
@@ -33,6 +35,13 @@ def _context(request, proprietaire=False):
         contexte['favorite_ids'] = set(FavoriModel.objects.filter(user=request.user).values_list('hebergement_id', flat=True))
     return contexte
 
+
+
+def _signaler_coordonnees(request, serializer, objet_id) -> None:
+    """Coordonnées refusées dans une annonce : tentative signalée au back-office (Anti-fraude)."""
+    trouvailles = getattr(serializer, 'trouvailles', None)
+    if trouvailles:
+        fraude.signaler(request.user.id, 'annonce', objet_id, trouvailles)
 
 class HebergementListView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
@@ -110,6 +119,7 @@ class HebergementListView(APIView):
 
         serializer = HebergementCreateSerializer(data=request.data)
         if not serializer.is_valid():
+            _signaler_coordonnees(request, serializer, 'nouvelle')
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         hebergement = serializer.save(host=request.user)
@@ -222,6 +232,7 @@ class HebergementDetailView(APIView):
 
         serializer = HebergementCreateSerializer(obj, data=request.data, partial=True)
         if not serializer.is_valid():
+            _signaler_coordonnees(request, serializer, obj.pk)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         avant = {champ: getattr(obj, champ) for champ in HebergementModel.CHAMPS_VERIFIES}
         serializer.save()

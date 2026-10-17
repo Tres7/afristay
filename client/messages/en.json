@@ -1263,7 +1263,12 @@
     "envoi": "Sending...",
     "placeholder": "Write your message...",
     "votreMessage": "Your message",
-    "envoyer": "Send message"
+    "envoyer": "Send message",
+    "securite": "For your safety, everything goes through Kwa-Ba messaging: phone numbers, emails and links are hidden. Never pay outside the site.",
+    "anonymeHote": "This traveller has not booked yet: their name will appear once they have paid.",
+    "anonymeVoyageur": "The host cannot see your name until you have booked and paid on Kwa-Ba.",
+    "masque": "Contact details hidden by Kwa-Ba",
+    "masqueEnvoi": "Contact details hidden: on Kwa-Ba, conversations and payments only go through the site."
   },
   "devenirHote": {
     "etapes": {

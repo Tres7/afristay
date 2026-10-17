@@ -3,6 +3,7 @@ from datetime import timedelta
 
 from django.utils import timezone
 
+from apps.securite import coordonnees
 from apps.securite.images import MESSAGE as IMAGE_REFUSEE, url_image_autorisee
 
 from .models import BlocageModel, HebergementModel
@@ -28,6 +29,15 @@ class HebergementSerializer(serializers.ModelSerializer):
             'petit_dejeuner', 'petit_dejeuner_prix', 'arrivee_a_partir', 'depart_avant',
         ]
         read_only_fields = ['id', 'rating', 'review_count', 'host_id', 'created_at', 'statut_verification', 'verifiee_le']
+
+    def to_representation(self, instance):
+        donnees = super().to_representation(instance)
+        # Annonces publiées avant le filtrage : coordonnées masquées pour les voyageurs (l'hôte voit son texte)
+        if not self.context.get('proprietaire'):
+            for champ in ('name', 'description', 'location'):
+                if donnees.get(champ):
+                    donnees[champ] = coordonnees.analyser(donnees[champ])[0]
+        return donnees
 
     def get_host_name(self, obj):
         return f"{obj.host.first_name} {obj.host.last_name}".strip()
@@ -88,6 +98,27 @@ class HebergementCreateSerializer(serializers.ModelSerializer):
         if formule != 'option' and 'petit_dejeuner' in data:
             data['petit_dejeuner_prix'] = None
         return data
+
+    COORDONNEES_REFUSEES = ("Les coordonnées (téléphone, email, site, réseaux sociaux) ne sont pas autorisées dans l'annonce : "
+                            "les voyageurs vous écrivent par la messagerie Kwa-Ba.")
+
+    def _sans_coordonnees(self, value):
+        """Anti-contournement : aucun moyen de joindre l'hôte en dehors du site. Les éléments trouvés sont gardés
+        pour l'alerte du back-office (signalée par la vue)."""
+        _, trouvailles = coordonnees.analyser(value or '')
+        if coordonnees.masquees(trouvailles):
+            self.trouvailles = getattr(self, 'trouvailles', []) + trouvailles
+            raise serializers.ValidationError(self.COORDONNEES_REFUSEES)
+        return value
+
+    def validate_name(self, value):
+        return self._sans_coordonnees(value)
+
+    def validate_description(self, value):
+        return self._sans_coordonnees(value)
+
+    def validate_location(self, value):
+        return self._sans_coordonnees(value)
 
     def validate_price_per_night(self, value):
         if value <= 0:
