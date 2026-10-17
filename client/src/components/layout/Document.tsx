@@ -7,6 +7,7 @@ import AuthProvider from "@/providers/AuthProvider";
 import ThemeProvider from "@/providers/ThemeProvider";
 import SplashScreen from "@/components/layout/SplashScreen";
 import SynchroLangue from "@/components/layout/SynchroLangue";
+import { DeviseProvider } from "@/components/layout/Devise";
 import { Toaster } from "sonner";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
@@ -73,7 +74,7 @@ export default async function Document({ locale, children }: { locale: Langue; c
                 {t("allerAuContenu")}
               </a>
               <SplashScreen />
-              {children}
+              <DeviseProvider>{children}</DeviseProvider>
               <Toaster
                 position="top-center"
                 richColors

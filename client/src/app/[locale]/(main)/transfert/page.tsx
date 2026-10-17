@@ -8,10 +8,11 @@ import { useQuery } from "@tanstack/react-query";
 import { Car, Clock, CreditCard, Lock, Luggage, Moon, Plane, ShieldCheck, Smartphone, Users, Wallet } from "lucide-react";
 import api, { apiErrorMessage } from "@/lib/api";
 import { enEuros, payerTransfert, useConfigPaiement } from "@/lib/paiement";
-import { cn, formatPrice, isoDate } from "@/lib/utils";
+import { cn, formatFcfa, formatPrice, isoDate } from "@/lib/utils";
 import Select from "@/components/ui/Select";
 import Stepper from "@/components/ui/Stepper";
 import FormField from "@/components/ui/FormField";
+import { MontantDebite } from "@/components/layout/Devise";
 import type { Reservation } from "@/types/api/models";
 import type { MoyenPaiement } from "@/types/api/paiement";
 import type { Aeroport, CategorieVehicule, Devis, Transfert } from "@/types/api/transfert";
@@ -248,7 +249,7 @@ function TransfertContent() {
                 {choix.nuit && <div className="flex justify-between gap-3"><dt className="text-gray-600">{t("tarifNuitDetail")}</dt><dd className="font-medium text-dark">{t("inclus")}</dd></div>}
                 <div className="flex justify-between items-center gap-3 pt-3 border-t border-gray-100">
                   <dt className="font-heading font-bold text-dark text-base">{t("total")}</dt>
-                  <dd className="font-heading font-bold text-primary text-2xl">{formatPrice(choix.prix)}</dd>
+                  <dd className="text-right"><span className="block font-heading font-bold text-primary text-2xl">{formatPrice(choix.prix)}</span><MontantDebite montant={choix.prix} /></dd>
                 </div>
               </dl>
             ) : (
@@ -279,7 +280,7 @@ function TransfertContent() {
                 : envoi
                   ? t("redirection")
                   : choix
-                    ? enLigne ? tRes("payer", { montant: moyenChoisi === "paypal" && config ? enEuros(choix.prix, config.fcfa_par_euro) : formatPrice(choix.prix) }) : t("reserver")
+                    ? enLigne ? tRes("payer", { montant: moyenChoisi === "paypal" && config ? enEuros(choix.prix, config.fcfa_par_euro) : formatFcfa(choix.prix) }) : t("reserver")
                     : t("reserver")}
             </button>
             <p className="text-xs text-gray-600 text-center leading-relaxed">

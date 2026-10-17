@@ -1688,5 +1688,11 @@
     "proprietaire": "Do you have a place to rent?",
     "devenirHote": "Become a host",
     "fermer": "Close"
+  },
+  "devise": {
+    "choisir": "Currency for prices",
+    "fcfa": "CFA franc",
+    "euro": "Euro",
+    "debite": "Charged in CFA francs: {montant}"
   }
 }
