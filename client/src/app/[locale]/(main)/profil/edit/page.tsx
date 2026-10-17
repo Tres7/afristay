@@ -94,7 +94,7 @@ export default function EditProfilePage() {
       </div>
 
       <div className="bg-white rounded-2xl shadow-card p-5 sm:p-8 md:p-10">
-        <form onSubmit={handleSubmit} className="space-y-6 max-w-lg">
+        <form method="post" onSubmit={handleSubmit} className="space-y-6 max-w-lg">
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
               {error}

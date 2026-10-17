@@ -10,11 +10,13 @@ import api from "@/lib/api";
 import { cn, formatDate } from "@/lib/utils";
 import Chargement from "@/components/ui/Chargement";
 import PropertyCard from "@/components/hebergement/PropertyCard";
+import { BandeauBientot, useAucunLogement } from "@/components/lancement/BientotDisponible";
 import DateRangeField from "@/components/ui/DateRangeField";
 import GuestsField from "@/components/ui/GuestsField";
 import Select from "@/components/ui/Select";
 import type { Hebergement, Paginated } from "@/types/api/models";
 import { useTranslations } from "next-intl";
+import ChampDestination from "@/components/hebergement/ChampDestination";
 
 const SORTS = [
   { id: "", label: "pertinence" },
@@ -31,10 +33,11 @@ const TYPES = [
   { id: "auberge", label: "auberges" },
 ];
 
-const FILTER_KEYS = ["city", "check_in", "check_out", "guests", "type", "sort", "price_min", "price_max"] as const;
+const FILTER_KEYS = ["city", "check_in", "check_out", "guests", "type", "sort", "price_min", "price_max", "petit_dejeuner"] as const;
 
 function RechercheContent() {
   const t = useTranslations("recherche");
+  const aucunLogement = useAucunLogement();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -98,7 +101,7 @@ function RechercheContent() {
   const stayQuery = params.check_in && params.check_out
     ? `?check_in=${params.check_in}&check_out=${params.check_out}&guests=${params.guests || 1}`
     : "";
-  const activeCount = [params.type, params.sort, params.price_min, params.price_max].filter(Boolean).length;
+  const activeCount = [params.type, params.sort, params.price_min, params.price_max, params.petit_dejeuner].filter(Boolean).length;
 
   const filtersPanel = (
     <div className="space-y-6">
@@ -126,6 +129,12 @@ function RechercheContent() {
         />
       </div>
 
+      <label className="flex items-center gap-3 cursor-pointer">
+        <input type="checkbox" className="accent-primary w-5 h-5" checked={params.petit_dejeuner === "inclus"}
+          onChange={(e) => pushParams({ petit_dejeuner: e.target.checked ? "inclus" : "" })} />
+        <span className="text-sm font-semibold text-dark">{t("petitDejInclus")}</span>
+      </label>
+
       <div>
         <p className="text-xs text-muted font-bold uppercase tracking-wider mb-2">{t("prixParNuit")}</p>
         <div className="flex items-center gap-2">
@@ -140,7 +149,7 @@ function RechercheContent() {
 
       {activeCount > 0 && (
         <button
-          onClick={() => { setPriceMin(""); setPriceMax(""); pushParams({ type: "", sort: "", price_min: "", price_max: "" }); }}
+          onClick={() => { setPriceMin(""); setPriceMax(""); pushParams({ type: "", sort: "", price_min: "", price_max: "", petit_dejeuner: "" }); }}
           className="w-full text-sm font-semibold text-gray-500 hover:text-primary"
         >
           {t("effacerFiltres")}
@@ -152,14 +161,18 @@ function RechercheContent() {
   return (
     <div className="min-h-screen bg-light">
       <div className="bg-white border-b border-gray-100 shadow-sm px-4 sm:px-6 py-4">
-        <form onSubmit={submitSearch} className="max-w-7xl mx-auto grid grid-cols-2 lg:flex gap-2 sm:gap-3 items-stretch">
+        <form method="post" onSubmit={submitSearch} className="max-w-7xl mx-auto grid grid-cols-2 lg:flex gap-2 sm:gap-3 items-stretch">
           <label className="col-span-2 lg:flex-1 flex items-center gap-3 border border-gray-200 rounded-xl px-4 py-3 bg-light-muted">
             <Search size={16} className="text-muted flex-shrink-0" />
-            <input
-              type="text" value={city} onChange={(e) => setCity(e.target.value)}
+            <ChampDestination
+              value={city} onChange={setCity}
+              // Ville proposée choisie : la recherche part tout de suite
+              onVille={(ville) => pushParams({ city: ville })}
               placeholder={t("destinationExemple")}
-              aria-label={t("destination")}
-              className="flex-1 min-w-0 text-base sm:text-sm text-dark placeholder:text-muted outline-none bg-transparent"
+              ariaLabel={t("destination")}
+              className="flex-1 min-w-0"
+              inputClassName="w-full text-base sm:text-sm text-dark placeholder:text-muted outline-none bg-transparent"
+              listeClassName="-left-11 -right-4"
             />
           </label>
           <DateRangeField
@@ -192,12 +205,12 @@ function RechercheContent() {
               {isLoading ? (
                 <p className="text-muted text-sm">{t("rechercheEnCours")}</p>
               ) : (
-                <p className="text-dark font-medium">
+                <h1 className="text-dark font-medium">
                   <span className="font-heading font-bold text-2xl">{results.length}</span>{" "}
                   {t("hebergements", { nombre: results.length })}
                   {params.city && <span className="text-muted font-normal"> {t("aVille", { ville: params.city })}</span>}
                   {params.check_in && params.check_out && <span className="text-muted font-normal text-sm"> · {t("disponiblesDu", { debut: formatDate(params.check_in, { day: "numeric", month: "numeric", year: "numeric" }), fin: formatDate(params.check_out, { day: "numeric", month: "numeric", year: "numeric" }) })}</span>}
-                </p>
+                </h1>
               )}
               <button onClick={() => setFiltersOpen(true)} className="lg:hidden flex items-center gap-2 border border-gray-200 bg-white rounded-full px-4 py-2 text-sm font-semibold text-dark flex-shrink-0">
                 <SlidersHorizontal size={15} /> {t("filtres")}{activeCount > 0 && <span className="bg-primary text-white text-[10px] rounded-full w-5 h-5 flex items-center justify-center">{activeCount}</span>}
@@ -213,6 +226,8 @@ function RechercheContent() {
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
                 {[0, 1, 2, 3, 4, 5].map((i) => <div key={i} className="h-72 rounded-2xl skeleton" />)}
               </div>
+            ) : results.length === 0 && aucunLogement ? (
+              <BandeauBientot />
             ) : results.length === 0 ? (
               <div className="bg-white rounded-2xl shadow-card p-10 sm:p-16 text-center">
                 <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
@@ -223,9 +238,10 @@ function RechercheContent() {
                 <button onClick={() => router.push(pathname)} className="mt-4 text-primary font-bold hover:underline">{t("voirTous")}</button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+              <section aria-labelledby="liste-resultats" className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+                <h2 id="liste-resultats" className="sr-only">{t("listeResultats")}</h2>
                 {results.map((h) => <PropertyCard key={h.id} property={h} query={stayQuery} />)}
-              </div>
+              </section>
             )}
           </div>
         </div>

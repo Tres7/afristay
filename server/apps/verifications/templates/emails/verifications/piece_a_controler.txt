@@ -1,0 +1,11 @@
+{% autoescape off %}Un hôte vient d'envoyer sa pièce d'identité. Contrôlez-la avant toute visite : ses logements ne vous seront proposés qu'une fois son identité vérifiée.
+
+  Hôte : {{ hote }}
+  Téléphone : {{ telephone }}
+  Email : {{ email }}
+  Pièce : {{ type_piece }}
+
+Pièces à contrôler : {{ url }}
+
+L'équipe Kwa-Ba
+{% endautoescape %}

@@ -6,9 +6,10 @@ import { motion } from "framer-motion";
 import { useParams, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, BadgeCheck, MapPin, ChevronDown, ChevronUp, Share2, Calendar, MessageCircle, Pencil } from "lucide-react";
+import { ArrowLeft, BadgeCheck, MapPin, ChevronDown, ChevronUp, Share2, Calendar, MessageCircle, Pencil, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import AmenityBadge from "@/components/hebergement/AmenityBadge";
+import DetailsLogement from "@/components/hebergement/DetailsLogement";
 import FavoriteButton from "@/components/hebergement/FavoriteButton";
 import RatingBadge from "@/components/avis/RatingBadge";
 import AvisSection from "@/components/avis/AvisSection";
@@ -127,7 +128,7 @@ function HebergementContent() {
     <div className="bg-light pb-28 lg:pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
         <div className="flex items-center gap-2 text-sm text-muted min-w-0">
-          <button onClick={() => router.back()} className="flex items-center gap-1 hover:text-primary transition-colors flex-shrink-0">
+          <button onClick={() => router.back()} className="relative zone-tactile flex items-center gap-1 hover:text-primary transition-colors flex-shrink-0">
             <ArrowLeft size={14} /> {t("retour")}
           </button>
           <span>/</span>
@@ -152,10 +153,18 @@ function HebergementContent() {
               <span className="flex items-center gap-1 text-muted"><MapPin size={14} />{hebergement.location ? `${hebergement.location}, ` : ""}{hebergement.city}</span>
               <span className="text-muted">·</span>
               <span className="text-muted">{TYPE_LABELS[hebergement.type]} · {t("jusquA", { nombre: hebergement.max_guests })}</span>
+              {hebergement.statut_verification === "verifiee" && (
+                <>
+                  <span className="text-muted">·</span>
+                  <span className="flex items-center gap-1 font-semibold text-primary" title={t("verifieAide")}>
+                    <BadgeCheck size={15} /> {t("verifieBadge")}
+                  </span>
+                </>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <button onClick={handleShare} className="flex items-center gap-2 border border-gray-200 rounded-xl px-4 py-2 text-sm text-dark hover:bg-light-muted transition-colors">
+            <button onClick={handleShare} aria-label={t("partager")} className="relative zone-tactile flex items-center gap-2 border border-gray-200 rounded-xl px-4 py-2 text-sm text-dark hover:bg-light-muted transition-colors">
               <Share2 size={15} /><span className="hidden sm:inline">{t("partager")}</span>
             </button>
             <FavoriteButton variant="button" hebergementId={hebergement.id} initial={hebergement.is_favorite} />
@@ -163,7 +172,7 @@ function HebergementContent() {
         </div>
 
         {/* Galerie : carrousel horizontal sur mobile, mosaïque sur desktop */}
-        <div className="md:hidden -mx-4 mb-8 flex overflow-x-auto snap-x snap-mandatory scrollbar-hide">
+        <div className="md:hidden -mx-4 mb-8 flex overflow-x-auto snap-x snap-mandatory scrollbar-hide" tabIndex={0} role="region" aria-label={hebergement.name}>
           {photos.map((img, i) => (
             <div key={img + i} className="snap-center flex-shrink-0 w-full px-4">
               <div className="relative">
@@ -191,6 +200,11 @@ function HebergementContent() {
                 <div className="min-w-0">
                   <p className="text-sm text-muted">{t("hote")}</p>
                   <p className="font-heading font-bold text-dark truncate">{hebergement.host_name || t("hoteKwaba")}</p>
+                  {hebergement.hote_verifie && (
+                    <p className="flex items-center gap-1 text-xs font-bold text-green-700 mt-0.5" title={t("hoteVerifieAide")}>
+                      <ShieldCheck size={13} /> {t("hoteVerifie")}
+                    </p>
+                  )}
                 </div>
               </div>
               {isOwner ? (
@@ -217,6 +231,8 @@ function HebergementContent() {
                 )}
               </div>
             </section>
+
+            <DetailsLogement h={hebergement} />
 
             <section className="bg-white rounded-2xl shadow-card p-5 sm:p-6">
               <h2 className="font-heading font-bold text-dark text-xl mb-4">{t("equipements")}</h2>

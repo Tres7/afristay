@@ -11,7 +11,7 @@ def _load_settings(**env):
     code = 'import config.settings as s; print(s.DEBUG, s.SECURE_SSL_REDIRECT if hasattr(s, "SECURE_SSL_REDIRECT") else None)'
     base = {'PATH': os.environ['PATH'], 'PYTHONPATH': str(SERVER_DIR)}
     # dotenv ne remplace pas une variable déjà définie : une valeur vide neutralise server/.env
-    neutral = {name: '' for name in ('DJANGO_SECRET_KEY', 'DJANGO_DEBUG', 'R2_BUCKET')}
+    neutral = {name: '' for name in ('DJANGO_SECRET_KEY', 'DJANGO_DEBUG', 'R2_BUCKET', 'POSTGRES_PASSWORD')}
     return subprocess.run([sys.executable, '-c', code], cwd=SERVER_DIR, env={**base, **neutral, **env},
                           capture_output=True, text=True)
 
@@ -23,7 +23,7 @@ def test_production_refuses_to_start_without_secret_key():
 
 
 def test_debug_is_off_and_https_enforced_by_default():
-    result = _load_settings(DJANGO_SECRET_KEY='x' * 50)
+    result = _load_settings(DJANGO_SECRET_KEY='x' * 50, POSTGRES_PASSWORD='p')
     assert result.returncode == 0, result.stderr
     assert result.stdout.split() == ['False', 'True']
 
@@ -32,3 +32,10 @@ def test_development_runs_without_secret_key():
     result = _load_settings(DJANGO_DEBUG='True')
     assert result.returncode == 0, result.stderr
     assert result.stdout.split() == ['True', 'None']
+
+
+def test_production_refuses_to_start_without_database_password():
+    """Pas de mot de passe PostgreSQL par défaut hors développement : une variable oubliée ne doit pas ouvrir la base."""
+    result = _load_settings(DJANGO_SECRET_KEY='x' * 50)
+    assert result.returncode != 0
+    assert 'POSTGRES_PASSWORD est obligatoire' in result.stderr

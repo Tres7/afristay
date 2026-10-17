@@ -1,4 +1,5 @@
 import math
+import uuid
 
 from django.db import IntegrityError, transaction
 from django.db.models import Count
@@ -28,6 +29,20 @@ def _voyage(pk, user):
     return VoyageGroupeModel.objects.filter(pk=pk, membres__utilisateur=user).select_related('organisateur').first()
 
 
+def _uuid(valeur) -> uuid.UUID | None:
+    try:
+        return uuid.UUID(str(valeur))
+    except (ValueError, TypeError):
+        return None
+
+
+def _entier(valeur) -> int | None:
+    try:
+        return int(valeur)
+    except (ValueError, TypeError):
+        return None
+
+
 def _introuvable():
     return Response({'detail': 'Voyage introuvable.'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -54,7 +69,7 @@ def detail(voyage, user, request) -> dict:
         h = p.hebergement
         disponible = None
         if voyage.date_debut and voyage.date_fin:
-            disponible = h.is_available and est_disponible(h.id, voyage.date_debut, voyage.date_fin)
+            disponible = h.est_publiee and est_disponible(h.id, voyage.date_debut, voyage.date_fin)
         propositions.append({
             'id': p.id, 'commentaire': p.commentaire, 'propose_par': _nom(p.propose_par),
             'peut_supprimer': user.id in (p.propose_par_id, voyage.organisateur_id),
@@ -237,7 +252,7 @@ class PropositionsView(APIView):
         voyage = _voyage(pk, request.user)
         if not voyage:
             return _introuvable()
-        hebergement = HebergementModel.objects.filter(pk=request.data.get('hebergement'), is_available=True).first()
+        hebergement = HebergementModel.objects.publiees().filter(pk=_uuid(request.data.get('hebergement'))).first()
         if not hebergement:
             return Response({'hebergement': ['Logement introuvable.']}, status=status.HTTP_400_BAD_REQUEST)
         try:
@@ -277,7 +292,7 @@ class VoteView(APIView):
         voyage = _voyage(pk, request.user)
         if not voyage:
             return _introuvable()
-        proposition = voyage.propositions.filter(pk=request.data.get('proposition')).first()
+        proposition = voyage.propositions.filter(pk=_entier(request.data.get('proposition'))).first()
         if not proposition:
             return Response({'proposition': ['Proposition introuvable.']}, status=status.HTTP_400_BAD_REQUEST)
         VoteModel.objects.update_or_create(voyage=voyage, utilisateur=request.user, defaults={'proposition': proposition})
@@ -304,7 +319,7 @@ class RetenirView(APIView):
         if voyage.organisateur_id != request.user.id:
             return _reserve_a_l_organisateur()
         pid = request.data.get('proposition')
-        proposition = voyage.propositions.filter(pk=pid).first() if pid else None
+        proposition = voyage.propositions.filter(pk=_entier(pid)).first() if pid else None
         if pid and not proposition:
             return Response({'proposition': ['Proposition introuvable.']}, status=status.HTTP_400_BAD_REQUEST)
         voyage.proposition_retenue = proposition
@@ -358,7 +373,7 @@ class ReservationsPartageesView(APIView):
         if not voyage:
             return _introuvable()
         # On ne partage que ses propres réservations
-        reservation = ReservationModel.objects.filter(pk=request.data.get('reservation'), guest=request.user).first()
+        reservation = ReservationModel.objects.filter(pk=_uuid(request.data.get('reservation')), guest=request.user).first()
         if not reservation:
             return Response({'reservation': ['Réservation introuvable.']}, status=status.HTTP_400_BAD_REQUEST)
         LienReservationModel.objects.get_or_create(voyage=voyage, reservation=reservation, defaults={'ajoute_par': request.user})

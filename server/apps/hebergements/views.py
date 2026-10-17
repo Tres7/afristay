@@ -1,3 +1,4 @@
+import unicodedata
 from datetime import date, timedelta
 
 from django.db import transaction
@@ -13,20 +14,34 @@ from rest_framework.throttling import ScopedRateThrottle
 from .disponibilites import a_des_reservations, filtre_actives, periodes_indisponibles, verrouiller
 from .models import BlocageModel, HebergementModel, HebergementPhotoModel
 from .photos import InvalidPhoto, normalize_photo
+from apps.securite import fraude
+
 from .serializers import BlocageSerializer, HebergementSerializer, HebergementCreateSerializer, RechercheSerializer
+from apps.verifications import services as verifications
 
 HOST_ROLES = ('hote', 'admin')
 MAX_FENETRE_JOURS = 548  # 18 mois de calendrier par requête
+MAX_RESULTATS = 200
 
 
-def _context(request):
-    """Ajoute les ids favoris de l'utilisateur connecté pour calculer is_favorite."""
+def _context(request, proprietaire=False):
+    """Ajoute les ids favoris de l'utilisateur connecté pour calculer is_favorite.
+
+    `proprietaire` : l'hôte voit en plus le motif d'un refus de vérification.
+    """
+    contexte = {'request': request, 'proprietaire': proprietaire}
     if request.user and request.user.is_authenticated:
         from apps.favoris.models import FavoriModel
-        ids = set(FavoriModel.objects.filter(user=request.user).values_list('hebergement_id', flat=True))
-        return {'request': request, 'favorite_ids': ids}
-    return {'request': request}
+        contexte['favorite_ids'] = set(FavoriModel.objects.filter(user=request.user).values_list('hebergement_id', flat=True))
+    return contexte
 
+
+
+def _signaler_coordonnees(request, serializer, objet_id) -> None:
+    """Coordonnées refusées dans une annonce : tentative signalée au back-office (Anti-fraude)."""
+    trouvailles = getattr(serializer, 'trouvailles', None)
+    if trouvailles:
+        fraude.signaler(request.user.id, 'annonce', objet_id, trouvailles)
 
 class HebergementListView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
@@ -37,7 +52,7 @@ class HebergementListView(APIView):
             return Response(recherche.errors, status=status.HTTP_400_BAD_REQUEST)
         filtres = recherche.validated_data
 
-        qs = HebergementModel.objects.filter(is_available=True).select_related('host')
+        qs = HebergementModel.objects.publiees().select_related('host', 'host__piece_identite')
 
         city = request.query_params.get('city')
         if city:
@@ -55,6 +70,8 @@ class HebergementListView(APIView):
         guests = request.query_params.get('guests')
         if guests and guests.isdigit():
             qs = qs.filter(max_guests__gte=int(guests))
+        if request.query_params.get('petit_dejeuner') == 'inclus':
+            qs = qs.filter(petit_dejeuner='inclus')
 
         search = request.query_params.get('q')
         if search:
@@ -79,9 +96,11 @@ class HebergementListView(APIView):
         elif sort == 'note':
             qs = qs.order_by('-rating')
 
+        # Au plus MAX_RESULTATS annonces par requête : la liste n'est pas paginée, une requête ne doit pas pouvoir
+        # charger (et sérialiser) toute la base
         limit = request.query_params.get('limit')
-        if limit and limit.isdigit():
-            qs = qs[:int(limit)]
+        limite = min(int(limit), MAX_RESULTATS) if limit and limit.isdigit() else MAX_RESULTATS
+        qs = qs[:limite]
 
         serializer = HebergementSerializer(qs, many=True, context=_context(request))
         return Response({'results': serializer.data, 'count': len(serializer.data)})
@@ -93,13 +112,21 @@ class HebergementListView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        try:
+            verifications.verifier_limite_annonces(request.user)
+        except verifications.VerificationErreur as exc:
+            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
         serializer = HebergementCreateSerializer(data=request.data)
         if not serializer.is_valid():
+            _signaler_coordonnees(request, serializer, 'nouvelle')
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         hebergement = serializer.save(host=request.user)
+        # Visible des voyageurs seulement après la visite d'un agent (proposée une fois l'identité de l'hôte vérifiée)
+        verifications.visite_a_planifier(hebergement)
         return Response(
-            HebergementSerializer(hebergement, context=_context(request)).data,
+            HebergementSerializer(hebergement, context=_context(request, proprietaire=True)).data,
             status=status.HTTP_201_CREATED,
         )
 
@@ -108,8 +135,8 @@ class MyHebergementsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        qs = HebergementModel.objects.filter(host=request.user).select_related('host')
-        serializer = HebergementSerializer(qs, many=True, context=_context(request))
+        qs = HebergementModel.objects.filter(host=request.user).select_related('host', 'host__piece_identite')
+        serializer = HebergementSerializer(qs, many=True, context=_context(request, proprietaire=True))
         return Response({'results': serializer.data, 'count': len(serializer.data)})
 
 
@@ -119,7 +146,7 @@ class CityListView(APIView):
 
     def get(self, request):
         rows = (
-            HebergementModel.objects.filter(is_available=True)
+            HebergementModel.objects.publiees()
             .values('city')
             .annotate(count=Count('id'), min_price=Min('price_per_night'))
             .order_by('-count', 'city')[:8]
@@ -127,7 +154,7 @@ class CityListView(APIView):
         results = []
         for row in rows:
             cover = (
-                HebergementModel.objects.filter(city=row['city'], is_available=True)
+                HebergementModel.objects.publiees().filter(city=row['city'])
                 .exclude(image_url='')
                 .order_by('-rating')
                 .values_list('image_url', flat=True)
@@ -137,20 +164,64 @@ class CityListView(APIView):
         return Response({'results': results})
 
 
+def _sans_accents(texte):
+    """« Lomé » → « lome » : les voyageurs tapent souvent sans accents."""
+    decompose = unicodedata.normalize('NFKD', texte.casefold())
+    return ''.join(c for c in decompose if not unicodedata.combining(c)).strip()
+
+
+class SuggestionsView(APIView):
+    """Autocomplétion de la barre de recherche : villes puis logements dont le nom correspond.
+
+    Les villes publiées sont peu nombreuses : on les compare en Python, sans accents ni casse
+    (« lome » trouve « Lomé »), celles qui commencent par la saisie en premier.
+    """
+    permission_classes = [AllowAny]
+    MAX_VILLES = 5
+    MAX_LOGEMENTS = 4
+
+    def get(self, request):
+        saisie = request.query_params.get('q', '')[:100]
+        cle = _sans_accents(saisie)
+        if not cle:
+            return Response({'villes': [], 'logements': []})
+
+        publiees = HebergementModel.objects.publiees()
+        villes = []
+        for ligne in publiees.values('city').annotate(count=Count('id')):
+            nom = _sans_accents(ligne['city'])
+            if cle in nom:
+                villes.append((not nom.startswith(cle), -ligne['count'], ligne['city'], ligne['count']))
+        villes.sort()
+
+        logements = (
+            publiees.filter(name__icontains=saisie.strip())
+            .order_by('-rating', 'name')
+            .values('id', 'name', 'city', 'image_url')[:self.MAX_LOGEMENTS]
+        )
+        return Response({
+            'villes': [{'city': ville, 'count': nombre} for _, _, ville, nombre in villes[:self.MAX_VILLES]],
+            'logements': list(logements),
+        })
+
+
 class HebergementDetailView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def _get_object(self, pk):
         try:
-            return HebergementModel.objects.select_related('host').get(pk=pk)
+            return HebergementModel.objects.select_related('host', 'host__piece_identite').get(pk=pk)
         except HebergementModel.DoesNotExist:
             return None
 
     def get(self, request, pk):
         obj = self._get_object(pk)
-        if not obj:
+        proprietaire = request.user.is_authenticated and obj is not None and obj.host_id == request.user.id
+        verificateur = request.user.is_authenticated and request.user.role in verifications.ROLES_VERIFICATEURS
+        # Annonce pas encore vérifiée (ou masquée) : visible seulement de son hôte et des agents
+        if not obj or not (obj.est_publiee or proprietaire or verificateur):
             return Response({'detail': 'Hébergement introuvable.'}, status=status.HTTP_404_NOT_FOUND)
-        return Response(HebergementSerializer(obj, context=_context(request)).data)
+        return Response(HebergementSerializer(obj, context=_context(request, proprietaire=proprietaire)).data)
 
     def patch(self, request, pk):
         obj = self._get_object(pk)
@@ -161,9 +232,12 @@ class HebergementDetailView(APIView):
 
         serializer = HebergementCreateSerializer(obj, data=request.data, partial=True)
         if not serializer.is_valid():
+            _signaler_coordonnees(request, serializer, obj.pk)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        avant = {champ: getattr(obj, champ) for champ in HebergementModel.CHAMPS_VERIFIES}
         serializer.save()
-        return Response(HebergementSerializer(obj, context=_context(request)).data)
+        verifications.remettre_en_verification(obj, avant)
+        return Response(HebergementSerializer(obj, context=_context(request, proprietaire=True)).data)
 
     def delete(self, request, pk):
         obj = self._get_object(pk)

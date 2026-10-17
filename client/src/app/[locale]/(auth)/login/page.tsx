@@ -2,11 +2,12 @@
 
 import { Link, useRouter } from "@/i18n/navigation";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import AuthShell from "@/components/auth/AuthShell";
 import GoogleButton from "@/components/auth/GoogleButton";
+import Captcha, { type CaptchaHandle } from "@/components/auth/Captcha";
 import FormField from "@/components/ui/FormField";
 import { useTranslations } from "next-intl";
 
@@ -26,6 +27,12 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [unverified, setUnverified] = useState(false);
+  const [captcha, setCaptcha] = useState<string | null>(null);
+  const [captchaRequis, setCaptchaRequis] = useState(false);
+  // Bouton actif une fois la page prête (JavaScript chargé) : un clic plus tôt enverrait le formulaire sans lui
+  const [pret, setPret] = useState(false);
+  useEffect(() => setPret(true), []);
+  const captchaRef = useRef<CaptchaHandle>(null);
 
   const notice =
     searchParams.get("verified") === "1"
@@ -38,6 +45,11 @@ function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Bouton toujours actif : on explique plutôt que de griser sans raison visible
+    if (captchaRequis && !captcha) {
+      setError(t("captchaRequis"));
+      return;
+    }
     setLoading(true);
     setError("");
     setUnverified(false);
@@ -46,10 +58,15 @@ function LoginForm() {
       redirect: false,
       email: email.trim().toLowerCase(),
       password,
+      captcha: captcha ?? "",
     });
 
     if (res?.error) {
-      if (res.code === "unverified_email") {
+      // Le jeton du captcha ne sert qu'une fois
+      captchaRef.current?.reset();
+      if (res.code === "captcha") {
+        setError(t("captchaRequis"));
+      } else if (res.code === "unverified_email") {
         setUnverified(true);
         setError(t("nonVerifie"));
       } else if (res.code === "inactive") {
@@ -78,7 +95,7 @@ function LoginForm() {
 
       <GoogleButton label={t("continuerGoogle")} callbackUrl={callbackUrl} onError={setError} />
 
-      <form className="space-y-5" onSubmit={handleSubmit}>
+      <form method="post" className="space-y-5" onSubmit={handleSubmit}>
         {error && (
           <div role="alert" className="p-3 text-sm text-red-700 bg-red-50 border border-red-100 rounded-xl text-center font-medium">
             {error}
@@ -105,21 +122,23 @@ function LoginForm() {
             value={password} onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••" autoComplete="current-password" required
             trailing={
-              <button type="button" onClick={() => setShowPassword(!showPassword)} className="p-1 text-gray-400 hover:text-dark" aria-label={showPassword ? t("masquerMdp") : t("afficherMdp")}>
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="relative zone-tactile p-1 text-gray-400 hover:text-dark" aria-label={showPassword ? t("masquerMdp") : t("afficherMdp")}>
                 {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
             }
           />
           <div className="text-right mt-2">
-            <Link href={`/mot-de-passe-oublie${email ? `?email=${encodeURIComponent(email)}` : ""}`} className="text-xs text-primary font-medium hover:underline">
+            <Link href={`/mot-de-passe-oublie${email ? `?email=${encodeURIComponent(email)}` : ""}`} className="relative zone-tactile text-xs text-primary font-medium hover:underline">
               {t("mdpOublie")}
             </Link>
           </div>
         </div>
 
+        <Captcha ref={captchaRef} onToken={setCaptcha} onActif={() => setCaptchaRequis(true)} />
+
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !pret}
           className="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-button hover:shadow-lg transform hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:transform-none text-sm"
         >
           {loading ? t("connexionEnCours") : t("seConnecter")}
@@ -128,7 +147,7 @@ function LoginForm() {
 
       <p className="mt-8 text-center text-sm text-gray-500">
         {t("pasDeCompte")}{" "}
-        <Link href="/register" className="font-bold text-primary hover:underline">{t("creerCompte")}</Link>
+        <Link href="/register" className="relative zone-tactile font-bold text-primary hover:underline">{t("creerCompte")}</Link>
       </p>
     </>
   );

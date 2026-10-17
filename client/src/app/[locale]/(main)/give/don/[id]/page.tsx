@@ -8,6 +8,7 @@ import { CalendarClock, CheckCircle, HandHeart, Loader2, XCircle } from "lucide-
 import api from "@/lib/api";
 import { formatDate, formatPrice } from "@/lib/utils";
 import type { Don } from "@/types/api/give";
+import Documents from "@/components/documents/Documents";
 import { useTranslations } from "next-intl";
 
 const ATTENTE_MAX_MS = 3 * 60 * 1000;
@@ -81,6 +82,8 @@ function RetourDon() {
             {t("calendrier", { date: formatDate(don.date_reversement, { day: "numeric", month: "long", year: "numeric" }) })}
           </p>
         )}
+
+        {don.statut === "paye" && <Documents objet="don" id={don.id} className="justify-center mt-4" />}
 
         <div className="flex flex-wrap justify-center gap-4 mt-6 text-sm font-bold">
           <Link href="/profil/dons" className="flex items-center gap-1.5 text-primary hover:underline"><CheckCircle size={15} /> {t("mesDons")}</Link>

@@ -45,7 +45,10 @@ export default function ContenuEn() {
                 <tr><td>Payments: amount, status, transaction ID at FedaPay or PayPal, Mobile Money operator and number charged</td><td>Collect payment for the stay, refund you on the same payment method, accounting</td><td>Performance of the contract; legal obligation (accounting)</td></tr>
                 <tr><td>Airport transfers: airport, flight time and number, passengers, luggage, destination address, phone number, message to the driver</td><td>Arrange your airport pick-up</td><td>Performance of the contract</td></tr>
                 <tr><td>Partner drivers: identity, phone, vehicle, number plate, Mobile Money account</td><td>Assign rides and pay drivers</td><td>Performance of the contract</td></tr>
+                <tr><td>Car hire: vehicle, option, pick-up and return places and dates, delivery address, number of people, phone number, details of your needs; if you drive: driver&apos;s name, licence number and country</td><td>Arrange the rental with the partner rental company</td><td>Performance of the contract</td></tr>
+                <tr><td>Partner rental companies: company name, contact, phone, Mobile Money account</td><td>Assign rentals and pay rental companies</td><td>Performance of the contract</td></tr>
                 <tr><td>Hosts: country, operator, Mobile Money number and account holder name</td><td>Pay hosts for their stays</td><td>Performance of the contract</td></tr>
+                <tr><td>Hosts: ID document (type and copy), report of the visit of the place by a Kwa-Ba agent (checks made, comment, photos taken on site)</td><td>Check the host&apos;s identity and that the place matches the listing before it goes live, to protect travellers. Only Kwa-Ba agents can see the copy, never travellers</td><td>Legitimate interest (fraud prevention)</td></tr>
                 <tr><td>Messages exchanged with hosts or travellers</td><td>Messaging and email notifications</td><td>Performance of the contract</td></tr>
                 <tr><td>Reviews and ratings (published with your first name and last initial)</td><td>Inform other travellers</td><td>Legitimate interest (reliable reviews)</td></tr>
                 <tr><td>Group trips (Kwa-Ba Together): trip name, destination, dates, members, proposed places and votes, itinerary, practical information, bookings you choose to share</td><td>Plan a trip with others</td><td>Performance of the contract</td></tr>
@@ -79,6 +82,7 @@ export default function ContenuEn() {
               <li>The <strong>host</strong> of the place you book receives your name, the booking details and your message.</li>
               <li>A <strong>Kwa-Ba Give partner NGO</strong> only receives your name and email if you agreed to this when donating; otherwise your donation is shown to it as anonymous. The total amount paid out each month is published, without donors&apos; names.</li>
               <li>The <strong>partner driver</strong> for a transfer receives your name, phone number, flight number, number of passengers and bags, destination address and your message.</li>
+              <li>The <strong>partner rental company</strong> for a car hire receives your name, phone number, the vehicle, places and dates, number of people, your details and, if you drive, the driver&apos;s name and licence details.</li>
               <li><strong>Members of a group trip</strong> see your first name and last initial, your votes, your proposals and the bookings you share with them (place, dates, amount).</li>
               <li>Kwa-Ba <strong>administrators</strong>, for moderation and support (restricted and logged access).</li>
               <li>Website and data hosting: <AC>hosting provider name, address and country</AC>.</li>
@@ -104,6 +108,7 @@ export default function ContenuEn() {
               <li>Messages: <AValider>3 years after the last message in the conversation.</AValider></li>
               <li>Reviews: as long as the place is published, or until removed by moderation.</li>
               <li>Technical security logs: <AValider>1 year.</AValider></li>
+              <li>Copy of a host&apos;s ID document: deleted as soon as the agent has checked the identity (only the document type and the result of the check are kept). Visit report and photos: <AValider>as long as the listing is published, then 3 years.</AValider></li>
             </ul>
           ),
         },

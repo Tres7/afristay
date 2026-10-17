@@ -18,6 +18,7 @@ const ROLES: { value: "" | Role; label: string }[] = [
   { value: "", label: "Tous les rôles" },
   { value: "voyageur", label: "Voyageurs" },
   { value: "hote", label: "Hôtes" },
+  { value: "agent", label: "Agents de terrain" },
   { value: "admin", label: "Administrateurs" },
 ];
 const STATUTS = [
@@ -66,7 +67,7 @@ function Utilisateurs() {
         </div>
       ),
     },
-    { titre: "Rôle", cellule: (u) => <Pill ton={u.role === "admin" ? "bleu" : u.role === "hote" ? "orange" : "gris"}>{ROLE_LABELS[u.role]}</Pill> },
+    { titre: "Rôle", cellule: (u) => <Pill ton={u.role === "admin" || u.role === "agent" ? "bleu" : u.role === "hote" ? "orange" : "gris"}>{ROLE_LABELS[u.role]}</Pill> },
     { titre: "Statut", cellule: (u) => <Pill ton={u.is_active ? "vert" : "rouge"}>{u.is_active ? "Actif" : "Désactivé"}</Pill> },
     { titre: "Activité", cellule: (u) => <span className="text-xs text-gray-600 whitespace-nowrap">{u.nb_reservations} rés. · {u.nb_annonces} annonce{u.nb_annonces > 1 ? "s" : ""}</span> },
     { titre: "Inscrit le", cellule: (u) => <span className="text-xs text-gray-600 whitespace-nowrap">{formatDate(u.date_joined)}</span> },
@@ -78,12 +79,12 @@ function Utilisateurs() {
       <>
         <Select
           label={`Rôle de ${nom(u)}`} value={u.role} className="w-36" buttonClassName="py-1.5 px-3 rounded-lg"
-          options={(["voyageur", "hote", "admin"] as Role[]).map((r) => ({ value: r, label: ROLE_LABELS[r] }))}
+          options={(["voyageur", "hote", "agent", "admin"] as Role[]).map((r) => ({ value: r, label: ROLE_LABELS[r] }))}
           onChange={(r) => {
             if (r === u.role) return;
             setConfirmation({
               titre: "Changer le rôle",
-              message: <>Passer <strong>{nom(u)}</strong> de « {ROLE_LABELS[u.role]} » à « {ROLE_LABELS[r]} » ?{r === "admin" && " Il aura accès au back-office."}</>,
+              message: <>Passer <strong>{nom(u)}</strong> de « {ROLE_LABELS[u.role]} » à « {ROLE_LABELS[r]} » ?{r === "admin" && " Il aura accès au back-office."}{r === "agent" && " Il pourra vérifier les logements et les pièces d'identité des hôtes."}</>,
               libelle: "Changer le rôle",
               danger: r === "admin",
               action: () => modifier(u, { role: r }, "Rôle mis à jour"),

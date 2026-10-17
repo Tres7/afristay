@@ -1,0 +1,17 @@
+{% autoescape off %}Bonjour {{ contact }},
+
+Kwa-Ba vous confie une location.
+
+  {{ categorie }}{% if exemple %} ({{ exemple }}){% endif %} — {{ formule }}
+  Prise : {{ debut }}, {{ prise }}
+  Retour : {{ fin }}, {{ retour }} ({{ jours }} jour(s))
+  Voyageur : {{ voyageur }} — {{ telephone_voyageur }} · {{ passagers }} personne(s)
+{% if conducteur %}  Conducteur : {{ conducteur }}, permis {{ permis }} ({{ permis_pays }})
+{% endif %}{% if caution %}  Caution à encaisser à la remise : {{ caution }}
+{% endif %}  Précisions du voyageur : « {{ precisions }} »
+  Référence : {{ reference }}
+
+Vous recevrez {{ montant }} sur votre Mobile Money 24 heures après le retour du véhicule.
+
+L'équipe Kwa-Ba
+{% endautoescape %}

@@ -34,8 +34,12 @@ const TYPES: Record<string, { fr: string; en: string }> = {
   auberge: { fr: "Auberge", en: "Guesthouse" },
 };
 
-/** Libellés des types de logement, dans la langue courante (TYPE_LABELS[type]). */
-export const TYPE_LABELS: Record<string, string> = new Proxy({} as Record<string, string>, {
+/**
+ * Libellés des types de logement, dans la langue courante (TYPE_LABELS[type]).
+ * La cible du Proxy est la table elle-même : Object.keys(TYPE_LABELS) liste les types. Sur un objet vide, la liste
+ * serait vide et le choix du type disparaîtrait du formulaire de l'hôte.
+ */
+export const TYPE_LABELS: Record<string, string> = new Proxy(TYPES as unknown as Record<string, string>, {
   get: (_, type: string) => (TYPES[type] ? TYPES[type][langueCourante] : type),
 });
 
@@ -43,18 +47,50 @@ const ROLES: Record<string, { fr: string; en: string }> = {
   voyageur: { fr: "Voyageur", en: "Traveller" },
   hote: { fr: "Hôte", en: "Host" },
   admin: { fr: "Administrateur", en: "Administrator" },
+  agent: { fr: "Agent de terrain", en: "Field agent" },
 };
 
 /** Libellés des rôles, dans la langue courante (ROLE_LABELS[role]). */
-export const ROLE_LABELS: Record<string, string> = new Proxy({} as Record<string, string>, {
+export const ROLE_LABELS: Record<string, string> = new Proxy(ROLES as unknown as Record<string, string>, {
   get: (_, role: string) => (ROLES[role] ? ROLES[role][langueCourante] : role),
 });
 
+/** Libellé d'un type de logement dans une langue donnée (côté serveur, où il n'y a pas de langue courante). */
+export function libelleType(type: string, locale: "fr" | "en"): string {
+  return TYPES[type]?.[locale] ?? type;
+}
+
+// Devise d'affichage des prix, choisie par le visiteur (<DeviseProvider />). Les paiements restent en FCFA.
+export type Devise = "XOF" | "EUR";
+/** Parité fixe du franc CFA (UEMOA) : 1 € = 655,957 FCFA. */
+export const FCFA_PAR_EURO = 655.957;
+let deviseCourante: Devise = "XOF";
+
+export function definirDevise(devise: Devise) {
+  deviseCourante = devise;
+}
+
+export function devise(): Devise {
+  return deviseCourante;
+}
+
+// fr-FR sépare les milliers par une espace fine (U+202F) quasi invisible dans certaines polices :
+// on la remplace par une espace insécable classique (U+00A0)
+const espaces = (texte: string) => texte.replace(/\u202f/g, "\u00a0");
+
+/** Montant en FCFA quelle que soit la devise choisie : montants débités, boutons de paiement. */
+export function formatFcfa(price: number | string): string {
+  return `${espaces(Math.round(Number(price)).toLocaleString(LOCALES[langueCourante]))}\u00a0FCFA`;
+}
+
+/** Prix stockés en FCFA, affichés dans la devise choisie par le visiteur (euros arrondis à l'unité dès 10 €). */
 export function formatPrice(price: number | string): string {
-  // fr-FR sépare les milliers par une espace fine (U+202F) quasi invisible dans certaines polices :
-  // on la remplace par une espace insécable classique (U+00A0)
-  const montant = Math.round(Number(price)).toLocaleString(LOCALES[langueCourante]).replace(/\u202f/g, "\u00a0");
-  return `${montant}\u00a0FCFA`;
+  if (deviseCourante === "XOF") return formatFcfa(price);
+  const euros = Number(price) / FCFA_PAR_EURO;
+  const decimales = euros < 10 ? 2 : 0;
+  return espaces(euros.toLocaleString(LOCALES[langueCourante], {
+    style: "currency", currency: "EUR", minimumFractionDigits: decimales, maximumFractionDigits: decimales,
+  }));
 }
 
 export function calculateNights(checkIn: string, checkOut: string): number {

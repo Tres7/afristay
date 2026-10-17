@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.reservations.models import ReservationModel
+from apps.securite.audit import journaliser
 
 from . import fedapay, paypal, services, tarifs
 from .models import ProfilVersementModel, VersementModel
@@ -89,8 +90,14 @@ class WebhookFedaPayView(APIView):
     def post(self, request):
         corps = request.body
         secret = settings.FEDAPAY['WEBHOOK_SECRET']
+        if not secret and not settings.DEBUG:
+            # Sans secret, n'importe qui pourrait appeler ce point d'entrée : refusé hors développement
+            logger.error("Webhook FedaPay refusé : FEDAPAY_WEBHOOK_SECRET n'est pas configurée")
+            journaliser('webhook_refuse', request, motif='secret_absent')
+            return Response({'detail': 'Webhook non configuré.'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         if secret and not fedapay.signature_valide(corps, request.headers.get('X-FEDAPAY-SIGNATURE', ''), secret):
             logger.warning("Webhook FedaPay rejeté : signature invalide")
+            journaliser('webhook_refuse', request, motif='signature_invalide')
             return Response({'detail': 'Signature invalide.'}, status=status.HTTP_400_BAD_REQUEST)
         try:
             evenement = json.loads(corps or b'{}')
@@ -186,7 +193,12 @@ class ProfilVersementView(APIView):
         profil = ProfilVersementModel.objects.filter(hote=request.user).first()
         serializer = ProfilVersementSerializer(profil, data=request.data)
         serializer.is_valid(raise_exception=True)
+        ancien = (profil.operateur, profil.numero) if profil else None
         serializer.save(hote=request.user)
+        if ancien != (serializer.instance.operateur, serializer.instance.numero):
+            # Changer le compte qui reçoit l'argent est l'action visée en cas de vol de compte : on la trace
+            journaliser('profil_versement_modifie', request, utilisateur=request.user,
+                        operateur=serializer.instance.operateur, numero_fin=serializer.instance.numero[-2:])
         # Les versements bloqués faute de profil repartent à la prochaine passe du worker
         VersementModel.objects.filter(hote=request.user, statut__in=('planifie', 'echoue')).update(
             statut='planifie', derniere_erreur='', tentatives=0,

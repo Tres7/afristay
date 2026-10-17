@@ -7,6 +7,7 @@ Le frontend est déjà construit sur ce contrat : les noms de champs, les codes 
 
 - **Préfixe** : toutes les routes sont sous `/api/v1/admin/`.
 - **Accès** : utilisateur authentifié (JWT) **et** `role == "admin"`. Sinon : `401` (non connecté) ou `403` `{"detail": "Accès réservé aux administrateurs."}`.
+  Utiliser `permission_classes = [EstAdministrateur]` (`apps/securite/permissions.py`) sur **chaque** vue : le rôle est lu en base à chaque requête. Ne jamais se fier au rôle de la session NextAuth ni à un rôle envoyé par le client ; la redirection du middleware Next.js n'est qu'un confort d'affichage, pas une protection.
 - **Pagination** des listes : paramètres `page` (défaut 1) et `page_size` (défaut 20, maximum 100). Réponse :
   ```json
   { "results": [ ... ], "count": 134, "page": 1, "page_size": 20 }
@@ -15,7 +16,8 @@ Le frontend est déjà construit sur ce contrat : les noms de champs, les codes 
 - **Tri** : du plus récent au plus ancien, sauf mention contraire.
 - **Erreurs** : format DRF habituel, `{"detail": "..."}` ou `{"champ": ["message"]}`. Messages en français, affichés tels quels à l'admin.
 - **Dates** : ISO 8601 (`2026-10-06` pour les dates, `2026-10-06T14:03:00Z` pour les horodatages). **Montants** : nombres (pas de chaînes), en FCFA.
-- **Journal** : chaque action d'écriture (PATCH, POST, DELETE) est tracée en base (`AdminActionLog` : admin, action, cible, motif, date). Pas d'endpoint de lecture demandé pour l'instant.
+- **Journal** : chaque action d'écriture (PATCH, POST, DELETE) est tracée dans le journal d'audit (`apps.securite`, `JournalAuditModel` : admin, action, cible et motif dans `details`, date), consultable dans l'administration Django.
+- **Implémentation** : `server/apps/backoffice/` ; tests : `server/tests/integration/backoffice/`.
 
 ## 1. Tableau de bord
 
@@ -46,7 +48,7 @@ Filtres (tous optionnels) :
 | Paramètre | Valeurs | Effet |
 |---|---|---|
 | `q` | texte | recherche insensible à la casse dans email, prénom, nom, téléphone |
-| `role` | `voyageur` \| `hote` \| `admin` | |
+| `role` | `voyageur` \| `hote` \| `agent` \| `admin` | |
 | `actif` | `true` \| `false` | filtre sur `is_active` |
 
 Élément :
@@ -67,7 +69,7 @@ Corps (un ou plusieurs champs) : `{ "is_active": false }`, `{ "role": "hote" }`.
 
 - Renvoie l'utilisateur mis à jour (même format que la liste), `200`.
 - `403` `{"detail": "Vous ne pouvez pas modifier votre propre compte."}` si l'admin se cible lui-même.
-- `400` si `role` n'est pas `voyageur`, `hote` ou `admin`.
+- `400` si `role` n'est pas `voyageur`, `hote`, `agent` ou `admin`.
 - `404` si l'utilisateur n'existe pas.
 - Désactiver un compte (`is_active: false`) doit l'empêcher de se connecter (déjà géré par le login) **et invalider ses refresh tokens** si la blacklist SimpleJWT est activée.
 
@@ -75,13 +77,13 @@ Corps (un ou plusieurs champs) : `{ "is_active": false }`, `{ "role": "hote" }`.
 
 ### `GET /api/v1/admin/hebergements/`
 
-Filtres : `q` (nom, ville, quartier, email de l'hôte), `ville` (exacte, insensible à la casse), `visible` (`true`/`false` → `is_available`), `verifie` (`true`/`false` → `est_verifie`).
+Filtres : `q` (nom, ville, quartier, email de l'hôte), `ville` (exacte, insensible à la casse), `visible` (`true`/`false` → `is_available`), `verifie` (`true`/`false` → `statut_verification == "verifiee"`).
 
 Élément :
 ```json
 {
   "id": "uuid", "name": "Villa Hibiscus", "type": "villa", "city": "Assinie", "location": "Bord de lagune",
-  "price_per_night": 125000, "image_url": "https://...", "is_available": true, "est_verifie": false,
+  "price_per_night": 125000, "image_url": "https://...", "is_available": true, "est_verifie": false, "statut_verification": "en_attente",
   "rating": 4.8, "review_count": 12, "nb_reservations": 9,
   "host": { "id": "uuid", "nom": "Kossi Mensah", "email": "hote@exemple.com" },
   "created_at": "2026-10-03T19:00:00Z"
@@ -90,18 +92,16 @@ Filtres : `q` (nom, ville, quartier, email de l'hôte), `ville` (exacte, insensi
 
 ### `PATCH /api/v1/admin/hebergements/<uuid>/`
 
-Corps : `{ "is_available": false }` (masquer / republier), `{ "est_verifie": true }` (badge « Logement vérifié »). Renvoie l'annonce (format liste), `200`. `404` si inconnue.
+Corps : `{ "is_available": false }` (masquer / republier), `{ "est_verifie": true }` (valider sans visite : `statut_verification = "verifiee"`, l'annonce est publiée) ou `{ "est_verifie": false }` (retour en `en_attente` : l'annonce quitte le site et les agents sont prévenus qu'une visite est à faire). Renvoie l'annonce (format liste), `200`. `404` si inconnue.
 
 ### `DELETE /api/v1/admin/hebergements/<uuid>/?motif=...`
 
 `motif` en paramètre d'URL, obligatoire (5 à 500 caractères), tracé dans le journal ; `400` s'il manque.
-`204`. Supprime l'annonce (cascade : réservations, avis, conversations, fermetures de calendrier). `404` si inconnue.
+`204`. Supprime l'annonce (cascade : réservations, avis, conversations, fermetures de calendrier). `404` si inconnue. `409` si des paiements y sont liés (à masquer plutôt).
 
-### Nouveau champ `est_verifie` (modèle `HebergementModel`)
+### `est_verifie`
 
-- `BooleanField(default=False)`, plus une migration.
-- À ajouter aussi dans le **serializer public** `HebergementSerializer` (lecture seule) : la fiche et les cartes affichent le badge « Logement vérifié » quand il vaut `true`.
-- Non modifiable par l'hôte (absent de `HebergementCreateSerializer`).
+Pas de champ dédié : `est_verifie` est calculé à partir de `statut_verification` (vérification par les agents de terrain, `apps/verifications`). Seule une annonce vérifiée et visible est publiée ; le badge public « Vérifié par Kwa-Ba » en découle.
 
 ## 4. Réservations
 
@@ -128,6 +128,7 @@ Corps : `{ "motif": "Doublon signalé par l'hôte" }` (obligatoire, 5 à 500 car
 - `200` avec la réservation mise à jour (`status: "cancelled"`).
 - `400` `{"detail": "Cette réservation est déjà annulée."}` si déjà annulée.
 - Contrairement à l'annulation par le voyageur, **autorisée même si le séjour a commencé**.
+- Annulation « par Kwa-Ba » (`annule_par = "plateforme"`) : un voyageur qui a payé est remboursé en totalité et le versement à l'hôte est annulé (`paiements.services.annuler`).
 
 ## 5. Avis
 

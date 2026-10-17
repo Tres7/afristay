@@ -4,12 +4,14 @@ import createIntlMiddleware from "next-intl/middleware";
 import { routing } from "@/i18n/routing";
 
 // Pages réservées aux utilisateurs connectés (le centre d'aide reste public)
-const PROTECTED = ["/profil", "/favoris", "/messages", "/reservation", "/hote/espace", "/backoffice", "/give/don"];
+const PROTECTED = ["/profil", "/favoris", "/messages", "/reservation", "/hote/espace", "/backoffice", "/agent", "/give/don"];
 const PUBLIC_EXCEPTIONS = ["/profil/aide"];
 // Pages d'accueil publiques ; leurs sous-pages (suivi d'un transfert, voyage de groupe, invitation) exigent d'être connecté
-const PROTECTED_SUBPATHS = ["/transfert", "/together"];
+const PROTECTED_SUBPATHS = ["/transfert", "/together", "/location"];
 // Pages d'authentification inutiles une fois connecté
 const GUEST_ONLY = ["/login", "/register"];
+// Espaces internes servis hors des routes de langue (app/backoffice, app/agent)
+const SANS_LANGUE = ["/backoffice", "/agent"];
 
 // Langue : préfixe /en, sinon cookie NEXT_LOCALE, sinon langue du navigateur (première visite)
 const intl = createIntlMiddleware(routing);
@@ -33,6 +35,12 @@ export default async function middleware(req: NextRequest) {
   const isLoggedIn = !!token && !token.error;
   const { chemin, prefixe } = sansLangue(pathname);
 
+  // Back-office et espace agent n'existent qu'en français, sans préfixe : /en/agent (après une connexion faite
+  // sur le site anglais, par ex.) n'a pas de page et ferait échouer le rendu. On renvoie vers /agent.
+  if (prefixe && SANS_LANGUE.some((p) => chemin === p || chemin.startsWith(`${p}/`))) {
+    return NextResponse.redirect(new URL(chemin + search, req.nextUrl.origin));
+  }
+
   const isProtected =
     (PROTECTED.some((p) => chemin === p || chemin.startsWith(`${p}/`)) ||
       PROTECTED_SUBPATHS.some((p) => chemin.startsWith(`${p}/`))) &&
@@ -47,6 +55,15 @@ export default async function middleware(req: NextRequest) {
   // Back-office : administrateurs uniquement (l'API vérifie aussi le rôle), en français
   if (chemin.startsWith("/backoffice")) {
     if (isLoggedIn && token?.role !== "admin") {
+      return NextResponse.redirect(new URL(prefixe || "/", req.nextUrl.origin));
+    }
+    return NextResponse.next();
+  }
+
+  // Espace des agents de terrain (vérification des logements), en français. Confort d'affichage seulement :
+  // l'API vérifie le rôle en base à chaque requête.
+  if (chemin.startsWith("/agent")) {
+    if (isLoggedIn && token?.role !== "agent" && token?.role !== "admin") {
       return NextResponse.redirect(new URL(prefixe || "/", req.nextUrl.origin));
     }
     return NextResponse.next();

@@ -15,8 +15,26 @@ export interface Hebergement {
   max_guests: number;
   amenities: string[];
   is_available: boolean;
+  /** Détails (null pour les annonces publiées avant leur ajout) */
+  surface_m2: number | null;
+  chambres: number | null;
+  salles_de_bain: number | null;
+  lits_doubles: number;
+  lits_simples: number;
+  canapes_lits: number;
+  petit_dejeuner: "" | "non" | "inclus" | "option";
+  petit_dejeuner_prix: number | null;
+  arrivee_a_partir: string | null;
+  depart_avant: string | null;
+  /** Vérification par un agent de terrain : seules les annonces « verifiee » sont publiques */
+  statut_verification: "en_attente" | "verifiee" | "refusee";
+  verifiee_le: string | null;
+  /** Motif de refus de l'agent : rempli seulement pour l'hôte de l'annonce */
+  motif_refus: string;
   host_id: string;
   host_name: string;
+  /** Pièce d'identité de l'hôte contrôlée par Kwa-Ba (badge « Hôte vérifié »). */
+  hote_verifie?: boolean;
   is_favorite: boolean;
   /** Visite de contrôle validée par Kwa-Ba (absent tant que le backend ne l'expose pas). */
   est_verifie?: boolean;
@@ -82,7 +100,7 @@ export interface Me {
   email: string;
   first_name: string;
   last_name: string;
-  role: "voyageur" | "hote" | "admin";
+  role: "voyageur" | "hote" | "agent" | "admin";
   phone: string | null;
   avatar_url: string | null;
   is_verified: boolean;

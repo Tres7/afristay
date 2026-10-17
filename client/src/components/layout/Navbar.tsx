@@ -1,8 +1,8 @@
 "use client";
 
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
-import { Search, Menu, ArrowRight, LogIn, UserPlus, MessageCircle, Heart, CalendarCheck, User, LogOut, Home, ShieldCheck, Plane, Users, Sparkles, HandHeart } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { Search, Menu, ArrowRight, LogIn, UserPlus, MessageCircle, Heart, CalendarCheck, User, LogOut, Home, ShieldCheck, Plane, Car, Users, Sparkles, HandHeart } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import api from "@/lib/api";
 import { usePolling } from "@/lib/usePolling";
@@ -11,6 +11,8 @@ import { cn, initials } from "@/lib/utils";
 import Logo from "@/components/layout/Logo";
 import MobileDrawer, { DrawerItem } from "@/components/layout/MobileDrawer";
 import SelecteurLangue from "@/components/layout/SelecteurLangue";
+import { SelecteurDevise } from "@/components/layout/Devise";
+import ChampDestination from "@/components/hebergement/ChampDestination";
 
 const UNREAD_POLL_INTERVAL_MS = 10_000;
 
@@ -24,29 +26,44 @@ const NAV_LINKS = [
   { href: "/hote", label: "devenirHote" },
 ];
 
-function SearchForm({ onDone, className }: { onDone?: () => void; className?: string }) {
+function SearchForm({ onDone, className, focus }: { onDone?: () => void; className?: string; focus?: boolean }) {
   const router = useRouter();
   const t = useTranslations("nav");
   const [q, setQ] = useState("");
+  const champ = useRef<HTMLInputElement>(null);
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const city = q.trim();
+  // Champ déjà présent mais masqué (CSS) : autoFocus ne jouerait pas, on place le curseur à l'ouverture
+  useEffect(() => {
+    if (focus) champ.current?.focus();
+  }, [focus]);
+
+  const aller = (ville: string) => {
+    const city = ville.trim();
     router.push(city ? `/recherche?city=${encodeURIComponent(city)}` : "/recherche");
     setQ("");
     onDone?.();
   };
 
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    aller(q);
+  };
+
   return (
-    <form onSubmit={submit} role="search" className={cn("relative w-full flex items-center bg-white border border-gray-200 rounded-full py-1.5 pl-4 pr-1.5 shadow-sm hover:shadow transition-shadow", className)}>
+    <form method="post" onSubmit={submit} role="search" className={cn("relative w-full flex items-center bg-white border border-gray-200 rounded-full py-1.5 pl-4 pr-1.5 shadow-sm hover:shadow transition-shadow", className)}>
       <Search size={18} className="text-gray-400 flex-shrink-0 mr-3" />
-      <input
+      <ChampDestination
         type="search"
         value={q}
-        onChange={(e) => setQ(e.target.value)}
+        onChange={setQ}
+        onVille={(ville) => aller(ville)}
+        onLogement={() => { setQ(""); onDone?.(); }}
         placeholder={t("rechercherVille")}
-        aria-label={t("rechercherDestination")}
-        className="w-full bg-transparent border-none text-base md:text-sm text-dark outline-none placeholder:text-gray-400"
+        ariaLabel={t("rechercherDestination")}
+        inputRef={champ}
+        className="w-full"
+        inputClassName="w-full bg-transparent border-none text-base md:text-sm text-dark outline-none placeholder:text-gray-400"
+        listeClassName="-left-12 -right-1.5"
       />
       <button type="submit" aria-label={t("lancerRecherche")} className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white flex-shrink-0 hover:bg-primary-600 transition-colors ml-2">
         <ArrowRight size={16} />
@@ -60,6 +77,9 @@ export default function Navbar() {
   const t = useTranslations("nav");
   const tRoles = useTranslations("roles");
   const [mobileOpen, setMobileOpen] = useState(false);
+  // Écrans de 1024 à 1535 px : la barre n'a pas la place d'un champ de recherche lisible à côté des liens ;
+  // une loupe ouvre la recherche pleine largeur sous la barre
+  const [rechercheOuverte, setRechercheOuverte] = useState(false);
   const { data: session, status } = useSession();
   const authenticated = status === "authenticated" && !!session && !session.error;
 
@@ -82,7 +102,10 @@ export default function Navbar() {
   usePolling(fetchUnread, UNREAD_POLL_INTERVAL_MS, authenticated);
 
   // Ferme le menu mobile à chaque navigation (le panneau gère lui-même le blocage du défilement)
-  useEffect(() => setMobileOpen(false), [pathname]);
+  useEffect(() => {
+    setMobileOpen(false);
+    setRechercheOuverte(false);
+  }, [pathname]);
 
   const roleLabel = tRoles(session?.user?.role ?? "voyageur");
   const isHost = session?.user?.role === "hote" || session?.user?.role === "admin";
@@ -100,14 +123,24 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 md:h-20 flex items-center justify-between gap-4 lg:gap-6">
+      <div className="max-w-7xl 2xl:max-w-[1536px] mx-auto px-4 sm:px-6 h-16 md:h-20 flex items-center justify-between gap-4 lg:gap-6">
         <Logo />
 
-        <div className="hidden lg:flex flex-1 max-w-md mx-auto">
+        {/* Champ intégré à la barre seulement quand il a la place d'être lisible (≥ 1536 px) */}
+        <div className="hidden 2xl:flex flex-1 min-w-[280px] max-w-md mx-auto">
           <SearchForm />
         </div>
 
         <div className="hidden md:flex items-center gap-5 lg:gap-6">
+          <button
+            type="button" onClick={() => setRechercheOuverte((o) => !o)}
+            aria-expanded={rechercheOuverte} aria-controls="recherche-barre" aria-label={t("rechercherDestination")}
+            className={cn("hidden lg:flex 2xl:hidden w-10 h-10 rounded-full items-center justify-center border transition-colors",
+              rechercheOuverte ? "border-primary text-primary bg-primary/5" : "border-gray-200 text-dark hover:border-primary hover:text-primary")}
+          >
+            <Search size={18} />
+          </button>
+
           <nav className="flex items-center gap-4 lg:gap-5" aria-label={t("navigationPrincipale")}>
             {NAV_LINKS.map(({ href, label, large }) => (
               <Link
@@ -122,6 +155,7 @@ export default function Navbar() {
           </nav>
 
           <SelecteurLangue />
+          <SelecteurDevise />
 
           <div className="w-px h-6 bg-gray-200" />
 
@@ -168,20 +202,22 @@ export default function Navbar() {
 
         <div className="flex md:hidden items-center gap-1">
           {authenticated && (
-            <Link href="/messages" className="relative p-2 text-dark" aria-label={t("messages")}>
+            <Link href="/messages" className="relative zone-tactile p-2 text-dark" aria-label={t("messages")}>
               <MessageCircle size={22} />
               {unread > 0 && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />}
             </Link>
           )}
-          <button className="p-2 text-dark" onClick={() => setMobileOpen(true)} aria-expanded={mobileOpen} aria-haspopup="dialog" aria-label={t("ouvrirMenu")}>
+          <button className="relative zone-tactile p-2 text-dark" onClick={() => setMobileOpen(true)} aria-expanded={mobileOpen} aria-haspopup="dialog" aria-label={t("ouvrirMenu")}>
             <Menu size={24} />
           </button>
         </div>
       </div>
 
-      {/* Recherche visible sur tablette */}
-      <div className="hidden md:block lg:hidden px-6 pb-3">
-        <SearchForm />
+      {/* Recherche sous la barre : toujours sur tablette, à la demande (loupe) de 1024 à 1535 px */}
+      <div id="recherche-barre" className={cn("hidden md:block lg:hidden px-6 pb-3", rechercheOuverte && "lg:block 2xl:hidden")}>
+        <div className="max-w-2xl mx-auto">
+          <SearchForm focus={rechercheOuverte} onDone={() => setRechercheOuverte(false)} />
+        </div>
       </div>
 
       <MobileDrawer open={mobileOpen} onClose={() => setMobileOpen(false)} label={t("menu")} header={<Logo size="sm" />}>
@@ -207,6 +243,7 @@ export default function Navbar() {
             { href: "/recherche", label: t("hebergements"), icon: Search },
             { href: "/decouvrir", label: t("experiences"), icon: ArrowRight },
             { href: "/transfert", label: t("transfertAeroport"), icon: Plane },
+            { href: "/location", label: t("location"), icon: Car },
             { href: "/together", label: t("voyagerAPlusieurs"), icon: Users },
             { href: "/concierge", label: t("conciergeIA"), icon: Sparkles },
             { href: "/give", label: t("faireUnDon"), icon: HandHeart },
@@ -234,8 +271,9 @@ export default function Navbar() {
           ))}
         </nav>
 
-        <DrawerItem className="mt-4">
+        <DrawerItem className="mt-4 flex flex-wrap gap-2">
           <SelecteurLangue complet />
+          <SelecteurDevise complet />
         </DrawerItem>
 
         <DrawerItem className="mt-4 pt-4 border-t border-gray-100">

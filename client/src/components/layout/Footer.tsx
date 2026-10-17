@@ -2,6 +2,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import Logo from "@/components/layout/Logo";
 import SelecteurLangue from "@/components/layout/SelecteurLangue";
+import { SelecteurDevise } from "@/components/layout/Devise";
 import GererCookiesBouton from "@/components/legal/GererCookiesBouton";
 
 const COLUMNS = [
@@ -12,6 +13,7 @@ const COLUMNS = [
       { href: "/decouvrir", label: "experiences" },
       { href: "/recherche?sort=note", label: "mieuxNotes" },
       { href: "/transfert", label: "transfert" },
+      { href: "/location", label: "location" },
       { href: "/together", label: "together" },
       { href: "/give", label: "give" },
       { href: "/concierge", label: "concierge" },
@@ -49,7 +51,10 @@ export default function Footer() {
           <div className="col-span-2 md:col-span-1">
             <Logo />
             <p className="text-gray-600 text-sm mt-3 max-w-xs leading-relaxed">{t("accroche")}</p>
-            <SelecteurLangue complet className="mt-4" />
+            <div className="mt-4 flex flex-wrap gap-2">
+              <SelecteurLangue complet />
+              <SelecteurDevise complet />
+            </div>
           </div>
           {COLUMNS.map((col) => (
             <nav key={col.title} aria-label={t(`titres.${col.title}`)}>

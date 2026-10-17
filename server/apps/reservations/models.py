@@ -55,6 +55,8 @@ class ReservationModel(models.Model):
     expire_le = models.DateTimeField(null=True, blank=True)
     annule_par = models.CharField(max_length=20, blank=True, choices=ANNULE_PAR_CHOICES)
     annule_le = models.DateTimeField(null=True, blank=True)
+    # Emails du paiement en attente : 0 aucun, 1 « à payer avant », 2 rappel envoyé, 3 annulation notifiée
+    relance_paiement = models.PositiveSmallIntegerField(default=0, editable=False)
 
     class Meta:
         app_label = 'reservations'

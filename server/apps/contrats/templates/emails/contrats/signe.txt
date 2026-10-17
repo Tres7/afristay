@@ -1,0 +1,10 @@
+{% autoescape off %}Bonjour {{ nom }},
+
+Merci : votre contrat « {{ titre }} » (référence {{ reference }}) est signé le {{ signe_le }}.
+
+Vous trouverez en pièce jointe le contrat signé par les deux parties, avec son certificat de signature électronique. Conservez-le.
+
+Empreinte SHA-256 du PDF signé : {{ empreinte }}
+
+L'équipe Kwa-Ba
+{% endautoescape %}

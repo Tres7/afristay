@@ -2,7 +2,54 @@
   "meta": {
     "titre": "Kwa-Ba — The world welcomes you",
     "description": "Book places to stay in Africa. Discover the best homes, experiences and restaurants.",
-    "slogan": "Kwa-Ba — The world welcomes you."
+    "slogan": "Kwa-Ba — The world welcomes you.",
+    "pages": {
+      "recherche": {
+        "titre": "Places to stay in West Africa",
+        "description": "Villas, apartments, hotels and guesthouses in Lomé, Cotonou, Ouagadougou and beyond. Compare nightly prices and book with Mobile Money or card."
+      },
+      "decouvrir": {
+        "titre": "Things to do, restaurants and sights",
+        "description": "The best experiences, places to eat and visits near your Kwa-Ba stay."
+      },
+      "transfert": {
+        "titre": "Airport transfer with a driver",
+        "description": "A driver meets you when your flight lands and takes you to your accommodation. Fixed price known in advance, paid online."
+      },
+      "together": {
+        "titre": "Kwa-Ba Together: travel as a group",
+        "description": "Plan a group trip: suggest places to stay, vote together, share the itinerary and the budget per person."
+      },
+      "give": {
+        "titre": "Kwa-Ba Give: support local charities",
+        "description": "Donate to verified charities in Togo, Benin and beyond, from 500 to 5,000 FCFA. Every payout is published with its proof."
+      },
+      "giveImpact": {
+        "titre": "Kwa-Ba Give impact",
+        "description": "Amounts raised and paid out to charities, by cause, with proof of every payout."
+      },
+      "concierge": {
+        "titre": "AI Concierge: your travel assistant",
+        "description": "An assistant that finds your place to stay, plans the itinerary, estimates the budget and books your airport transfer."
+      },
+      "devenirHote": {
+        "titre": "Become a host on Kwa-Ba",
+        "description": "List your place for free, welcome travellers from around the world and get paid with Mobile Money."
+      },
+      "aide": {
+        "titre": "Help centre",
+        "description": "Booking, payment, cancellation, transfers: answers to frequently asked questions."
+      },
+      "logementIntrouvable": {
+        "titre": "Place not found"
+      },
+      "logementDescription": "{type} in {ville} for {voyageurs} guests, from {prix} FCFA per night. Book on Kwa-Ba with Mobile Money or card.",
+      "organisationDescription": "Support {nom} ({ville}) with Kwa-Ba Give: donate from 500 to 5,000 FCFA, payout published with its proof.",
+      "location": {
+        "titre": "Car hire with or without a driver",
+        "description": "Hire a small car, saloon, SUV, 4x4 or minibus, with or without a driver, handed over at the airport or at your address. Daily price known in advance, paid online."
+      }
+    }
   },
   "commun": {
     "allerAuContenu": "Skip to main content",
@@ -27,7 +74,8 @@
   "roles": {
     "voyageur": "Traveller",
     "hote": "Host",
-    "admin": "Administrator"
+    "admin": "Administrator",
+    "agent": "Field agent"
   },
   "nav": {
     "hebergements": "Stays",
@@ -58,7 +106,8 @@
     "faireUnDon": "Donate",
     "mesReservations": "My bookings",
     "mesFavoris": "My favourites",
-    "fermerMenu": "Close menu"
+    "fermerMenu": "Close menu",
+    "location": "Car hire"
   },
   "logo": {
     "accueil": "Kwa-Ba — home"
@@ -83,7 +132,8 @@
       "devenirHote": "Become a host",
       "espaceHote": "Host space",
       "aide": "Help centre",
-      "remboursement": "Cancellation and refunds"
+      "remboursement": "Cancellation and refunds",
+      "location": "Car hire"
     },
     "legal": {
       "mentions": "Legal notice",
@@ -142,11 +192,11 @@
     "atouts": {
       "paiement": {
         "titre": "Flexible payment",
-        "texte": "Mobile Money (MTN, Orange, Wave), bank card or PayPal."
+        "texte": "Mobile Money: Mixx by Yas (T-Money), Moov Money (Flooz), MTN MoMo, Orange Money, Celtiis, Airtel… Visa or Mastercard, or PayPal."
       },
       "instantanee": {
-        "titre": "Instant booking",
-        "texte": "Your stay is confirmed right away, no waiting."
+        "titre": "Instant confirmation",
+        "texte": "Your stay is confirmed as soon as you pay, no need to wait for the host."
       },
       "contact": {
         "titre": "Talk directly to your host",
@@ -261,7 +311,8 @@
     "renvoyerUnCode": "Resend a code",
     "retourConnexion": "Back to log in",
     "mdpVisuelTitre": "Don't worry",
-    "mdpVisuelTexte": "A code sent by email is all you need to get back into your account."
+    "mdpVisuelTexte": "A code sent by email is all you need to get back into your account.",
+    "captchaRequis": "Tick the “I am human” box, then try again."
   },
   "logement": {
     "verifie": "Verified place"
@@ -366,7 +417,9 @@
     "aucunResultat": "No results",
     "aucunResultatTexte": "Try another destination, other dates or remove some filters.",
     "voirTous": "See all stays",
-    "fermer": "Close"
+    "fermer": "Close",
+    "listeResultats": "Stays found",
+    "petitDejInclus": "Breakfast included"
   },
   "fiche": {
     "introuvable": "Place not found",
@@ -412,7 +465,11 @@
     "nuitsFraisInclus": "{nombre, plural, one {# night} other {# nights}}, fees included",
     "parNuit": "per night",
     "votreAnnonce": "Your listing",
-    "choisirDates": "Choose dates"
+    "choisirDates": "Choose dates",
+    "verifieBadge": "Verified by Kwa-Ba",
+    "verifieAide": "A Kwa-Ba agent visited this place and checked the host's identity.",
+    "hoteVerifie": "Verified host",
+    "hoteVerifieAide": "Kwa-Ba has checked this host's ID document."
   },
   "avis": {
     "repondre": "Reply publicly",
@@ -567,7 +624,7 @@
       "aide": "Help & support",
       "aideTexte": "FAQ, cancellation, contact"
     },
-    "verifie": "Verified",
+    "verifie": "Email confirmed",
     "membreDepuis": "Member since {date}",
     "stats": {
       "sejours": "Stays",
@@ -1206,13 +1263,18 @@
     "envoi": "Sending...",
     "placeholder": "Write your message...",
     "votreMessage": "Your message",
-    "envoyer": "Send message"
+    "envoyer": "Send message",
+    "securite": "For your safety, everything goes through Kwa-Ba messaging: phone numbers, emails and links are hidden. Never pay outside the site.",
+    "anonymeHote": "This traveller has not booked yet: their name will appear once they have paid.",
+    "anonymeVoyageur": "The host cannot see your name until you have booked and paid on Kwa-Ba.",
+    "masque": "Contact details hidden by Kwa-Ba",
+    "masqueEnvoi": "Contact details hidden: on Kwa-Ba, conversations and payments only go through the site."
   },
   "devenirHote": {
     "etapes": {
       "publier": {
         "titre": "List your place",
-        "texte": "Photos, price, amenities: your place is online in minutes."
+        "texte": "Photos, price, amenities and ID document: a Kwa-Ba agent visits your place, then the listing goes live."
       },
       "echanger": {
         "titre": "Talk with guests",
@@ -1220,7 +1282,7 @@
       },
       "recevoir": {
         "titre": "Get bookings",
-        "texte": "Track booked stays and the payment method chosen."
+        "texte": "Travellers pay online; your share is sent to your Mobile Money account 24 hours after their arrival."
       }
     },
     "active": "Your host account is active!",
@@ -1235,8 +1297,9 @@
     "etape": "Step {numero}",
     "ceQuIlFaut": "What you need",
     "besoins": {
-      "compte": "A verified Kwa-Ba account",
-      "photos": "Photos of your place (image links)",
+      "compte": "A Kwa-Ba account and a phone number",
+      "identite": "An ID document (checked by Kwa-Ba, then deleted)",
+      "photos": "Photos of your place",
       "prix": "A nightly price in FCFA",
       "capacite": "Capacity and amenities"
     }
@@ -1244,7 +1307,6 @@
   "photos": {
     "envoiImpossible": "Upload failed.",
     "formats": "Accepted formats: JPEG, PNG or WebP (iPhone HEIC photos must be exported as JPEG).",
-    "lienInvalide": "Invalid link: it must start with http:// or https://",
     "glissez": "Drag your photos here or",
     "ajouterPhotos": "Add photos",
     "parcourez": "browse",
@@ -1253,10 +1315,7 @@
     "gauche": "Move left",
     "droite": "Move right",
     "definirCouverture": "Set as cover",
-    "retirer": "Remove photo",
-    "lienPhoto": "Photo link",
-    "ajouter": "Add",
-    "ajouterParLien": "Add a photo by link"
+    "retirer": "Remove photo"
   },
   "espaceHote": {
     "erreurConversation": "Could not open the conversation.",
@@ -1269,7 +1328,7 @@
     "supprimee": "Listing deleted",
     "nouvelle": "New listing",
     "modifier": "Edit listing",
-    "publiee": "Listing published!",
+    "publiee": "Listing sent! It will go live after our agent visits.",
     "miseAJour": "Listing updated",
     "titre": "Host space",
     "sousTitre": "Manage your listings and track your bookings.",
@@ -1302,7 +1361,55 @@
     "afficher": "Show",
     "publier": "Publish",
     "ouverture": "Opening...",
-    "contacterNom": "Contact {nom}"
+    "contacterNom": "Contact {nom}",
+    "verification": {
+      "enAttente": "Awaiting verification",
+      "enAttenteAide": "Once your identity is verified, a Kwa-Ba agent will call you to visit the place. Travellers will see the listing after the visit.",
+      "refusee": "Declined",
+      "refuseeAide": "Fix this, then save the listing: it will be checked again.",
+      "verifiee": "Verified",
+      "identiteTitre": "Identity check",
+      "identiteAide": "To protect travellers, every host is verified. Send an ID document: a Kwa-Ba agent checks it remotely, then it is deleted. During the visit, the agent will confirm it is really you.",
+      "identiteSoumise": "ID document received: a Kwa-Ba agent is checking it, usually within 48 hours.",
+      "identiteVerifiee": "Identity verified",
+      "identiteRefusee": "ID document declined: {motif}",
+      "typePiece": "Document type",
+      "types": {
+        "cni": "National ID card",
+        "passeport": "Passport",
+        "permis": "Driving licence",
+        "sejour": "Residence permit"
+      },
+      "fichier": "Photo or scan (JPEG, PNG or PDF, 10 MB max)",
+      "envoyer": "Send",
+      "remplacer": "Replace",
+      "envoi": "Sending…",
+      "envoyee": "ID document sent",
+      "choisirFichier": "Choose a file.",
+      "confidentialite": "Only Kwa-Ba agents can see this document, never travellers."
+    },
+    "candidature": {
+      "titre": "Becoming a Kwa-Ba host: {nombre} steps",
+      "texte": "For travellers' safety, every host is verified before publishing. Your listings stay hidden until these steps are complete.",
+      "telephoneTitre": "Your phone number",
+      "telephoneTexte": "The Kwa-Ba agent will call you to arrange the visit.",
+      "telephoneAction": "Add my number",
+      "identiteTitre": "Your ID document",
+      "identiteTexte": "Send it below: it is checked before any visit.",
+      "identiteEnCours": "Received, being checked (usually within 48 hours).",
+      "identiteRefusee": "Declined: send a new document below.",
+      "annonceTitre": "Your place, visited by an agent",
+      "annonceTexte": "Prepare your listing (3 at most before your identity is verified).",
+      "annonceAction": "Create my listing",
+      "annonceEnAttente": "Listing ready. An agent will call you for the visit as soon as your identity is verified.",
+      "identiteVerifiee": "Verified.",
+      "contratTitre": "Your host contract",
+      "contratTexte": "Read it and sign it online, in two minutes.",
+      "contratAction": "Read and sign",
+      "contratSigne": "Signed.",
+      "contratTelecharger": "View the contract",
+      "annonceContrat": "Listing ready. An agent will call you for the visit once your identity is verified and your contract signed."
+    }
   },
   "annonce": {
     "types": {
@@ -1334,7 +1441,24 @@
     "envoiPhotos": "Uploading photos...",
     "enregistrement": "Saving...",
     "enregistrerModifs": "Save changes",
-    "publier": "Publish listing"
+    "publier": "Publish listing",
+    "detailsTitre": "The place in detail",
+    "detailsAide": "Shown on your listing: these details reassure travellers.",
+    "surface": "Floor area (m²)",
+    "chambres": "Bedrooms",
+    "sallesDeBain": "Bathrooms",
+    "lits": "Beds",
+    "litsDoubles": "Double beds",
+    "litsSimples": "Single beds",
+    "canapesLits": "Sofa beds",
+    "petitDejeuner": "Breakfast",
+    "petitDejNon": "Not offered",
+    "petitDejInclus": "Included",
+    "petitDejOption": "Optional",
+    "petitDejPrix": "Price per person (FCFA)",
+    "arrivee": "Check-in from",
+    "depart": "Check-out by",
+    "detailsManquants": "Add the details (floor area, bedrooms, beds, breakfast): they will appear on the listing."
   },
   "revenus": {
     "statuts": {
@@ -1388,5 +1512,187 @@
     "rienAVenir": "No upcoming bookings or closures.",
     "rouvrir": "Reopen",
     "voirToutes": "See all bookings"
+  },
+  "location": {
+    "titre": "Hire a car",
+    "sousTitre": "With or without a driver, handed over at the airport or at your address, by our partner rental companies.",
+    "bientot": "Car hire is coming soon to Kwa-Ba.",
+    "bientotAide": "In the meantime, book an airport transfer.",
+    "formule": "Option",
+    "formules": {
+      "sans_chauffeur": "I drive",
+      "avec_chauffeur": "With a driver"
+    },
+    "tous": "All",
+    "boite": "Gearbox",
+    "boites": {
+      "manuelle": "Manual",
+      "automatique": "Automatic"
+    },
+    "placesMin": "{nombre}+ seats",
+    "aucun": "No vehicle matches these filters.",
+    "places": "{nombre, plural, one {# seat} other {# seats}}",
+    "bagages": "{nombre, plural, one {# suitcase} other {# suitcases}}",
+    "clim": "Air conditioning",
+    "parJour": "/day",
+    "nonProposee": "Not available",
+    "choisir": "Choose",
+    "ouSimilaire": "or similar",
+    "reserverTitre": "Your rental: {nom}",
+    "changer": "Change vehicle",
+    "prise": "Pick-up",
+    "retour": "Return",
+    "lieu": "Place",
+    "adresse": "Delivery address",
+    "adressePlaceholder": "Area, street, landmark",
+    "dateHeure": "Date and time",
+    "passagers": "People",
+    "telephone": "Phone (WhatsApp)",
+    "precisions": "Tell us what you need",
+    "precisionsAide": "Planned trips, times, child seat, bulky luggage… The rental company prepares the vehicle accordingly.",
+    "precisionsPlaceholder": "E.g. Lomé – Kpalimé – Lomé, a child seat for a 2-year-old, early morning departure.",
+    "conducteurTitre": "Driver",
+    "conducteur": "Driver's name",
+    "permisNumero": "Licence number",
+    "permisPays": "Issuing country",
+    "delai": "Book at least {jours} days before pick-up: the rental company needs this time to prepare the vehicle.",
+    "conditions": "Rental conditions",
+    "annulationRegle": "Free cancellation up to {heures} h before pick-up; after that, the rental is not refunded.",
+    "devisJours": "{nombre, plural, one {# day} other {# days}} × {prix}",
+    "frais": "Pick-up and return fees",
+    "total": "Total",
+    "caution": "Deposit paid to the rental company at pick-up: {montant}",
+    "calcul": "Calculating the price…",
+    "reserver": "Book and pay",
+    "envoi": "Sending…",
+    "connexion": "Sign in to book",
+    "mesLocations": "My rentals",
+    "statuts": {
+      "en_attente_paiement": "Awaiting payment",
+      "confirmee": "Paid, vehicle being prepared",
+      "partenaire_assigne": "Vehicle assigned",
+      "terminee": "Completed",
+      "annulee": "Cancelled"
+    },
+    "detail": {
+      "introuvable": "Rental not found",
+      "recu": "Payment received. We are assigning your vehicle to one of our partner rental companies: you will receive their details by email.",
+      "expire": "The payment deadline has passed.",
+      "nouvelle": "Make a new request",
+      "votreLoueur": "Your rental company",
+      "chauffeur": "Your driver: {nom}",
+      "appeler": "Call {telephone}",
+      "du": "From {debut}",
+      "au": "to {fin}",
+      "prixPaye": "Paid",
+      "prix": "Price",
+      "annuler": "Cancel the rental",
+      "annulation": "Cancelling…",
+      "annulerQuestion": "Cancel this rental?",
+      "annulerTardif": "The free cancellation period has passed: the rental will not be refunded. Cancel anyway?",
+      "annulationGratuite": "Free cancellation still possible.",
+      "plusDeRemboursement": "The free cancellation period has passed.",
+      "annuleToast": "Rental cancelled",
+      "annuleRembourse": "Rental cancelled: {montant} refunded",
+      "erreurAnnulation": "Unable to cancel the rental.",
+      "paiementNonDemarre": "The payment could not start.",
+      "payerPar": "Pay by {moyen}",
+      "carte": "card"
+    },
+    "gammes": {
+      "citadine": "Small car",
+      "berline": "Saloon",
+      "suv": "SUV",
+      "4x4": "4x4 off-road",
+      "minibus": "Minibus",
+      "utilitaire": "Pick-up / van"
+    },
+    "carburants": {
+      "essence": "Petrol",
+      "diesel": "Diesel",
+      "hybride": "Hybrid",
+      "electrique": "Electric"
+    }
+  },
+  "suggestions": {
+    "populaires": "Popular destinations",
+    "villes": "Cities",
+    "logements": "Stays",
+    "logementsDispo": "{nombre, plural, =1 {1 stay} other {# stays}}"
+  },
+  "details": {
+    "titre": "The place in detail",
+    "surfaceTitre": "Floor area",
+    "surface": "{m2} m²",
+    "chambresTitre": "Bedrooms",
+    "chambres": "{nombre, plural, =1 {1 bedroom} other {# bedrooms}}",
+    "litsTitre": "{nombre, plural, =1 {1 bed} other {# beds}}",
+    "litsDoubles": "{nombre, plural, =1 {1 double bed} other {# double beds}}",
+    "litsSimples": "{nombre, plural, =1 {1 single bed} other {# single beds}}",
+    "canapesLits": "{nombre, plural, =1 {1 sofa bed} other {# sofa beds}}",
+    "sallesTitre": "Bathrooms",
+    "salles": "{nombre, plural, =1 {1 bathroom} other {# bathrooms}}",
+    "petitDejTitre": "Breakfast",
+    "petitDejInclus": "Included in the price",
+    "petitDejInclusCourt": "Breakfast included",
+    "petitDejOption": "Optional · {prix} per person",
+    "petitDejNon": "Not offered",
+    "horairesTitre": "Check-in and check-out",
+    "arrivee": "Check-in from {heure}",
+    "depart": "check-out by {heure}"
+  },
+  "contrat": {
+    "surtitre": "Kwa-Ba contract",
+    "reference": "Reference",
+    "pour": "For: {nom}",
+    "signeTitre": "Contract signed",
+    "signeTexte": "Signed by {nom} on {date}. The signed PDF has been emailed to you.",
+    "expire": "This link has expired. Reply to the email you received or write to Kwa-Ba to get a new link.",
+    "enFrancais": "The contract is written in French; only the French version is legally binding.",
+    "telechargerProjet": "Download the contract (PDF)",
+    "telechargerSigne": "Download the signed contract (PDF)",
+    "signerTitre": "Sign the contract",
+    "nomComplet": "Your full name",
+    "votreSignature": "Your signature",
+    "zoneSignature": "Signature area: draw your signature with your finger, a stylus or the mouse",
+    "signezIci": "Sign here",
+    "effacer": "Clear",
+    "signerAvecNom": "Sign with my name",
+    "consentement": "I have read the contract and accept it. I acknowledge that my electronic signature has the same value as a handwritten signature.",
+    "signer": "Sign the contract",
+    "signatureEnCours": "Signing…",
+    "preuves": "When you sign, the date and time, your IP address, your browser and the document fingerprint are recorded as evidence.",
+    "erreurNom": "Type your full name.",
+    "erreurSignature": "Draw your signature (or use “Sign with my name”).",
+    "erreurAccepte": "Tick the box to accept the contract.",
+    "merci": "Thank you, your contract is signed.",
+    "introuvable": "This link is not valid or the contract has been cancelled.",
+    "indisponible": "The host contract will be available soon.",
+    "versionModifiee": "The contract has just been updated: please read it again before signing.",
+    "retourEspace": "Back to my host space",
+    "reserveHotes": "This page is for hosts only."
+  },
+  "bientot": {
+    "surtitre": "Opening soon",
+    "titre": "Places to stay are coming very soon",
+    "texte": "We are verifying our first hosts one by one: identity checked and the place visited on site. The first places to stay will be online in the coming days.",
+    "email": "Your email address",
+    "prevenir": "Notify me",
+    "merci": "Thank you! We will write to you as soon as we open.",
+    "erreur": "Sign-up is not possible right now. Please try again.",
+    "rgpd": "One email only, on opening day. Nothing else.",
+    "enAttendant": "Already available",
+    "transfert": "Airport transfer",
+    "location": "Car rental",
+    "give": "Kwa-Ba Give",
+    "proprietaire": "Do you have a place to rent?",
+    "devenirHote": "Become a host",
+    "fermer": "Close"
+  },
+  "devise": {
+    "choisir": "Currency for prices",
+    "fcfa": "CFA franc",
+    "euro": "Euro",
+    "debite": "Charged in CFA francs: {montant}"
   }
 }

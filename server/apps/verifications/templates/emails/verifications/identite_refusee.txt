@@ -1,0 +1,13 @@
+{% autoescape off %}Bonjour {{ prenom }},
+
+Nous n'avons pas pu vérifier la pièce d'identité que vous nous avez envoyée :
+
+  {{ motif }}
+
+Envoyez une nouvelle pièce depuis votre espace hôte. Le document refusé a été supprimé.
+{{ url_espace }}
+
+Une question ? Répondez simplement à cet email.
+
+L'équipe Kwa-Ba
+{% endautoescape %}

@@ -85,7 +85,7 @@ export default function CompteRemboursementDialog({ endpoint, montant, onClose, 
         {!config ? (
           <div className="h-48 skeleton rounded-2xl mt-5" />
         ) : (
-          <form onSubmit={envoyer} className="space-y-4 mt-5" noValidate>
+          <form method="post" onSubmit={envoyer} className="space-y-4 mt-5" noValidate>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <p className="block text-xs font-bold text-dark uppercase tracking-wide mb-2">{t("pays")}</p>

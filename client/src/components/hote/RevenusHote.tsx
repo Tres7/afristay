@@ -157,7 +157,7 @@ function ProfilVersementForm({ manquant }: { manquant: boolean }) {
           ? t("manquant")
           : t("envoyeSur")}
       </p>
-      <form onSubmit={enregistrer} className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5" noValidate>
+      <form method="post" onSubmit={enregistrer} className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5" noValidate>
         <div>
           <p className="block text-xs font-bold text-dark uppercase tracking-wide mb-2" id="pays-label">{tD("pays")}</p>
           <Select

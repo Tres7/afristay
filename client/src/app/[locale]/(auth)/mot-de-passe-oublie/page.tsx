@@ -100,14 +100,14 @@ function ResetForm() {
       {info && step === "code" && <div role="status" className="p-3 mb-5 text-sm text-green-700 bg-green-50 border border-green-100 rounded-xl text-center font-medium">{info}</div>}
 
       {step === "email" ? (
-        <form onSubmit={requestCode} className="space-y-5">
+        <form method="post" onSubmit={requestCode} className="space-y-5">
           <FormField label={t("email")} name="email" type="email" icon={Mail} value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("emailExemple")} autoComplete="email" required />
           <button type="submit" disabled={loading} className="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-button disabled:opacity-50 text-sm">
             {loading ? t("envoiEnCours") : t("recevoirCode")}
           </button>
         </form>
       ) : (
-        <form onSubmit={confirm} className="space-y-4">
+        <form method="post" onSubmit={confirm} className="space-y-4">
           <FormField label={t("codeRecu")} name="code" inputMode="numeric" autoComplete="one-time-code" maxLength={6} icon={KeyRound} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} placeholder="123456" required error={fieldErrors.code} />
           <FormField label={t("nouveauMdp")} name="password" type="password" icon={Lock} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" placeholder="••••••••" required minLength={8} error={fieldErrors.password} hint={t("nouveauMdpAide")} />
           <FormField label={t("confirmer")} name="password_confirm" type="password" icon={Lock} value={passwordConfirm} onChange={(e) => setPasswordConfirm(e.target.value)} autoComplete="new-password" placeholder="••••••••" required error={fieldErrors.password_confirm} />

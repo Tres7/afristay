@@ -1,5 +1,4 @@
 import pytest
-from django.core import mail
 
 from apps.users.infrastructure.persistence.models import UserModel, VerificationCode
 
@@ -24,7 +23,7 @@ def register(api_client, password):
     return _register
 
 
-def test_register_verify_then_login(api_client, register, password):
+def test_register_verify_then_login(api_client, register, password, code_envoye):
     response = register(phone='00228 90 00 00 00')
 
     assert response.status_code == 201
@@ -33,9 +32,10 @@ def test_register_verify_then_login(api_client, register, password):
     assert response.data['is_verified'] is False
 
     # Broker indisponible : le code part quand même par email (repli)
-    code = VerificationCode.objects.get(user__email='ama.kossi@example.tg').code
-    assert len(code) == 6
-    assert any(code in message.body for message in mail.outbox)
+    code = code_envoye('ama.kossi@example.tg')
+    # La base ne garde que l'empreinte du code, jamais le code lui-même
+    stocke = VerificationCode.objects.get(user__email='ama.kossi@example.tg').code
+    assert code not in stocke and len(stocke) == 64
 
     response = api_client.post(VERIFY, {'email': 'ama.kossi@example.tg', 'code': code}, format='json')
     assert response.status_code == 200

@@ -4,7 +4,7 @@ import logging
 from django.conf import settings
 from django.utils import formats, timezone
 
-from apps.paiements.notifications import _admins, _envoyer, _fcfa
+from apps.paiements.notifications import _admins, _documents, _envoyer, _fcfa
 
 from . import montants
 from .models import DonModel, ReversementModel
@@ -25,7 +25,7 @@ def recu(don: DonModel):
         'montant_ong': _fcfa(don.montant_ong), 'couvre_frais': don.couvre_frais,
         'date_reversement': formats.date_format(montants.date_reversement(timezone.localtime(don.paye_le).date()), 'j F Y'),
         'url': f"{settings.FRONTEND_URL}/profil/dons",
-    })
+    }, pieces_jointes=_documents(don))
 
 
 def reversement_a_effectuer(r: ReversementModel):

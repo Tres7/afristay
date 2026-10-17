@@ -33,6 +33,16 @@ export default function HebergementForm({ initial, onSaved, onCancel }: Hebergem
     max_guests: initial ? String(initial.max_guests) : "2",
     description: initial?.description ?? "",
     amenities: initial?.amenities ?? [],
+    surface_m2: initial?.surface_m2 ? String(initial.surface_m2) : "",
+    chambres: initial?.chambres ?? 1,
+    salles_de_bain: initial?.salles_de_bain ?? 1,
+    lits_doubles: initial?.lits_doubles ?? (initial ? 0 : 1),
+    lits_simples: initial?.lits_simples ?? 0,
+    canapes_lits: initial?.canapes_lits ?? 0,
+    petit_dejeuner: initial?.petit_dejeuner || "",
+    petit_dejeuner_prix: initial?.petit_dejeuner_prix ? String(initial.petit_dejeuner_prix) : "",
+    arrivee_a_partir: initial?.arrivee_a_partir?.slice(0, 5) ?? "14:00",
+    depart_avant: initial?.depart_avant?.slice(0, 5) ?? "11:00",
   });
   // Photos dans l'ordre d'affichage : la première est la couverture
   const [photos, setPhotos] = useState<string[]>(() => {
@@ -75,6 +85,16 @@ export default function HebergementForm({ initial, onSaved, onCancel }: Hebergem
       image_url: photos[0],
       images: photos,
       amenities: form.amenities,
+      surface_m2: form.surface_m2 ? Number(form.surface_m2) : null,
+      chambres: form.chambres,
+      salles_de_bain: form.salles_de_bain,
+      lits_doubles: form.lits_doubles,
+      lits_simples: form.lits_simples,
+      canapes_lits: form.canapes_lits,
+      petit_dejeuner: form.petit_dejeuner,
+      petit_dejeuner_prix: form.petit_dejeuner === "option" && form.petit_dejeuner_prix ? Number(form.petit_dejeuner_prix) : null,
+      arrivee_a_partir: form.arrivee_a_partir || null,
+      depart_avant: form.depart_avant || null,
     };
     try {
       const res = initial
@@ -97,7 +117,7 @@ export default function HebergementForm({ initial, onSaved, onCancel }: Hebergem
   const err = (k: string) => errors[k] && <p className="text-xs text-red-600 mt-1.5">{errors[k]}</p>;
 
   return (
-    <form onSubmit={submit} className="space-y-5">
+    <form method="post" onSubmit={submit} className="space-y-5">
       {errors.detail && <p role="alert" className="text-sm text-red-700 bg-red-50 rounded-xl p-3">{errors.detail}</p>}
 
       <div>
@@ -139,6 +159,69 @@ export default function HebergementForm({ initial, onSaved, onCancel }: Hebergem
           {err("price_per_night")}
         </div>
       </div>
+
+      <fieldset className="space-y-4">
+        <legend className={labelClass}>{t("detailsTitre")}</legend>
+        <p className="text-xs text-gray-500 -mt-1">{t("detailsAide")}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className={labelClass} htmlFor="h-surface">{t("surface")}</label>
+            <input id="h-surface" type="number" min={5} step={1} inputMode="numeric" className={inputClass} value={form.surface_m2}
+              onChange={set("surface_m2")} placeholder="80" required />
+            {err("surface_m2")}
+          </div>
+          <div className="space-y-2">
+            <Stepper className="border border-gray-200 rounded-xl px-4 py-2.5 bg-white" label={t("chambres")} value={form.chambres} min={0} max={50}
+              onChange={(n) => setForm((prev) => ({ ...prev, chambres: n }))} />
+            {err("chambres")}
+            <Stepper className="border border-gray-200 rounded-xl px-4 py-2.5 bg-white" label={t("sallesDeBain")} value={form.salles_de_bain} min={0} max={50}
+              onChange={(n) => setForm((prev) => ({ ...prev, salles_de_bain: n }))} />
+          </div>
+        </div>
+        <div>
+          <p className={labelClass}>{t("lits")}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            {(["lits_doubles", "lits_simples", "canapes_lits"] as const).map((cle) => (
+              <Stepper key={cle} className="border border-gray-200 rounded-xl px-4 py-2.5 bg-white"
+                label={t(cle === "lits_doubles" ? "litsDoubles" : cle === "lits_simples" ? "litsSimples" : "canapesLits")}
+                value={form[cle]} min={0} max={50} onChange={(n) => setForm((prev) => ({ ...prev, [cle]: n }))} />
+            ))}
+          </div>
+          {err("lits")}
+        </div>
+        <div>
+          <p className={labelClass} id="h-petitdej">{t("petitDejeuner")}</p>
+          <div className="flex flex-wrap gap-2" role="radiogroup" aria-labelledby="h-petitdej">
+            {(["inclus", "option", "non"] as const).map((v) => (
+              <button key={v} type="button" role="radio" aria-checked={form.petit_dejeuner === v}
+                onClick={() => setForm((prev) => ({ ...prev, petit_dejeuner: v }))}
+                className={cn("relative zone-tactile px-4 py-2 rounded-full text-sm border transition-colors",
+                  form.petit_dejeuner === v ? "bg-primary text-white border-primary" : "bg-white text-dark border-gray-200 hover:border-primary/40")}>
+                {t(v === "inclus" ? "petitDejInclus" : v === "option" ? "petitDejOption" : "petitDejNon")}
+              </button>
+            ))}
+          </div>
+          {err("petit_dejeuner")}
+          {form.petit_dejeuner === "option" && (
+            <div className="mt-3 sm:w-1/2">
+              <label className={labelClass} htmlFor="h-petitdej-prix">{t("petitDejPrix")}</label>
+              <input id="h-petitdej-prix" type="number" min={0} step={100} inputMode="numeric" className={inputClass}
+                value={form.petit_dejeuner_prix} onChange={set("petit_dejeuner_prix")} placeholder="3000" required />
+              {err("petit_dejeuner_prix")}
+            </div>
+          )}
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className={labelClass} htmlFor="h-arrivee">{t("arrivee")}</label>
+            <input id="h-arrivee" type="time" className={inputClass} value={form.arrivee_a_partir} onChange={set("arrivee_a_partir")} />
+          </div>
+          <div>
+            <label className={labelClass} htmlFor="h-depart">{t("depart")}</label>
+            <input id="h-depart" type="time" className={inputClass} value={form.depart_avant} onChange={set("depart_avant")} />
+          </div>
+        </div>
+      </fieldset>
 
       <div>
         <label className={labelClass} htmlFor="h-desc">{t("description")}</label>

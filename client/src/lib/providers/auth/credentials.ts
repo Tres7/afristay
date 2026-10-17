@@ -8,6 +8,7 @@ export const credentialsProvider = Credentials({
   credentials: {
     email: { label: "Email", type: "email" },
     password: { label: "Password", type: "password" },
+    captcha: { label: "Captcha", type: "text" },
   },
   async authorize(credentials) {
     if (!credentials?.email || !credentials?.password) return null;
@@ -15,7 +16,8 @@ export const credentialsProvider = Credentials({
     try {
       const data = await authenticateWithCredentials(
         String(credentials.email),
-        String(credentials.password)
+        String(credentials.password),
+        String(credentials.captcha ?? "")
       );
 
       return {
@@ -29,7 +31,7 @@ export const credentialsProvider = Credentials({
       };
     } catch (err) {
       const code = (err as { code?: string } | undefined)?.code;
-      if (code === "unverified_email" || code === "inactive") {
+      if (code === "unverified_email" || code === "inactive" || code === "captcha") {
         const error = new CredentialsSignin();
         error.code = code;
         throw error;

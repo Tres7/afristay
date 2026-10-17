@@ -44,7 +44,10 @@ export default function ContenuFr() {
                 <tr><td>Paiements : montant, statut, identifiant de la transaction chez FedaPay ou PayPal, opérateur et numéro Mobile Money débité</td><td>Encaisser le séjour, vous rembourser sur le même moyen de paiement, comptabilité</td><td>Exécution du contrat ; obligation légale (comptabilité)</td></tr>
                 <tr><td>Transferts aéroport : aéroport, heure et numéro de vol, passagers, bagages, adresse de destination, numéro de téléphone, message au chauffeur</td><td>Organiser la prise en charge à l&apos;aéroport</td><td>Exécution du contrat</td></tr>
                 <tr><td>Chauffeurs partenaires : identité, téléphone, véhicule, immatriculation, compte Mobile Money</td><td>Attribuer les courses et payer les chauffeurs</td><td>Exécution du contrat</td></tr>
+                <tr><td>Location de voiture : véhicule, formule, lieux et dates de remise et de retour, adresse de livraison, nombre de personnes, numéro de téléphone, précisions sur votre besoin ; si vous conduisez : nom du conducteur, numéro et pays du permis</td><td>Organiser la location avec le loueur partenaire</td><td>Exécution du contrat</td></tr>
+                <tr><td>Loueurs partenaires : nom de l&apos;agence, contact, téléphone, compte Mobile Money</td><td>Attribuer les locations et payer les loueurs</td><td>Exécution du contrat</td></tr>
                 <tr><td>Hôtes : pays, opérateur, numéro Mobile Money et nom du titulaire</td><td>Verser à l&apos;hôte le prix de ses séjours</td><td>Exécution du contrat</td></tr>
+                <tr><td>Hôtes : pièce d&apos;identité (type et copie), compte rendu de la visite du logement par un agent Kwa-Ba (points contrôlés, commentaire, photos prises sur place)</td><td>Vérifier l&apos;identité de l&apos;hôte et la conformité du logement avant publication, pour protéger les voyageurs. La copie n&apos;est visible que des agents Kwa-Ba, jamais des voyageurs</td><td>Intérêt légitime (prévention de la fraude)</td></tr>
                 <tr><td>Messages échangés avec les hôtes ou les voyageurs</td><td>Messagerie et notifications par email</td><td>Exécution du contrat</td></tr>
                 <tr><td>Avis et notes (publiés avec votre prénom et l&apos;initiale de votre nom)</td><td>Informer les autres voyageurs</td><td>Intérêt légitime (fiabilité des avis)</td></tr>
                 <tr><td>Voyages de groupe (Kwa-Ba Together) : nom du voyage, destination, dates, membres, logements proposés et votes, itinéraire, informations pratiques, réservations que vous choisissez de partager</td><td>Préparer un voyage à plusieurs</td><td>Exécution du contrat</td></tr>
@@ -78,6 +81,7 @@ export default function ContenuFr() {
               <li>L&apos;<strong>hôte</strong> du logement que vous réservez reçoit votre nom, les détails de la réservation et votre message.</li>
               <li>Une <strong>ONG partenaire de Kwa-Ba Give</strong> ne reçoit votre nom et votre email que si vous l&apos;avez accepté au moment du don ; sinon, votre don lui est présenté comme anonyme. Le montant total reversé chaque mois est publié, sans le nom des donateurs.</li>
               <li>Le <strong>chauffeur partenaire</strong> d&apos;un transfert reçoit votre nom, votre numéro de téléphone, votre numéro de vol, le nombre de passagers et de bagages, l&apos;adresse de destination et votre message.</li>
+              <li>Le <strong>loueur partenaire</strong> d&apos;une location de voiture reçoit votre nom, votre numéro de téléphone, le véhicule, les lieux et dates, le nombre de personnes, vos précisions et, si vous conduisez, le nom du conducteur et les références de son permis.</li>
               <li>Les <strong>membres d&apos;un voyage de groupe</strong> voient votre prénom et l&apos;initiale de votre nom, vos votes, vos propositions et les réservations que vous partagez avec eux (logement, dates, montant).</li>
               <li>Les <strong>administrateurs</strong> de Kwa-Ba, pour la modération et l&apos;assistance (accès restreint et tracé).</li>
               <li>Hébergement du site et des données : <AC>nom, adresse et pays de l&apos;hébergeur</AC>.</li>
@@ -103,6 +107,7 @@ export default function ContenuFr() {
               <li>Messages : <AValider>3 ans après le dernier message de la conversation.</AValider></li>
               <li>Avis : tant que le logement est publié, ou jusqu&apos;à leur suppression par modération.</li>
               <li>Journaux techniques de sécurité : <AValider>1 an.</AValider></li>
+              <li>Copie de la pièce d&apos;identité d&apos;un hôte : supprimée dès que l&apos;agent a vérifié l&apos;identité (seuls le type de pièce et le résultat du contrôle sont conservés). Compte rendu et photos de la visite : <AValider>tant que l&apos;annonce est publiée, puis 3 ans.</AValider></li>
             </ul>
           ),
         },

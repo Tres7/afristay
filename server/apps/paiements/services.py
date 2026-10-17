@@ -42,6 +42,9 @@ class PaiementErreur(Exception):
     """Erreur dont le message peut être affiché tel quel à l'utilisateur."""
 
 
+INDISPONIBLE = "Le paiement en ligne est momentanément indisponible : la réservation n'est pas possible pour l'instant. Réessayez un peu plus tard."
+
+
 # Moyen choisi par le voyageur → prestataire qui encaisse
 MOYENS = {
     'mobile_money': 'fedapay',
@@ -51,7 +54,7 @@ MOYENS = {
 
 
 # Modèle payé → champ de PaiementModel qui le désigne
-CIBLES = {'reservationmodel': 'reservation', 'transfertmodel': 'transfert', 'donmodel': 'don'}
+CIBLES = {'reservationmodel': 'reservation', 'transfertmodel': 'transfert', 'donmodel': 'don', 'locationmodel': 'location'}
 
 
 def fedapay_actif() -> bool:
@@ -69,6 +72,11 @@ def moyens_actifs() -> list[str]:
 
 def paiement_actif() -> bool:
     return fedapay_actif() or paypal_actif()
+
+
+def reservation_possible() -> bool:
+    """Une réservation se paie en ligne ; sans prestataire configuré, seulement en développement (PAIEMENT_HORS_LIGNE)."""
+    return paiement_actif() or settings.PAIEMENT_HORS_LIGNE
 
 
 def delai_paiement() -> timedelta:
@@ -205,6 +213,10 @@ def _paiement_reussi(paiement_id, donnees: dict):
             from apps.give.services import paiement_recu  # import local : give dépend de paiements
             paiement_recu(paiement)
             return
+        if paiement.location_id:
+            from apps.locations.services import paiement_recu  # import local : locations dépend de paiements
+            paiement_recu(paiement)
+            return
 
         reservation = ReservationModel.objects.select_for_update().get(pk=paiement.reservation_id)
         if reservation.paiements.filter(statut='reussi').exclude(pk=paiement.pk).exists():
@@ -246,7 +258,10 @@ def _planifier_versement(reservation):
 
 
 def _par_carte(paiement) -> bool:
-    moyen = paiement.reservation.payment_method if paiement.reservation_id else paiement.transfert.moyen
+    if paiement.reservation_id:
+        moyen = paiement.reservation.payment_method
+    else:
+        moyen = (paiement.location if paiement.location_id else paiement.transfert).moyen
     return moyen == 'carte' or 'card' in paiement.mode.lower()
 
 
@@ -260,14 +275,14 @@ def rembourser(paiement, montant: int, motif: str):
         # Mobile Money : FedaPay ne donne pas le numéro débité, on le demande au voyageur
         statut = 'attente_numero'
     return RemboursementModel.objects.create(
-        reservation_id=paiement.reservation_id, transfert_id=paiement.transfert_id,
+        reservation_id=paiement.reservation_id, transfert_id=paiement.transfert_id, location_id=paiement.location_id,
         paiement=paiement, montant=montant, motif=motif, statut=statut,
     )
 
 
 def indiquer_numero_remboursement(objet, pays: str, operateur: str, numero: str) -> int:
     """Enregistre le compte Mobile Money du voyageur sur les remboursements en attente de `objet`
-    (réservation ou transfert). Renvoie leur nombre."""
+    (réservation, transfert ou location). Renvoie leur nombre."""
     return objet.remboursements.filter(statut='attente_numero').update(
         pays=pays, operateur=operateur, numero=numero, statut='a_envoyer', derniere_erreur='',
     )
@@ -403,7 +418,7 @@ def synchroniser_versement(versement: VersementModel):
 def envoyer_remboursements() -> int:
     envoyes = 0
     for remboursement in RemboursementModel.objects.filter(statut='a_envoyer').select_related(
-        'paiement', 'reservation__guest', 'transfert__voyageur',
+        'paiement', 'reservation__guest', 'transfert__voyageur', 'location__voyageur',
     )[:50]:
         if not _peut_reessayer(remboursement):
             continue
@@ -519,6 +534,7 @@ def passe() -> dict:
         synchroniser_remboursement(remboursement)
     from . import notifications  # import local : notifications importe les modèles et les tarifs
     from apps.give import services as give  # imports locaux : ces modules dépendent de paiements
+    from apps.locations import services as locations
     from apps.transferts import services as transferts
 
     stats = {
@@ -526,8 +542,12 @@ def passe() -> dict:
         'versements_envoyes': envoyer_versements_dus(),
         'remboursements_envoyes': envoyer_remboursements(),
         **transferts.passe(),
+        **locations.passe(),
         **give.passe(),
     }
+    from . import relances
+    # Après les expirations : l'email « annulée faute de paiement » part dans la même passe
+    stats['relances'] = relances.envoyer_relances()
     stats['emails'] = notifications.envoyer_notifications()
     return {k: v for k, v in stats.items() if v}
 
@@ -547,6 +567,9 @@ def traiter_evenement(evenement: dict):
         for versement in VersementModel.objects.filter(payout_id=identifiant, statut='en_cours'):
             synchroniser_versement(versement)
         for versement in VersementChauffeurModel.objects.filter(payout_id=identifiant, statut='en_cours'):
+            synchroniser_payout(versement)
+        from apps.locations.models import VersementPartenaireModel  # import local : locations dépend de paiements
+        for versement in VersementPartenaireModel.objects.filter(payout_id=identifiant, statut='en_cours'):
             synchroniser_payout(versement)
         for remboursement in RemboursementModel.objects.filter(payout_id=identifiant, statut='en_cours'):
             synchroniser_remboursement(remboursement)

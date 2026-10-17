@@ -91,7 +91,7 @@ export default function DecouvrirPage() {
                 aria-selected={tab === o.id}
                 onClick={() => setTab(o.id)}
                 className={cn(
-                  "pb-3 text-[15px] font-bold transition-colors whitespace-nowrap border-b-2",
+                  "relative zone-tactile pb-3 text-[15px] font-bold transition-colors whitespace-nowrap border-b-2",
                   tab === o.id ? "text-primary border-primary" : "text-gray-400 border-transparent hover:text-dark"
                 )}
               >
@@ -140,7 +140,7 @@ export default function DecouvrirPage() {
                   <p className="text-gray-600 text-sm mt-3 leading-relaxed flex-1">{e.desc}</p>
                   <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
                     <span className="font-bold text-primary text-sm">{e.price}</span>
-                    <Link href={`/recherche?city=${encodeURIComponent(e.city)}`} className="flex items-center gap-1 text-sm font-semibold text-dark hover:text-primary">
+                    <Link href={`/recherche?city=${encodeURIComponent(e.city)}`} className="relative zone-tactile flex items-center gap-1 text-sm font-semibold text-dark hover:text-primary">
                       {t("dormirA", { ville: e.city })} <ArrowRight size={14} />
                     </Link>
                   </div>

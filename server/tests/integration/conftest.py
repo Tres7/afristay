@@ -1,6 +1,8 @@
+import re
 from datetime import timedelta
 
 import pytest
+from django.core import mail
 from django.utils import timezone
 from rest_framework.test import APIClient
 
@@ -16,6 +18,12 @@ PASSWORD = 'Afristay-Test-2026!'
 def _db_and_fast_hasher(db, settings):
     # Tous les tests d'intégration ont accès à la base ; un hachage rapide évite ~0,3 s par mot de passe
     settings.PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']
+
+
+@pytest.fixture(autouse=True)
+def _paiement_hors_ligne(settings):
+    # Sans FedaPay configuré, les tests réservent sans paiement (comme en développement) ; voir test_paiement_obligatoire
+    settings.PAIEMENT_HORS_LIGNE = True
 
 
 @pytest.fixture(autouse=True)
@@ -49,9 +57,26 @@ def make_user():
         fields.setdefault('email', f'{role}{n}@test.afristay')
         fields.setdefault('first_name', 'Test')
         fields.setdefault('last_name', f'{role.capitalize()} {n}')
+        if role == 'hote':
+            # Téléphone exigé pour publier une annonce (l'agent appelle l'hôte pour la visite)
+            fields.setdefault('phone', f'+22991{n:06d}')
         return UserModel.objects.create_user(password=PASSWORD, role=role, is_verified=is_verified, **fields)
 
     return _make
+
+
+@pytest.fixture
+def code_envoye():
+    """Dernier code à 6 chiffres envoyé par email à cette adresse (la base n'en garde que l'empreinte)."""
+    def _lire(email):
+        for message in reversed(mail.outbox):
+            if email.lower() in [d.lower() for d in message.to]:
+                trouve = re.search(r'\b(\d{6})\b', message.body)
+                if trouve:
+                    return trouve.group(1)
+        raise AssertionError(f'Aucun code envoyé à {email}')
+
+    return _lire
 
 
 @pytest.fixture
@@ -60,6 +85,8 @@ def make_hebergement(make_user):
         fields.setdefault('name', 'Villa test')
         fields.setdefault('city', 'Lomé')
         fields.setdefault('price_per_night', 25000)
+        # Annonce déjà vérifiée par un agent (publiée) ; les tests de la vérification passent statut_verification
+        fields.setdefault('statut_verification', 'verifiee')
         return HebergementModel.objects.create(host=host or make_user(role='hote'), **fields)
 
     return _make

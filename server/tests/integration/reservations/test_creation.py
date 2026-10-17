@@ -24,7 +24,10 @@ def _book(client, hebergement, check_in, check_out, **extra):
     return client.post(RESERVATIONS, payload, format='json')
 
 
-def test_total_price_includes_service_fee(client_for, make_user, make_hebergement):
+def test_total_price_includes_service_fee(client_for, make_user, make_hebergement, settings):
+    # Paiement en ligne désactivé (indépendamment des clés d'un server/.env local) : confirmation directe
+    settings.FEDAPAY = {**settings.FEDAPAY, 'SECRET_KEY': ''}
+    settings.PAYPAL = {**settings.PAYPAL, 'CLIENT_ID': '', 'CLIENT_SECRET': ''}
     hebergement = make_hebergement(price_per_night=25000)
     check_in, check_out = _stay_dates(nights=3)
 

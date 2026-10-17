@@ -1,0 +1,380 @@
+"""API du back-office. Contrat : documentation/modules/backoffice-api.md.
+
+Toutes les vues exigent le rôle admin, lu en base à chaque requête (EstAdministrateur). Chaque écriture est
+tracée dans le journal d'audit (apps.securite) avec l'administrateur, la cible et le motif.
+"""
+from datetime import timedelta
+
+from django.contrib.auth import get_user_model
+from django.db import transaction
+from django.db.models import Avg, Count, ProtectedError, Q, Sum
+from django.db.models.functions import TruncDate
+from django.utils import timezone
+from django.utils.dateparse import parse_date
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from apps.avis.models import AvisModel
+from apps.hebergements.models import HebergementModel
+from apps.paiements import services as paiements
+from apps.reservations.models import ReservationModel
+from apps.securite.audit import journaliser
+from apps.securite.permissions import EstAdministrateur
+from apps.users.infrastructure.http.controllers.AuthController import revoquer_jetons
+from apps.verifications import services as verifications
+
+User = get_user_model()
+
+PAGE_SIZE = 20
+PAGE_SIZE_MAX = 100
+ROLES = [code for code, _ in User.ROLE_CHOICES]
+MOTIF_MIN, MOTIF_MAX = 5, 500
+
+
+# --- Outils communs ---------------------------------------------------------------------------------
+
+def _entier(valeur, defaut: int, minimum: int = 1, maximum: int | None = None) -> int:
+    try:
+        nombre = int(valeur)
+    except (TypeError, ValueError):
+        return defaut
+    nombre = max(nombre, minimum)
+    return min(nombre, maximum) if maximum else nombre
+
+
+def _paginer(request, qs, serialiser) -> Response:
+    page = _entier(request.query_params.get('page'), 1)
+    taille = _entier(request.query_params.get('page_size'), PAGE_SIZE, maximum=PAGE_SIZE_MAX)
+    debut = (page - 1) * taille
+    return Response({
+        'results': [serialiser(objet) for objet in qs[debut:debut + taille]],
+        'count': qs.count(),
+        'page': page,
+        'page_size': taille,
+    })
+
+
+def _booleen(valeur):
+    """'true' / 'false' (paramètre d'URL) → bool ; toute autre valeur → None (filtre ignoré)."""
+    return {'true': True, 'false': False}.get((valeur or '').lower())
+
+
+def _motif(valeur):
+    """Motif obligatoire des suppressions et annulations : (motif, réponse d'erreur ou None)."""
+    motif = (valeur or '').strip()
+    if not MOTIF_MIN <= len(motif) <= MOTIF_MAX:
+        return motif, Response(
+            {'motif': [f'Indiquez un motif de {MOTIF_MIN} à {MOTIF_MAX} caractères.']},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    return motif, None
+
+
+def _nom(utilisateur) -> str:
+    return f'{utilisateur.first_name} {utilisateur.last_name}'.strip() or utilisateur.email
+
+
+def _introuvable(quoi: str) -> Response:
+    return Response({'detail': f'{quoi} introuvable.'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class VueAdmin(APIView):
+    permission_classes = [EstAdministrateur]
+
+
+# --- 1. Tableau de bord -----------------------------------------------------------------------------
+
+class StatsView(VueAdmin):
+    def get(self, request):
+        maintenant = timezone.now()
+        aujourd_hui = timezone.localdate()
+        premier_jour = aujourd_hui - timedelta(days=29)
+        il_y_a_30j = maintenant - timedelta(days=30)
+
+        utilisateurs = User.objects.aggregate(
+            total=Count('id'),
+            nouveaux_30j=Count('id', filter=Q(date_joined__gte=il_y_a_30j)),
+            hotes=Count('id', filter=Q(role='hote')),
+            desactives=Count('id', filter=Q(is_active=False)),
+        )
+        annonces = HebergementModel.objects.aggregate(
+            total=Count('id'),
+            visibles=Count('id', filter=Q(is_available=True, statut_verification='verifiee')),
+            verifiees=Count('id', filter=Q(statut_verification='verifiee')),
+        )
+        recentes = ReservationModel.objects.filter(created_at__gte=il_y_a_30j)
+        reservations = recentes.aggregate(
+            confirmees_30j=Count('id', filter=Q(status='confirmed')),
+            annulees_30j=Count('id', filter=Q(status='cancelled')),
+            volume_30j=Sum('total_price', filter=Q(status='confirmed')),
+        )
+        reservations['volume_30j'] = int(reservations['volume_30j'] or 0)
+        avis = AvisModel.objects.aggregate(total=Count('id'), moyenne=Avg('note'))
+        avis['moyenne'] = round(avis['moyenne'], 1) if avis['moyenne'] is not None else None
+
+        # Une entrée par jour sur 30 jours (aujourd'hui inclus), à 0 les jours sans réservation confirmée
+        par_jour = {
+            ligne['jour']: ligne
+            for ligne in ReservationModel.objects
+            .filter(status='confirmed', created_at__date__gte=premier_jour)
+            .annotate(jour=TruncDate('created_at'))
+            .values('jour')
+            .annotate(nombre=Count('id'), volume=Sum('total_price'))
+        }
+        serie = []
+        for decalage in range(30):
+            jour = premier_jour + timedelta(days=decalage)
+            ligne = par_jour.get(jour, {})
+            serie.append({'date': jour.isoformat(), 'nombre': ligne.get('nombre', 0), 'volume': int(ligne.get('volume') or 0)})
+
+        return Response({
+            'utilisateurs': utilisateurs,
+            'annonces': annonces,
+            'reservations': reservations,
+            'avis': avis,
+            'reservations_par_jour': serie,
+        })
+
+
+# --- 2. Utilisateurs --------------------------------------------------------------------------------
+
+def _utilisateur(u) -> dict:
+    return {
+        'id': str(u.id), 'email': u.email, 'first_name': u.first_name, 'last_name': u.last_name,
+        'role': u.role, 'phone': u.phone, 'avatar_url': u.avatar.url if u.avatar else None,
+        'is_verified': u.is_verified, 'is_active': u.is_active,
+        'date_joined': u.date_joined, 'last_login': u.last_login,
+        'nb_reservations': u.nb_reservations, 'nb_annonces': u.nb_annonces,
+    }
+
+
+def _utilisateurs():
+    return User.objects.annotate(
+        nb_reservations=Count('reservations', distinct=True),
+        nb_annonces=Count('hebergements', distinct=True),
+    ).order_by('-date_joined')
+
+
+class UtilisateurListView(VueAdmin):
+    def get(self, request):
+        qs = _utilisateurs()
+        params = request.query_params
+        if q := params.get('q', '').strip():
+            qs = qs.filter(Q(email__icontains=q) | Q(first_name__icontains=q) | Q(last_name__icontains=q) | Q(phone__icontains=q))
+        if (role := params.get('role')) in ROLES:
+            qs = qs.filter(role=role)
+        if (actif := _booleen(params.get('actif'))) is not None:
+            qs = qs.filter(is_active=actif)
+        return _paginer(request, qs, _utilisateur)
+
+
+class UtilisateurDetailView(VueAdmin):
+    def patch(self, request, pk):
+        if str(pk) == str(request.user.pk):
+            return Response({'detail': 'Vous ne pouvez pas modifier votre propre compte.'}, status=status.HTTP_403_FORBIDDEN)
+        cible = User.objects.filter(pk=pk).first()
+        if not cible:
+            return _introuvable('Utilisateur')
+
+        donnees = request.data
+        role = donnees.get('role')
+        if 'role' in donnees and role not in ROLES:
+            return Response({'role': [f"Rôle invalide : {', '.join(ROLES)}."]}, status=status.HTTP_400_BAD_REQUEST)
+        actif = donnees.get('is_active')
+        if 'is_active' in donnees and not isinstance(actif, bool):
+            return Response({'is_active': ['Valeur booléenne attendue.']}, status=status.HTTP_400_BAD_REQUEST)
+
+        trace = {'cible_id': str(cible.pk), 'cible_email': cible.email}
+        if 'role' in donnees and role != cible.role:
+            journaliser('role_modifie', request, utilisateur=request.user, avant=cible.role, apres=role, **trace)
+            cible.role = role
+        if 'is_active' in donnees and actif != cible.is_active:
+            cible.is_active = actif
+            journaliser('compte_desactive' if not actif else 'compte_reactive', request, utilisateur=request.user, **trace)
+        cible.save(update_fields=['role', 'is_active'])
+        if not cible.is_active:
+            # Ferme ses sessions : sans refresh token valide, il est déconnecté au plus tard à l'expiration du jeton d'accès
+            revoquer_jetons(cible.pk)
+        return Response(_utilisateur(_utilisateurs().get(pk=cible.pk)))
+
+
+# --- 3. Annonces ------------------------------------------------------------------------------------
+
+def _hebergement(h) -> dict:
+    return {
+        'id': str(h.id), 'name': h.name, 'type': h.type, 'city': h.city, 'location': h.location,
+        'price_per_night': h.price_per_night, 'image_url': h.image_url, 'is_available': h.is_available,
+        'est_verifie': h.statut_verification == 'verifiee', 'statut_verification': h.statut_verification,
+        'rating': h.rating, 'review_count': h.review_count, 'nb_reservations': h.nb_reservations,
+        'host': {'id': str(h.host_id), 'nom': _nom(h.host), 'email': h.host.email},
+        'created_at': h.created_at,
+    }
+
+
+def _hebergements():
+    return (HebergementModel.objects.select_related('host')
+            .annotate(nb_reservations=Count('reservations')).order_by('-created_at'))
+
+
+class HebergementListView(VueAdmin):
+    def get(self, request):
+        qs = _hebergements()
+        params = request.query_params
+        if q := params.get('q', '').strip():
+            qs = qs.filter(Q(name__icontains=q) | Q(city__icontains=q) | Q(location__icontains=q) | Q(host__email__icontains=q))
+        if ville := params.get('ville', '').strip():
+            qs = qs.filter(city__iexact=ville)
+        if (visible := _booleen(params.get('visible'))) is not None:
+            qs = qs.filter(is_available=visible)
+        if (verifie := _booleen(params.get('verifie'))) is not None:
+            qs = qs.filter(statut_verification='verifiee') if verifie else qs.exclude(statut_verification='verifiee')
+        return _paginer(request, qs, _hebergement)
+
+
+class HebergementDetailView(VueAdmin):
+    def patch(self, request, pk):
+        annonce = HebergementModel.objects.select_related('host').filter(pk=pk).first()
+        if not annonce:
+            return _introuvable('Annonce')
+
+        donnees = request.data
+        for champ in ('is_available', 'est_verifie'):
+            if champ in donnees and not isinstance(donnees[champ], bool):
+                return Response({champ: ['Valeur booléenne attendue.']}, status=status.HTTP_400_BAD_REQUEST)
+
+        changements = {}
+        if 'is_available' in donnees and donnees['is_available'] != annonce.is_available:
+            changements['is_available'] = annonce.is_available = donnees['is_available']
+        a_verifier = False
+        if 'est_verifie' in donnees and donnees['est_verifie'] != (annonce.statut_verification == 'verifiee'):
+            # Valider ici publie l'annonce sans visite d'agent ; retirer la validation la retire du site
+            # et prévient les agents qu'une visite est à faire
+            annonce.statut_verification = 'verifiee' if donnees['est_verifie'] else 'en_attente'
+            if donnees['est_verifie']:
+                annonce.motif_refus = ''
+            changements['statut_verification'] = annonce.statut_verification
+            a_verifier = not donnees['est_verifie']
+
+        if changements:
+            annonce.save()
+            journaliser('annonce_modifiee', request, utilisateur=request.user,
+                        annonce_id=str(annonce.pk), annonce=annonce.name, **changements)
+            if a_verifier:
+                verifications.visite_a_planifier(annonce)
+        return Response(_hebergement(_hebergements().get(pk=annonce.pk)))
+
+    def delete(self, request, pk):
+        motif, erreur = _motif(request.query_params.get('motif'))
+        if erreur:
+            return erreur
+        annonce = HebergementModel.objects.select_related('host').filter(pk=pk).first()
+        if not annonce:
+            return _introuvable('Annonce')
+        trace = {'annonce_id': str(annonce.pk), 'annonce': annonce.name, 'hote': annonce.host.email, 'motif': motif}
+        try:
+            with transaction.atomic():
+                annonce.delete()
+        except ProtectedError:
+            return Response(
+                {'detail': "Cette annonce a des réservations payées : elle ne peut pas être supprimée. Masquez-la plutôt."},
+                status=status.HTTP_409_CONFLICT,
+            )
+        journaliser('annonce_supprimee', request, utilisateur=request.user, **trace)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# --- 4. Réservations --------------------------------------------------------------------------------
+
+def _reservation(r) -> dict:
+    h = r.hebergement
+    return {
+        'id': str(r.id), 'reference': r.reference,
+        'hebergement': {'id': str(h.id), 'name': h.name, 'city': h.city},
+        'voyageur': {'id': str(r.guest_id), 'nom': _nom(r.guest), 'email': r.guest.email},
+        'hote': {'id': str(h.host_id), 'nom': _nom(h.host)},
+        'check_in': r.check_in, 'check_out': r.check_out, 'nights': r.nights, 'guests_count': r.guests_count,
+        'total_price': int(r.total_price), 'status': r.status, 'payment_method': r.payment_method,
+        'created_at': r.created_at,
+    }
+
+
+def _reservations():
+    return ReservationModel.objects.select_related('hebergement__host', 'guest').order_by('-created_at')
+
+
+class ReservationListView(VueAdmin):
+    def get(self, request):
+        qs = _reservations()
+        params = request.query_params
+        if q := params.get('q', '').strip():
+            filtre = Q(hebergement__name__icontains=q) | Q(guest__email__icontains=q)
+            # Référence RES-AF2026-3A43 : les 4 derniers caractères sont le début de l'identifiant
+            if q.upper().startswith('RES-'):
+                fin = q.rsplit('-', 1)[-1]
+                if len(fin) >= 2:
+                    filtre |= Q(id__istartswith=fin)
+            qs = qs.filter(filtre)
+        if (statut := params.get('statut')) in dict(ReservationModel.STATUS_CHOICES):
+            qs = qs.filter(status=statut)
+        # Séjours qui chevauchent la période demandée
+        if debut := parse_date(params.get('debut', '') or ''):
+            qs = qs.filter(check_out__gt=debut)
+        if fin := parse_date(params.get('fin', '') or ''):
+            qs = qs.filter(check_in__lt=fin)
+        return _paginer(request, qs, _reservation)
+
+
+class ReservationAnnulerView(VueAdmin):
+    def post(self, request, pk):
+        motif, erreur = _motif(request.data.get('motif'))
+        if erreur:
+            return erreur
+        reservation = _reservations().filter(pk=pk).first()
+        if not reservation:
+            return _introuvable('Réservation')
+        try:
+            # Annulation par Kwa-Ba : le voyageur est remboursé en totalité s'il a payé (même séjour commencé)
+            rembourse = paiements.annuler(reservation, par='plateforme')
+        except paiements.PaiementErreur as exc:
+            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        journaliser('reservation_annulee', request, utilisateur=request.user, reservation_id=str(reservation.pk),
+                    reference=reservation.reference, voyageur=reservation.guest.email, rembourse=rembourse, motif=motif)
+        return Response(_reservation(_reservations().get(pk=reservation.pk)))
+
+
+# --- 5. Avis ----------------------------------------------------------------------------------------
+
+def _avis(a) -> dict:
+    return {
+        'id': str(a.id), 'note': a.note, 'commentaire': a.commentaire,
+        'auteur': {'id': str(a.auteur_id), 'nom': _nom(a.auteur), 'email': a.auteur.email},
+        'hebergement': {'id': str(a.hebergement_id), 'name': a.hebergement.name},
+        'reponse_hote': a.reponse_hote, 'created_at': a.created_at,
+    }
+
+
+class AvisListView(VueAdmin):
+    def get(self, request):
+        qs = AvisModel.objects.select_related('auteur', 'hebergement').order_by('-created_at')
+        params = request.query_params
+        if q := params.get('q', '').strip():
+            qs = qs.filter(Q(commentaire__icontains=q) | Q(hebergement__name__icontains=q) | Q(auteur__email__icontains=q))
+        if (note := _entier(params.get('note'), 0, minimum=0)) in range(1, 6):
+            qs = qs.filter(note=note)
+        return _paginer(request, qs, _avis)
+
+
+class AvisDetailView(VueAdmin):
+    def delete(self, request, pk):
+        motif, erreur = _motif(request.query_params.get('motif'))
+        if erreur:
+            return erreur
+        avis = AvisModel.objects.select_related('auteur', 'hebergement').filter(pk=pk).first()
+        if not avis:
+            return _introuvable('Avis')
+        trace = {'avis_id': str(avis.pk), 'annonce': avis.hebergement.name, 'auteur': avis.auteur.email,
+                 'note': avis.note, 'motif': motif}
+        avis.delete()  # le signal post_delete de l'app avis recalcule la note de l'annonce
+        journaliser('avis_supprime', request, utilisateur=request.user, **trace)
+        return Response(status=status.HTTP_204_NO_CONTENT)

@@ -42,6 +42,7 @@ def _message_json(dto: MessageDTO) -> dict:
         'content': dto.content,
         'created_at': dto.created_at,
         'is_own': dto.is_own,
+        'masked': dto.masked,
     }
 
 
@@ -64,6 +65,7 @@ def _conversation_json(dto: ConversationSummaryDTO) -> dict:
         'last_message': _message_json(dto.last_message) if dto.last_message else None,
         'unread_count': dto.unread_count,
         'last_message_at': dto.last_message_at,
+        'booked': dto.booked,
     }
 
 
@@ -101,6 +103,11 @@ class ConversationListCreateView(WriteGuardsMixin, APIView):
         if hebergement_id is None:
             return Response({'detail': 'hebergement_id invalide ou manquant.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        from apps.hebergements.models import HebergementModel  # contrôle propre à cette route, comme ci-dessous
+        # Annonce pas encore vérifiée ou masquée : on ne peut pas encore contacter son hôte
+        if not HebergementModel.objects.publiees().filter(pk=hebergement_id).exists():
+            return Response({'detail': 'Hébergement introuvable.'}, status=status.HTTP_404_NOT_FOUND)
+
         try:
             conversation, created = messaging_service().start_conversation(request.user.id, hebergement_id)
         except HebergementNotFoundException as e:
@@ -125,11 +132,10 @@ class ConversationWithGuestView(WriteGuardsMixin, APIView):
         if reservation_id is None:
             return Response({'detail': 'reservation_id invalide ou manquant.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Anti-abus : un hôte ne peut écrire qu'à un voyageur ayant réservé l'un de ses logements
+        # Anti-abus : un hôte ne peut écrire qu'à un voyageur ayant réservé ET payé l'un de ses logements
         reservation = (
             ReservationModel.objects
-            .filter(pk=reservation_id, hebergement__host_id=request.user.id)
-            .exclude(status='cancelled')
+            .filter(pk=reservation_id, hebergement__host_id=request.user.id, status='confirmed')
             .first()
         )
         if reservation is None:

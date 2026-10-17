@@ -41,8 +41,8 @@ const config: Config = {
         },
         accent: '#F59E0B',
         muted: '#5F6B6C', // gris secondaire lisible (≥ 5:1)
-        // gris-400 relevé : les textes d'aide et indications restent lisibles (≥ 4,5:1)
-        gray: { 400: '#6B7280' },
+        // gris-400 et 500 relevés : textes d'aide et indications lisibles sur blanc et sur crème (≥ 4,5:1)
+        gray: { 400: '#667080', 500: '#667080' },
         // Semantic Colors
         success: '#10B981', // Emerald 500
         warning: '#F59E0B', // Amber 500

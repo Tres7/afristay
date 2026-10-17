@@ -1,0 +1,104 @@
+name: Deploy
+
+# Deploys a manifest (deploy/manifests) to the VPS: the latest one by default, or an older one to roll back.
+# The VPS configuration (deploy/vps) always comes from main; the images come from the manifest.
+on:
+  workflow_dispatch:
+    inputs:
+      manifest:
+        description: Manifest file (e.g. manifest-0008-2cf8427.yaml), empty for the latest
+        type: string
+        required: false
+        default: ''
+
+# One deployment at a time, never cancelled halfway (migrations)
+concurrency:
+  group: production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Production
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # The environment only accepts main (branch policy) and holds the SSH secrets
+    environment:
+      name: production
+      url: ${{ vars.PUBLIC_SITE_URL }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup-manifest-tools
+
+      - id: target
+        name: Manifest to deploy
+        env:
+          MANIFEST: ${{ inputs.manifest }}
+        run: |
+          node .github/scripts/manifest/validate.mjs
+          node .github/scripts/manifest/target.mjs --manifest "$MANIFEST" | tee -a "$GITHUB_OUTPUT"
+          {
+            echo "### Deploying \`$(grep '^file=' "$GITHUB_OUTPUT" | cut -d= -f2)\`"
+            grep -E '^(server|client)_image=' "$GITHUB_OUTPUT" | sed 's/^/- /'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: SSH access to the VPS
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
+          HOST: ${{ vars.DEPLOY_HOST }}
+        run: |
+          if [ -z "$SSH_KEY" ] || [ -z "$KNOWN_HOSTS" ] || [ -z "$HOST" ]; then
+            echo "::error::Environment production: DEPLOY_SSH_KEY, DEPLOY_SSH_KNOWN_HOSTS (secrets) and DEPLOY_HOST (variable) are required"
+            exit 1
+          fi
+          install -d -m 700 ~/.ssh
+          (umask 077; printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key; printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts)
+          # Host key pinned from the secret: never trust a key seen for the first time
+          cat > ~/.ssh/config <<EOF
+          Host vps
+            HostName ${HOST}
+            User deploy
+            IdentityFile ~/.ssh/deploy_key
+            IdentitiesOnly yes
+            StrictHostKeyChecking yes
+            BatchMode yes
+            ServerAliveInterval 30
+          EOF
+          ssh vps true
+
+      - name: VPS configuration (deploy/vps)
+        # Secrets, backups, logs and deployment state live only on the server: excluded, so never deleted
+        run: |
+          rsync -rlptz --delete \
+            --exclude /env/ --exclude /backups/ --exclude /logs/ --exclude '/.deploy.env*' --exclude /deployments.log \
+            deploy/vps/ vps:/opt/kwaba/
+
+      - name: Deploy
+        env:
+          FILE: ${{ steps.target.outputs.file }}
+          SERVER_IMAGE: ${{ steps.target.outputs.server_image }}
+          CLIENT_IMAGE: ${{ steps.target.outputs.client_image }}
+        # Values already checked by target.mjs (file name, images by digest); quoted again for the remote shell
+        run: |
+          command=$(printf '/opt/kwaba/scripts/deploy.sh %q %q %q' "$FILE" "$SERVER_IMAGE" "$CLIENT_IMAGE")
+          # shellcheck disable=SC2029 # expanded on the runner on purpose
+          ssh vps "$command"
+
+      - name: Public health check
+        env:
+          SITE_URL: ${{ vars.PUBLIC_SITE_URL }}
+        run: |
+          for path in /api/health/ /; do
+            curl -fsS --retry 5 --retry-delay 5 --retry-all-errors -o /dev/null -w "%{http_code} ${path}\n" "${SITE_URL%/}${path}"
+          done
+
+      - name: Remove the SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
