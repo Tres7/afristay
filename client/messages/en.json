@@ -1263,7 +1263,12 @@
     "envoi": "Sending...",
     "placeholder": "Write your message...",
     "votreMessage": "Your message",
-    "envoyer": "Send message"
+    "envoyer": "Send message",
+    "securite": "For your safety, everything goes through Kwa-Ba messaging: phone numbers, emails and links are hidden. Never pay outside the site.",
+    "anonymeHote": "This traveller has not booked yet: their name will appear once they have paid.",
+    "anonymeVoyageur": "The host cannot see your name until you have booked and paid on Kwa-Ba.",
+    "masque": "Contact details hidden by Kwa-Ba",
+    "masqueEnvoi": "Contact details hidden: on Kwa-Ba, conversations and payments only go through the site."
   },
   "devenirHote": {
     "etapes": {
@@ -1384,7 +1389,7 @@
       "confidentialite": "Only Kwa-Ba agents can see this document, never travellers."
     },
     "candidature": {
-      "titre": "Becoming a Kwa-Ba host: 3 steps",
+      "titre": "Becoming a Kwa-Ba host: {nombre} steps",
       "texte": "For travellers' safety, every host is verified before publishing. Your listings stay hidden until these steps are complete.",
       "telephoneTitre": "Your phone number",
       "telephoneTexte": "The Kwa-Ba agent will call you to arrange the visit.",
@@ -1396,7 +1401,14 @@
       "annonceTitre": "Your place, visited by an agent",
       "annonceTexte": "Prepare your listing (3 at most before your identity is verified).",
       "annonceAction": "Create my listing",
-      "annonceEnAttente": "Listing ready. An agent will call you for the visit as soon as your identity is verified."
+      "annonceEnAttente": "Listing ready. An agent will call you for the visit as soon as your identity is verified.",
+      "identiteVerifiee": "Verified.",
+      "contratTitre": "Your host contract",
+      "contratTexte": "Read it and sign it online, in two minutes.",
+      "contratAction": "Read and sign",
+      "contratSigne": "Signed.",
+      "contratTelecharger": "View the contract",
+      "annonceContrat": "Listing ready. An agent will call you for the visit once your identity is verified and your contract signed."
     }
   },
   "annonce": {
@@ -1628,5 +1640,59 @@
     "horairesTitre": "Check-in and check-out",
     "arrivee": "Check-in from {heure}",
     "depart": "check-out by {heure}"
+  },
+  "contrat": {
+    "surtitre": "Kwa-Ba contract",
+    "reference": "Reference",
+    "pour": "For: {nom}",
+    "signeTitre": "Contract signed",
+    "signeTexte": "Signed by {nom} on {date}. The signed PDF has been emailed to you.",
+    "expire": "This link has expired. Reply to the email you received or write to Kwa-Ba to get a new link.",
+    "enFrancais": "The contract is written in French; only the French version is legally binding.",
+    "telechargerProjet": "Download the contract (PDF)",
+    "telechargerSigne": "Download the signed contract (PDF)",
+    "signerTitre": "Sign the contract",
+    "nomComplet": "Your full name",
+    "votreSignature": "Your signature",
+    "zoneSignature": "Signature area: draw your signature with your finger, a stylus or the mouse",
+    "signezIci": "Sign here",
+    "effacer": "Clear",
+    "signerAvecNom": "Sign with my name",
+    "consentement": "I have read the contract and accept it. I acknowledge that my electronic signature has the same value as a handwritten signature.",
+    "signer": "Sign the contract",
+    "signatureEnCours": "Signing…",
+    "preuves": "When you sign, the date and time, your IP address, your browser and the document fingerprint are recorded as evidence.",
+    "erreurNom": "Type your full name.",
+    "erreurSignature": "Draw your signature (or use “Sign with my name”).",
+    "erreurAccepte": "Tick the box to accept the contract.",
+    "merci": "Thank you, your contract is signed.",
+    "introuvable": "This link is not valid or the contract has been cancelled.",
+    "indisponible": "The host contract will be available soon.",
+    "versionModifiee": "The contract has just been updated: please read it again before signing.",
+    "retourEspace": "Back to my host space",
+    "reserveHotes": "This page is for hosts only."
+  },
+  "bientot": {
+    "surtitre": "Opening soon",
+    "titre": "Places to stay are coming very soon",
+    "texte": "We are verifying our first hosts one by one: identity checked and the place visited on site. The first places to stay will be online in the coming days.",
+    "email": "Your email address",
+    "prevenir": "Notify me",
+    "merci": "Thank you! We will write to you as soon as we open.",
+    "erreur": "Sign-up is not possible right now. Please try again.",
+    "rgpd": "One email only, on opening day. Nothing else.",
+    "enAttendant": "Already available",
+    "transfert": "Airport transfer",
+    "location": "Car rental",
+    "give": "Kwa-Ba Give",
+    "proprietaire": "Do you have a place to rent?",
+    "devenirHote": "Become a host",
+    "fermer": "Close"
+  },
+  "devise": {
+    "choisir": "Currency for prices",
+    "fcfa": "CFA franc",
+    "euro": "Euro",
+    "debite": "Charged in CFA francs: {montant}"
   }
 }

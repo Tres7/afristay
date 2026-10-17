@@ -10,6 +10,7 @@ import api from "@/lib/api";
 import { cn, formatDate } from "@/lib/utils";
 import Chargement from "@/components/ui/Chargement";
 import PropertyCard from "@/components/hebergement/PropertyCard";
+import { BandeauBientot, useAucunLogement } from "@/components/lancement/BientotDisponible";
 import DateRangeField from "@/components/ui/DateRangeField";
 import GuestsField from "@/components/ui/GuestsField";
 import Select from "@/components/ui/Select";
@@ -36,6 +37,7 @@ const FILTER_KEYS = ["city", "check_in", "check_out", "guests", "type", "sort", 
 
 function RechercheContent() {
   const t = useTranslations("recherche");
+  const aucunLogement = useAucunLogement();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -224,6 +226,8 @@ function RechercheContent() {
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
                 {[0, 1, 2, 3, 4, 5].map((i) => <div key={i} className="h-72 rounded-2xl skeleton" />)}
               </div>
+            ) : results.length === 0 && aucunLogement ? (
+              <BandeauBientot />
             ) : results.length === 0 ? (
               <div className="bg-white rounded-2xl shadow-card p-10 sm:p-16 text-center">
                 <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">

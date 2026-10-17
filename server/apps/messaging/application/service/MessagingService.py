@@ -10,6 +10,8 @@ from apps.messaging.application.dto.dto import (
     ParticipantDTO,
 )
 from apps.messaging.application.events.NewMessageEmailRequested import NewMessageEmailRequested
+from apps.messaging.application.ports.BookingLookup import BookingLookup, EveryoneBooked
+from apps.messaging.application.ports.ContactGuard import ContactGuard, PassThroughContactGuard
 from apps.messaging.application.ports.HebergementLookup import HebergementLookup
 from apps.messaging.application.ports.NotificationOutbox import NotificationOutbox
 from apps.messaging.application.ports.TransactionManager import TransactionManager
@@ -29,7 +31,16 @@ logger = logging.getLogger(__name__)
 
 
 class MessagingService:
+    """Messagerie voyageur ↔ hôte.
 
+    Anti-contournement : tout passe par la messagerie, avant comme après la réservation.
+    - les coordonnées (téléphone, email, liens, réseaux sociaux) sont masquées dans chaque message, et les
+      tentatives signalées aux administrateurs (ContactGuard) ;
+    - tant que le voyageur n'a pas de réservation payée du logement, il reste anonyme pour l'hôte (« Voyageur »,
+      sans nom ni photo) : un hôte ne peut pas l'identifier pour lui proposer un arrangement hors du site.
+    """
+
+    ANONYMOUS_GUEST = 'Voyageur'
     INITIAL_PAGE_SIZE = 50
     MAX_PAGE_SIZE = 100
 
@@ -42,6 +53,8 @@ class MessagingService:
         outbox: NotificationOutbox,
         tx: TransactionManager,
         email_delay_seconds: int = 60,
+        guard: Optional[ContactGuard] = None,
+        bookings: Optional[BookingLookup] = None,
     ):
         self._conversations = conversations
         self._messages = messages
@@ -50,6 +63,8 @@ class MessagingService:
         self._outbox = outbox
         self._tx = tx
         self._email_delay = datetime.timedelta(seconds=email_delay_seconds)
+        self._guard = guard or PassThroughContactGuard()
+        self._bookings = bookings or EveryoneBooked()
 
     def start_conversation(self, user_id: uuid.UUID, hebergement_id: uuid.UUID) -> Tuple[ConversationSummaryDTO, bool]:
         """Idempotent : renvoie le fil existant s'il y en a déjà un. Le booléen indique une création."""
@@ -117,7 +132,10 @@ class MessagingService:
         return [MessageDTO.from_entity(m, user_id) for m in messages]
 
     def send_message(self, user_id: uuid.UUID, conversation_id: uuid.UUID, content: str) -> MessageDTO:
-        message = Message.compose(conversation_id, user_id, content)
+        Message.compose(conversation_id, user_id, content)  # validation du texte saisi (vide, longueur)
+        screening = self._guard.screen(content)
+        message = Message.compose(conversation_id, user_id, screening.content)
+        message.masked = screening.masked
 
         with self._tx.atomic():
             # Le verrou sérialise les envois d'un même fil : les ids des messages y sont donc
@@ -133,6 +151,8 @@ class MessagingService:
             saved = self._messages.add(message)
             conversation.record_message(user_id, saved.id, saved.created_at)
             self._conversations.save(conversation)
+            if screening.findings:
+                self._guard.report(user_id, conversation.id, screening)
 
             if first_unread_for_recipient:
                 self._schedule_new_message_email(conversation, saved, recipient_id)
@@ -161,6 +181,7 @@ class MessagingService:
         recipient = people.get(recipient_id)
         sender = people.get(message.sender_id)
         hebergement = self._hebergements.get(conversation.hebergement_id)
+        anonymous_sender = message.sender_id == conversation.guest_id and not self._is_booked(conversation)
 
         if recipient is None or not recipient.email:
             logger.warning(
@@ -178,12 +199,16 @@ class MessagingService:
                 'conversation_id': str(conversation.id),
                 'recipient_email': recipient.email,
                 'recipient_first_name': recipient.first_name,
-                'sender_first_name': sender.first_name if sender else '',
+                'sender_first_name': 'Un voyageur' if anonymous_sender else (sender.first_name if sender else ''),
                 'hebergement_name': hebergement.name if hebergement else '',
                 'message_preview': message.preview(),
             },
             available_at=message.created_at + self._email_delay,
         )
+
+    def _is_booked(self, conversation: Conversation) -> bool:
+        pair = (conversation.hebergement_id, conversation.guest_id)
+        return pair in self._bookings.booked([pair])
 
     def _participant_conversation(self, conversation_id: uuid.UUID, user_id: uuid.UUID) -> Conversation:
         # Un non-participant reçoit la même réponse qu'un fil inexistant : on ne révèle pas son existence
@@ -202,24 +227,30 @@ class MessagingService:
         unread = self._messages.unread_counts(user_id, conversations)
         hebergements = self._hebergements.get_many(list({c.hebergement_id for c in conversations}))
         others = self._users.get_many(list({c.other_participant(user_id) for c in conversations}))
+        booked = self._bookings.booked({(c.hebergement_id, c.guest_id) for c in conversations})
 
         summaries = []
         for c in conversations:
             heb = hebergements.get(c.hebergement_id)
             other = others.get(c.other_participant(user_id))
             last = last_messages.get(c.id)
+            is_booked = (c.hebergement_id, c.guest_id) in booked
+            # Côté hôte, voyageur anonyme tant qu'il n'a pas payé
+            anonymous = other is not None and c.role_of(user_id) == 'host' and not is_booked
             summaries.append(ConversationSummaryDTO(
                 id=c.id,
                 my_role=c.role_of(user_id),
                 hebergement=HebergementSummaryDTO(
                     id=heb.id, name=heb.name, city=heb.city, image_url=heb.image_url,
                 ) if heb else None,
-                other_participant=ParticipantDTO(
-                    id=other.id, first_name=other.first_name,
-                    last_name=other.last_name, avatar_url=other.avatar_url,
+                other_participant=(
+                    ParticipantDTO(id=other.id, first_name=self.ANONYMOUS_GUEST, last_name='', avatar_url=None) if anonymous
+                    else ParticipantDTO(id=other.id, first_name=other.first_name,
+                                        last_name=other.last_name, avatar_url=other.avatar_url)
                 ) if other else None,
                 last_message=MessageDTO.from_entity(last, user_id) if last else None,
                 unread_count=unread.get(c.id, 0),
                 last_message_at=c.last_message_at,
+                booked=is_booked,
             ))
         return summaries

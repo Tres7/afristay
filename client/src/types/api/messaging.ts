@@ -5,6 +5,8 @@ export type MessagingMessage = {
   content: string;
   created_at: string;
   is_own: boolean;
+  /** Coordonnées masquées à l'envoi (anti-contournement) */
+  masked?: boolean;
 };
 
 export type MessagingConversation = {
@@ -25,4 +27,6 @@ export type MessagingConversation = {
   last_message: MessagingMessage | null;
   unread_count: number;
   last_message_at: string;
+  /** Le voyageur a une réservation payée de ce logement : sinon, il reste anonyme pour l'hôte */
+  booked: boolean;
 };

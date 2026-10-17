@@ -8,8 +8,10 @@ import { Champ, Interrupteur, Saisie, Zone, erreursApi } from "@/components/back
 import { Pill } from "@/components/backoffice/AdminTable";
 import type { SocieteAdmin } from "@/types/api/admin";
 
-type Form = Omit<SocieteAdmin, "complets">;
+type Form = Omit<SocieteAdmin, "complets" | "signature_presente">;
 type ChampTexte = Exclude<keyof Form, "assujetti_tva">;
+// Le client API envoie du JSON par défaut : en-tête nécessaire pour transmettre la signature scannée
+const MULTIPART = { headers: { "Content-Type": "multipart/form-data" } };
 
 export function useSociete() {
   return useQuery({
@@ -25,6 +27,9 @@ export default function Societe() {
   const [form, setForm] = useState<Form | null>(null);
   const [erreurs, setErreurs] = useState<Record<string, string>>({});
   const [envoi, setEnvoi] = useState(false);
+  const [signature, setSignature] = useState<File | null>(null);
+  const [supprimer, setSupprimer] = useState(false);
+  const apercuSignature = useApercuSignature(data?.signature_presente, signature);
 
   useEffect(() => { if (data) setForm(data); }, [data]);
 
@@ -41,8 +46,18 @@ export default function Societe() {
     setEnvoi(true);
     setErreurs({});
     try {
-      const { data: maj } = await api.put<SocieteAdmin>("/v1/admin/documents/societe/", form);
+      const corps = new FormData();
+      for (const [k, v] of Object.entries(form ?? {})) {
+        if (k === "complets" || k === "signature_presente") continue;  // calculés par le serveur
+        corps.append(k, typeof v === "boolean" ? (v ? "true" : "false") : String(v ?? ""));
+      }
+      if (signature) corps.append("signature_representant", signature);
+      else if (supprimer) corps.append("supprimer_signature", "true");
+      const { data: maj } = await api.put<SocieteAdmin>("/v1/admin/documents/societe/", corps, MULTIPART);
       queryClient.setQueryData(["admin", "documents", "societe"], maj);
+      queryClient.invalidateQueries({ queryKey: ["admin", "documents", "signature"] });
+      setSignature(null);
+      setSupprimer(false);
       toast.success("Informations enregistrées");
     } catch (err) {
       setErreurs(erreursApi(err));
@@ -76,6 +91,30 @@ export default function Societe() {
         {texte("site", "Site web")}
       </div>
 
+      <fieldset className="border-t border-gray-100 pt-4 space-y-4">
+        {/* float : la légende se place dans le flux, sous la bordure, comme un titre de section */}
+        <legend className="float-left w-full text-sm font-semibold text-dark">Signataire des contrats</legend>
+        <div className="clear-both grid sm:grid-cols-2 gap-4">
+          {texte("representant_nom", "Représentant légal", { placeholder: "Prénom et nom" })}
+          {texte("representant_qualite", "Qualité", { placeholder: "Gérant, directeur général…" })}
+        </div>
+        <Champ label="Signature scannée" erreur={erreurs.signature_representant}
+          aide="Imprimée sur les contrats, côté Kwa-Ba. Signature à l'encre foncée sur papier blanc : le fond devient transparent.">
+          <input type="file" accept="image/png,image/jpeg,image/webp" onChange={(e) => { setSignature(e.target.files?.[0] ?? null); setSupprimer(false); }}
+            className="block w-full text-sm text-dark file:mr-3 file:px-4 file:py-2 file:rounded-xl file:border-0 file:bg-primary/10 file:text-primary file:font-semibold" />
+        </Champ>
+        {apercuSignature && !supprimer && (
+          <div className="flex items-center gap-4">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={apercuSignature} alt="Signature du représentant" className="h-16 max-w-[240px] object-contain rounded-lg border border-gray-100 bg-white p-1" />
+            {data?.signature_presente && !signature && (
+              <button type="button" onClick={() => setSupprimer(true)} className="text-sm font-semibold text-red-700 hover:underline">Retirer</button>
+            )}
+          </div>
+        )}
+        {supprimer && <p className="text-sm text-muted">La signature sera retirée à l&apos;enregistrement.</p>}
+      </fieldset>
+
       <div className="border-t border-gray-100 pt-4 space-y-3">
         <Interrupteur label="Assujettie à la TVA" checked={form.assujetti_tva} onChange={champ("assujetti_tva")} />
         {form.assujetti_tva && (
@@ -96,4 +135,21 @@ export default function Societe() {
       </div>
     </form>
   );
+}
+
+/** Aperçu : le fichier choisi, sinon la signature enregistrée (lue par l'API, jamais d'URL publique). */
+function useApercuSignature(presente: boolean | undefined, fichier: File | null): string | null {
+  const { data: enregistree } = useQuery({
+    queryKey: ["admin", "documents", "signature"],
+    queryFn: async () => URL.createObjectURL((await api.get<Blob>("/v1/admin/documents/societe/signature/", { responseType: "blob" })).data),
+    enabled: !!presente,
+  });
+  const [locale, setLocale] = useState<string | null>(null);
+  useEffect(() => {
+    if (!fichier) return setLocale(null);
+    const url = URL.createObjectURL(fichier);
+    setLocale(url);
+    return () => URL.revokeObjectURL(url);
+  }, [fichier]);
+  return locale ?? (presente ? enregistree ?? null : null);
 }

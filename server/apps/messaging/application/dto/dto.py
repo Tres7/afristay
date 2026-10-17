@@ -14,6 +14,7 @@ class MessageDTO:
     content: str
     created_at: datetime.datetime
     is_own: bool
+    masked: bool = False
 
     @staticmethod
     def from_entity(message: Message, viewer_id: uuid.UUID) -> 'MessageDTO':
@@ -24,6 +25,7 @@ class MessageDTO:
             content=message.content,
             created_at=message.created_at,
             is_own=message.sender_id == viewer_id,
+            masked=message.masked,
         )
 
 
@@ -52,3 +54,5 @@ class ConversationSummaryDTO:
     last_message: Optional[MessageDTO]
     unread_count: int
     last_message_at: datetime.datetime
+    # Le voyageur a une réservation payée de ce logement : identités visibles des deux côtés
+    booked: bool = True

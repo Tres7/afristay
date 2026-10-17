@@ -3,11 +3,15 @@
 import { Suspense } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
+import Contrats from "@/components/backoffice/documents/Contrats";
 import Factures from "@/components/backoffice/documents/Factures";
+import ModelesContrats from "@/components/backoffice/documents/ModelesContrats";
 import Societe from "@/components/backoffice/documents/Societe";
 
 const ONGLETS = [
   { id: "factures", label: "Factures", Composant: Factures },
+  { id: "contrats", label: "Contrats", Composant: Contrats },
+  { id: "modeles", label: "Modèles de contrat", Composant: ModelesContrats },
   { id: "societe", label: "Informations société", Composant: Societe },
 ];
 
@@ -20,7 +24,7 @@ function Documents() {
     <div className="space-y-5">
       <div>
         <h1 className="font-heading font-bold text-2xl sm:text-3xl text-dark">Documents</h1>
-        <p className="text-muted text-sm mt-1">Factures émises et informations légales imprimées sur les bons, reçus et factures.</p>
+        <p className="text-muted text-sm mt-1">Factures, contrats signés électroniquement et informations légales imprimées sur tous les documents.</p>
       </div>
       <div role="tablist" className="flex gap-5 overflow-x-auto scrollbar-hide border-b border-gray-200">
         {ONGLETS.map((o) => (

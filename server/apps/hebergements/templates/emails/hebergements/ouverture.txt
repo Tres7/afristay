@@ -1,0 +1,18 @@
+{% autoescape off %}{% if langue == 'en' %}Hello,
+
+Good news: the first places to stay are now online on Kwa-Ba, each one verified by our team (host identity and on-site visit).
+
+Discover them: {{ lien }}
+
+You are receiving this email because you asked to be notified. It is the only one we will send you about it.
+
+The Kwa-Ba team{% else %}Bonjour,
+
+Bonne nouvelle : les premiers logements sont en ligne sur Kwa-Ba, chacun vérifié par notre équipe (identité de l'hôte et visite sur place).
+
+Découvrez-les : {{ lien }}
+
+Vous recevez cet email parce que vous avez demandé à être prévenu. C'est le seul que nous vous enverrons à ce sujet.
+
+L'équipe Kwa-Ba{% endif %}
+{% endautoescape %}

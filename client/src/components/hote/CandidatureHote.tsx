@@ -1,12 +1,14 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 import { useTranslations } from "next-intl";
 import { CheckCircle2, Circle, Clock, XCircle } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import api from "@/lib/api";
 import { cn } from "@/lib/utils";
 import VerificationIdentite from "@/components/hote/VerificationIdentite";
+import type { ContratPublic } from "@/types/api/contrat";
 import type { Me } from "@/types/api/models";
 
 type StatutPiece = "absente" | "soumise" | "verifiee" | "refusee";
@@ -31,9 +33,22 @@ export default function CandidatureHote({ nbAnnonces, onNouvelle }: { nbAnnonces
     queryKey: ["verification", "identite"],
     queryFn: async () => (await api.get<{ statut: StatutPiece }>("/v1/verifications/identite/")).data,
   });
+  // null : contrat pas encore proposé (Kwa-Ba n'a pas renseigné ses informations légales), étape masquée
+  const { data: contrat } = useQuery({
+    queryKey: ["contrat-hote"],
+    queryFn: async () => {
+      try {
+        return (await api.get<ContratPublic>("/v1/contrats/hote/")).data;
+      } catch (err) {
+        if (axios.isAxiosError(err) && err.response?.status === 404) return null;
+        throw err;
+      }
+    },
+  });
 
-  if (!me || !piece) return null;
-  if (piece.statut === "verifiee") return <VerificationIdentite />;
+  if (!me || !piece || contrat === undefined) return null;
+  const contratASigner = contrat !== null && contrat.statut !== "signe";
+  if (piece.statut === "verifiee" && !contratASigner) return <VerificationIdentite />;
 
   const etapes: { cle: string; etat: Etat; titre: string; texte: React.ReactNode }[] = [
     {
@@ -46,15 +61,29 @@ export default function CandidatureHote({ nbAnnonces, onNouvelle }: { nbAnnonces
     },
     {
       cle: "identite",
-      etat: piece.statut === "soumise" ? "attente" : piece.statut === "refusee" ? "refuse" : "a_faire",
+      etat: piece.statut === "verifiee" ? "fait" : piece.statut === "soumise" ? "attente" : piece.statut === "refusee" ? "refuse" : "a_faire",
       titre: t("identiteTitre"),
-      texte: piece.statut === "soumise" ? t("identiteEnCours") : piece.statut === "refusee" ? t("identiteRefusee") : t("identiteTexte"),
+      texte: piece.statut === "verifiee" ? t("identiteVerifiee") : piece.statut === "soumise" ? t("identiteEnCours")
+        : piece.statut === "refusee" ? t("identiteRefusee") : t("identiteTexte"),
     },
+    ...(contrat ? [{
+      cle: "contrat",
+      etat: (contrat.statut === "signe" ? "fait" : "a_faire") as Etat,
+      titre: t("contratTitre"),
+      texte: (
+        <>
+          {contrat.statut === "signe" ? t("contratSigne") : t("contratTexte")}{" "}
+          <Link href="/hote/espace/contrat" className="font-bold text-primary underline">
+            {contrat.statut === "signe" ? t("contratTelecharger") : t("contratAction")}
+          </Link>
+        </>
+      ),
+    }] : []),
     {
       cle: "annonce",
       etat: nbAnnonces > 0 ? "attente" : "a_faire",
       titre: t("annonceTitre"),
-      texte: nbAnnonces > 0 ? t("annonceEnAttente") : (
+      texte: nbAnnonces > 0 ? (contrat ? t("annonceContrat") : t("annonceEnAttente")) : (
         <>{t("annonceTexte")} <button type="button" onClick={onNouvelle} className="font-bold text-primary underline">{t("annonceAction")}</button></>
       ),
     },
@@ -62,7 +91,7 @@ export default function CandidatureHote({ nbAnnonces, onNouvelle }: { nbAnnonces
 
   return (
     <section className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 sm:p-6 mb-8">
-      <h2 className="font-heading font-bold text-lg text-dark">{t("titre")}</h2>
+      <h2 className="font-heading font-bold text-lg text-dark">{t("titre", { nombre: etapes.length })}</h2>
       <p className="text-sm text-gray-500 mt-1">{t("texte")}</p>
       <ol className="mt-5 space-y-4">
         {etapes.map((etape, i) => {
@@ -78,9 +107,11 @@ export default function CandidatureHote({ nbAnnonces, onNouvelle }: { nbAnnonces
           );
         })}
       </ol>
-      <div className="mt-6">
-        <VerificationIdentite />
-      </div>
+      {piece.statut !== "verifiee" && (
+        <div className="mt-6">
+          <VerificationIdentite />
+        </div>
+      )}
     </section>
   );
 }
