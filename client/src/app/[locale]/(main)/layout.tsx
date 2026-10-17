@@ -1,6 +1,7 @@
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import BoutonConcierge from "@/components/concierge/BoutonConcierge";
+import BientotDisponible from "@/components/lancement/BientotDisponible";
 
 export default function MainLayout({
   children,
@@ -13,6 +14,7 @@ export default function MainLayout({
       <main id="contenu" tabIndex={-1} className="flex-1 outline-none">{children}</main>
       <Footer />
       <BoutonConcierge />
+      <BientotDisponible />
     </div>
   );
 }

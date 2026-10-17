@@ -1671,5 +1671,22 @@
     "versionModifiee": "The contract has just been updated: please read it again before signing.",
     "retourEspace": "Back to my host space",
     "reserveHotes": "This page is for hosts only."
+  },
+  "bientot": {
+    "surtitre": "Opening soon",
+    "titre": "Places to stay are coming very soon",
+    "texte": "We are verifying our first hosts one by one: identity checked and the place visited on site. The first places to stay will be online in the coming days.",
+    "email": "Your email address",
+    "prevenir": "Notify me",
+    "merci": "Thank you! We will write to you as soon as we open.",
+    "erreur": "Sign-up is not possible right now. Please try again.",
+    "rgpd": "One email only, on opening day. Nothing else.",
+    "enAttendant": "Already available",
+    "transfert": "Airport transfer",
+    "location": "Car rental",
+    "give": "Kwa-Ba Give",
+    "proprietaire": "Do you have a place to rent?",
+    "devenirHote": "Become a host",
+    "fermer": "Close"
   }
 }

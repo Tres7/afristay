@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { BadgeCheck, CalendarCheck, Home, Star, Users } from "lucide-react";
 import api from "@/lib/api";
 import { formatPrice } from "@/lib/utils";
+import CarteLancement from "@/components/backoffice/CarteLancement";
 import ReservationsChart from "@/components/backoffice/ReservationsChart";
 import type { AdminStats } from "@/types/api/admin";
 
@@ -33,6 +34,8 @@ export default function TableauDeBord() {
         <h1 className="font-heading font-bold text-2xl sm:text-3xl text-dark">Tableau de bord</h1>
         <p className="text-muted text-sm mt-1">Vue d&apos;ensemble de la plateforme.</p>
       </div>
+
+      <CarteLancement />
 
       {isError ? (
         <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center">

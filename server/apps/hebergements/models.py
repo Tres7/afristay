@@ -123,3 +123,18 @@ class BlocageModel(models.Model):
 
     def __str__(self):
         return f"Blocage {self.hebergement_id} {self.debut} → {self.fin}"
+
+
+class InscriptionLancementModel(models.Model):
+    """Liste d'attente : visiteurs à prévenir par email quand les premiers logements sont en ligne."""
+    email = models.EmailField(unique=True)
+    langue = models.CharField(max_length=2, default='fr')
+    cree_le = models.DateTimeField(auto_now_add=True)
+    prevenu_le = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-cree_le']
+        verbose_name = "Inscription à l'ouverture des logements"
+
+    def __str__(self):
+        return self.email
