@@ -368,3 +368,18 @@ export interface ModeleContrat {
   version: number;
   modifie_le: string;
 }
+
+export interface AlerteFraude {
+  id: number;
+  cree_le: string;
+  contexte: "message" | "annonce";
+  contexte_libelle: string;
+  objet_id: string;
+  types: string[];
+  extraits: string[];
+  masquee: boolean;
+  traitee: boolean;
+  traitee_le: string | null;
+  note: string;
+  utilisateur: { id: string; nom: string; email: string; role: string; nb_alertes: number | null };
+}

@@ -17,6 +17,7 @@ class DjangoMessageRepository(MessageRepository):
             conversation_id=model.conversation_id,
             sender_id=model.sender_id,
             content=model.content,
+            masked=model.masque,
             created_at=model.created_at,
         )
 
@@ -25,6 +26,7 @@ class DjangoMessageRepository(MessageRepository):
             conversation_id=message.conversation_id,
             sender_id=message.sender_id,
             content=message.content,
+            masque=message.masked,
             created_at=message.created_at,
         )
         return self._to_entity(model)
