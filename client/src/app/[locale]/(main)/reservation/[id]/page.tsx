@@ -9,7 +9,8 @@ import { ArrowLeft, Check, Info, Smartphone, CreditCard, Wallet, MapPin, Lock } 
 import api, { apiErrorMessage } from "@/lib/api";
 import { allerPayer, enEuros, useConfigPaiement } from "@/lib/paiement";
 import RatingBadge from "@/components/avis/RatingBadge";
-import { calculateNights, calculateServiceFee, cn, FALLBACK_IMAGE, formatDate, formatPrice, isoDate } from "@/lib/utils";
+import { MontantDebite } from "@/components/layout/Devise";
+import { calculateNights, calculateServiceFee, cn, FALLBACK_IMAGE, formatDate, formatFcfa, formatPrice, isoDate } from "@/lib/utils";
 import type { Hebergement, Reservation } from "@/types/api/models";
 import { useTranslations } from "next-intl";
 
@@ -225,7 +226,7 @@ function ReservationContent() {
 
               <div className="pt-5 flex justify-between items-center mb-5">
                 <span className="font-heading font-bold text-dark text-lg">{tFiche("total")}</span>
-                <span className="font-heading font-bold text-primary text-2xl">{formatPrice(total)}</span>
+                <span className="text-right"><span className="block font-heading font-bold text-primary text-2xl">{formatPrice(total)}</span><MontantDebite montant={total} /></span>
               </div>
 
               {error && <p role="alert" className="text-sm text-red-700 bg-red-50 border border-red-100 rounded-xl p-3 mb-4">{error}</p>}
@@ -239,7 +240,7 @@ function ReservationContent() {
               <button onClick={handleConfirm} disabled={submitting || datesInvalid} className="w-full bg-secondary hover:bg-secondary-600 text-white font-bold py-4 rounded-2xl shadow-md transition-all text-base disabled:opacity-60">
                 {submitting
                   ? enLigne ? t("redirection") : t("traitement")
-                  : enLigne ? t("payer", { montant: moyenChoisi === "paypal" && config ? enEuros(total, config.fcfa_par_euro) : formatPrice(total) }) : t("confirmerReservation")}
+                  : enLigne ? t("payer", { montant: moyenChoisi === "paypal" && config ? enEuros(total, config.fcfa_par_euro) : formatFcfa(total) }) : t("confirmerReservation")}
               </button>
 
               <p className="text-center text-gray-400 text-xs mt-4 leading-relaxed">

@@ -7,7 +7,7 @@ import { CalendarClock, CreditCard, Lock, ShieldCheck, Smartphone, Wallet } from
 import api, { apiErrorMessage } from "@/lib/api";
 import { calculerDon, dateReversement, useConfigGive } from "@/lib/give";
 import { enEuros } from "@/lib/paiement";
-import { cn, formatDate, formatPrice } from "@/lib/utils";
+import { cn, formatDate, formatFcfa } from "@/lib/utils";
 import type { OrganisationDetail } from "@/types/api/give";
 import type { MoyenPaiement } from "@/types/api/paiement";
 import { useTranslations } from "next-intl";
@@ -78,7 +78,7 @@ export default function FormulaireDon({ organisation, projetId }: { organisation
               <button key={m} type="button" aria-pressed={actif} onClick={() => { setMontant(m); setLibre(""); }}
                 className={cn("rounded-xl border-2 py-2.5 px-2 text-center transition-colors",
                   actif ? "border-primary bg-primary/5" : "border-gray-200 hover:border-primary/40")}>
-                <span className="block font-bold text-dark text-sm">{formatPrice(m)}</span>
+                <span className="block font-bold text-dark text-sm">{formatFcfa(m)}</span>
                 <span className="block text-xs text-gray-600">≈ {euros(m)}</span>
               </button>
             );
@@ -91,7 +91,7 @@ export default function FormulaireDon({ organisation, projetId }: { organisation
           className="mt-1 w-full sm:w-60 rounded-xl border border-gray-200 px-4 py-2.5 text-dark focus:border-primary focus:outline-none" />
         <p id="don-libre-aide" className={cn("text-xs mt-1", libre && !valide ? "text-red-700" : "text-gray-600")}>
           {libre && !valide
-            ? `Entre ${formatPrice(config.montant_min)} et ${formatPrice(config.montant_max)}.`
+            ? `Entre ${formatFcfa(config.montant_min)} et ${formatFcfa(config.montant_max)}.`
             : libre ? `≈ ${euros(valeur)}` : t("montantLibre")}
         </p>
       </fieldset>
@@ -99,7 +99,7 @@ export default function FormulaireDon({ organisation, projetId }: { organisation
       <label className="flex items-start gap-3 rounded-2xl bg-light p-4 cursor-pointer">
         <input type="checkbox" checked={couvreFrais} onChange={(e) => setCouvreFrais(e.target.checked)} className="mt-1 accent-primary w-4 h-4" />
         <span className="text-sm text-dark">
-          {t.rich("ajouterFrais", { frais: formatPrice(fraisAjoutes), nom: organisation.nom, strong: (x) => <strong>{x}</strong> })}
+          {t.rich("ajouterFrais", { frais: formatFcfa(fraisAjoutes), nom: organisation.nom, strong: (x) => <strong>{x}</strong> })}
           <span className="block text-xs text-gray-600 mt-0.5">
             {t("fraisExplication", { taux: Math.round(config.frais_paiement * 100) })}
           </span>
@@ -110,17 +110,17 @@ export default function FormulaireDon({ organisation, projetId }: { organisation
         <h3 className="px-4 py-3 font-heading font-bold text-dark">{t("avantDePayer")}</h3>
         <dl className="px-4 py-3 space-y-1.5">
           <div className="flex justify-between gap-3"><dt className="text-gray-600">{t("beneficiaireCourt")}</dt><dd className="font-semibold text-dark text-right">{organisation.nom}</dd></div>
-          <div className="flex justify-between gap-3"><dt className="text-gray-600">{t("votreDon")}</dt><dd className="text-dark">{formatPrice(valide ? valeur : 0)}</dd></div>
+          <div className="flex justify-between gap-3"><dt className="text-gray-600">{t("votreDon")}</dt><dd className="text-dark">{formatFcfa(valide ? valeur : 0)}</dd></div>
           <div className="flex justify-between gap-3">
             <dt className="text-gray-600">{t("fraisPaiement")}</dt>
-            <dd className="text-dark">{couvreFrais ? `+ ${formatPrice(calcul.frais)}` : t("deduits", { montant: formatPrice(calcul.frais) })}</dd>
+            <dd className="text-dark">{couvreFrais ? `+ ${formatFcfa(calcul.frais)}` : t("deduits", { montant: formatFcfa(calcul.frais) })}</dd>
           </div>
           <div className="flex justify-between gap-3"><dt className="text-gray-600">{t("commission")}</dt><dd className="text-dark">0 FCFA</dd></div>
           <div className="flex justify-between gap-3 pt-1.5 border-t border-gray-100">
             <dt className="font-bold text-dark">{t("vousPayez")}</dt>
-            <dd className="font-bold text-dark">{formatPrice(calcul.total)}{moyenChoisi === "paypal" && <> ({euros(calcul.total)})</>}</dd>
+            <dd className="font-bold text-dark">{formatFcfa(calcul.total)}{moyenChoisi === "paypal" && <> ({euros(calcul.total)})</>}</dd>
           </div>
-          <div className="flex justify-between gap-3"><dt className="font-bold text-primary">{t("ongRecoit")}</dt><dd className="font-bold text-primary">{formatPrice(calcul.montantOng)}</dd></div>
+          <div className="flex justify-between gap-3"><dt className="font-bold text-primary">{t("ongRecoit")}</dt><dd className="font-bold text-primary">{formatFcfa(calcul.montantOng)}</dd></div>
         </dl>
         <p className="flex gap-2 px-4 py-3 text-gray-600">
           <CalendarClock size={16} className="text-primary flex-shrink-0 mt-0.5" />
@@ -164,7 +164,7 @@ export default function FormulaireDon({ organisation, projetId }: { organisation
           {erreur && <p role="alert" className="text-sm text-red-700 bg-red-50 rounded-xl p-3">{erreur}</p>}
           <button type="button" onClick={donner} disabled={!valide || envoi}
             className="flex items-center justify-center gap-2 w-full bg-secondary text-white font-bold py-3.5 rounded-xl hover:bg-secondary/90 disabled:opacity-60">
-            <Lock size={16} /> {envoi ? t("redirection") : t("donner", { montant: formatPrice(calcul.total) })}
+            <Lock size={16} /> {envoi ? t("redirection") : t("donner", { montant: formatFcfa(calcul.total) })}
           </button>
           <p className="text-xs text-gray-600 text-center">{t("securise", { prestataire: moyenChoisi === "paypal" ? "PayPal" : "FedaPay" })}</p>
         </>

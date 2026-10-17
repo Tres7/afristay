@@ -1688,5 +1688,11 @@
     "proprietaire": "Vous avez un logement à louer ?",
     "devenirHote": "Devenez hôte",
     "fermer": "Fermer"
+  },
+  "devise": {
+    "choisir": "Devise d'affichage des prix",
+    "fcfa": "Franc CFA",
+    "euro": "Euro",
+    "debite": "Débité en FCFA : {montant}"
   }
 }

@@ -11,6 +11,7 @@ import { cn, initials } from "@/lib/utils";
 import Logo from "@/components/layout/Logo";
 import MobileDrawer, { DrawerItem } from "@/components/layout/MobileDrawer";
 import SelecteurLangue from "@/components/layout/SelecteurLangue";
+import { SelecteurDevise } from "@/components/layout/Devise";
 import ChampDestination from "@/components/hebergement/ChampDestination";
 
 const UNREAD_POLL_INTERVAL_MS = 10_000;
@@ -154,6 +155,7 @@ export default function Navbar() {
           </nav>
 
           <SelecteurLangue />
+          <SelecteurDevise />
 
           <div className="w-px h-6 bg-gray-200" />
 
@@ -269,8 +271,9 @@ export default function Navbar() {
           ))}
         </nav>
 
-        <DrawerItem className="mt-4">
+        <DrawerItem className="mt-4 flex flex-wrap gap-2">
           <SelecteurLangue complet />
+          <SelecteurDevise complet />
         </DrawerItem>
 
         <DrawerItem className="mt-4 pt-4 border-t border-gray-100">

@@ -55,6 +55,7 @@ export default function ContenuEn() {
                 <tr><td><code>verify_email</code></td><td>Keeps the address entered at sign-up during code verification.</td><td>Deleted after verification or when the tab is closed</td></tr>
                 <tr><td><code>splash_shown</code></td><td>Avoids showing the animated welcome screen on every page.</td><td>Until the tab is closed</td></tr>
                 <tr><td><code>kwaba_bientot_ferme</code></td><td>Remembers that you closed the “Places to stay coming soon” window.</td><td>Until deleted</td></tr>
+                <tr><td><code>kwaba_devise</code></td><td>Remembers the currency chosen to display prices (CFA franc or euro).</td><td>Until deleted</td></tr>
               </tbody>
             </table>
           ),
