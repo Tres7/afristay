@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import IntegrityError, transaction
 from django.db.models import Avg, Count
 from django.shortcuts import get_object_or_404
@@ -13,7 +15,25 @@ from .models import AvisModel, CRITERES
 from .serializers import AvisCreateSerializer, AvisSerializer, ReponseHoteSerializer
 from .services import motif_refus, recalculer_note, sejours_a_evaluer
 
+PAGE_DEFAUT = 6
 PAGE_MAX = 50
+
+
+def _uuid(valeur):
+    try:
+        return uuid.UUID(str(valeur))
+    except (ValueError, TypeError):
+        return None
+
+
+def _entier(valeur, defaut, minimum, maximum=None):
+    try:
+        nombre = int(valeur)
+    except (ValueError, TypeError):
+        return defaut
+    if nombre < minimum:
+        return defaut
+    return min(nombre, maximum) if maximum is not None else nombre
 
 
 class AvisListCreateView(APIView):
@@ -23,7 +43,11 @@ class AvisListCreateView(APIView):
         return [AllowAny()] if self.request.method == 'GET' else [IsAuthenticated()]
 
     def get(self, request):
-        hebergement = get_object_or_404(HebergementModel, pk=request.query_params.get('hebergement'))
+        # Identifiant absent ou mal formé : même réponse qu'un logement inconnu (et non une erreur 500)
+        hebergement_id = _uuid(request.query_params.get('hebergement'))
+        if hebergement_id is None:
+            return Response({'detail': 'Hébergement introuvable.'}, status=status.HTTP_404_NOT_FOUND)
+        hebergement = get_object_or_404(HebergementModel, pk=hebergement_id)
         qs = AvisModel.objects.filter(hebergement=hebergement).select_related('auteur', 'reservation')
 
         agregats = qs.aggregate(
@@ -34,11 +58,9 @@ class AvisListCreateView(APIView):
         for ligne in qs.values('note').annotate(n=Count('id')):
             repartition[ligne['note']] = ligne['n']
 
-        try:
-            limit = min(int(request.query_params.get('limit', 6)), PAGE_MAX)
-            offset = max(int(request.query_params.get('offset', 0)), 0)
-        except ValueError:
-            limit, offset = 6, 0
+        # Valeur non numérique ou hors bornes : valeur par défaut (une limite négative ferait échouer le découpage)
+        limit = _entier(request.query_params.get('limit'), defaut=PAGE_DEFAUT, minimum=1, maximum=PAGE_MAX)
+        offset = _entier(request.query_params.get('offset'), defaut=0, minimum=0)
 
         return Response({
             'resume': {

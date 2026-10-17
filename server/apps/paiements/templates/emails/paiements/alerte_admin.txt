@@ -1,0 +1,10 @@
+{% autoescape off %}Une opération de paiement demande une intervention.
+
+  Type : {{ type }}
+  Réservation : {{ reference }} — {{ hebergement }}
+  Montant : {{ montant }}
+  Bénéficiaire : {{ beneficiaire }}
+  Dernière erreur : {{ erreur }}
+
+À traiter depuis l'administration : {{ url_admin }}
+{% endautoescape %}

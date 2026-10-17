@@ -1,6 +1,6 @@
-# AfriStay
+# Kwa-Ba
 
-**L'Afrique a portee de clic**
+**Le monde vous accueille.**
 
 Plateforme de reservation d'hebergements en Afrique avec support des paiements Mobile Money.
 

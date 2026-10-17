@@ -1,0 +1,16 @@
+{% autoescape off %}Bonjour {{ prenom }},
+
+Kwa-Ba vous confie une course.
+
+  Prise en charge : aéroport {{ aeroport }}, le {{ arrivee }} (vol {{ vol }})
+  Voyageur : {{ voyageur }} — {{ telephone_voyageur }}
+  Passagers : {{ passagers }} · Bagages : {{ bagages }}
+  Destination : {{ destination }}
+{% if message %}  Message du voyageur : « {{ message }} »
+{% endif %}  Référence : {{ reference }}
+
+Attendez le voyageur à la sortie des arrivées avec une pancarte à son nom. {{ attente }} minutes d'attente sont incluses après l'atterrissage.
+Vous recevrez {{ montant }} sur votre Mobile Money 24 heures après la course.
+
+L'équipe Kwa-Ba
+{% endautoescape %}

@@ -17,8 +17,8 @@ permissions:
   contents: read
 
 jobs:
-  lint:
-    name: Compose et Dockerfiles
+  compose:
+    name: Configuration compose
     if: inputs.infra
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -33,17 +33,9 @@ jobs:
           cp client/.env.example client/.env
           docker compose config --quiet
           docker compose -f compose.test.yaml config --quiet
-      - uses: hadolint/hadolint-action@06be81baf89a55ffd0e24b8f04a4185738dd3387 # v3.5.0
-        with:
-          dockerfile: server/Dockerfile
-          config: .hadolint.yaml
-      - uses: hadolint/hadolint-action@06be81baf89a55ffd0e24b8f04a4185738dd3387 # v3.5.0
-        with:
-          dockerfile: client/Dockerfile
-          config: .hadolint.yaml
 
   server-image:
-    name: Image du serveur (build et Trivy)
+    name: Image du serveur (build, smoke test, Trivy)
     if: inputs.back || inputs.infra
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -62,23 +54,37 @@ jobs:
           tags: ${{ env.IMAGE }}
           cache-from: type=gha,scope=server
           cache-to: type=gha,mode=max,scope=server
+      - uses: ./.github/actions/smoke-test-image
+        with:
+          image: ${{ env.IMAGE }}
       - uses: ./.github/actions/trivy-scan
         with:
           image-ref: ${{ env.IMAGE }}
 
-  next-build:
-    name: Build Next.js
-    if: inputs.front
+  client-image:
+    name: Image du client (build Next.js, smoke test, Trivy)
+    if: inputs.front || inputs.infra
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     env:
-      NEXT_TELEMETRY_DISABLED: '1'
+      IMAGE: afristay-client:pr-${{ github.event.pull_request.number || github.run_id }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: ./.github/actions/setup-node-client
-      - name: next build
-        working-directory: client
-        # Le lint et les types sont déjà vérifiés par le job client
-        run: npx next build --no-lint
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: client
+          target: production
+          push: false
+          load: true # image disponible localement pour le smoke test et Trivy (jamais publiée depuis une PR)
+          tags: ${{ env.IMAGE }}
+          cache-from: type=gha,scope=client
+          cache-to: type=gha,mode=max,scope=client
+      - uses: ./.github/actions/smoke-test-client-image
+        with:
+          image: ${{ env.IMAGE }}
+      - uses: ./.github/actions/trivy-scan
+        with:
+          image-ref: ${{ env.IMAGE }}

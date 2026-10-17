@@ -1,0 +1,203 @@
+import json
+
+from django.contrib.auth import get_user_model
+from django.db.models import Count, Prefetch
+from django.http import FileResponse, Http404
+from rest_framework import status
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
+from rest_framework.views import APIView
+
+from apps.hebergements.models import HebergementModel
+from apps.securite.audit import journaliser
+
+from . import services
+from .fichiers import FichierInvalide, piece_identite
+from .models import PieceIdentiteModel, VisiteModel
+
+ROLES_HOTE = ('hote', 'admin')
+
+
+class EstVerificateur(IsAuthenticated):
+    """Agents de terrain et administrateurs : rôle lu en base à chaque requête."""
+    message = "Réservé aux agents de vérification."
+
+    def has_permission(self, request, view):
+        return super().has_permission(request, view) and request.user.role in services.ROLES_VERIFICATEURS
+
+
+def _piece_json(piece: PieceIdentiteModel | None) -> dict:
+    if not piece:
+        return {'statut': 'absente'}
+    return {
+        'statut': piece.statut, 'type_piece': piece.type_piece, 'type_libelle': piece.get_type_piece_display(),
+        'soumise_le': piece.soumise_le, 'verifiee_le': piece.verifiee_le, 'motif_refus': piece.motif_refus,
+    }
+
+
+class MaPieceIdentiteView(APIView):
+    """GET : statut de ma pièce d'identité. POST (multipart type_piece, fichier) : l'envoyer ou la remplacer."""
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+    throttle_scope = 'verification_piece'
+
+    def get_throttles(self):
+        return [ScopedRateThrottle()] if self.request.method == 'POST' else []
+
+    def get(self, request):
+        return Response(_piece_json(PieceIdentiteModel.objects.filter(hote=request.user).first()))
+
+    def post(self, request):
+        if request.user.role not in ROLES_HOTE:
+            return Response({'detail': 'Réservé aux hôtes.'}, status=status.HTTP_403_FORBIDDEN)
+        type_piece = request.data.get('type_piece')
+        if type_piece not in dict(PieceIdentiteModel.TYPES):
+            return Response({'type_piece': ["Choisissez le type de pièce."]}, status=status.HTTP_400_BAD_REQUEST)
+        fichier = request.FILES.get('fichier')
+        if not fichier:
+            return Response({'fichier': ['Aucun fichier reçu.']}, status=status.HTTP_400_BAD_REQUEST)
+
+        piece = PieceIdentiteModel.objects.filter(hote=request.user).first()
+        if piece and piece.statut == 'verifiee':
+            return Response({'detail': 'Votre identité est déjà vérifiée.'}, status=status.HTTP_409_CONFLICT)
+        try:
+            contenu, extension, type_contenu = piece_identite(fichier)
+        except FichierInvalide as exc:
+            return Response({'fichier': [str(exc)]}, status=status.HTTP_400_BAD_REQUEST)
+
+        piece = piece or PieceIdentiteModel(hote=request.user)
+        if piece.fichier:
+            piece.fichier.delete(save=False)
+        piece.type_piece, piece.type_contenu, piece.statut, piece.motif_refus = type_piece, type_contenu, 'soumise', ''
+        piece.fichier.save(f'piece.{extension}', contenu, save=False)
+        piece.save()
+        services.piece_a_controler(piece)
+        return Response(_piece_json(piece), status=status.HTTP_201_CREATED)
+
+
+def _visite_json(h: HebergementModel) -> dict:
+    hote = h.host
+    piece = getattr(hote, 'piece_identite', None)
+    return {
+        'id': str(h.id), 'name': h.name, 'type': h.type, 'city': h.city, 'location': h.location,
+        'description': h.description, 'price_per_night': float(h.price_per_night), 'max_guests': h.max_guests,
+        'amenities': h.amenities, 'photos': [u for u in [h.image_url, *h.images] if u],
+        'modifiee_apres_verification': any(v.decision == 'validee' for v in h.visites.all()),
+        'cree_le': h.created_at,
+        'hote': {
+            'id': str(hote.id), 'nom': f"{hote.first_name} {hote.last_name}".strip(), 'email': hote.email,
+            'telephone': hote.phone, 'piece': _piece_json(piece),
+        },
+    }
+
+
+class PiecesView(APIView):
+    """Pièces d'identité à contrôler à distance, les plus anciennes d'abord."""
+    permission_classes = [EstVerificateur]
+
+    def get(self, request):
+        pieces = (PieceIdentiteModel.objects.filter(statut='soumise').select_related('hote')
+                  .annotate(nb_annonces=Count('hote__hebergements'))
+                  .order_by('soumise_le')[:100])
+        resultats = [{
+            'hote': {
+                'id': str(p.hote_id), 'nom': f"{p.hote.first_name} {p.hote.last_name}".strip(),
+                'email': p.hote.email, 'telephone': p.hote.phone, 'inscrit_le': p.hote.date_joined,
+            },
+            'type_piece': p.type_piece, 'type_libelle': p.get_type_piece_display(),
+            'soumise_le': p.soumise_le, 'nb_annonces': p.nb_annonces,
+        } for p in pieces]
+        return Response({'results': resultats, 'count': len(resultats)})
+
+
+class PieceDecisionView(APIView):
+    """POST {decision: verifiee | refusee, motif} : résultat du contrôle de la pièce d'identité d'un hôte."""
+    permission_classes = [EstVerificateur]
+
+    def post(self, request, user_id):
+        hote = get_user_model().objects.filter(pk=user_id).first()
+        if not hote:
+            return Response({'detail': 'Hôte introuvable.'}, status=status.HTTP_404_NOT_FOUND)
+        decision = str(request.data.get('decision', ''))
+        try:
+            piece = services.decider_piece(hote, request.user, decision=decision,
+                                           motif=str(request.data.get('motif', '')))
+        except services.VerificationErreur as exc:
+            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        journaliser('identite_verifiee' if piece.statut == 'verifiee' else 'identite_refusee', request,
+                    utilisateur=request.user, hote=str(hote.pk), hote_email=hote.email)
+        return Response(_piece_json(piece))
+
+
+class VisitesView(APIView):
+    """Annonces qui attendent la visite d'un agent, les plus anciennes d'abord (?ville= pour filtrer)."""
+    permission_classes = [EstVerificateur]
+
+    def get(self, request):
+        # Seulement les hôtes dont l'identité est déjà vérifiée : pas de déplacement pour un hôte non contrôlé
+        qs = (HebergementModel.objects.filter(statut_verification='en_attente', host__piece_identite__statut='verifiee')
+              .select_related('host', 'host__piece_identite')
+              .prefetch_related(Prefetch('visites', queryset=VisiteModel.objects.only('id', 'decision', 'hebergement')))
+              .order_by('created_at'))
+        if services.contrats_disponibles():
+            # …et qui ont signé leur contrat hôte
+            qs = qs.filter(host__contrats__type='hote', host__contrats__statut='signe')
+        ville = request.query_params.get('ville', '').strip()
+        if ville:
+            qs = qs.filter(city__icontains=ville)
+        resultats = [_visite_json(h) for h in qs[:100]]
+        return Response({
+            'results': resultats, 'count': len(resultats),
+            'controles': VisiteModel.CONTROLES, 'max_photos': services.MAX_PHOTOS_VISITE,
+        })
+
+
+class DecisionView(APIView):
+    """POST multipart : decision (validee | refusee), controles (JSON), commentaire, photos (plusieurs)."""
+    permission_classes = [EstVerificateur]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def post(self, request, pk):
+        hebergement = HebergementModel.objects.filter(pk=pk).first()
+        if not hebergement:
+            return Response({'detail': 'Annonce introuvable.'}, status=status.HTTP_404_NOT_FOUND)
+        controles = request.data.get('controles') or {}
+        if isinstance(controles, str):
+            try:
+                controles = json.loads(controles)
+            except ValueError:
+                return Response({'controles': ['Format invalide.']}, status=status.HTTP_400_BAD_REQUEST)
+        if not isinstance(controles, dict):
+            return Response({'controles': ['Format invalide.']}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            visite = services.decider(
+                hebergement, request.user, decision=str(request.data.get('decision', '')), controles=controles,
+                commentaire=str(request.data.get('commentaire', '')), photos=request.FILES.getlist('photos'),
+            )
+        except (services.VerificationErreur, FichierInvalide) as exc:
+            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        journaliser('annonce_verifiee' if visite.decision == 'validee' else 'annonce_refusee', request,
+                    utilisateur=request.user, hebergement=str(hebergement.id))
+        return Response({'decision': visite.decision, 'statut': 'verifiee' if visite.decision == 'validee' else 'refusee'},
+                        status=status.HTTP_201_CREATED)
+
+
+class FichierPieceView(APIView):
+    """Pièce d'identité d'un hôte, lue par l'API (jamais d'URL publique). Chaque consultation est journalisée."""
+    permission_classes = [EstVerificateur]
+
+    def get(self, request, user_id):
+        piece = PieceIdentiteModel.objects.filter(hote_id=user_id).select_related('hote').first()
+        if not piece or not piece.fichier:
+            raise Http404
+        journaliser('piece_consultee', request, utilisateur=request.user, hote=str(piece.hote_id))
+        pdf = piece.type_contenu == 'application/pdf'
+        reponse = FileResponse(piece.fichier.open('rb'), content_type=piece.type_contenu or 'application/octet-stream',
+                               as_attachment=pdf, filename=f"piece-identite.{'pdf' if pdf else 'jpg'}")
+        reponse['Cache-Control'] = 'no-store'
+        reponse['X-Content-Type-Options'] = 'nosniff'
+        # Le document ne peut exécuter aucun script, même ouvert directement dans le navigateur
+        reponse['Content-Security-Policy'] = "default-src 'none'; img-src 'self'; sandbox"
+        return reponse

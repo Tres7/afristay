@@ -1,9 +1,11 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { BadgeCheck, MapPin } from "lucide-react";
 import type { Hebergement } from "@/types/api/models";
 import FavoriteButton from "@/components/hebergement/FavoriteButton";
 import RatingBadge from "@/components/avis/RatingBadge";
 import { FALLBACK_IMAGE, TYPE_LABELS, formatPrice } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+import { useResumeDetails } from "@/components/hebergement/DetailsLogement";
 
 interface PropertyCardProps {
   property: Hebergement;
@@ -12,6 +14,8 @@ interface PropertyCardProps {
 }
 
 export default function PropertyCard({ property, query = "", onFavoriteChange }: PropertyCardProps) {
+  const resume = useResumeDetails();
+  const t = useTranslations("logement");
   return (
     <Link
       href={`/hebergements/${property.id}${query}`}
@@ -39,7 +43,7 @@ export default function PropertyCard({ property, query = "", onFavoriteChange }:
         <div className="flex justify-between items-start gap-2">
           <h3 className="font-heading font-semibold text-dark text-[15px] leading-snug flex items-center gap-1 min-w-0">
             <span className="truncate">{property.name}</span>
-            {property.est_verifie && <BadgeCheck size={15} className="text-secondary flex-shrink-0" aria-label="Logement vérifié" />}
+            {property.est_verifie && <BadgeCheck size={15} className="text-secondary flex-shrink-0" aria-label={t("verifie")} />}
           </h3>
           <RatingBadge rating={property.rating} count={property.review_count} className="flex-shrink-0" />
         </div>
@@ -47,6 +51,7 @@ export default function PropertyCard({ property, query = "", onFavoriteChange }:
           <MapPin size={11} className="flex-shrink-0" />
           <span className="text-xs truncate">{property.location ? `${property.location}, ` : ""}{property.city}</span>
         </div>
+        {resume(property) && <p className="text-xs text-gray-600 mt-1 truncate">{resume(property)}</p>}
         <p className="mt-auto pt-3 text-sm">
           <span className="font-heading font-bold text-primary">{formatPrice(property.price_per_night)}</span>
           <span className="text-gray-400 text-xs"> / nuit</span>

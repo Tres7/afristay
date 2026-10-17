@@ -25,6 +25,7 @@ db.sqlite3
 db.sqlite3-journal
 /server/staticfiles/
 /server/mediafiles/
+/server/prive/
 *.log
 server/.venv/
 server/.env
@@ -93,3 +94,12 @@ generate-commits.sh
 
 # Cache de compilation TypeScript
 *.tsbuildinfo
+
+# =========================
+# VPS (deploy/vps): secrets and state, on the server only
+# =========================
+deploy/vps/env/*.env
+deploy/vps/backups/
+deploy/vps/logs/
+deploy/vps/.deploy.env*
+deploy/vps/deployments.log

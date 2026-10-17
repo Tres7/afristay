@@ -1,3 +1,5 @@
+# Développement uniquement. La base, pgAdmin et RabbitMQ n'écoutent que sur 127.0.0.1 (invisibles du réseau local) ;
+# pgAdmin et la console RabbitMQ ne doivent jamais être déployés en production.
 services:
   # ========================
   # Base de donnees
@@ -8,7 +10,7 @@ services:
     env_file:
       - server/.env
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
     volumes:
       - afristay_db:/var/lib/postgresql/data
     healthcheck:
@@ -21,7 +23,7 @@ services:
   # pgAdmin
   # ========================
   pgadmin:
-    image: dpage/pgadmin4:latest
+    image: dpage/pgadmin4:9
     container_name: afristay-pgadmin
     env_file:
       - server/.env
@@ -29,7 +31,7 @@ services:
     #   PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
     #   PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
     ports:
-      - "5051:80"
+      - "127.0.0.1:5051:80"
     depends_on:
       db:
         condition: service_healthy
@@ -42,6 +44,8 @@ services:
       context: ./server
       dockerfile: Dockerfile
     container_name: afristay-backend
+    # Pas root : __pycache__ et mediafiles sont écrits dans le dossier monté avec ton uid
+    user: "${UID:-1000}:${GID:-1000}"
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - ./server:/app
@@ -60,7 +64,10 @@ services:
     build:
       context: ./client
       dockerfile: Dockerfile
+      target: dev # l'image de production (cible par défaut) sert au VPS
     container_name: afristay-frontend
+    # Pas root : .next est écrit dans le dossier monté avec ton uid (sinon tsc et le hook pre-push échouent)
+    user: node
     command: npm run dev
     volumes:
       - ./client:/app
@@ -77,12 +84,12 @@ services:
       - backend
 
   rabbitmq:
-    image: rabbitmq:3-management
+    image: rabbitmq:4-management
     env_file:
       - server/.env
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
     # environment:
     #   RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
     #   RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
@@ -92,6 +99,7 @@ services:
   consumer:
     build:
       context: ./server
+    user: "${UID:-1000}:${GID:-1000}"
     command: python manage.py consume_events
     volumes:
       - ./server:/app
@@ -106,6 +114,7 @@ services:
   messaging-relay:
     build:
       context: ./server
+    user: "${UID:-1000}:${GID:-1000}"
     command: python manage.py relay_messaging_outbox
     volumes:
       - ./server:/app
@@ -116,6 +125,20 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_started
+    restart: on-failure
+
+  # Worker des paiements : expiration des réservations non payées, versements aux hôtes, remboursements
+  paiements-worker:
+    build:
+      context: ./server
+    command: python manage.py traiter_paiements
+    volumes:
+      - ./server:/app
+    env_file:
+      - server/.env
+    depends_on:
+      db:
+        condition: service_healthy
     restart: on-failure
 
 volumes:

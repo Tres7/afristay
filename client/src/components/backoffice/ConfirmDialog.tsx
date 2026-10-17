@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { selon } from "@/lib/utils";
 
 export interface Confirmation {
   titre: string;
@@ -73,7 +74,7 @@ export default function ConfirmDialog({ confirmation, onClose }: { confirmation:
         )}
 
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-6">
-          <button onClick={onClose} disabled={envoi} className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-medium">Annuler</button>
+          <button onClick={onClose} disabled={envoi} className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-medium">{selon({ fr: "Annuler", en: "Cancel" })}</button>
           <button
             onClick={valider} disabled={!motifOk || envoi}
             className={cn("px-5 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50", confirmation.danger ? "bg-red-600 hover:bg-red-700" : "bg-primary hover:bg-primary-600")}

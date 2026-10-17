@@ -1,0 +1,12 @@
+{% autoescape off %}Bonjour {{ prenom }},
+
+Bonne nouvelle : notre agent a vérifié votre logement « {{ hebergement }} ». Votre annonce est maintenant visible des voyageurs, avec le badge « Vérifié par Kwa-Ba ».
+
+Votre annonce : {{ url_annonce }}
+Votre espace hôte : {{ url_espace }}
+
+Si vous modifiez plus tard l'adresse, la ville ou les photos, l'annonce sera de nouveau vérifiée avant d'être republiée.
+
+Bienvenue parmi les hôtes Kwa-Ba,
+L'équipe Kwa-Ba
+{% endautoescape %}

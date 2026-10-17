@@ -9,12 +9,15 @@ permissions:
   contents: read
 
 jobs:
-  # Les CVE publiées depuis le dernier push sur main : l'image déployable est rescannée chaque nuit.
-  # Les audits npm et pip tournent sur chaque PR ; Trivy couvre ici aussi les paquets Python de l'image.
-  trivy-main-image:
-    name: Trivy (image main)
+  # Les CVE publiées depuis la construction des images : celles du dernier manifest sont rescannées chaque nuit.
+  trivy-manifest-images:
+    name: Trivy (image ${{ matrix.service }} du dernier manifest)
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [server, client]
     permissions:
       contents: read
       packages: read
@@ -23,17 +26,37 @@ jobs:
         with:
           persist-credentials: false
 
-      - id: name
-        run: echo "image=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/afristay-server:main" >> "$GITHUB_OUTPUT"
+      - uses: ./.github/actions/setup-manifest-tools
 
-      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+      - id: name
+        env:
+          SERVICE: ${{ matrix.service }}
+        # Image du dernier manifest (absente pour le client d'un manifest v1, déployé depuis Git)
+        run: echo "image=$(node .github/scripts/manifest/latest.mjs --field "services.${SERVICE}.image")" >> "$GITHUB_OUTPUT"
+
+      - if: steps.name.outputs.image == ''
+        run: echo "::notice::Pas d'image ${{ matrix.service }} dans le dernier manifest"
+
+      - if: steps.name.outputs.image != ''
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: docker pull "${{ steps.name.outputs.image }}"
+      - if: steps.name.outputs.image != ''
+        run: docker pull "${{ steps.name.outputs.image }}"
 
-      - uses: ./.github/actions/trivy-scan
+      - if: steps.name.outputs.image != ''
+        uses: ./.github/actions/trivy-scan
         with:
           image-ref: ${{ steps.name.outputs.image }}
+
+  # Nouvelles CVE dans les dépendances, et secrets sur tout l'historique (toutes branches)
+  security:
+    name: Security
+    uses: ./.github/workflows/_security-checks.yml
+    with:
+      back: true
+      front: true
+      gitleaks-log-opts: --all

@@ -1,0 +1,11 @@
+{% autoescape off %}Bonjour {{ prenom }},
+
+Nous venons de vous verser {{ montant }} pour la course {{ reference }} (aéroport {{ aeroport }}, {{ arrivee }}).
+
+  Prix de la course : {{ montant_brut }}
+  Commission Kwa-Ba : {{ commission }}
+  Versé : {{ montant }}
+
+Merci,
+L'équipe Kwa-Ba
+{% endautoescape %}

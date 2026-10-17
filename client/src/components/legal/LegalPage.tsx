@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 
 export interface SectionLegale {
   id: string;
@@ -14,34 +15,35 @@ interface LegalPageProps {
 }
 
 const PAGES = [
-  { href: "/mentions-legales", label: "Mentions légales" },
-  { href: "/cgu", label: "Conditions générales d'utilisation" },
-  { href: "/confidentialite", label: "Politique de confidentialité" },
-  { href: "/cookies", label: "Politique cookies" },
-  { href: "/remboursement", label: "Annulation et remboursement" },
+  { href: "/mentions-legales", cle: "mentions" },
+  { href: "/cgu", cle: "cgu" },
+  { href: "/confidentialite", cle: "confidentialite" },
+  { href: "/cookies", cle: "cookies" },
+  { href: "/remboursement", cle: "remboursement" },
 ];
 
 /** Gabarit des pages juridiques : sommaire, sections ancrées, liens entre documents. */
 export default function LegalPage({ titre, miseAJour, intro, sections }: LegalPageProps) {
+  const t = useTranslations("legal");
   return (
     <div className="bg-light">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 md:py-14 lg:grid lg:grid-cols-[16rem_1fr] lg:gap-12">
         <aside className="hidden lg:block">
-          <nav aria-label="Documents juridiques" className="sticky top-28 space-y-1 text-sm">
-            <p className="font-heading font-bold text-dark mb-3">Informations légales</p>
+          <nav aria-label={t("documents")} className="sticky top-28 space-y-1 text-sm">
+            <p className="font-heading font-bold text-dark mb-3">{t("informations")}</p>
             {PAGES.map((p) => (
-              <Link key={p.href} href={p.href} className="block px-3 py-2 rounded-lg text-gray-600 hover:bg-white hover:text-dark">{p.label}</Link>
+              <Link key={p.href} href={p.href} className="block px-3 py-2 rounded-lg text-gray-600 hover:bg-white hover:text-dark">{t(`titres.${p.cle}`)}</Link>
             ))}
           </nav>
         </aside>
 
         <article className="bg-white rounded-3xl shadow-card p-6 sm:p-10 min-w-0">
           <h1 className="font-heading font-bold text-3xl sm:text-4xl text-dark">{titre}</h1>
-          <p className="text-sm text-gray-600 mt-2">Dernière mise à jour : {miseAJour}</p>
+          <p className="text-sm text-gray-600 mt-2">{t("miseAJour", { date: miseAJour })}</p>
           <div className="mt-6 text-gray-700 leading-relaxed space-y-3">{intro}</div>
 
-          <nav aria-label="Sommaire" className="mt-8 p-5 rounded-2xl bg-gray-50">
-            <p className="font-semibold text-dark text-sm mb-2">Sommaire</p>
+          <nav aria-label={t("sommaire")} className="mt-8 p-5 rounded-2xl bg-gray-50">
+            <p className="font-semibold text-dark text-sm mb-2">{t("sommaire")}</p>
             <ol className="list-decimal list-inside space-y-1 text-sm">
               {sections.map((s) => (
                 <li key={s.id}><a href={`#${s.id}`} className="text-primary hover:underline">{s.titre}</a></li>
@@ -63,19 +65,30 @@ export default function LegalPage({ titre, miseAJour, intro, sections }: LegalPa
   );
 }
 
+/** En anglais : rappel que la version française fait foi (à placer dans l'introduction). */
+export function VersionFrancaiseFaitFoi() {
+  return (
+    <p className="text-sm bg-gray-50 rounded-xl p-3">
+      This English version is provided for convenience. In case of any difference, the French version prevails.
+    </p>
+  );
+}
+
 /**
  * Information à fournir par l'entreprise avant la mise en ligne (identité, contacts, hébergeur…).
  * Volontairement visible : aucune donnée légale n'est inventée.
  */
 export function AC({ children }: { children: React.ReactNode }) {
-  return <mark className="bg-amber-100 text-amber-900 px-1 rounded font-semibold">[À compléter : {children}]</mark>;
+  const t = useTranslations("legal");
+  return <mark className="bg-amber-100 text-amber-900 px-1 rounded font-semibold">[{t("aCompleter")} : {children}]</mark>;
 }
 
 /** Règle proposée, à valider par le responsable (durées, montants, délais). */
 export function AValider({ children }: { children: React.ReactNode }) {
+  const t = useTranslations("legal");
   return (
     <span className="inline">
-      {children} <mark className="bg-blue-100 text-blue-900 px-1 rounded text-xs font-semibold whitespace-nowrap">proposition à valider</mark>
+      {children} <mark className="bg-blue-100 text-blue-900 px-1 rounded text-xs font-semibold whitespace-nowrap">{t("aValider")}</mark>
     </span>
   );
 }

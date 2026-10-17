@@ -12,6 +12,7 @@ def _listing(**overrides):
         'type': 'villa',
         'price_per_night': 45000,
         'max_guests': 4,
+        'surface_m2': 70, 'chambres': 2, 'lits_doubles': 1, 'lits_simples': 1, 'petit_dejeuner': 'non',
         **overrides,
     }
 
@@ -44,13 +45,21 @@ class TestCreate:
         assert field in response.data
 
     def test_images_truncated_to_ten(self, client_for, make_user):
-        images = [f'https://cdn.example/{i}.jpg' for i in range(12)]
+        images = [f'https://images.unsplash.com/photo-{i}.jpg' for i in range(12)]
         response = client_for(make_user(role='hote')).post(HEBERGEMENTS, _listing(images=images), format='json')
         assert len(HebergementModel.objects.get(pk=response.data['id']).images) == 10
 
-    @pytest.mark.xfail(strict=True, raises=AssertionError, reason=(
-        "Anomalie : max_guests=0 accepté, le logement ne peut alors plus être réservé."
-    ))
+    @pytest.mark.parametrize('url', [
+        'https://pixel-espion.example/a.jpg',     # serveur de l'hôte : recueillerait l'adresse IP des visiteurs
+        'http://images.unsplash.com/a.jpg',       # pas de HTTPS en production
+        'javascript:alert(1)',
+        'https://images.unsplash.com.attaquant.example/a.jpg',
+    ])
+    def test_images_from_unknown_hosts_rejected(self, client_for, make_user, url):
+        client = client_for(make_user(role='hote'))
+        assert client.post(HEBERGEMENTS, _listing(images=[url]), format='json').status_code == 400
+        assert client.post(HEBERGEMENTS, _listing(image_url=url), format='json').status_code == 400
+
     def test_zero_guests_rejected(self, client_for, make_user):
         response = client_for(make_user(role='hote')).post(HEBERGEMENTS, _listing(max_guests=0), format='json')
         assert response.status_code == 400

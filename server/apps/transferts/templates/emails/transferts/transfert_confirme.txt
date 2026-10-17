@@ -1,0 +1,19 @@
+{% autoescape off %}Bonjour {{ prenom }},
+
+Votre transfert depuis l'aéroport est payé ({{ montant }}).
+
+  Aéroport : {{ aeroport }}
+  Arrivée : {{ arrivee }} — vol {{ vol }}
+  Destination : {{ destination }}
+  Véhicule : {{ vehicule }} · {{ passagers }} passager{{ passagers|pluralize }}, {{ bagages }} bagage{{ bagages|pluralize }}
+  Référence : {{ reference }}
+
+Nous vous envoyons le nom, le numéro et le véhicule de votre chauffeur au plus tard la veille de votre arrivée.
+Il vous attendra à la sortie des arrivées avec une pancarte à votre nom ; {{ attente }} minutes d'attente sont incluses après l'atterrissage.
+
+Annulation gratuite jusqu'à 24 heures avant l'arrivée.
+Suivre votre transfert : {{ url }}
+
+Bon voyage,
+L'équipe Kwa-Ba
+{% endautoescape %}

@@ -1,6 +1,7 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { getSession, signOut } from "next-auth/react";
 import { getApiBaseUrl } from "@/lib/api-url";
+import { langue, selon } from "@/lib/utils";
 
 
 const api = axios.create({
@@ -18,7 +19,15 @@ export function setApiAccessToken(token: string | null) {
   accessToken = token;
 }
 
+/** Jeton d'accès courant, pour les requêtes faites hors d'axios (flux SSE du Concierge). */
+export async function jetonAcces(): Promise<string | null> {
+  if (accessToken !== undefined) return accessToken;
+  return (await getSession())?.accessToken ?? null;
+}
+
 api.interceptors.request.use(async (config) => {
+  // Langue de l'utilisateur : réponses du Concierge et, à terme, messages de l'API
+  config.headers["Accept-Language"] = langue();
   if (typeof window !== "undefined") {
     // Évite un appel à /api/auth/session par requête (le polling de la messagerie en ferait un toutes les 4 s)
     const token = accessToken !== undefined ? accessToken : (await getSession())?.accessToken;
@@ -63,7 +72,10 @@ api.interceptors.response.use(
       }
       // Refresh token Django expiré lui aussi : déconnexion propre
       setApiAccessToken(null);
-      const callbackUrl = `/login?expired=1&callbackUrl=${encodeURIComponent(window.location.pathname)}`;
+      // La page de connexion reste dans la langue courante ; le retour se fait sans le préfixe /en (ajouté par le routeur)
+      const prefixe = langue() === "en" ? "/en" : "";
+      const chemin = window.location.pathname.replace(/^\/en(?=\/|$)/, "") || "/";
+      const callbackUrl = `${prefixe}/login?expired=1&callbackUrl=${encodeURIComponent(chemin)}`;
       await signOut({ callbackUrl });
     }
     return Promise.reject(error);
@@ -71,10 +83,10 @@ api.interceptors.response.use(
 );
 
 /** Extrait un message lisible d'une erreur DRF ({detail}, {champ: [msg]}, ...). */
-export function apiErrorMessage(err: unknown, fallback = "Une erreur est survenue. Veuillez réessayer."): string {
+export function apiErrorMessage(err: unknown, fallback?: string): string {
   const e = err as AxiosError<Record<string, unknown>>;
-  if (!e?.response) return "Impossible de contacter le serveur.";
-  return firstErrorMessage(e.response.data) ?? fallback;
+  if (!e?.response) return selon({ fr: "Impossible de contacter le serveur.", en: "Unable to reach the server." });
+  return firstErrorMessage(e.response.data) ?? fallback ?? selon({ fr: "Une erreur est survenue. Veuillez réessayer.", en: "Something went wrong. Please try again." });
 }
 
 export function firstErrorMessage(data: unknown): string | undefined {

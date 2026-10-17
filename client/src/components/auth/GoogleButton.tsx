@@ -1,7 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { signIn } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { authenticateWithGoogle } from "@/lib/api/auth/google";
 
 declare global {
@@ -47,6 +48,7 @@ interface GoogleButtonProps {
 /** Bouton Google Identity Services. Masqué si NEXT_PUBLIC_GOOGLE_CLIENT_ID n'est pas configuré. */
 export default function GoogleButton({ label, callbackUrl, onError }: GoogleButtonProps) {
   const router = useRouter();
+  const t = useTranslations("auth");
 
   if (!GOOGLE_CLIENT_ID) return null;
 
@@ -56,11 +58,11 @@ export default function GoogleButton({ label, callbackUrl, onError }: GoogleButt
     try {
       await chargerScriptGoogle();
     } catch {
-      onError("Google n'est pas disponible pour le moment. Réessayez dans un instant.");
+      onError(t("googleIndisponible"));
       return;
     }
     if (!window.google) {
-      onError("Google n'est pas disponible pour le moment. Réessayez dans un instant.");
+      onError(t("googleIndisponible"));
       return;
     }
 
@@ -68,29 +70,25 @@ export default function GoogleButton({ label, callbackUrl, onError }: GoogleButt
       client_id: GOOGLE_CLIENT_ID,
       callback: async (response) => {
         if (!response.credential) {
-          onError("Impossible de récupérer le token Google.");
+          onError(t("googleJeton"));
           return;
         }
         try {
           const data = await authenticateWithGoogle(response.credential);
           const res = await signIn("backend-session", {
             redirect: false,
-            id: data.user.id,
-            name: `${data.user.first_name} ${data.user.last_name}`,
-            email: data.user.email,
-            image: data.user.avatar_url ?? "",
-            role: data.user.role,
+            // Identité et rôle relus par le serveur auprès de l'API (voir backend-session.ts)
             accessToken: data.access,
             refreshToken: data.refresh,
           });
           if (res?.error) {
-            onError("Authentification Google réussie, mais ouverture de session impossible.");
+            onError(t("googleSession"));
             return;
           }
           router.push(callbackUrl);
           router.refresh();
         } catch (err) {
-          onError(err instanceof Error ? err.message : "Impossible de contacter le serveur.");
+          onError(err instanceof Error ? err.message : t("serveurInjoignable"));
         }
       },
     });
@@ -114,7 +112,7 @@ export default function GoogleButton({ label, callbackUrl, onError }: GoogleButt
       </button>
       <div className="flex items-center gap-4 my-6">
         <div className="flex-1 h-px bg-gray-200" />
-        <span className="text-gray-400 text-xs font-medium">ou par e-mail</span>
+        <span className="text-gray-400 text-xs font-medium">{t("ouParEmail")}</span>
         <div className="flex-1 h-px bg-gray-200" />
       </div>
     </>

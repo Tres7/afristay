@@ -1,0 +1,14 @@
+{% autoescape off %}Bonjour {{ prenom }},
+
+Bonne nouvelle : votre identité est vérifiée.
+{% if contrat_a_signer %}
+Dernière étape avant la visite : signez votre contrat hôte en ligne depuis votre espace hôte (deux minutes, depuis votre téléphone).
+{% elif nb_annonces %}
+Un agent Kwa-Ba va maintenant vous appeler pour convenir de la visite de votre logement. Votre annonce sera visible des voyageurs juste après.
+{% else %}
+Publiez votre logement depuis votre espace hôte : un agent Kwa-Ba vous appellera ensuite pour le visiter.
+{% endif %}
+{{ url_espace }}
+
+L'équipe Kwa-Ba
+{% endautoescape %}

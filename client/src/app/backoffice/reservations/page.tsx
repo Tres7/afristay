@@ -9,6 +9,7 @@ import { formatDate, formatPrice } from "@/lib/utils";
 import { PAGE_SIZE, useAdminList, useDebounced } from "@/lib/useAdminList";
 import AdminTable, { ActionButton, Pagination, Pill, SearchInput, type Colonne } from "@/components/backoffice/AdminTable";
 import ConfirmDialog, { type Confirmation } from "@/components/backoffice/ConfirmDialog";
+import BoutonFacture from "@/components/backoffice/documents/BoutonFacture";
 import DateRangeField from "@/components/ui/DateRangeField";
 import Select from "@/components/ui/Select";
 import type { AdminReservation } from "@/types/api/admin";
@@ -58,6 +59,8 @@ function Reservations() {
 
   const actions = (r: AdminReservation) =>
     r.status === "cancelled" ? null : (
+      <>
+      {r.status === "confirmed" && <BoutonFacture objet="reservation" id={r.id} />}
       <ActionButton danger onClick={() => setConfirmation({
         titre: "Annuler la réservation",
         message: <>Annuler <strong>{r.reference}</strong> ({r.voyageur.nom}, {r.hebergement.name}) ? Le voyageur et l&apos;hôte ne pourront pas la rétablir.</>,
@@ -73,6 +76,7 @@ function Reservations() {
           }
         },
       })}>Annuler</ActionButton>
+      </>
     );
 
   return (

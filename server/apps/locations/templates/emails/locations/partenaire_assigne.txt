@@ -1,0 +1,21 @@
+{% autoescape off %}Bonjour {{ prenom }},
+
+Votre véhicule du {{ debut }} est attribué :
+
+  Loueur : {{ partenaire }} — {{ contact }}
+  Téléphone / WhatsApp : {{ telephone_partenaire }}
+{% if vehicule %}  Véhicule : {{ vehicule }}{% if immatriculation %} — immatriculation {{ immatriculation }}{% endif %}
+{% endif %}{% if avec_chauffeur and chauffeur %}  Votre chauffeur : {{ chauffeur }}{% if telephone_chauffeur %} — {{ telephone_chauffeur }}{% endif %}
+{% endif %}
+  Prise : {{ prise }}
+  Retour : {{ fin }}, {{ retour }}
+{% if caution %}  Caution à régler au loueur à la remise du véhicule : {{ caution }}
+{% endif %}{% if not avec_chauffeur %}  Pensez à votre permis de conduire et à une pièce d'identité.
+{% endif %}
+Un souci ? Assistance Kwa-Ba : {{ assistance }}
+
+Votre location : {{ url }}
+
+Bonne route,
+L'équipe Kwa-Ba
+{% endautoescape %}

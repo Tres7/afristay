@@ -95,9 +95,6 @@ def test_query_count_does_not_grow_with_results(api_client, make_hebergement, dj
         api_client.get(HEBERGEMENTS)
 
 
-@pytest.mark.xfail(strict=True, raises=AssertionError, reason=(
-    "Anomalie : check_in/check_out et price_min/price_max passent sans validation dans le filtre ORM (500)."
-))
 @pytest.mark.parametrize('params', [
     {'check_in': 'abc', 'check_out': 'def'},
     {'price_min': 'abc'},
@@ -118,3 +115,14 @@ def test_popular_cities(api_client, make_user, make_hebergement):
     rows = api_client.get(f'{HEBERGEMENTS}villes/').data['results']
     assert [(r['city'], r['count']) for r in rows] == [('Lomé', 4), ('Aného', 1), ('Kara', 1)]
     assert rows[0]['image_url'] == 'https://cdn.example/lome.jpg'
+
+
+def test_empty_parameters_are_ignored(api_client, listings):
+    params = {'price_min': '', 'price_max': '', 'check_in': '', 'check_out': ''}
+    assert _names(api_client.get(HEBERGEMENTS, params)) == {'Villa Lomé', 'Appart Kpalimé', 'Hôtel du Golfe'}
+
+
+def test_negative_price_rejected(api_client, listings):
+    response = api_client.get(HEBERGEMENTS, {'price_min': -1})
+    assert response.status_code == 400
+    assert 'price_min' in response.data

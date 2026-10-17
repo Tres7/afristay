@@ -1,20 +1,38 @@
 name: Push image
 
+# Image de production d'un service (server ou client) : build, smoke test, Trivy, puis push par digest.
 on:
   workflow_call:
+    inputs:
+      service:
+        description: server ou client (dossier du Dockerfile et nom de l'image afristay-<service>)
+        type: string
+        required: true
+      public-site-url:
+        description: URL publique du site (client uniquement, figée dans l'image au build)
+        type: string
+        default: ''
+      google-client-id:
+        description: Identifiant OAuth Google public (client uniquement)
+        type: string
+        default: ''
+      contact-email:
+        description: Adresse de contact affichée (client uniquement)
+        type: string
+        default: ''
     outputs:
       image:
-        description: Image publiée, référencée par digest (ghcr.io/...@sha256:...)
-        value: ${{ jobs.server-image.outputs.image }}
+        description: Image publiée, référencée par digest (ghcr.io/...@sha256:...). Les tags lisibles (main, manifest-N) sont posés après le manifest.
+        value: ${{ jobs.image.outputs.image }}
 
 permissions:
   contents: read
 
 jobs:
-  server-image:
-    name: Image du serveur (build, Trivy, push)
+  image:
+    name: Image ${{ inputs.service }} (build, smoke test, Trivy, push)
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     permissions:
       contents: read
       packages: write
@@ -26,22 +44,44 @@ jobs:
           persist-credentials: false
 
       - id: name
-        # GHCR exige un nom en minuscules (le propriétaire du dépôt est « Tres7 »)
-        run: echo "repository=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/afristay-server" >> "$GITHUB_OUTPUT"
+        env:
+          SERVICE: ${{ inputs.service }}
+          PUBLIC_SITE_URL: ${{ inputs.public-site-url }}
+        run: |
+          case "$SERVICE" in server|client) ;; *) echo "::error::Service inconnu : $SERVICE"; exit 1 ;; esac
+          if [ "$SERVICE" = client ] && [ -z "$PUBLIC_SITE_URL" ]; then
+            echo "::error::Variable de dépôt PUBLIC_SITE_URL absente : l'URL publique doit être figée dans l'image du client"
+            exit 1
+          fi
+          # GHCR exige un nom en minuscules (le propriétaire du dépôt est « Tres7 »)
+          echo "repository=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/afristay-${SERVICE}" >> "$GITHUB_OUTPUT"
 
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
-          context: server
+          context: ${{ inputs.service }}
+          target: ${{ inputs.service == 'client' && 'production' || '' }}
           push: false
           load: true
-          tags: |
-            ${{ steps.name.outputs.repository }}:sha-${{ github.sha }}
-            ${{ steps.name.outputs.repository }}:main
-          cache-from: type=gha,scope=server
-          cache-to: type=gha,mode=max,scope=server
+          tags: ${{ steps.name.outputs.repository }}:sha-${{ github.sha }}
+          build-args: |
+            NEXT_PUBLIC_SITE_URL=${{ inputs.public-site-url }}
+            NEXT_PUBLIC_API_URL=${{ inputs.public-site-url }}/api
+            NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ inputs.google-client-id }}
+            NEXT_PUBLIC_CONTACT_EMAIL=${{ inputs.contact-email }}
+          cache-from: type=gha,scope=${{ inputs.service }}
+          cache-to: type=gha,mode=max,scope=${{ inputs.service }}
 
-      # L'image n'est publiée que si le scan passe : c'est exactement l'image scannée qui part sur GHCR
+      # L'image n'est publiée que si elle démarre et que le scan passe : c'est exactement elle qui part sur GHCR
+      - if: inputs.service == 'server'
+        uses: ./.github/actions/smoke-test-image
+        with:
+          image: ${{ steps.name.outputs.repository }}:sha-${{ github.sha }}
+      - if: inputs.service == 'client'
+        uses: ./.github/actions/smoke-test-client-image
+        with:
+          image: ${{ steps.name.outputs.repository }}:sha-${{ github.sha }}
+
       - uses: ./.github/actions/trivy-scan
         with:
           image-ref: ${{ steps.name.outputs.repository }}:sha-${{ github.sha }}
@@ -57,7 +97,6 @@ jobs:
           REPOSITORY: ${{ steps.name.outputs.repository }}
         run: |
           docker push "${REPOSITORY}:sha-${GITHUB_SHA}"
-          docker push "${REPOSITORY}:main"
           image=$(docker inspect --format '{{index .RepoDigests 0}}' "${REPOSITORY}:sha-${GITHUB_SHA}")
           echo "image=${image}" >> "$GITHUB_OUTPUT"
           echo "Image publiée : \`${image}\`" >> "$GITHUB_STEP_SUMMARY"

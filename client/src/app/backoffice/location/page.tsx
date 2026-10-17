@@ -1,0 +1,47 @@
+"use client";
+
+import { Suspense } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { cn } from "@/lib/utils";
+import Suivi from "@/components/backoffice/location/Suivi";
+import Categories from "@/components/backoffice/location/Categories";
+import Lieux from "@/components/backoffice/location/Lieux";
+import Loueurs from "@/components/backoffice/location/Loueurs";
+import Regles from "@/components/backoffice/location/Regles";
+
+const ONGLETS = [
+  { id: "suivi", label: "Locations", Composant: Suivi },
+  { id: "categories", label: "Catégories et prix", Composant: Categories },
+  { id: "lieux", label: "Lieux de remise", Composant: Lieux },
+  { id: "loueurs", label: "Loueurs", Composant: Loueurs },
+  { id: "regles", label: "Règles", Composant: Regles },
+];
+
+function Location() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const onglet = useSearchParams().get("onglet") ?? "suivi";
+  const { Composant } = ONGLETS.find((o) => o.id === onglet) ?? ONGLETS[0];
+  return (
+    <div className="space-y-5">
+      <div>
+        <h1 className="font-heading font-bold text-2xl sm:text-3xl text-dark">Location de voiture</h1>
+        <p className="text-muted text-sm mt-1">Locations à attribuer, catalogue, lieux, loueurs partenaires et règles.</p>
+      </div>
+      <div role="tablist" className="flex gap-5 overflow-x-auto scrollbar-hide border-b border-gray-200">
+        {ONGLETS.map((o) => (
+          <button key={o.id} role="tab" aria-selected={onglet === o.id} onClick={() => router.replace(`${pathname}?onglet=${o.id}`)}
+            className={cn("relative zone-tactile pb-3 text-sm font-bold whitespace-nowrap border-b-2 transition-colors",
+              onglet === o.id ? "text-primary border-primary" : "text-gray-500 border-transparent hover:text-dark")}>
+            {o.label}
+          </button>
+        ))}
+      </div>
+      <Composant />
+    </div>
+  );
+}
+
+export default function LocationPage() {
+  return <Suspense><Location /></Suspense>;
+}

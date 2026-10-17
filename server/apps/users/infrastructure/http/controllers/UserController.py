@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
+from apps.securite.audit import journaliser
+from apps.securite.images import MESSAGE as IMAGE_REFUSEE, url_image_autorisee
 from apps.users.application.dto.dto import UpdateProfileDTO
 from apps.users.application.service.UserService import UserService
 from apps.users.domain.exceptions import UserNotFoundException
@@ -41,6 +43,15 @@ class MeView(APIView):
             return Response({'detail': str(e)}, status=status.HTTP_404_NOT_FOUND)
 
     def patch(self, request):
+        noms = {champ: str(request.data.get(champ) or '').strip() for champ in ('first_name', 'last_name')}
+        trop_longs = {champ: ['150 caractères maximum.'] for champ, valeur in noms.items() if len(valeur) > 150}
+        if trop_longs:
+            return Response(trop_longs, status=status.HTTP_400_BAD_REQUEST)
+
+        avatar_url = request.data.get('avatar_url') or None
+        if avatar_url and not url_image_autorisee(avatar_url):
+            return Response({'avatar_url': [IMAGE_REFUSEE]}, status=status.HTTP_400_BAD_REQUEST)
+
         raw_phone = request.data.get('phone')
         if raw_phone:
             raw_phone = ''.join(ch for ch in str(raw_phone) if ch not in ' .-()')
@@ -49,13 +60,14 @@ class MeView(APIView):
 
         try:
             dto = UpdateProfileDTO(
-                first_name=(request.data.get('first_name') or '').strip() or None,
-                last_name=(request.data.get('last_name') or '').strip() or None,
+                first_name=noms['first_name'] or None,
+                last_name=noms['last_name'] or None,
                 phone=PhoneNumber.of(raw_phone),
-                avatar_url=request.data.get('avatar_url'),
+                avatar_url=avatar_url,
             )
-            if request.data.get('role') == 'hote':
+            if request.data.get('role') == 'hote' and request.user.role == 'voyageur':
                 _service().become_host(request.user.id)
+                journaliser('role_modifie', request, utilisateur=request.user, avant='voyageur', apres='hote')
             result = _service().update_profile(request.user.id, dto)
             return Response(_payload(result))
         except UserNotFoundException as e:
@@ -68,6 +80,10 @@ class MeView(APIView):
     def delete(self, request):
         try:
             _service().deactivate(request.user.id)
+            # Plus aucune session ne doit pouvoir renouveler ses jetons
+            from apps.users.infrastructure.http.controllers.AuthController import revoquer_jetons
+            revoquer_jetons(request.user.id)
+            journaliser('compte_desactive', request, utilisateur=request.user)
             return Response(status=status.HTTP_204_NO_CONTENT)
         except UserNotFoundException as e:
             return Response({'detail': str(e)}, status=status.HTTP_404_NOT_FOUND)

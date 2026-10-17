@@ -78,6 +78,8 @@ class TestList:
         assert len(api_client.get(AVIS, {**url_params, 'limit': 2}).data['results']) == 2
         assert len(api_client.get(AVIS, {**url_params, 'offset': -4}).data['results']) == 3
         assert len(api_client.get(AVIS, {**url_params, 'limit': 'abc'}).data['results']) == 3
+        assert len(api_client.get(AVIS, {**url_params, 'limit': 0}).data['results']) == 3
+        assert len(api_client.get(AVIS, {**url_params, 'limit': 500}).data['results']) == 3
 
     def test_unknown_listing(self, api_client):
         assert api_client.get(AVIS, {'hebergement': '00000000-0000-0000-0000-000000000000'}).status_code == 404
@@ -85,15 +87,9 @@ class TestList:
     def test_missing_listing_parameter(self, raw_client):
         assert raw_client.get(AVIS).status_code == 404
 
-    @pytest.mark.xfail(strict=True, raises=AssertionError, reason=(
-        "Anomalie : get_object_or_404 avec un identifiant non UUID lève une ValidationError Django (500)."
-    ))
     def test_non_uuid_listing_parameter_is_not_a_server_error(self, raw_client):
         assert raw_client.get(AVIS, {'hebergement': 'abc'}).status_code in (400, 404)
 
-    @pytest.mark.xfail(strict=True, raises=AssertionError, reason=(
-        "Anomalie : limit négatif conservé (min(-5, 50)), le découpage négatif du queryset lève une exception (500)."
-    ))
     def test_negative_limit_is_not_a_server_error(self, raw_client, listing):
         assert raw_client.get(AVIS, {'hebergement': str(listing.id), 'limit': -5}).status_code == 200
 

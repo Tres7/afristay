@@ -1,0 +1,9 @@
+{% autoescape off %}Les dons de {{ mois }} pour {{ organisation }} sont prêts à être reversés.
+
+  Référence : {{ reference }}
+  Montant à virer : {{ montant }} ({{ nb_dons }} don{{ nb_dons|pluralize }})
+  À faire au plus tard le : {{ date_prevue }}
+
+Après le virement : joindre la preuve (numéros de compte masqués), indiquer la référence de l'opération et passer le reversement à « Effectué ». Les donateurs seront prévenus automatiquement.
+Ouvrir le reversement : {{ url_admin }}
+{% endautoescape %}

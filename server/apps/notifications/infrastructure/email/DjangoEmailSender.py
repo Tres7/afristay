@@ -1,4 +1,4 @@
-from django.core.mail import send_mail
+from apps.notifications.infrastructure.email.envoi import send_mail
 from django.conf import settings
 from django.template.loader import render_to_string
 from apps.notifications.application.ports.NotificationSender import NotificationSender
@@ -12,7 +12,7 @@ class DjangoEmailSender(NotificationSender):
             'code': code,
         })
         send_mail(
-            subject='Vérification de votre compte AfriStay',
+            subject='Vérification de votre compte Kwa-Ba',
             message=message,
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[to],
@@ -23,7 +23,7 @@ class DjangoEmailSender(NotificationSender):
             'first_name': first_name,
         })
         send_mail(
-            subject='Bienvenue sur AfriStay',
+            subject='Bienvenue sur Kwa-Ba',
             message=message,
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[to],
@@ -41,7 +41,7 @@ class DjangoEmailSender(NotificationSender):
             'conversation_url': conversation_url,
         })
         send_mail(
-            subject=f'Nouveau message de {sender_first_name} sur AfriStay',
+            subject=f'Nouveau message de {sender_first_name} sur Kwa-Ba',
             message=message,
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[to],
@@ -53,7 +53,7 @@ class DjangoEmailSender(NotificationSender):
             'code': code,
         })
         send_mail(
-            subject='Réinitialisation de votre mot de passe AfriStay',
+            subject='Réinitialisation de votre mot de passe Kwa-Ba',
             message=message,
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[to],

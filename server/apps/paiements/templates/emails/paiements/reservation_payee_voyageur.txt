@@ -1,0 +1,17 @@
+{% autoescape off %}Bonjour {{ prenom }},
+
+Votre paiement de {{ montant }} est bien reçu : votre séjour est confirmé.
+
+  {{ hebergement }} ({{ ville }})
+  Du {{ arrivee }} au {{ depart }} · {{ voyageurs }} voyageur{{ voyageurs|pluralize }}
+  Référence : {{ reference }}
+
+Retrouvez votre réservation et échangez avec votre hôte :
+{{ url }}
+
+Annulation : remboursement intégral jusqu'à 7 jours avant l'arrivée, partiel entre 7 jours et 48 heures.
+Détails : {{ url_remboursement }}
+
+Bon séjour,
+L'équipe Kwa-Ba
+{% endautoescape %}

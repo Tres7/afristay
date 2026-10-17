@@ -1,31 +1,73 @@
 # CI
 
-La CI tourne sur les pull requests vers `main` (`.github/workflows/pr_main.yml`). Une branche sans PR n'a pas de CI : le hook pre-push donne le retour rapide en local.
+Chaque push sur une branche de travail lance un contrôle rapide (`push_branch.yml`) : les mêmes vérifications que le hook pre-push local. Les pull requests vers `main` lancent la chaîne complète (`pr_main.yml`).
 
-## Ce qui tourne
+## Sur chaque push de branche
+
+`push_branch.yml`, sur toute branche sauf `main` et `dependabot/**` : `ruff check` et tests unitaires du serveur, ESLint et `tsc` du client, gitleaks sur les commits poussés.
+
+## Sur chaque pull request
 
 | Job | Contenu | Quand |
 | --- | --- | --- |
 | Plan | Chemins modifiés → serveur, client, infra, broker, docs seules | Toujours |
-| App / Serveur | `ruff check`, `makemigrations --check`, `check --deploy`, tests `unit` puis `integration` (PostgreSQL 16), couverture combinée et ses deux seuils (voir plus bas) | `server/**` ou `.github/**` modifié |
+| App / Serveur | `ruff check`, `makemigrations --check`, `check --deploy` (bloquant sur tout avertissement), tests `unit` puis `integration` (PostgreSQL 16), couverture combinée et ses deux seuils (voir plus bas) | `server/**` ou `.github/**` modifié |
 | App / Client | ESLint, `tsc` | `client/**` ou `.github/**` modifié |
-| Docker | `docker compose config`, hadolint, build de l'image serveur puis scan Trivy, `next build` | Après App, hors brouillon |
-| Security | `npm audit --omit=dev --audit-level=high` (client), `pip-audit` (serveur) | En parallèle, selon la partie modifiée |
+| Config | actionlint (workflows, avec shellcheck), hadolint (Dockerfiles) | Workflows, Dockerfiles ou compose modifiés |
+| Docker | `docker compose config` ; image du serveur : build, smoke test (non root, migrations, `/api/health/` contre un PostgreSQL jetable), Trivy ; image du client : build Next.js, smoke test (non root, pages et Auth.js derrière un proxy simulé), Trivy | Après App et Config, hors brouillon |
+| Security | gitleaks sur les commits de la PR ; `npm audit --omit=dev --audit-level=high` (client) et `pip-audit` (serveur) selon la partie modifiée | Toujours, en parallèle |
 | PR status | Échoue si un job a échoué ou été annulé ; un job ignoré est toléré | Toujours |
 
-Trivy échoue sur toute vulnérabilité HIGH ou CRITICAL **qui a un correctif disponible** ; le rapport complet est dans le résumé du job.
+Trivy échoue sur toute vulnérabilité HIGH ou CRITICAL **qui a un correctif disponible**, et sur tout secret HIGH ou CRITICAL embarqué dans l'image ; le rapport complet est dans le résumé du job.
+
+gitleaks masque les valeurs dans les logs. Un faux positif vérifié s'ajoute à `.gitleaksignore` par son empreinte ; un vrai secret se révoque, puis se retire de l'historique.
 
 ## Après la fusion et la nuit
 
 | Workflow | Déclencheur | Contenu |
 | --- | --- | --- |
-| `pre_push_main.yml` | Push sur `main` (sauf documentation seule) | Build de l'image serveur, scan Trivy, puis push sur `ghcr.io/tres7/afristay-server` (tags `sha-<commit>` et `main`) seulement si le scan passe |
-| `nightly.yml` | Chaque nuit à 1 h UTC, ou à la main | Scan Trivy de l'image `main` publiée : détecte les CVE apparues depuis le dernier push |
-| Dependabot | Chaque jour à 3 h (Paris), sur `main` uniquement | PR de mise à jour : actions, pip, npm, images Docker de base |
+| `push_main.yml` | Push sur `main` (sauf documentation et manifests) | Plan par rapport au dernier manifest ; pour chaque service modifié (serveur, client) : build de l'image, smoke test, Trivy, push par digest (`sha-<commit>`) ; puis manifest de déploiement, commité par la CD App, et tags définitifs des images (`main`, `manifest-<N>`) |
+| `nightly.yml` | Chaque nuit à 1 h UTC, ou à la main | Scan Trivy des images (serveur et client) du dernier manifest, `pip-audit`, `npm audit`, gitleaks sur tout l'historique (toutes branches) |
+| Dependabot | Chaque jour à 3 h (Paris), sur `main` uniquement | PR de mise à jour : actions, pip, npm, images Docker de base. Les versions majeures de `node` et les mineures de `python` sont ignorées : changement volontaire uniquement |
 
 Une PR en brouillon ne lance que le lint et les tests unitaires. La passer en « prête » relance tout.
 
 **Protection de `main`** : exiger uniquement le contrôle `PR status`.
+
+## Manifests de déploiement
+
+Chaque état déployable de `main` est décrit par un fichier `deploy/manifests/manifest-<N>-<sha7>.yaml`, validé par `deploy/manifests/schema.json`. Il fixe des versions du serveur et du client qui vont ensemble :
+
+```yaml
+schemaVersion: 2
+manifestVersion: 42                 # strictement croissant
+sourceRevision: <commit de main>    # 40 caractères
+createdAt: 2026-10-10T16:30:00Z
+services:
+  server:
+    kind: image
+    sourceRevision: <dernier commit touchant server/>
+    image: ghcr.io/tres7/afristay-server@sha256:<digest>
+  client:
+    kind: image
+    sourceRevision: <dernier commit touchant client/>
+    image: ghcr.io/tres7/afristay-client@sha256:<digest>
+```
+
+Les manifests v1 (client déployé depuis Git, avant le passage au VPS) restent valides ; le premier manifest v2 reconstruit l'image du client.
+
+- Les révisions sont celles du dernier commit qui touche `server/` ou `client/`, et non celles du manifest précédent : un run sauté ne fausse rien.
+- Une image n'est reconstruite que pour un service dont la révision diffère du dernier manifest ; sinon son digest est repris. Sans changement du serveur ni du client, aucun manifest n'est créé.
+- L'image du client fige au build les valeurs publiques, lues dans les variables du dépôt : `PUBLIC_SITE_URL` (obligatoire, ex. `https://kwa-ba.com`), `PUBLIC_GOOGLE_CLIENT_ID`, `PUBLIC_CONTACT_EMAIL`. L'API est attendue sur `<PUBLIC_SITE_URL>/api`.
+- Les scripts (`.github/scripts/manifest`, testés par `npm test`) : `plan.mjs`, `create.mjs`, `validate.mjs`, `latest.mjs`.
+- Le commit du manifest sur `main` (protégée) est fait par la **CD App**, seule autorisée à contourner le ruleset. Sans elle (variable `CD_APP_CLIENT_ID` absente), le manifest est produit en artefact du run, non commité.
+
+### Configurer la CD App
+
+1. Profil GitHub → Settings → Developer settings → GitHub Apps → **New GitHub App** : webhook désactivé ; permission de dépôt **Contents : Read and write**, rien d'autre ; installable sur ce compte uniquement.
+2. Installer l'App sur le seul dépôt `afristay`.
+3. Dans le dépôt, Settings → Secrets and variables → Actions : variable **`CD_APP_CLIENT_ID`** (Client ID de l'App) et secret **`CD_APP_PRIVATE_KEY`** (contenu du fichier `.pem` généré).
+4. Ruleset « Protect main » → Bypass list : ajouter l'App.
 
 ## Tests du serveur
 
@@ -74,7 +116,7 @@ Les services hexagonaux (`messaging`, `UserService`) se testent sans base, avec 
 
 ## Couverture
 
-Mesurée sur `server/apps` (unit + integration combinés, branches comprises). Rapport dans le résumé du job, HTML en artefact `coverage-server`.
+Mesurée sur `server/apps` et `server/config` (unit + integration combinés, branches comprises ; `settings.py`, `wsgi.py` et `asgi.py` exclus). Rapport dans le résumé du job, HTML en artefact `coverage-server`.
 
 | Seuil | Règle | Où |
 | --- | --- | --- |
@@ -87,26 +129,18 @@ Quand la couverture progresse, remonter `fail_under` dans la même PR. Les seuil
 
 Chaque anomalie repérée a un test qui décrit le comportement attendu, marqué `@pytest.mark.xfail(strict=True, raises=AssertionError)`. Tant que le bug existe, le test est « xfail » et la CI reste verte. Le jour où le correctif arrive, le test passe, `strict=True` fait échouer la CI : retirer alors le marqueur `xfail` dans la PR du correctif.
 
-| Anomalie | Test |
-| --- | --- |
-| Deux réservations simultanées des mêmes dates sont toutes deux acceptées | `integration/reservations/test_concurrency.py` |
-| Recherche : `check_in`, `check_out`, `price_min`, `price_max` invalides → 500 | `integration/hebergements/test_search.py` |
-| `max_guests=0` accepté à la création d'un logement | `integration/hebergements/test_listings.py` |
-| Avis : `?hebergement=abc` → 500 | `integration/avis/test_avis_api.py` |
-| Avis : `?limit=-5` → 500 | `integration/avis/test_avis_api.py` |
-| Un refresh token déjà utilisé reste valable (pas de `token_blacklist`) | `integration/users/test_profile_and_tokens.py` |
-| Emails texte : « N'Guessan » devient « N&#x27;Guessan » (échappement HTML) | `unit/notifications/test_email_sender.py` |
+Aucune anomalie connue à ce jour : les sept anomalies repérées à la mise en place des tests ont été corrigées.
 
 `pytest -rxX` affiche la liste en fin d'exécution.
 
-## Hook pre-push
+## Installation du poste et hook pre-push
 
 ```bash
-pip install pre-commit
-pre-commit install
+make install    # venv du serveur, dépendances, npm ci, hooks pre-push
+make help       # autres commandes : lint, test-unit, test
 ```
 
-Avant chaque push : `ruff check` et tests unitaires si `server/` a changé, ESLint et `tsc` si `client/` a changé. Le venv du serveur doit être activé.
+Avant chaque push : gitleaks sur les commits poussés, `ruff check` et tests unitaires si `server/` a changé, ESLint et `tsc` si `client/` a changé. La première installation compile gitleaks (quelques minutes), puis l'environnement est réutilisé.
 
 ## Lint
 

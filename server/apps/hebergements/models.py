@@ -3,7 +3,21 @@ from django.conf import settings
 from django.db import models
 
 
+class HebergementQuerySet(models.QuerySet):
+    def publiees(self):
+        """Annonces visibles du public : vérifiées par un agent de terrain et non masquées par l'hôte."""
+        return self.filter(is_available=True, statut_verification='verifiee')
+
+
 class HebergementModel(models.Model):
+    STATUTS_VERIFICATION = [
+        ('en_attente', 'En attente de vérification'),
+        ('verifiee', 'Vérifiée'),
+        ('refusee', 'Refusée'),
+    ]
+    # Modifier l'un de ces champs après la visite remet l'annonce en vérification (ce que l'agent a contrôlé)
+    CHAMPS_VERIFIES = ('city', 'location', 'image_url', 'images')
+
     TYPE_CHOICES = [
         ('hotel', 'Hôtel'),
         ('villa', 'Villa'),
@@ -23,8 +37,24 @@ class HebergementModel(models.Model):
     image_url = models.URLField(blank=True)
     images = models.JSONField(default=list, blank=True)
     max_guests = models.PositiveIntegerField(default=4)
+    # Détails affichés sur la fiche ; obligatoires pour une nouvelle annonce, vides pour les plus anciennes
+    surface_m2 = models.PositiveIntegerField(null=True, blank=True)
+    chambres = models.PositiveSmallIntegerField(null=True, blank=True)
+    salles_de_bain = models.PositiveSmallIntegerField(null=True, blank=True)
+    lits_doubles = models.PositiveSmallIntegerField(default=0)
+    lits_simples = models.PositiveSmallIntegerField(default=0)
+    canapes_lits = models.PositiveSmallIntegerField(default=0)
+    PETIT_DEJEUNER = [('non', 'Non proposé'), ('inclus', 'Inclus'), ('option', 'En option')]
+    petit_dejeuner = models.CharField(max_length=10, choices=PETIT_DEJEUNER, blank=True)
+    petit_dejeuner_prix = models.PositiveIntegerField(null=True, blank=True, help_text='FCFA par personne et par jour (option)')
+    arrivee_a_partir = models.TimeField(null=True, blank=True, help_text="Heure d'arrivée à partir de")
+    depart_avant = models.TimeField(null=True, blank=True, help_text='Heure de départ au plus tard')
     amenities = models.JSONField(default=list)
     is_available = models.BooleanField(default=True)
+    # Publiée seulement après la visite d'un agent de terrain (apps.verifications)
+    statut_verification = models.CharField(max_length=20, choices=STATUTS_VERIFICATION, default='en_attente', db_index=True)
+    verifiee_le = models.DateTimeField(null=True, blank=True)
+    motif_refus = models.TextField(blank=True)
     host = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -33,12 +63,18 @@ class HebergementModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    objects = HebergementQuerySet.as_manager()
+
     class Meta:
         app_label = 'hebergements'
         ordering = ['-created_at']
 
     def __str__(self):
         return f"{self.name} ({self.city})"
+
+    @property
+    def est_publiee(self) -> bool:
+        return self.is_available and self.statut_verification == 'verifiee'
 
 
 def _photo_upload_path(instance, filename):
@@ -87,3 +123,18 @@ class BlocageModel(models.Model):
 
     def __str__(self):
         return f"Blocage {self.hebergement_id} {self.debut} → {self.fin}"
+
+
+class InscriptionLancementModel(models.Model):
+    """Liste d'attente : visiteurs à prévenir par email quand les premiers logements sont en ligne."""
+    email = models.EmailField(unique=True)
+    langue = models.CharField(max_length=2, default='fr')
+    cree_le = models.DateTimeField(auto_now_add=True)
+    prevenu_le = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-cree_le']
+        verbose_name = "Inscription à l'ouverture des logements"
+
+    def __str__(self):
+        return self.email

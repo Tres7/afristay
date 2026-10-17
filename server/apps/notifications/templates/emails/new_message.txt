@@ -8,5 +8,5 @@ Pour lire la conversation et répondre :
 {{ conversation_url }}
 
 À très bientôt,
-L'équipe AfriStay
+L'équipe Kwa-Ba
 {% endautoescape %}
