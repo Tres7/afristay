@@ -1,9 +1,12 @@
 from django.urls import path
 
+from apps.hebergements.lancement import LancementAdminView
+
 from . import fraude, give, locations, transferts, views
 
 urlpatterns = [
     path('stats/', views.StatsView.as_view(), name='admin-stats'),
+    path('lancement/', LancementAdminView.as_view(), name='admin-lancement'),
     path('users/', views.UtilisateurListView.as_view(), name='admin-users'),
     path('users/<uuid:pk>/', views.UtilisateurDetailView.as_view(), name='admin-user'),
     path('hebergements/', views.HebergementListView.as_view(), name='admin-hebergements'),

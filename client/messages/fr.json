@@ -1671,5 +1671,22 @@
     "versionModifiee": "Le contrat vient d'être mis à jour : relisez-le avant de signer.",
     "retourEspace": "Retour à mon espace hôte",
     "reserveHotes": "Cette page est réservée aux hôtes."
+  },
+  "bientot": {
+    "surtitre": "Ouverture imminente",
+    "titre": "Les logements arrivent très bientôt",
+    "texte": "Nous vérifions un par un nos premiers hôtes : identité contrôlée et visite du logement sur place. Les premiers logements seront en ligne dans les jours à venir.",
+    "email": "Votre adresse email",
+    "prevenir": "Prévenez-moi",
+    "merci": "Merci ! Nous vous écrirons dès l'ouverture.",
+    "erreur": "Inscription impossible pour le moment. Réessayez.",
+    "rgpd": "Un seul email, le jour de l'ouverture. Rien d'autre.",
+    "enAttendant": "Déjà disponible",
+    "transfert": "Transfert aéroport",
+    "location": "Location de voiture",
+    "give": "Kwa-Ba Give",
+    "proprietaire": "Vous avez un logement à louer ?",
+    "devenirHote": "Devenez hôte",
+    "fermer": "Fermer"
   }
 }
