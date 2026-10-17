@@ -3,7 +3,8 @@
 import { Link, useRouter } from "@/i18n/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
-import { ArrowLeft, Send } from "lucide-react";
+import { ArrowLeft, Send, ShieldCheck, EyeOff } from "lucide-react";
+import { toast } from "sonner";
 import { cn, langue, selon } from "@/lib/utils";
 import api from "@/lib/api";
 import { usePolling } from "@/lib/usePolling";
@@ -101,6 +102,7 @@ export default function ChatPage() {
       const res = await api.post(`/v1/messaging/conversations/${conversationId}/messages/`, { content });
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
       mergeMessages([res.data]);
+      if (res.data.masked) toast.info(t("masqueEnvoi"));
     } catch (err) {
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
       setInput(content);
@@ -169,6 +171,17 @@ export default function ChatPage() {
           </div>
         </div>
 
+        {/* Règles de la messagerie : coordonnées masquées, voyageur anonyme avant paiement */}
+        <div className="bg-primary/5 border-b border-primary/10 px-4 md:px-6 py-2.5 text-xs text-dark space-y-1 flex-shrink-0">
+          <p className="flex gap-2"><ShieldCheck size={15} className="text-primary flex-shrink-0 mt-px" aria-hidden /> {t("securite")}</p>
+          {!conversation.booked && (
+            <p className="flex gap-2 text-muted">
+              <EyeOff size={15} className="flex-shrink-0 mt-px" aria-hidden />
+              {conversation.my_role === "host" ? t("anonymeHote") : t("anonymeVoyageur")}
+            </p>
+          )}
+        </div>
+
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-4 md:px-8 py-8 space-y-6 bg-gray-50/50">
           {messages.length === 0 && (
@@ -191,6 +204,11 @@ export default function ChatPage() {
                 msg.pending && "opacity-60"
               )}>
                 <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                {msg.masked && (
+                  <p className={cn("flex items-center gap-1 mt-1 text-[11px] font-medium", msg.is_own ? "text-white/80" : "text-muted")}>
+                    <ShieldCheck size={12} aria-hidden /> {t("masque")}
+                  </p>
+                )}
                 <div className={cn("flex items-center gap-1.5 mt-1.5", msg.is_own ? "justify-end" : "justify-start")}>
                   <p className={cn("text-[11px] font-medium", msg.is_own ? "text-white/70" : "text-muted/70")}>
                     {msg.pending

@@ -28,6 +28,11 @@ class ParametresSocieteModel(models.Model):
     assujetti_tva = models.BooleanField(default=False)
     taux_tva = models.DecimalField(max_digits=5, decimal_places=2, default=18, help_text='En %, si assujetti')
     mentions = models.TextField(blank=True, help_text='Pied de facture : conditions de paiement, mentions légales…')
+    # Signataire des contrats pour Kwa-Ba
+    representant_nom = models.CharField(max_length=120, blank=True, help_text='Représentant légal, signataire des contrats')
+    representant_qualite = models.CharField(max_length=80, blank=True, help_text='Gérant, directeur général…')
+    signature_representant = models.ImageField(upload_to='societe/', storage=stockage_prive, blank=True,
+                                               help_text='Signature scannée (PNG sur fond transparent de préférence)')
     mis_a_jour_le = models.DateTimeField(auto_now=True)
 
     class Meta:

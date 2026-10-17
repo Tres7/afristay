@@ -1,9 +1,12 @@
 from django.urls import path
 
-from . import give, locations, transferts, views
+from apps.hebergements.lancement import LancementAdminView
+
+from . import fraude, give, locations, transferts, views
 
 urlpatterns = [
     path('stats/', views.StatsView.as_view(), name='admin-stats'),
+    path('lancement/', LancementAdminView.as_view(), name='admin-lancement'),
     path('users/', views.UtilisateurListView.as_view(), name='admin-users'),
     path('users/<uuid:pk>/', views.UtilisateurDetailView.as_view(), name='admin-user'),
     path('hebergements/', views.HebergementListView.as_view(), name='admin-hebergements'),
@@ -12,6 +15,9 @@ urlpatterns = [
     path('reservations/<uuid:pk>/annuler/', views.ReservationAnnulerView.as_view(), name='admin-reservation-annuler'),
     path('avis/', views.AvisListView.as_view(), name='admin-avis'),
     path('avis/<uuid:pk>/', views.AvisDetailView.as_view(), name='admin-avis-detail'),
+    # Anti-fraude
+    path('anti-fraude/', fraude.AlertesView.as_view(), name='admin-anti-fraude'),
+    path('anti-fraude/<int:pk>/traiter/', fraude.AlerteTraiteeView.as_view(), name='admin-anti-fraude-traiter'),
     # Location de voiture
     path('location/regles/', locations.ParametresView.as_view(), name='admin-location-regles'),
     path('location/categories/', locations.CategoriesView.as_view(), name='admin-location-categories'),

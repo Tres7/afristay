@@ -58,6 +58,8 @@ class MessageModel(models.Model):
         related_name='sent_messages',
     )
     content = models.TextField()
+    # Coordonnées masquées à l'envoi (anti-contournement) ; le texte d'origine n'est pas conservé
+    masque = models.BooleanField(default=False)
     created_at = models.DateTimeField()
 
     class Meta:

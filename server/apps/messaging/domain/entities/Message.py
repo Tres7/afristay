@@ -20,6 +20,8 @@ class Message:
     sender_id: uuid.UUID
     content: str
     id: Optional[int] = None
+    # Des coordonnées (téléphone, email, lien…) ont été masquées à l'envoi
+    masked: bool = False
     created_at: datetime.datetime = field(
         default_factory=lambda: datetime.datetime.now(datetime.timezone.utc)
     )

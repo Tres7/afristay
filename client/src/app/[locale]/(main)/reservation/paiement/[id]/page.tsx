@@ -7,7 +7,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, Clock, CreditCard, Loader2, Lock, Smartphone, Wallet, XCircle } from "lucide-react";
 import api, { apiErrorMessage } from "@/lib/api";
 import { allerPayer, enEuros, minutesRestantes, useConfigPaiement } from "@/lib/paiement";
-import { cn, FALLBACK_IMAGE, formatDate, formatPrice } from "@/lib/utils";
+import { cn, FALLBACK_IMAGE, formatDate, formatFcfa, formatPrice } from "@/lib/utils";
+import { MontantDebite } from "@/components/layout/Devise";
 import type { Reservation } from "@/types/api/models";
 import type { MoyenPaiement, StatutPaiementReservation } from "@/types/api/paiement";
 import { useTranslations } from "next-intl";
@@ -148,7 +149,7 @@ function PaiementContent() {
                     <p className="font-bold text-dark text-sm truncate">{reservation.hebergement_detail.name}</p>
                     <p className="text-xs text-gray-600">{formatDate(reservation.check_in)} → {formatDate(reservation.check_out)}</p>
                   </div>
-                  <p className="font-heading font-bold text-dark whitespace-nowrap">{formatPrice(total)}</p>
+                  <div className="text-right"><p className="font-heading font-bold text-dark whitespace-nowrap">{formatPrice(total)}</p><MontantDebite montant={total} /></div>
                 </div>
               )}
 
@@ -171,7 +172,7 @@ function PaiementContent() {
 
               <button onClick={payer} disabled={envoi || !moyenChoisi}
                 className="w-full mt-6 bg-secondary hover:bg-secondary-600 text-white font-bold py-4 rounded-2xl shadow-md disabled:opacity-60">
-                {envoi ? t("redirection") : tRes("payer", { montant: moyenChoisi === "paypal" && config ? enEuros(total, config.fcfa_par_euro) : formatPrice(total) })}
+                {envoi ? t("redirection") : tRes("payer", { montant: moyenChoisi === "paypal" && config ? enEuros(total, config.fcfa_par_euro) : formatFcfa(total) })}
               </button>
               <p className="flex items-center justify-center gap-1.5 text-xs text-gray-600 mt-3">
                 <Lock size={12} /> {t("securisePar", { prestataire: moyenChoisi === "paypal" ? "PayPal" : "FedaPay" })}
