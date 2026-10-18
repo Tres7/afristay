@@ -7,6 +7,19 @@ label=${1:-quotidienne}
 # shellcheck source=/dev/null
 if [ -f env/backup.env ]; then set -a; source env/backup.env; set +a; fi
 
+# Dead man's switch (healthchecks.io or compatible): every run reports success or failure (/fail), and the check
+# alerts on its own when a night is missing. A failed ping never changes the backup's exit status.
+report_healthcheck() {
+  local status=$?
+  if [ -n "${BACKUP_HEALTHCHECK_URL:-}" ]; then
+    local url=${BACKUP_HEALTHCHECK_URL%/}
+    [ "$status" -eq 0 ] || url="${url}/fail"
+    curl -fsS -m 10 --retry 3 -o /dev/null "$url" || echo "Healthcheck injoignable : ${url}" >&2
+  fi
+  return "$status"
+}
+trap report_healthcheck EXIT
+
 mkdir -p backups && chmod 700 backups
 file="backups/kwaba-$(date -u +%Y%m%dT%H%M%SZ)-${label}.dump"
 

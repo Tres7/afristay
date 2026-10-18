@@ -75,6 +75,10 @@ Relancer le workflow **deploy** avec un manifest antérieur (les images changent
 ## Sauvegardes et restauration
 
 - Automatiques : chaque nuit (03:30 UTC) et avant chaque déploiement, dans `/opt/kwaba/backups` (14 jours). Si `env/backup.env` est rempli, une copie **chiffrée avec age** part sur R2 (aucune copie en clair ne quitte le VPS).
+- **Surveillance** : sur [healthchecks.io](https://healthchecks.io) (gratuit), créer un check *Period* 1 jour, *Grace* 2 heures, avec une alerte par email vers vous deux. Mettre son adresse de ping dans `BACKUP_HEALTHCHECK_URL` (`env/backup.env`). Chaque sauvegarde la signale (`/fail` en cas d'erreur) ; une nuit sans sauvegarde déclenche aussi l'alerte. Vérifier une fois avec `sudo -u deploy /opt/kwaba/scripts/backup.sh manuelle` : le check passe au vert.
+- **Copies sur R2 protégées et purgées** (tableau de bord Cloudflare → R2 → `kwaba-backups` → *Settings*) :
+  - *Bucket lock rules* → règle sur le préfixe `postgres/`, rétention **30 jours** : pendant 30 jours, une copie ne peut être ni effacée ni écrasée, même avec la clé du VPS (un attaquant qui prend le serveur ne peut pas détruire aussi les sauvegardes) ;
+  - *Object lifecycle rules* → règle sur le préfixe `postgres/`, suppression après **90 jours** (sinon les copies s'accumulent sans fin).
 - Récupérer une copie de R2 : la télécharger, puis `age --decrypt --identity kwaba-backups.key -o kwaba.dump <fichier>.dump.age`.
 - Restaurer (après avoir arrêté l'API et les workers) :
   ```bash
