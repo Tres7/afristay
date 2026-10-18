@@ -187,11 +187,11 @@ docker compose logs -f messaging-relay
 docker compose exec backend python manage.py relay_messaging_outbox --once
 
 # État de l'outbox
-docker compose exec db psql -U afristay -d afristay -c \
+docker compose exec db psql -U kwaba -d kwaba -c \
   "select status, count(*), max(attempts) from messaging_notification_outbox group by status"
 
 # Notifications en souffrance (échecs répétés)
-docker compose exec db psql -U afristay -d afristay -c \
+docker compose exec db psql -U kwaba -d kwaba -c \
   "select id, attempts, available_at, last_error from messaging_notification_outbox where status='pending' and attempts > 0"
 ```
 

@@ -15,7 +15,7 @@ cp .env.example .env
 
 Editez `.env` avec vos propres valeurs :
 ```env
-POSTGRES_DB=afristayDB
+POSTGRES_DB=kwaba
 POSTGRES_USER=votre_username
 POSTGRES_PASSWORD=votre_password
 

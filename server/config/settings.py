@@ -117,13 +117,13 @@ POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD', '')
 if not POSTGRES_PASSWORD:
     if not DEBUG:
         raise ImproperlyConfigured('POSTGRES_PASSWORD est obligatoire hors développement (DJANGO_DEBUG=False).')
-    POSTGRES_PASSWORD = 'afristay'
+    POSTGRES_PASSWORD = 'kwaba'
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('POSTGRES_DB', 'afristayDB'),
-        'USER': os.getenv('POSTGRES_USER', 'afristay'),
+        'NAME': os.getenv('POSTGRES_DB', 'kwaba'),
+        'USER': os.getenv('POSTGRES_USER', 'kwaba'),
         'PASSWORD': POSTGRES_PASSWORD,
         'HOST': os.getenv('POSTGRES_HOST', 'db'),
         'PORT': os.getenv('POSTGRES_PORT', '5432'),

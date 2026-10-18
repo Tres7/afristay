@@ -1,18 +1,20 @@
 # Développement uniquement. La base, pgAdmin et RabbitMQ n'écoutent que sur 127.0.0.1 (invisibles du réseau local) ;
 # pgAdmin et la console RabbitMQ ne doivent jamais être déployés en production.
+name: kwaba
+
 services:
   # ========================
   # Base de donnees
   # ========================
   db:
     image: postgres:16-bookworm
-    container_name: afristay-db
+    container_name: kwaba-db
     env_file:
       - server/.env
     ports:
       - "127.0.0.1:5433:5432"
     volumes:
-      - afristay_db:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
@@ -24,7 +26,7 @@ services:
   # ========================
   pgadmin:
     image: dpage/pgadmin4:9
-    container_name: afristay-pgadmin
+    container_name: kwaba-pgadmin
     env_file:
       - server/.env
     # environment:
@@ -43,7 +45,7 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile
-    container_name: afristay-backend
+    container_name: kwaba-backend
     # Pas root : __pycache__ et mediafiles sont écrits dans le dossier monté avec ton uid
     user: "${UID:-1000}:${GID:-1000}"
     command: python manage.py runserver 0.0.0.0:8000
@@ -65,7 +67,7 @@ services:
       context: ./client
       dockerfile: Dockerfile
       target: dev # l'image de production (cible par défaut) sert au VPS
-    container_name: afristay-frontend
+    container_name: kwaba-frontend
     # Pas root : .next est écrit dans le dossier monté avec ton uid (sinon tsc et le hook pre-push échouent)
     user: node
     command: npm run dev
@@ -142,5 +144,5 @@ services:
     restart: on-failure
 
 volumes:
-  afristay_db:
+  postgres_data:
   rabbitmq_data:

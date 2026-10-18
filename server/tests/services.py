@@ -17,8 +17,8 @@ COMPOSE_FILE = Path(__file__).resolve().parents[2] / 'compose.test.yaml'
 
 POSTGRES = {
     'service': 'postgres-test',
-    'settings': {'HOST': '127.0.0.1', 'PORT': '55432', 'NAME': 'afristay', 'USER': 'afristay',
-                 'PASSWORD': 'afristay-test'},
+    'settings': {'HOST': '127.0.0.1', 'PORT': '55432', 'NAME': 'kwaba', 'USER': 'kwaba',
+                 'PASSWORD': 'kwaba-test'},
 }
 
 

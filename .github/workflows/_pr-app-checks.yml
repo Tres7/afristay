@@ -27,20 +27,20 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_DB: afristay
-          POSTGRES_USER: afristay
+          POSTGRES_DB: kwaba
+          POSTGRES_USER: kwaba
           POSTGRES_PASSWORD: ci
         ports: ['5432:5432']
         options: >-
-          --health-cmd "pg_isready -U afristay"
+          --health-cmd "pg_isready -U kwaba"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
     env:
       POSTGRES_HOST: localhost
       POSTGRES_PORT: '5432'
-      POSTGRES_DB: afristay
-      POSTGRES_USER: afristay
+      POSTGRES_DB: kwaba
+      POSTGRES_USER: kwaba
       POSTGRES_PASSWORD: ci
       DJANGO_SECRET_KEY: ci-only-secret-key-never-used-outside-github-actions-0123456789
       DJANGO_DEBUG: 'False'
