@@ -115,6 +115,13 @@ class HebergementListView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        from apps.contrats import preinscription  # local import: contrats depends on this app
+        if preinscription.requise(request.user):
+            return Response(
+                {'detail': "Acceptez d'abord la pré-inscription pour créer votre annonce.", 'code': 'preinscription_requise'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         try:
             verifications.verifier_limite_annonces(request.user)
         except verifications.VerificationErreur as exc:

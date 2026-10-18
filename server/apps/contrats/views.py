@@ -7,12 +7,13 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from config import prelancement
 from apps.documents.models import ParametresSocieteModel
 from apps.securite.audit import journaliser
 from apps.securite.limites import ip_client, limite_ip
 from apps.securite.permissions import EstAdministrateur
 
-from . import services
+from . import preinscription, services
 from .models import TYPES, ContratModel, ModeleContratModel
 from .pdf import contrat_pdf
 
@@ -336,3 +337,36 @@ class ModeleAdminView(APIView):
             journaliser('backoffice_modification', request, utilisateur=request.user, objet='modele_contrat', id=modele.type,
                         champs=['titre', 'corps'], version=modele.version)
         return Response(_modele(modele))
+
+
+class PreinscriptionView(APIView):
+    """Pre-launch pre-registration of the connected host.
+
+    GET : {requise, acceptee, version, texte} in the site's language (Accept-Language).
+    POST {accepte: true, version, langue} : records the acceptance with its date, IP address and browser.
+    """
+    permission_classes = [EstHote]
+
+    def get_throttles(self):
+        return [LimiteSignature()] if self.request.method == 'POST' else []
+
+    def get(self, request):
+        langue = preinscription.langue_de(request.headers.get('Accept-Language', ''))
+        return Response({
+            'requise': prelancement.actif(), 'acceptee': preinscription.acceptee(request.user),
+            'version': preinscription.VERSION, 'langue': langue, 'texte': preinscription.TEXTES[langue],
+        })
+
+    def post(self, request):
+        if request.data.get('accepte') is not True:
+            return Response({'accepte': ["Cochez la case pour accepter la pré-inscription."]}, status=status.HTTP_400_BAD_REQUEST)
+        # The host accepts the text they read: a newer version must be read first
+        if request.data.get('version') != preinscription.VERSION:
+            return Response({'detail': "Le texte de pré-inscription a changé : relisez-le avant de l'accepter.",
+                             'code': 'version_perimee'}, status=status.HTTP_409_CONFLICT)
+        langue = request.data.get('langue')
+        if langue not in preinscription.LANGUES:
+            return Response({'langue': ['Langue inconnue.']}, status=status.HTTP_400_BAD_REQUEST)
+        preinscription.accepter(request.user, langue=langue, ip=ip_client(request),
+                                user_agent=request.META.get('HTTP_USER_AGENT', ''))
+        return Response({'acceptee': True}, status=status.HTTP_201_CREATED)

@@ -40,3 +40,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT, UPDATE ON SEQUENC
 
 -- Journal d'audit : l'application ajoute des lignes mais ne peut ni les modifier ni les effacer
 REVOKE UPDATE, DELETE ON securite_journal_audit FROM kwaba_app;
+
+-- Hosts' pre-registration proofs (contrats_preinscription): same rule as the audit log.
+-- The table is created by the contrats 0005 migration: run this script again after that migration.
+REVOKE UPDATE, DELETE ON contrats_preinscription FROM kwaba_app;

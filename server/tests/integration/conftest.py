@@ -27,6 +27,12 @@ def _paiement_hors_ligne(settings):
 
 
 @pytest.fixture(autouse=True)
+def _site_ouvert(settings):
+    # Site open by default, whatever a local server/.env says; pre-launch tests turn it on themselves
+    settings.PRELANCEMENT = False
+
+
+@pytest.fixture(autouse=True)
 def _broker_down(monkeypatch):
     """Sans RabbitMQ, FallbackEventBus envoie l'email directement (mail.outbox).
 

@@ -102,3 +102,24 @@ class ContratModel(models.Model):
 
     def __str__(self):
         return f"{self.reference} · {self.get_type_display()} · {self.partie_nom}"
+
+
+class PreinscriptionModel(models.Model):
+    """Pre-launch: a host accepted the pre-registration text before creating listings (preinscription.py).
+
+    One row per host and text version, never modified: proof of what was accepted, when and from where.
+    """
+    hote = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='preinscriptions')
+    version = models.PositiveIntegerField()
+    langue = models.CharField(max_length=2)
+    empreinte_texte = models.CharField(max_length=64, help_text='SHA-256 du texte accepté, dans la langue affichée')
+    accepte_le = models.DateTimeField(auto_now_add=True)
+    ip = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.CharField(max_length=300, blank=True)
+
+    class Meta:
+        db_table = 'contrats_preinscription'
+        ordering = ['-accepte_le']
+        verbose_name = 'Pré-inscription hôte'
+        verbose_name_plural = 'Pré-inscriptions hôtes'
+        constraints = [models.UniqueConstraint(fields=['hote', 'version'], name='une_preinscription_par_version')]

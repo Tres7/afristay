@@ -28,3 +28,12 @@ export interface SignatureContrat {
   signature: string;
   accepte: boolean;
 }
+
+/** Pre-launch pre-registration of the connected host (GET /v1/contrats/preinscription/). */
+export interface Preinscription {
+  requise: boolean;
+  acceptee: boolean;
+  version: number;
+  langue: "fr" | "en";
+  texte: string;
+}
