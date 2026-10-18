@@ -9,6 +9,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from config import prelancement
 from apps.notifications.infrastructure.email.envoi import send_mail
 from apps.securite.audit import journaliser
 from apps.securite.limites import limite_ip
@@ -26,10 +27,17 @@ class InscriptionSerializer(serializers.Serializer):
 
 
 class InscriptionLancementView(APIView):
-    """POST {email, langue} : être prévenu de l'ouverture. Même réponse si l'adresse est déjà inscrite."""
+    """GET : mode pré-lancement actif ou non. POST {email, langue} : être prévenu de l'ouverture. Même réponse si
+    l'adresse est déjà inscrite."""
     permission_classes = [AllowAny]
     authentication_classes = []
-    throttle_classes = [limite_ip('lancement', 10, 3600)]
+
+    def get_throttles(self):
+        # Only sign-ups are limited; the status is read by every page of the site
+        return [limite_ip('lancement', 10, 3600)()] if self.request.method == 'POST' else []
+
+    def get(self, request):
+        return Response({'prelancement': prelancement.actif()})
 
     def post(self, request):
         donnees = InscriptionSerializer(data=request.data)

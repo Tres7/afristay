@@ -7,6 +7,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from config.prelancement import verifier_ouverture
 from apps.paiements import services as paiements
 from apps.paiements.views import CompteRemboursementSerializer
 from apps.reservations.models import ReservationModel
@@ -167,6 +168,7 @@ class TransfertsView(APIView):
         return Response({'results': data, 'count': len(data)})
 
     def post(self, request):
+        verifier_ouverture()
         serializer = TransfertCreationSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         try:
@@ -206,6 +208,7 @@ class PayerTransfertView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):
+        verifier_ouverture()
         transfert = _du_voyageur(pk, request.user)
         if not transfert:
             return Response({'detail': 'Transfert introuvable.'}, status=status.HTTP_404_NOT_FOUND)

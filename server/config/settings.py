@@ -248,6 +248,9 @@ FEDAPAY = {
 # en production, elle est refusée (« paiement momentanément indisponible ») au lieu d'être confirmée gratuitement.
 PAIEMENT_HORS_LIGNE = _env_bool('PAIEMENT_HORS_LIGNE', str(DEBUG))
 
+# Pre-launch mode: listings hidden from the public, no booking or payment until the opening (config/prelancement.py)
+PRELANCEMENT = _env_bool('PRELANCEMENT', 'False')
+
 # PayPal (paiement en euros). Sans identifiants, PayPal n'est pas proposé.
 # Les versements aux hôtes passent toujours par FedaPay.
 PAYPAL = {

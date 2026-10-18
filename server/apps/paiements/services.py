@@ -18,6 +18,7 @@ from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 
+from config import prelancement
 from apps.hebergements.disponibilites import conflit, verrouiller
 from apps.reservations.models import ReservationModel
 
@@ -92,6 +93,9 @@ def paiement_reussi(reservation) -> PaiementModel | None:
 def creer_paiement(*, objet, montant: int, moyen: str, description: str, url_retour: str, voyageur) -> str:
     """Crée la transaction chez le prestataire pour `objet` (réservation, transfert ou don) et renvoie
     l'adresse de la page de paiement. `url_retour` : page du site où le voyageur revient."""
+    # Backstop: the views already refuse in pre-launch mode, no payment may ever be created before the opening
+    if prelancement.actif():
+        raise PaiementErreur(prelancement.MESSAGE)
     if moyen not in moyens_actifs():
         raise PaiementErreur("Ce moyen de paiement n'est pas disponible.")
     cible = {CIBLES[objet._meta.model_name]: objet}
