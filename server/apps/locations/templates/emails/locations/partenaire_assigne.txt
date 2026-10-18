@@ -9,7 +9,8 @@ Votre véhicule du {{ debut }} est attribué :
 {% endif %}
   Prise : {{ prise }}
   Retour : {{ fin }}, {{ retour }}
-{% if caution %}  Caution à régler au loueur à la remise du véhicule : {{ caution }}
+{% if caution_en_ligne %}  Caution : {{ caution }}, déjà payée et gardée par Kwa-Ba : vous ne réglez rien au loueur. Elle vous est remboursée {{ restitution_heures }} h après le retour, moins les éventuels dommages constatés.
+{% elif caution %}  Caution à régler au loueur à la remise du véhicule : {{ caution }}
 {% endif %}{% if not avec_chauffeur %}  Pensez à votre permis de conduire et à une pièce d'identité.
 {% endif %}
 Un souci ? Assistance Kwa-Ba : {{ assistance }}

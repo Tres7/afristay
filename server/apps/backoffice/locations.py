@@ -25,7 +25,8 @@ from .views import _motif, _nom, _paginer
 class ParametresSerializer(serializers.ModelSerializer):
     class Meta:
         model = ParametresLocationModel
-        fields = ['commission_pourcent', 'delai_min_jours', 'duree_max_jours', 'annulation_gratuite_heures', 'conditions']
+        fields = ['commission_pourcent', 'delai_min_jours', 'duree_max_jours', 'annulation_gratuite_heures', 'conditions',
+                  'caution_en_ligne', 'restitution_caution_heures']
 
 
 class ParametresView(APIView):
@@ -206,6 +207,8 @@ def _location(loc: LocationModel) -> dict:
         'lieu_retour': loc.lieu_retour.nom, 'adresse_retour': loc.adresse_retour,
         'debut': loc.debut, 'fin': loc.fin, 'jours': loc.jours, 'passagers': loc.passagers,
         'prix': loc.prix, 'caution': loc.caution, 'precisions': loc.precisions,
+        'caution_en_ligne': bool(loc.caution_gardee), 'caution_retenue': loc.caution_retenue,
+        'caution_motif': loc.caution_motif, 'caution_restituee_le': loc.caution_restituee_le,
         'conducteur': loc.conducteur, 'permis_numero': loc.permis_numero, 'permis_pays': loc.permis_pays,
         'partenaire': {'id': loc.partenaire_id, 'nom': loc.partenaire.nom} if loc.partenaire_id else None,
         'vehicule': loc.vehicule, 'immatriculation': loc.immatriculation,
@@ -277,6 +280,30 @@ class LocationAttribuerView(APIView):
             return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
         journaliser("backoffice_modification", request, utilisateur=request.user, objet="location",
                     id=str(loc.pk), libelle=loc.reference, partenaire=partenaire.nom)
+        return Response(_location(_locations().get(pk=pk)))
+
+
+class RetenueSerializer(serializers.Serializer):
+    montant = serializers.IntegerField(min_value=0)
+    motif = serializers.CharField(max_length=255, required=False, allow_blank=True, default='')
+
+
+class LocationCautionView(APIView):
+    """Retenue sur la caution (dommage signalé par le loueur), avant sa restitution au voyageur ; 0 l'annule."""
+    permission_classes = [EstAdministrateur]
+
+    def post(self, request, pk):
+        loc = _locations().filter(pk=pk).first()
+        if not loc:
+            return Response({'detail': 'Location introuvable.'}, status=status.HTTP_404_NOT_FOUND)
+        donnees = RetenueSerializer(data=request.data)
+        donnees.is_valid(raise_exception=True)
+        try:
+            services.retenir_caution(loc, **donnees.validated_data)
+        except services.LocationErreur as exc:
+            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        journaliser("backoffice_modification", request, utilisateur=request.user, objet="location", id=str(loc.pk),
+                    libelle=loc.reference, operation="retenue_caution", **donnees.validated_data)
         return Response(_location(_locations().get(pk=pk)))
 
 

@@ -50,6 +50,7 @@ class CatalogueView(APIView):
             'regles': {
                 'delai_min_jours': params.delai_min_jours, 'duree_max_jours': params.duree_max_jours,
                 'annulation_gratuite_heures': params.annulation_gratuite_heures, 'conditions': params.conditions,
+                'caution_en_ligne': params.caution_en_ligne, 'restitution_caution_heures': params.restitution_caution_heures,
             },
             'categories': [_categorie_json(request, c) for c in services.categories_proposees()],
             'lieux': [_lieu_json(lieu) for lieu in LieuRemiseModel.objects.filter(actif=True)],
@@ -91,8 +92,10 @@ class DevisView(APIView):
             devis = services.chiffrer(params, categorie, q.get('formule', ''), lieu_prise, lieu_retour, debut, fin)
         except services.LocationErreur as exc:
             return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        caution_en_ligne = params.caution_en_ligne and devis.caution > 0
         return Response({'jours': devis.jours, 'prix_jour': devis.prix_jour, 'frais_lieux': devis.frais_lieux,
-                         'prix': devis.prix, 'caution': devis.caution})
+                         'prix': devis.prix, 'caution': devis.caution, 'caution_en_ligne': caution_en_ligne,
+                         'a_payer': devis.prix + (devis.caution if caution_en_ligne else 0)})
 
 
 def _entier(valeur):
@@ -110,6 +113,8 @@ class LocationSerializer(serializers.ModelSerializer):
     debut_locale = serializers.SerializerMethodField()
     fin_locale = serializers.SerializerMethodField()
     vehicule_attribue = serializers.SerializerMethodField()
+    a_payer = serializers.IntegerField(source='montant_a_payer', read_only=True)
+    caution_etat = serializers.SerializerMethodField()
     paiement = serializers.SerializerMethodField()
     remboursement = serializers.SerializerMethodField()
     annulation_gratuite = serializers.SerializerMethodField()
@@ -120,7 +125,8 @@ class LocationSerializer(serializers.ModelSerializer):
             'id', 'reference', 'categorie', 'categorie_detail', 'formule', 'lieu_prise', 'lieu_prise_detail',
             'adresse_prise', 'lieu_retour', 'lieu_retour_detail', 'adresse_retour', 'debut', 'fin', 'debut_locale',
             'fin_locale', 'passagers', 'telephone', 'precisions', 'conducteur', 'permis_numero', 'permis_pays',
-            'reservation', 'jours', 'prix_jour', 'frais_lieux', 'prix', 'caution', 'moyen', 'statut', 'expire_le',
+            'reservation', 'jours', 'prix_jour', 'frais_lieux', 'prix', 'caution', 'caution_en_ligne', 'a_payer',
+            'caution_etat', 'moyen', 'statut', 'expire_le',
             'annulee_par', 'vehicule_attribue', 'paiement', 'remboursement', 'annulation_gratuite', 'cree_le',
         ]
 
@@ -145,6 +151,14 @@ class LocationSerializer(serializers.ModelSerializer):
         if not obj.partenaire_id or obj.statut not in ('partenaire_assigne', 'terminee'):
             return None
         return {'vehicule': obj.vehicule, 'immatriculation': obj.immatriculation}
+
+    def get_caution_etat(self, obj):
+        """Caution gardée par Kwa-Ba : rendue ou non, retenue et motif, délai de restitution après le retour."""
+        if not obj.caution_gardee:
+            return None
+        params = ParametresLocationModel.courants()
+        return {'restituee': obj.caution_restituee_le is not None, 'retenue': obj.caution_retenue,
+                'motif': obj.caution_motif, 'restitution_heures': params.restitution_caution_heures if params else 24}
 
     def get_paiement(self, obj):
         dernier = max(obj.paiements.all(), key=lambda p: p.cree_le, default=None)

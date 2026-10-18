@@ -9,7 +9,7 @@ from django.utils import formats, timezone
 from apps.paiements.notifications import _admins, _documents, _envoyer, _fcfa, alerte_admin
 from apps.securite import coordonnees
 
-from .models import LocationModel, VersementPartenaireModel
+from .models import LocationModel, ParametresLocationModel, VersementPartenaireModel
 
 logger = logging.getLogger('apps.locations.notifications')
 
@@ -18,6 +18,11 @@ ALERTE_SANS_PARTENAIRE = timedelta(hours=48)
 
 def _date(location: LocationModel, moment) -> str:
     return formats.date_format(moment.astimezone(ZoneInfo(location.lieu_prise.fuseau)), 'l j F Y à H\\hi')
+
+
+def _restitution_heures() -> int:
+    params = ParametresLocationModel.courants()
+    return params.restitution_caution_heures if params else 24
 
 
 def _location(loc: LocationModel) -> dict:
@@ -30,13 +35,14 @@ def _location(loc: LocationModel) -> dict:
         'precisions': loc.precisions, 'voyageur': f"{loc.voyageur.first_name} {loc.voyageur.last_name}".strip(),
         'telephone_voyageur': loc.telephone, 'conducteur': loc.conducteur, 'permis': loc.permis_numero,
         'permis_pays': loc.permis_pays, 'caution': _fcfa(loc.caution) if loc.caution else '',
+        'caution_en_ligne': bool(loc.caution_gardee), 'restitution_heures': _restitution_heures(),
         'url': f"{settings.FRONTEND_URL}/location/{loc.id}",
     }
 
 
 def confirmee(loc: LocationModel):
     _envoyer('emails/locations/location_confirmee.txt', f"Location confirmée : {loc.lieu_prise.ville}", [loc.voyageur.email], {
-        **_location(loc), 'prenom': loc.voyageur.first_name, 'montant': _fcfa(loc.prix),
+        **_location(loc), 'prenom': loc.voyageur.first_name, 'montant': _fcfa(loc.montant_a_payer),
     }, pieces_jointes=_documents(loc))
 
 
@@ -85,7 +91,19 @@ def versement_au_partenaire(v: VersementPartenaireModel):
         return
     _envoyer('emails/locations/versement_partenaire.txt', f"Versement de {_fcfa(v.montant)} envoyé", [p.email], {
         'contact': p.contact, 'reference': loc.reference, 'debut': _date(loc, loc.debut), 'montant': _fcfa(v.montant),
-        'montant_brut': _fcfa(v.montant_brut), 'commission': _fcfa(v.commission),
+        'montant_brut': _fcfa(loc.prix), 'commission': _fcfa(v.commission),
+        'retenue': _fcfa(loc.caution_retenue) if loc.caution_retenue else '', 'motif': loc.caution_motif,
+    })
+
+
+def caution_au_voyageur(loc: LocationModel):
+    """Restitution de la caution : montant rendu, retenue et son motif ; numéro Mobile Money à indiquer si besoin."""
+    rendu = loc.caution - loc.caution_retenue
+    _envoyer('emails/locations/caution_restituee.txt', f"Restitution de votre caution : {loc.reference}", [loc.voyageur.email], {
+        'prenom': loc.voyageur.first_name, 'reference': loc.reference, 'caution': _fcfa(loc.caution),
+        'rendu': _fcfa(rendu), 'retenue': _fcfa(loc.caution_retenue) if loc.caution_retenue else '',
+        'motif': loc.caution_motif, 'numero_requis': loc.remboursements.filter(statut='attente_numero').exists(),
+        'url': f"{settings.FRONTEND_URL}/location/{loc.id}", 'assistance': settings.ASSISTANCE_CONTACT,
     })
 
 
@@ -114,6 +132,11 @@ def envoyer_notifications() -> int:
     assignees = qs.filter(statut='partenaire_assigne')
     total += _traiter(assignees.filter(partenaire_notifie=False), partenaire_au_voyageur, 'partenaire_notifie')
     total += _traiter(assignees.filter(location_envoyee_partenaire=False), location_au_partenaire, 'location_envoyee_partenaire')
+    total += _traiter(
+        qs.filter(statut__in=('partenaire_assigne', 'terminee'), caution_en_ligne=True, caution__gt=0,
+                  caution_restituee_le__isnull=False, caution_notifiee=False),
+        caution_au_voyageur, 'caution_notifiee',
+    )
 
     versements = VersementPartenaireModel.objects.select_related('partenaire', 'location__lieu_prise')
     total += _traiter(versements.filter(statut='envoye', notifie=False), versement_au_partenaire, 'notifie')

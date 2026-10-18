@@ -241,8 +241,11 @@ function FormulaireLocation({ catalogue, categorie, formule, onChanger }: {
           <dl className="space-y-1 text-sm">
             <div className="flex justify-between"><dt className="text-gray-600">{t("devisJours", { nombre: devis.data.jours, prix: formatPrice(devis.data.prix_jour) })}</dt><dd>{formatPrice(devis.data.prix_jour * devis.data.jours)}</dd></div>
             {devis.data.frais_lieux > 0 && <div className="flex justify-between"><dt className="text-gray-600">{t("frais")}</dt><dd>{formatPrice(devis.data.frais_lieux)}</dd></div>}
-            <div className="flex justify-between pt-2 font-heading font-bold text-dark text-lg"><dt>{t("total")}</dt><dd>{formatPrice(devis.data.prix)}</dd></div>
-            {devis.data.caution > 0 && <p className="text-xs text-gray-500 pt-1">{t("caution", { montant: formatPrice(devis.data.caution) })}</p>}
+            {devis.data.caution_en_ligne && <div className="flex justify-between"><dt className="text-gray-600">{t("cautionLigne")}</dt><dd>{formatPrice(devis.data.caution)}</dd></div>}
+            <div className="flex justify-between pt-2 font-heading font-bold text-dark text-lg"><dt>{t("total")}</dt><dd>{formatPrice(devis.data.a_payer)}</dd></div>
+            {devis.data.caution_en_ligne ? (
+              <p className="text-xs text-gray-500 pt-1">{t("cautionEnLigne", { heures: regles.restitution_caution_heures })}</p>
+            ) : devis.data.caution > 0 && <p className="text-xs text-gray-500 pt-1">{t("caution", { montant: formatPrice(devis.data.caution) })}</p>}
           </dl>
         ) : null}
         <button type="submit" disabled={envoi || !devis.data}

@@ -34,6 +34,16 @@ class ParametresLocationModel(models.Model):
     conditions = models.TextField(
         blank=True, help_text='Affiché au voyageur avant de réserver : âge minimum, permis, carburant, kilométrage…',
     )
+    caution_en_ligne = models.BooleanField(
+        default=True, db_default=True,
+        help_text="La caution est payée en ligne avec la location et gardée par Kwa-Ba jusqu'au retour du véhicule "
+                  "(sinon, le voyageur la règle au loueur à la remise)",
+    )
+    restitution_caution_heures = models.PositiveSmallIntegerField(
+        default=24, db_default=24, validators=[MinValueValidator(1)],
+        help_text='Après le retour, délai laissé au loueur pour signaler un dommage ; la caution, moins la retenue, '
+                  'est ensuite remboursée au voyageur',
+    )
     mis_a_jour_le = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -81,7 +91,8 @@ class CategorieVehiculeModel(models.Model):
         null=True, blank=True, help_text='FCFA par jour, chauffeur du loueur compris. Vide : formule non proposée',
     )
     caution = models.PositiveIntegerField(
-        default=0, help_text='FCFA, voiture sans chauffeur seulement, réglée au loueur à la remise du véhicule (0 : aucune)',
+        default=0, help_text="FCFA, voiture sans chauffeur seulement (0 : aucune). Payée en ligne et gardée par Kwa-Ba "
+                             "jusqu'au retour, selon les paramètres de la location",
     )
     actif = models.BooleanField(default=False, help_text='Proposée aux voyageurs (avec au moins un prix)')
     ordre = models.PositiveSmallIntegerField(default=0)
@@ -198,7 +209,14 @@ class LocationModel(models.Model):
     frais_lieux = models.PositiveIntegerField()
     prix = models.PositiveIntegerField(help_text='Total payé par le voyageur')
     commission = models.PositiveIntegerField()
-    caution = models.PositiveIntegerField(default=0, help_text='À régler au loueur à la remise du véhicule')
+    caution = models.PositiveIntegerField(default=0)
+    # Caution payée en ligne avec la location (figé à la réservation) : Kwa-Ba la garde jusqu'au retour, puis la
+    # rembourse au voyageur moins la retenue (dommages signalés par le loueur, versée à celui-ci). Sinon, réglée au
+    # loueur à la remise du véhicule (locations réservées avant la caution en ligne).
+    caution_en_ligne = models.BooleanField(default=False, db_default=False)
+    caution_retenue = models.PositiveIntegerField(default=0, db_default=0, help_text='Gardée sur la caution et versée au loueur')
+    caution_motif = models.CharField(max_length=255, blank=True, default='', db_default='', help_text='Motif de la retenue')
+    caution_restituee_le = models.DateTimeField(null=True, blank=True, help_text='Remboursement de la caution prévu')
     moyen = models.CharField(max_length=20, choices=MOYENS, default='mobile_money')
 
     statut = models.CharField(max_length=20, choices=STATUTS, default='en_attente_paiement')
@@ -219,6 +237,7 @@ class LocationModel(models.Model):
     alerte_sans_partenaire = models.BooleanField(default=False)
     partenaire_notifie = models.BooleanField(default=False, help_text='Coordonnées du loueur envoyées au voyageur')
     location_envoyee_partenaire = models.BooleanField(default=False)
+    caution_notifiee = models.BooleanField(default=False, db_default=False, help_text='Restitution de la caution annoncée au voyageur')
     cree_le = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -232,6 +251,16 @@ class LocationModel(models.Model):
     @property
     def reference(self):
         return f"LOC-{str(self.id)[:6].upper()}"
+
+    @property
+    def caution_gardee(self) -> int:
+        """Caution que Kwa-Ba encaisse avec la location (0 si elle est réglée au loueur)."""
+        return self.caution if self.caution_en_ligne else 0
+
+    @property
+    def montant_a_payer(self) -> int:
+        """Ce que le voyageur paie en ligne : la location et, le cas échéant, la caution."""
+        return self.prix + self.caution_gardee
 
     @property
     def montant_partenaire(self):

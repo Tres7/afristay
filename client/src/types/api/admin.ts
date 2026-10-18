@@ -88,6 +88,8 @@ export interface ReglesLocation {
   duree_max_jours: number;
   annulation_gratuite_heures: number;
   conditions: string;
+  caution_en_ligne: boolean;
+  restitution_caution_heures: number;
 }
 
 export type CategorieExperience = "activites" | "restaurants" | "loisirs" | "sites";
@@ -184,6 +186,10 @@ export interface AdminLocation {
   passagers: number;
   prix: number;
   caution: number;
+  caution_en_ligne: boolean;
+  caution_retenue: number;
+  caution_motif: string;
+  caution_restituee_le: string | null;
   precisions: string;
   conducteur: string;
   permis_numero: string;

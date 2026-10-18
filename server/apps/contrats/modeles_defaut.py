@@ -57,10 +57,13 @@ Le présent contrat fixe les conditions dans lesquelles le Loueur met des véhic
 Le voyageur réserve et paie en ligne au moins {{ tarifs.delai_location }} jours avant la prise du véhicule, selon une grille de prix fixe par catégorie et par jour. Kwa-Ba attribue la location au Loueur, qui l'accepte ou la refuse sans délai. Une fois acceptée, le Loueur s'engage à remettre le véhicule à la date, à l'heure et au lieu convenus.
 
 ## Engagements du Loueur
-Le Loueur remet un véhicule de la catégorie réservée, propre, en bon état de marche, assuré, avec des documents à jour (carte grise, assurance, visite technique). Lorsque la location est avec chauffeur, le chauffeur est titulaire d'un permis valide, courtois et ponctuel. Le Loueur peut demander une caution, dont le montant est affiché au voyageur avant le paiement ; elle est restituée au retour du véhicule en bon état.
+Le Loueur remet un véhicule de la catégorie réservée, propre, en bon état de marche, assuré, avec des documents à jour (carte grise, assurance, visite technique). Lorsque la location est avec chauffeur, le chauffeur est titulaire d'un permis valide, courtois et ponctuel. Le Loueur peut demander une caution, dont le montant est affiché au voyageur avant le paiement ; elle est réglée à Kwa-Ba selon l'article « Caution ».
 
 ## Prix, commission et versement
-Le voyageur règle en ligne le prix de la location à Kwa-Ba. Kwa-Ba retient une commission de {{ tarifs.commission_loueur }} et verse le solde au Loueur par Mobile Money vingt-quatre (24) heures après la fin de la location, sur le numéro communiqué à Kwa-Ba. Le Loueur ne demande aucun paiement complémentaire au voyageur, hors caution annoncée et dommages constatés contradictoirement.
+Le voyageur règle en ligne le prix de la location à Kwa-Ba. Kwa-Ba retient une commission de {{ tarifs.commission_loueur }} et verse le solde au Loueur par Mobile Money vingt-quatre (24) heures après la fin de la location, ou à la fin du délai de signalement des dommages lorsque la location comporte une caution, sur le numéro communiqué à Kwa-Ba. Le Loueur ne demande aucun paiement au voyageur, ni caution ni complément : tout passe par Kwa-Ba.
+
+## Caution
+La caution est payée en ligne par le voyageur à Kwa-Ba, qui la conserve pendant la location. Le Loueur signale à Kwa-Ba tout dommage ou carburant manquant constaté au retour du véhicule, photos à l'appui, dans les {{ tarifs.restitution_caution }} heures suivant la fin de la location. Kwa-Ba fixe le montant retenu, dans la limite de la caution, et le verse au Loueur avec la location, sans commission ; le solde est remboursé au voyageur. Passé ce délai, la caution est remboursée intégralement au voyageur.
 
 ## Incidents
 En cas de panne, d'accident ou de retard, le Loueur prévient immédiatement le voyageur et Kwa-Ba et propose une solution de remplacement. Une location non honorée par le Loueur est remboursée intégralement au voyageur et n'ouvre droit à aucun versement.

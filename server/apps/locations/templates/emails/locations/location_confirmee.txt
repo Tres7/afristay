@@ -6,7 +6,8 @@ Votre location est payée ({{ montant }}). Nous attribuons maintenant votre véh
   Prise : {{ debut }}, {{ prise }}
   Retour : {{ fin }}, {{ retour }}
   Durée : {{ jours }} jour(s) · {{ passagers }} personne(s)
-{% if caution %}  Caution à régler au loueur à la remise du véhicule : {{ caution }}
+{% if caution_en_ligne %}  Caution : {{ caution }}, comprise dans votre paiement et gardée par Kwa-Ba. Elle vous est remboursée {{ restitution_heures }} h après le retour du véhicule, moins les éventuels dommages constatés. Vous ne réglez rien au loueur.
+{% elif caution %}  Caution à régler au loueur à la remise du véhicule : {{ caution }}
 {% endif %}  Référence : {{ reference }}
 
 Votre location : {{ url }}

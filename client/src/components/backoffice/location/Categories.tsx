@@ -153,7 +153,7 @@ export default function Categories() {
           <Champ label="Prix / jour avec chauffeur" aide="Vide : formule non proposée" erreur={erreurs.prix_jour_avec_chauffeur}>
             <Saisie type="number" min={0} inputMode="numeric" value={form.prix_jour_avec_chauffeur} onChange={(e) => champ("prix_jour_avec_chauffeur")(e.target.value)} />
           </Champ>
-          <Champ label="Caution (FCFA)" aide="Réglée au loueur à la remise"><Saisie type="number" min={0} value={form.caution} onChange={(e) => champ("caution")(e.target.value)} /></Champ>
+          <Champ label="Caution (FCFA)" aide="Voiture seule ; payée en ligne et gardée par Kwa-Ba (voir Règles)"><Saisie type="number" min={0} value={form.caution} onChange={(e) => champ("caution")(e.target.value)} /></Champ>
           <Champ label="Ordre d'affichage"><Saisie type="number" min={0} value={form.ordre} onChange={(e) => champ("ordre")(e.target.value)} /></Champ>
         </div>
         <Champ label="Photos du véhicule" aide="JPEG, PNG ou WebP, 400 px minimum. La première est la photo principale.">

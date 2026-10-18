@@ -1,0 +1,15 @@
+{% autoescape off %}Bonjour {{ prenom }},
+
+Le délai de vérification du véhicule est terminé pour votre location {{ reference }}.
+
+  Caution payée : {{ caution }}
+{% if retenue %}  Retenue : {{ retenue }}{% if motif %} ({{ motif }}){% endif %}
+{% endif %}  Remboursé : {{ rendu }}
+
+{% if numero_requis %}Pour recevoir ce remboursement, indiquez votre numéro Mobile Money sur la page de votre location : {{ url }}
+{% else %}Le remboursement part sur le moyen de paiement utilisé ; selon votre opérateur ou votre banque, il peut mettre quelques jours à apparaître.
+{% endif %}
+Une question sur la retenue ? Assistance Kwa-Ba : {{ assistance }}
+
+L'équipe Kwa-Ba
+{% endautoescape %}

@@ -8,6 +8,11 @@
         → le worker paie le loueur et passe la location à « terminee »
     annulation par le voyageur : remboursement intégral jusqu'à `annulation_gratuite_heures` avant la prise, rien ensuite
     annulation par Kwa-Ba (aucun loueur disponible…) : remboursement intégral
+
+Caution (voiture seule) : payée en ligne avec la location et gardée par Kwa-Ba, le voyageur ne règle rien au loueur.
+Après le retour, le loueur a `restitution_caution_heures` pour signaler un dommage à Kwa-Ba, qui enregistre une
+retenue (back-office) ; la caution moins la retenue est alors remboursée au voyageur, la retenue versée au loueur avec
+la location. Une location annulée rend toujours la caution.
 """
 import logging
 import math
@@ -120,6 +125,7 @@ def creer(*, voyageur, categorie: CategorieVehiculeModel, formule: str, lieu_pri
         voyageur=voyageur, categorie=categorie, formule=formule, lieu_prise=lieu_prise, lieu_retour=lieu_retour,
         debut=debut, fin=fin, passagers=passagers, jours=devis.jours, prix_jour=devis.prix_jour,
         frais_lieux=devis.frais_lieux, prix=devis.prix, commission=devis.commission, caution=devis.caution,
+        caution_en_ligne=params.caution_en_ligne and devis.caution > 0,
         statut='en_attente_paiement' if en_ligne else 'confirmee',
         expire_le=timezone.now() + paiements.delai_paiement() if en_ligne else None,
         **champs,
@@ -135,7 +141,7 @@ def demarrer_paiement(location: LocationModel, moyen: str) -> str:
         location.moyen = moyen
         location.save(update_fields=['moyen'])
     return paiements.creer_paiement(
-        objet=location, montant=location.prix, moyen=moyen, voyageur=location.voyageur,
+        objet=location, montant=location.montant_a_payer, moyen=moyen, voyageur=location.voyageur,
         description=f"Kwa-Ba {location.reference}, location {location.categorie.nom}, {location.lieu_prise.ville}",
         url_retour=f"{settings.FRONTEND_URL}/location/{location.id}",
     )
@@ -163,6 +169,21 @@ def partenaires_disponibles(location: LocationModel):
     ).distinct()
 
 
+def _date_versement(location: LocationModel):
+    """Retour + 24 h ; avec une caution en ligne, pas avant la fin du délai de signalement des dommages, pour verser
+    la retenue éventuelle avec la location."""
+    delai = DELAI_VERSEMENT
+    if location.caution_gardee:
+        params = ParametresLocationModel.courants()
+        delai = max(delai, timedelta(hours=params.restitution_caution_heures if params else 24))
+    return location.fin + delai
+
+
+def _montants_versement(location: LocationModel) -> dict:
+    brut = location.prix + location.caution_retenue
+    return {'montant_brut': brut, 'commission': location.commission, 'montant': brut - location.commission}
+
+
 def assigner_partenaire(location: LocationModel, partenaire: PartenaireLocationModel, **vehicule):
     """Attribue (ou change) le loueur, enregistre le véhicule (et le chauffeur), planifie le versement."""
     with transaction.atomic():
@@ -180,8 +201,7 @@ def assigner_partenaire(location: LocationModel, partenaire: PartenaireLocationM
         VersementPartenaireModel.objects.update_or_create(
             location=location,
             defaults={
-                'partenaire': partenaire, 'montant_brut': location.prix, 'commission': location.commission,
-                'montant': location.montant_partenaire, 'date_prevue': location.fin + DELAI_VERSEMENT,
+                'partenaire': partenaire, **_montants_versement(location), 'date_prevue': _date_versement(location),
                 'statut': 'planifie',
             },
         )
@@ -211,13 +231,41 @@ def annuler(location: LocationModel, par: str) -> int:
                 VersementPartenaireModel.objects.filter(location=location, statut__in=('planifie', 'echoue')).update(
                     statut='annule',
                 )
-            # Hors délai d'annulation gratuite : le loueur a préparé le véhicule, il reste payé
+            # Hors délai d'annulation gratuite : le loueur a préparé le véhicule, il reste payé.
+            # La caution, elle, est toujours rendue : le véhicule n'a pas été remis
+            if location.caution_gardee and not location.caution_restituee_le:
+                rembourse += location.caution_gardee
+                location.caution_retenue, location.caution_restituee_le = 0, timezone.now()
             motif = "Annulation par le voyageur" if par == 'voyageur' else "Annulation par Kwa-Ba"
             paiements.rembourser(paiement, rembourse, motif)
 
         location.statut, location.annulee_par, location.annulee_le = 'annulee', par, timezone.now()
-        location.save(update_fields=['statut', 'annulee_par', 'annulee_le'])
+        location.save(update_fields=['statut', 'annulee_par', 'annulee_le', 'caution_retenue', 'caution_restituee_le'])
         return rembourse
+
+
+def retenir_caution(location: LocationModel, montant: int, motif: str) -> LocationModel:
+    """Retenue sur la caution (dommage, carburant manquant… signalé par le loueur), avant sa restitution. Elle est
+    versée au loueur avec la location ; 0 annule la retenue."""
+    with transaction.atomic():
+        location = LocationModel.objects.select_for_update().get(pk=location.pk)
+        if not location.caution_gardee:
+            raise LocationErreur("Cette location n'a pas de caution gardée par Kwa-Ba.")
+        if location.statut != 'partenaire_assigne' or location.caution_restituee_le:
+            raise LocationErreur("La caution a déjà été restituée, ou la location n'est plus en cours.")
+        if location.debut > timezone.now():
+            raise LocationErreur("Le véhicule n'a pas encore été remis : rien à retenir sur la caution.")
+        if not 0 <= montant <= location.caution:
+            raise LocationErreur(f"La retenue doit être comprise entre 0 et la caution ({location.caution} FCFA).")
+        if montant and not motif.strip():
+            raise LocationErreur("Indiquez le motif de la retenue : il est communiqué au voyageur.")
+        location.caution_retenue, location.caution_motif = montant, motif.strip() if montant else ''
+        location.save(update_fields=['caution_retenue', 'caution_motif'])
+        VersementPartenaireModel.objects.filter(location=location, statut__in=('planifie', 'echoue')).update(
+            **_montants_versement(location),
+        )
+    logger.info("Retenue de %s FCFA sur la caution de %s", montant, location.reference)
+    return location
 
 
 # --- Worker ------------------------------------------------------------------------------
@@ -234,12 +282,38 @@ def expirer() -> int:
     return expirees
 
 
+def restituer_cautions() -> int:
+    """Fin du délai de signalement des dommages : rembourse au voyageur la caution moins la retenue."""
+    params = ParametresLocationModel.courants()
+    limite = timezone.now() - timedelta(hours=params.restitution_caution_heures if params else 24)
+    restituees = 0
+    a_restituer = LocationModel.objects.filter(
+        statut='partenaire_assigne', caution_en_ligne=True, caution__gt=0, caution_restituee_le__isnull=True,
+        fin__lte=limite,
+    ).values_list('pk', flat=True)[:50]
+    for pk in a_restituer:
+        with transaction.atomic():
+            loc = LocationModel.objects.select_for_update().get(pk=pk)
+            if loc.caution_restituee_le:
+                continue
+            paiement = loc.paiements.filter(statut='reussi').order_by('cree_le').first()
+            if paiement:
+                paiements.rembourser(paiement, loc.caution - loc.caution_retenue, "Restitution de la caution")
+            loc.caution_restituee_le = timezone.now()
+            loc.save(update_fields=['caution_restituee_le'])
+            restituees += 1
+    return restituees
+
+
 def envoyer_versements_partenaires() -> int:
     if not paiements.fedapay_actif():
         return 0
     envoyes = 0
+    # Caution en ligne : le loueur est payé une fois la caution réglée (la retenue éventuelle s'ajoute à son versement)
     dus = VersementPartenaireModel.objects.filter(
         statut='planifie', date_prevue__lte=timezone.now(), location__statut='partenaire_assigne',
+    ).exclude(
+        location__caution_en_ligne=True, location__caution__gt=0, location__caution_restituee_le__isnull=True,
     ).select_related('partenaire')[:50]
     for v in dus:
         p = v.partenaire
@@ -259,6 +333,7 @@ def passe() -> dict:
 
     return {
         'locations_expirees': expirer(),
+        'cautions_restituees': restituer_cautions(),
         'versements_loueurs': envoyer_versements_partenaires(),
         'emails_locations': notifications.envoyer_notifications(),
     }
