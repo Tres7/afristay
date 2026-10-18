@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      IMAGE: afristay-server:pr-${{ github.event.pull_request.number || github.run_id }}
+      IMAGE: kwaba-server:pr-${{ github.event.pull_request.number || github.run_id }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -67,7 +67,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      IMAGE: afristay-client:pr-${{ github.event.pull_request.number || github.run_id }}
+      IMAGE: kwaba-client:pr-${{ github.event.pull_request.number || github.run_id }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

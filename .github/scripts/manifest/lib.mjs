@@ -47,19 +47,28 @@ export function lastCommitTouching(path, cwd = '.') {
 
 export const SCHEMA_VERSION = 2;
 
-/** Un service doit-il être reconstruit ? Oui s'il a changé, ou si le manifest précédent ne l'avait pas en image (v1). */
-function needsImage(previousService, revision) {
-  return !previousService || previousService.kind !== 'image' || previousService.sourceRevision !== revision;
+/** Image repository of a service (GHCR requires lowercase). _main-push-image.yml pushes to the same name. */
+export function imageRepository(owner, service) {
+  return `ghcr.io/${owner.toLowerCase()}/kwaba-${service}`;
+}
+
+/**
+ * Must a service be rebuilt? Yes if it changed, if the previous manifest had no image for it (v1), or if its image
+ * is not in the expected repository (afristay-* → kwaba-* rename: both images switch at once).
+ */
+function needsImage(previousService, revision, repository) {
+  return !previousService || previousService.kind !== 'image' || previousService.sourceRevision !== revision
+    || (repository !== undefined && previousService.image.split('@')[0] !== repository);
 }
 
 /**
  * Compare l'état de main au dernier manifest : une image n'est reconstruite que pour un service qui a changé ;
  * sans aucun changement, aucun manifest n'est créé.
  */
-export function plan({ previous, serverRevision, clientRevision }) {
+export function plan({ previous, serverRevision, clientRevision, repositories = {} }) {
   const services = previous?.data.services;
-  const buildServer = needsImage(services?.server, serverRevision);
-  const buildClient = needsImage(services?.client, clientRevision);
+  const buildServer = needsImage(services?.server, serverRevision, repositories.server);
+  const buildClient = needsImage(services?.client, clientRevision, repositories.client);
   return { buildServer, buildClient, changed: buildServer || buildClient };
 }
 

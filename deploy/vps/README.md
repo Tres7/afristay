@@ -5,8 +5,8 @@ Tout tourne sur un seul VPS (Ubuntu 24.04), en Docker Compose, dans `/opt/kwaba`
 | Service | Rôle | Exposé |
 | --- | --- | --- |
 | `nginx` | HTTPS (Let's Encrypt), redirections, routage : `/api/auth/*` → client, `/api/*` `/admin/*` `/static/*` → API, `/photos/*` → bucket R2 (avec cache), le reste → client | 80, 443 |
-| `client` | Site Next.js (image `afristay-client`, par digest) | non |
-| `api` | API Django / Gunicorn (image `afristay-server`, par digest) | non |
+| `client` | Site Next.js (image `kwaba-client`, par digest) | non |
+| `api` | API Django / Gunicorn (image `kwaba-server`, par digest) | non |
 | `consumer`, `relay`, `payments` | Emails (RabbitMQ), relais de la messagerie, worker des paiements (même image que l'API) | non |
 | `postgres`, `rabbitmq` | Base et broker, volumes persistants, sur un réseau interne sans accès à Internet | non |
 
@@ -105,7 +105,7 @@ Toute la chaîne se teste sur un poste avec Docker, sans VPS : images construite
 
 ```bash
 export COMPOSE_PROJECT_NAME=kwabatest HTTP_PORT=18080 HTTPS_PORT=18443
-KWABA_SKIP_PULL=1 KWABA_HEALTH_CURL_OPTS=-k scripts/deploy.sh essai afristay-server:prod afristay-client:prod
+KWABA_SKIP_PULL=1 KWABA_HEALTH_CURL_OPTS=-k scripts/deploy.sh essai kwaba-server:prod kwaba-client:prod
 ```
 
 En développement (`compose.yaml` à la racine), RabbitMQ est en version 4 : si un ancien volume RabbitMQ 3 l'empêche de démarrer, supprimer ce volume de développement (`docker volume rm kwaba_rabbitmq_data`).
