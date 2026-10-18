@@ -6,14 +6,18 @@ import { dirname, join } from 'node:path';
 import { describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-import { buildManifest, deployTarget, fileName, loadValidator, plan, toYaml, validateAll } from '../lib.mjs';
+import { buildManifest, deployTarget, fileName, imageRepository, loadValidator, plan, toYaml, validateAll } from '../lib.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRIPTS = dirname(HERE);
 const SCHEMA = join(SCRIPTS, '..', '..', '..', 'deploy', 'manifests', 'schema.json');
 const SHA = (c) => c.repeat(40);
-const IMAGE = `ghcr.io/tres7/afristay-server@sha256:${'0'.repeat(64)}`;
-const CLIENT_IMAGE = `ghcr.io/tres7/afristay-client@sha256:${'1'.repeat(64)}`;
+const IMAGE = `ghcr.io/tres7/kwaba-server@sha256:${'0'.repeat(64)}`;
+const CLIENT_IMAGE = `ghcr.io/tres7/kwaba-client@sha256:${'1'.repeat(64)}`;
+// Image names before the AfriStay → Kwa-Ba rename, still found in older manifests
+const OLD_IMAGE = IMAGE.replace('kwaba-', 'afristay-');
+const OLD_CLIENT_IMAGE = CLIENT_IMAGE.replace('kwaba-', 'afristay-');
+const REPOSITORIES = { server: imageRepository('Tres7', 'server'), client: imageRepository('Tres7', 'client') };
 
 function manifest(version, overrides = {}) {
   return {
@@ -77,6 +81,19 @@ describe('plan', () => {
   test('previous manifest in v1 (client from Git): the client image must be built', () => {
     assert.deepEqual(plan({ previous: { data: legacyManifest(1) }, serverRevision: SHA('b'), clientRevision: SHA('c') }),
       { buildServer: false, buildClient: true, changed: true });
+  });
+
+  test('images already in the expected repositories: nothing to rebuild', () => {
+    assert.deepEqual(plan({ previous, serverRevision: SHA('b'), clientRevision: SHA('c'), repositories: REPOSITORIES }),
+      { buildServer: false, buildClient: false, changed: false });
+  });
+
+  test('images still under the old name: both are rebuilt, even if unchanged', () => {
+    const renamed = manifest(1);
+    renamed.services.server.image = OLD_IMAGE;
+    renamed.services.client.image = OLD_CLIENT_IMAGE;
+    assert.deepEqual(plan({ previous: { data: renamed }, serverRevision: SHA('b'), clientRevision: SHA('c'), repositories: REPOSITORIES }),
+      { buildServer: true, buildClient: true, changed: true });
   });
 });
 
@@ -143,8 +160,16 @@ describe('validateAll', () => {
     assert.match(validateAll(dir, validate).join(), /strictement supérieure/);
   });
 
+  test('accepts older manifests with the images named before the rename (rollback)', () => {
+    const before = manifest(1);
+    before.services.server.image = OLD_IMAGE;
+    before.services.client.image = OLD_CLIENT_IMAGE;
+    const dir = manifestsDir(['manifest-0001-aaaaaaa.yaml', before], ['manifest-0002-bbbbbbb.yaml', manifest(2, { sourceRevision: SHA('b') })]);
+    assert.deepEqual(validateAll(dir, validate), []);
+  });
+
   test('rejects an image outside the project registry or not pinned by digest', () => {
-    for (const image of ['docker.io/library/nginx@sha256:' + '0'.repeat(64), 'ghcr.io/tres7/afristay-server:main']) {
+    for (const image of ['docker.io/library/nginx@sha256:' + '0'.repeat(64), 'ghcr.io/tres7/kwaba-server:main']) {
       const bad = manifest(1);
       bad.services.server.image = image;
       const dir = manifestsDir(['manifest-0001-aaaaaaa.yaml', bad]);

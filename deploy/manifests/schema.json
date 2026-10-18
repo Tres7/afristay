@@ -31,7 +31,7 @@
       "properties": {
         "kind": { "const": "image" },
         "sourceRevision": { "$ref": "#/$defs/sha" },
-        "image": { "type": "string", "pattern": "^ghcr\\.io/tres7/afristay-server@sha256:[a-f0-9]{64}$" }
+        "image": { "type": "string", "pattern": "^ghcr\\.io/tres7/(afristay|kwaba)-server@sha256:[a-f0-9]{64}$" }
       }
     },
     "clientImage": {
@@ -41,7 +41,7 @@
       "properties": {
         "kind": { "const": "image" },
         "sourceRevision": { "$ref": "#/$defs/sha" },
-        "image": { "type": "string", "pattern": "^ghcr\\.io/tres7/afristay-client@sha256:[a-f0-9]{64}$" }
+        "image": { "type": "string", "pattern": "^ghcr\\.io/tres7/(afristay|kwaba)-client@sha256:[a-f0-9]{64}$" }
       }
     },
     "gitService": {
