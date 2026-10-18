@@ -29,7 +29,7 @@ class FallbackEventBus(EventPublisher):
             self._primary.publish(event)
             return
         except Exception as e:
-            logger.warning("RabbitMQ indisponible (%s) — traitement direct de %s", e, event.event)
+            logger.warning("RabbitMQ indisponible (%s) : traitement direct de %s", e, event.event)
 
         data = event.__dict__
         try:

@@ -74,7 +74,6 @@ class CategorieVehiculeModel(models.Model):
     boite = models.CharField(max_length=20, choices=BOITES)
     carburant = models.CharField(max_length=20, choices=CARBURANTS, default='essence')
     climatisation = models.BooleanField(default=True)
-    image = models.ImageField(upload_to='locations/', blank=True)
     prix_jour_sans_chauffeur = models.PositiveIntegerField(
         null=True, blank=True, help_text='FCFA par jour, le voyageur conduit. Vide : formule non proposée',
     )
@@ -99,9 +98,27 @@ class CategorieVehiculeModel(models.Model):
         return self.prix_jour_avec_chauffeur if formule == 'avec_chauffeur' else self.prix_jour_sans_chauffeur
 
 
+class PhotoVehiculeModel(models.Model):
+    """Photos d'une catégorie de véhicule ; la première (ordre le plus bas) est la photo principale."""
+    MAX_PAR_CATEGORIE = 10
+
+    categorie = models.ForeignKey(CategorieVehiculeModel, on_delete=models.CASCADE, related_name='photos')
+    image = models.ImageField(upload_to='locations/')
+    ordre = models.PositiveSmallIntegerField(default=0)
+    cree_le = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['ordre', 'id']
+        verbose_name = 'Photo de véhicule'
+        verbose_name_plural = 'Photos de véhicules'
+
+    def __str__(self):
+        return f"{self.categorie.nom} · photo {self.ordre + 1}"
+
+
 class LieuRemiseModel(models.Model):
     """Où le véhicule est remis et rendu : aéroport, agence, ou livraison à l'adresse du voyageur."""
-    nom = models.CharField(max_length=120, help_text='Par ex. « Aéroport de Lomé » ou « Livraison à votre adresse — Lomé »')
+    nom = models.CharField(max_length=120, help_text='Par ex. « Aéroport de Lomé » ou « Livraison à votre adresse, Lomé »')
     ville = models.CharField(max_length=100)
     fuseau = models.CharField(max_length=40, choices=FUSEAUX, help_text='Heure locale des réservations')
     adresse_requise = models.BooleanField(default=False, help_text='Le voyageur indique une adresse (livraison)')
@@ -210,7 +227,7 @@ class LocationModel(models.Model):
         verbose_name_plural = 'Locations de voitures'
 
     def __str__(self):
-        return f"{self.reference} — {self.categorie.nom}, {self.lieu_prise.ville}"
+        return f"{self.reference} · {self.categorie.nom}, {self.lieu_prise.ville}"
 
     @property
     def reference(self):

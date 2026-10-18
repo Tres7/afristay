@@ -38,7 +38,7 @@ class ModeleContratModel(models.Model):
         ordering = ['type']
 
     def __str__(self):
-        return f"{self.get_type_display()} — v{self.version}"
+        return f"{self.get_type_display()} · v{self.version}"
 
 
 class ContratModel(models.Model):
@@ -101,4 +101,4 @@ class ContratModel(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.reference} — {self.get_type_display()} — {self.partie_nom}"
+        return f"{self.reference} · {self.get_type_display()} · {self.partie_nom}"

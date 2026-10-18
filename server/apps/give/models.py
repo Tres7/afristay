@@ -122,7 +122,7 @@ class ReversementModel(models.Model):
         constraints = [models.UniqueConstraint(fields=['organisation', 'periode'], name='reversement_unique_par_mois')]
 
     def __str__(self):
-        return f"{self.organisation.nom} — {self.periode:%m/%Y} — {self.montant} FCFA ({self.get_statut_display()})"
+        return f"{self.organisation.nom} · {self.periode:%m/%Y} · {self.montant} FCFA ({self.get_statut_display()})"
 
     @property
     def reference(self):
@@ -165,7 +165,7 @@ class DonModel(models.Model):
         verbose_name = 'Don'
 
     def __str__(self):
-        return f"{self.reference} — {self.montant} FCFA → {self.organisation.nom}"
+        return f"{self.reference} · {self.montant} FCFA → {self.organisation.nom}"
 
     @property
     def reference(self):

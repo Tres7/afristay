@@ -64,7 +64,7 @@ export default function CalendrierHotePage() {
     const selectionne = !!debut && iso >= debut && iso <= finSel;
     return {
       disabled: passe || !!p,
-      title: p ? (p.type === "reservation" ? `${t("reserve")} — ${p.voyageur}` : `${t("ferme")}${p.motif ? ` — ${p.motif}` : ""}`) : undefined,
+      title: p ? (p.type === "reservation" ? `${t("reserve")} · ${p.voyageur}` : `${t("ferme")}${p.motif ? ` · ${p.motif}` : ""}`) : undefined,
       className: cn(
         "rounded-lg mx-0.5",
         passe && "text-gray-300",

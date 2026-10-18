@@ -68,7 +68,7 @@ def contrat_pdf(c: ContratModel) -> bytes:
                     _p("Ce certificat fait partie intégrante du contrat. Il rassemble les éléments qui permettent "
                        "d'identifier le signataire et de vérifier que le document n'a pas été modifié.", 'petit'))
         doc.bloc('Document', [
-            ('Contrat', f"{c.titre} — {c.reference}"), ('Modèle', f"version {c.version_modele}"),
+            ('Contrat', f"{c.titre}, {c.reference}"), ('Modèle', f"version {c.version_modele}"),
             ('Émis le', date(c.cree_le, 'j F Y à H:i')), ('Émetteur', c.kwaba_signataire),
             ('Empreinte du texte', f"SHA-256 {c.empreinte_texte}"),
         ])
@@ -82,7 +82,7 @@ def contrat_pdf(c: ContratModel) -> bytes:
         ])
         doc.bloc('Horodatage et appareil', [
             ('Date et heure', f"{c.signe_le.astimezone(UTC):%d/%m/%Y à %H:%M:%S} UTC (temps universel)"),
-            ('Adresse IP', c.ip or '—'), ('Navigateur', c.user_agent or '—'),
+            ('Adresse IP', c.ip or '-'), ('Navigateur', c.user_agent or '-'),
         ])
         doc.paragraphe("L'empreinte SHA-256 du PDF signé, calculée après sa génération, est conservée par Kwa-Ba et "
                        "communiquée dans l'email de confirmation : tout PDF dont l'empreinte diffère a été modifié.", 'petit')

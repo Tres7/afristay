@@ -14,15 +14,18 @@ from . import services
 from .models import CategorieVehiculeModel, LieuRemiseModel, LocationModel, ParametresLocationModel
 
 
-def _image(request, categorie):
-    return request.build_absolute_uri(categorie.image.url) if categorie.image else None
+def _photos(request, categorie) -> list[str]:
+    # La photo principale d'abord (ordre du modèle) ; prefetch_related('photos') évite une requête par catégorie
+    return [request.build_absolute_uri(p.image.url) for p in categorie.photos.all()]
 
 
 def _categorie_json(request, c: CategorieVehiculeModel) -> dict:
+    photos = _photos(request, c)
     return {
         'id': c.id, 'nom': c.nom, 'gamme': c.gamme, 'gamme_libelle': c.get_gamme_display(),
         'exemple_modele': c.exemple_modele, 'description': c.description, 'places': c.places, 'bagages': c.bagages,
-        'boite': c.boite, 'carburant': c.carburant, 'climatisation': c.climatisation, 'image': _image(request, c),
+        'boite': c.boite, 'carburant': c.carburant, 'climatisation': c.climatisation, 'image': photos[0] if photos else None,
+        'photos': photos,
         'prix_jour': {'sans_chauffeur': c.prix_jour_sans_chauffeur, 'avec_chauffeur': c.prix_jour_avec_chauffeur},
         'caution': c.caution,
     }
@@ -200,7 +203,7 @@ class LocationCreationSerializer(serializers.Serializer):
 
 def _de_l_utilisateur(pk, user):
     return (LocationModel.objects.select_related('categorie', 'lieu_prise', 'lieu_retour', 'partenaire')
-            .prefetch_related('paiements', 'remboursements').filter(pk=pk, voyageur=user).first())
+            .prefetch_related('paiements', 'remboursements', 'categorie__photos').filter(pk=pk, voyageur=user).first())
 
 
 class LocationsView(APIView):
@@ -209,7 +212,7 @@ class LocationsView(APIView):
     def get(self, request):
         qs = (LocationModel.objects.filter(voyageur=request.user)
               .select_related('categorie', 'lieu_prise', 'lieu_retour', 'partenaire')
-              .prefetch_related('paiements', 'remboursements'))
+              .prefetch_related('paiements', 'remboursements', 'categorie__photos'))
         data = LocationSerializer(qs, many=True, context={'request': request}).data
         return Response({'results': data, 'count': len(data)})
 

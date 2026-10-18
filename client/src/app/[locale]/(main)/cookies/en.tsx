@@ -34,7 +34,7 @@ export default function ContenuEn() {
               <table>
                 <thead><tr><th>Name</th><th>Purpose</th><th>Duration</th></tr></thead>
                 <tbody>
-                  <tr><td><code>authjs.session-token</code></td><td>Keeps you signed in to your account (encrypted session).</td><td>7 days, or until you log out</td></tr>
+                  <tr><td><code>authjs.session-token</code></td><td>Keeps you signed in to your account (encrypted session).</td><td>30 days after your last visit, or until you log out</td></tr>
                   <tr><td><code>authjs.csrf-token</code></td><td>Protects sign-in forms against fraudulent requests.</td><td>Until the browser is closed</td></tr>
                   <tr><td><code>authjs.callback-url</code></td><td>Takes you back to the page you were on after signing in.</td><td>Until the browser is closed</td></tr>
                   <tr><td><code>NEXT_LOCALE</code></td><td>Remembers the language you chose (French or English).</td><td>1 year</td></tr>
@@ -54,7 +54,7 @@ export default function ContenuEn() {
                 <tr><td><code>afristay_consentement</code></td><td>Remembers your cookie choices (date and preferences).</td><td>6 months, after which you are asked again</td></tr>
                 <tr><td><code>verify_email</code></td><td>Keeps the address entered at sign-up during code verification.</td><td>Deleted after verification or when the tab is closed</td></tr>
                 <tr><td><code>splash_shown</code></td><td>Avoids showing the animated welcome screen on every page.</td><td>Until the tab is closed</td></tr>
-                <tr><td><code>kwaba_bientot_ferme</code></td><td>Remembers that you closed the “Places to stay coming soon” window.</td><td>Until deleted</td></tr>
+                <tr><td><code>kwaba_bientot_ferme</code></td><td>Remembers that the “Places to stay coming soon” window has already been shown to you (when signed in, your account remembers it too).</td><td>Until deleted</td></tr>
                 <tr><td><code>kwaba_devise</code></td><td>Remembers the currency chosen to display prices (CFA franc or euro).</td><td>Until deleted</td></tr>
               </tbody>
             </table>

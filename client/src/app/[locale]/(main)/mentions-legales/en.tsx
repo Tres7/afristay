@@ -19,11 +19,11 @@ export default function ContenuEn() {
           titre: "Website publisher",
           contenu: (
             <ul>
-              <li>Company name: <AC>company name</AC> — <AC>legal form and share capital</AC></li>
+              <li>Company name: <AC>company name</AC>, <AC>legal form and share capital</AC></li>
               <li>Registered office: <AC>full address</AC></li>
               <li>Registration: <AC>RCS / RCCM number and city of registration</AC></li>
               <li>VAT number: <AC>if applicable</AC></li>
-              <li>Contact: <LienContact /> — <AC>phone</AC></li>
+              <li>Contact: <LienContact />, <AC>phone</AC></li>
               <li>Publication director: <AC>name and position</AC></li>
             </ul>
           ),

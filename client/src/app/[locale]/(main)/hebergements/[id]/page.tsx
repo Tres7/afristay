@@ -176,7 +176,7 @@ function HebergementContent() {
           {photos.map((img, i) => (
             <div key={img + i} className="snap-center flex-shrink-0 w-full px-4">
               <div className="relative">
-                <img src={img} alt={`${hebergement.name} — photo ${i + 1}`} className="w-full h-64 object-cover rounded-2xl" />
+                <img src={img} alt={`${hebergement.name}, photo ${i + 1}`} className="w-full h-64 object-cover rounded-2xl" />
                 <span className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full">{i + 1}/{photos.length}</span>
               </div>
             </div>
@@ -185,7 +185,7 @@ function HebergementContent() {
         <div className="hidden md:grid grid-cols-4 grid-rows-2 gap-3 h-[420px] lg:h-[480px] rounded-3xl overflow-hidden mb-12 shadow-card">
           {photos.slice(0, 5).map((img, i) => (
             <div key={img + i} className={i === 0 ? "col-span-2 row-span-2 overflow-hidden" : "overflow-hidden"} style={photos.length === 1 ? { gridColumn: "1 / -1", gridRow: "1 / -1" } : undefined}>
-              <img src={img} alt={`${hebergement.name} — photo ${i + 1}`} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+              <img src={img} alt={`${hebergement.name}, photo ${i + 1}`} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
             </div>
           ))}
         </div>

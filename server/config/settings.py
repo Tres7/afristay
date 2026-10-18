@@ -335,7 +335,9 @@ SIMPLE_JWT = {
     'SIGNING_KEY': JWT_SIGNING_KEY,
     # Courte durée : NextAuth renouvelle le jeton d'accès automatiquement ; un jeton volé sert peu de temps
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    # Session « rester connecté » : chaque renouvellement (rotation) repart pour cette durée, un utilisateur actif
+    # n'a donc jamais à se reconnecter ; aligné sur session.maxAge de NextAuth (client/src/auth.ts)
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=int(os.getenv('JWT_REFRESH_DAYS', '30'))),
     'ROTATE_REFRESH_TOKENS': True,
     # L'ancien refresh token est mis sur liste noire à chaque rotation (purge : manage.py flushexpiredtokens)
     'BLACKLIST_AFTER_ROTATION': True,

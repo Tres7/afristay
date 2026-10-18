@@ -29,7 +29,7 @@ def _course(t: TransfertModel) -> dict:
 
 
 def confirme(t: TransfertModel):
-    _envoyer('emails/transferts/transfert_confirme.txt', f"Transfert confirmé — {t.aeroport.ville}", [t.voyageur.email], {
+    _envoyer('emails/transferts/transfert_confirme.txt', f"Transfert confirmé : {t.aeroport.ville}", [t.voyageur.email], {
         **_course(t), 'prenom': t.voyageur.first_name, 'montant': _fcfa(t.prix),
     }, pieces_jointes=_documents(t))
 
@@ -41,7 +41,7 @@ def a_attribuer(t: TransfertModel, urgent: bool = False):
         return
     from .services import chauffeurs_disponibles
 
-    sujet = f"[Kwa-Ba] {'URGENT — ' if urgent else ''}Chauffeur à attribuer — {t.reference}"
+    sujet = f"[Kwa-Ba] {'URGENT : ' if urgent else ''}Chauffeur à attribuer : {t.reference}"
     _envoyer('emails/transferts/a_attribuer.txt', sujet, destinataires, {
         **_course(t), 'urgent': urgent, 'nb_chauffeurs': chauffeurs_disponibles(t).count(),
         'url_admin': f"{settings.BACKEND_URL}/admin/transferts/transfertmodel/{t.id}/change/",
@@ -61,7 +61,7 @@ def course_au_chauffeur(t: TransfertModel):
     c = t.chauffeur
     if not c.email:
         return  # chauffeur prévenu par téléphone par l'équipe
-    _envoyer('emails/transferts/course_chauffeur.txt', f"Nouvelle course Kwa-Ba — {_heure(t)}", [c.email], {
+    _envoyer('emails/transferts/course_chauffeur.txt', f"Nouvelle course Kwa-Ba : {_heure(t)}", [c.email], {
         **_course(t), 'prenom': c.prenom, 'message': t.message, 'montant': _fcfa(t.montant_chauffeur),
     })
 

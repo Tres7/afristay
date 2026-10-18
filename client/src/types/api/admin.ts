@@ -90,6 +90,11 @@ export interface ReglesLocation {
   conditions: string;
 }
 
+export interface PhotoVehicule {
+  id: number;
+  url: string;
+}
+
 export interface CategorieVehicule {
   id: number;
   nom: string;
@@ -101,7 +106,8 @@ export interface CategorieVehicule {
   boite: "manuelle" | "automatique";
   carburant: "essence" | "diesel" | "hybride" | "electrique";
   climatisation: boolean;
-  image: string | null;
+  /** La première est la photo principale. */
+  photos: PhotoVehicule[];
   prix_jour_sans_chauffeur: number | null;
   prix_jour_avec_chauffeur: number | null;
   caution: number;

@@ -2,10 +2,10 @@
 
 Kwa-Ba vous confie une location.
 
-  {{ categorie }}{% if exemple %} ({{ exemple }}){% endif %} — {{ formule }}
+  {{ categorie }}{% if exemple %} ({{ exemple }}){% endif %}, {{ formule }}
   Prise : {{ debut }}, {{ prise }}
   Retour : {{ fin }}, {{ retour }} ({{ jours }} jour(s))
-  Voyageur : {{ voyageur }} — {{ telephone_voyageur }} · {{ passagers }} personne(s)
+  Voyageur : {{ voyageur }}, {{ telephone_voyageur }} · {{ passagers }} personne(s)
 {% if conducteur %}  Conducteur : {{ conducteur }}, permis {{ permis }} ({{ permis_pays }})
 {% endif %}{% if caution %}  Caution à encaisser à la remise : {{ caution }}
 {% endif %}  Précisions du voyageur : « {{ precisions }} »

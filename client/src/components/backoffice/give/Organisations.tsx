@@ -184,7 +184,7 @@ export default function Organisations() {
         <Interrupteur label="Active" checked={form.actif} onChange={champ("actif")} />
       </Panneau>
 
-      <Panneau ouvert={!!ongProjets} titre={projet ? (projet === "nouveau" ? "Nouveau projet" : "Modifier le projet") : `Projets — ${ongProjets?.nom ?? ""}`}
+      <Panneau ouvert={!!ongProjets} titre={projet ? (projet === "nouveau" ? "Nouveau projet" : "Modifier le projet") : `Projets · ${ongProjets?.nom ?? ""}`}
         onFermer={() => (projet ? setProjet(null) : setOngProjets(null))} onValider={projet ? enregistrerProjet : () => ouvrirProjet("nouveau")}
         envoi={envoi} libelle={projet ? "Enregistrer" : "Nouveau projet"}>
         {!projet ? (

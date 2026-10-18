@@ -111,6 +111,6 @@ Kwa-Ba adresse au donateur un reçu de paiement. Kwa-Ba n'étant pas habilitée 
 MODELES = {
     'hote': ("Contrat de partenariat Hôte", HOTE),
     'loueur': ("Contrat de partenariat Loueur de véhicules", LOUEUR),
-    'chauffeur': ("Contrat de partenariat Chauffeur — transferts aéroport", CHAUFFEUR),
+    'chauffeur': ("Contrat de partenariat Chauffeur (transferts aéroport)", CHAUFFEUR),
     'ong': ("Convention de partenariat Kwa-Ba Give", ONG),
 }

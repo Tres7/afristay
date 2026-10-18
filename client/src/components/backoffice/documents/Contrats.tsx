@@ -21,7 +21,7 @@ export const TYPES: { value: TypeContrat; label: string }[] = [
 ];
 const FILTRE_TYPES = [{ value: "", label: "Tous les types" }, ...TYPES];
 const STATUTS = [{ value: "", label: "Tous" }, { value: "a_signer", label: "À signer" }, { value: "signe", label: "Signés" }, { value: "annule", label: "Annulés" }];
-const date = (d: string | null) => (d ? formatDate(d, { day: "numeric", month: "short", year: "numeric" }) : "—");
+const date = (d: string | null) => (d ? formatDate(d, { day: "numeric", month: "short", year: "numeric" }) : "-");
 
 /** Contrats émis : envoi pour signature, relance, annulation, PDF signé avec certificat. */
 export default function Contrats() {
@@ -90,7 +90,7 @@ export default function Contrats() {
 
   const colonnes: Colonne<ContratAdmin>[] = [
     { titre: "Contrat", masquerMobile: true, cellule: (c) => <div className="min-w-0"><p className="font-semibold text-dark truncate">{c.type_libelle}</p><p className="text-xs text-muted font-mono">{c.reference} · v{c.version_modele}</p></div> },
-    { titre: "Partie", cellule: (c) => <div className="text-xs min-w-0"><p className="text-dark font-medium truncate">{c.partie_nom}</p><p className="text-muted truncate">{c.partie_email || "—"}</p></div> },
+    { titre: "Partie", cellule: (c) => <div className="text-xs min-w-0"><p className="text-dark font-medium truncate">{c.partie_nom}</p><p className="text-muted truncate">{c.partie_email || "-"}</p></div> },
     {
       titre: "Statut", cellule: (c) => (
         <div className="space-y-1">

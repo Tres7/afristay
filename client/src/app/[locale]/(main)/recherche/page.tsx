@@ -139,7 +139,7 @@ function RechercheContent() {
         <p className="text-xs text-muted font-bold uppercase tracking-wider mb-2">{t("prixParNuit")}</p>
         <div className="flex items-center gap-2">
           <input type="number" inputMode="numeric" min={0} placeholder={t("min")} value={priceMin} onChange={(e) => setPriceMin(e.target.value)} className="w-full min-w-0 border border-gray-200 rounded-lg px-3 py-2 text-base sm:text-sm text-dark outline-none" />
-          <span className="text-muted">—</span>
+          <span className="text-muted">-</span>
           <input type="number" inputMode="numeric" min={0} placeholder={t("max")} value={priceMax} onChange={(e) => setPriceMax(e.target.value)} className="w-full min-w-0 border border-gray-200 rounded-lg px-3 py-2 text-base sm:text-sm text-dark outline-none" />
         </div>
         <button onClick={() => submitSearch()} className="mt-3 w-full bg-primary text-white py-2.5 rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors">

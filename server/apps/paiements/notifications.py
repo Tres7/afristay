@@ -60,7 +60,7 @@ def _sejour(r) -> dict:
 def reservation_payee_voyageur(paiement: PaiementModel):
     r = paiement.reservation
     voyageur = r.guest
-    _envoyer('reservation_payee_voyageur', f"Séjour confirmé — {r.hebergement.name}", [voyageur.email], {
+    _envoyer('reservation_payee_voyageur', f"Séjour confirmé : {r.hebergement.name}", [voyageur.email], {
         **_sejour(r), 'prenom': voyageur.first_name, 'montant': _fcfa(paiement.montant),
         'url': f"{settings.FRONTEND_URL}/reservation/confirmation/{r.id}",
         'url_remboursement': f"{settings.FRONTEND_URL}/remboursement",
@@ -71,7 +71,7 @@ def reservation_payee_hote(paiement: PaiementModel):
     r = paiement.reservation
     voyageur, hote = r.guest, r.hebergement.host
     montants = tarifs.montants_de(r)
-    _envoyer('reservation_payee_hote', f"Nouvelle réservation payée — {r.hebergement.name}", [hote.email], {
+    _envoyer('reservation_payee_hote', f"Nouvelle réservation payée : {r.hebergement.name}", [hote.email], {
         **_sejour(r), 'prenom': hote.first_name, 'voyageur': f"{voyageur.first_name} {voyageur.last_name}".strip(),
         'message': r.message, 'montant_hote': _fcfa(montants.montant_hote),
         'date_versement': _date(tarifs.date_versement(r)),
@@ -111,9 +111,9 @@ def alerte_admin(type_: str, ligne, beneficiaire: str, *, reference: str, libell
     if not destinataires:
         logger.error("%s à traiter (%s) mais aucun administrateur à prévenir", type_, ligne.pk)
         return
-    _envoyer('alerte_admin', f"[Kwa-Ba] {type_} à traiter — {reference}", destinataires, {
+    _envoyer('alerte_admin', f"[Kwa-Ba] {type_} à traiter : {reference}", destinataires, {
         'type': type_, 'reference': reference, 'hebergement': libelle, 'montant': _fcfa(ligne.montant),
-        'beneficiaire': beneficiaire, 'erreur': ligne.derniere_erreur or '—',
+        'beneficiaire': beneficiaire, 'erreur': ligne.derniere_erreur or '-',
         'url_admin': f"{settings.BACKEND_URL}/admin/{section}/",
     })
 

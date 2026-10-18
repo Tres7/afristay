@@ -2,7 +2,7 @@
 
 Votre location est payée ({{ montant }}). Nous attribuons maintenant votre véhicule à l'un de nos loueurs partenaires : vous recevrez ses coordonnées par email.
 
-  {{ categorie }}{% if exemple %} ({{ exemple }}){% endif %} — {{ formule }}
+  {{ categorie }}{% if exemple %} ({{ exemple }}){% endif %}, {{ formule }}
   Prise : {{ debut }}, {{ prise }}
   Retour : {{ fin }}, {{ retour }}
   Durée : {{ jours }} jour(s) · {{ passagers }} personne(s)

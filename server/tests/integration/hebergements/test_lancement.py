@@ -32,3 +32,19 @@ def test_prevenir_les_inscrits_a_l_ouverture(client_for, make_user, make_heberge
     sujets = {m.to[0]: m.subject for m in mail.outbox}
     assert sujets == {'ama@exemple.tg': 'Kwa-Ba : les logements sont en ligne', 'john@example.com': 'Kwa-Ba: places to stay are now online'}
     assert admin.post(ADMIN).data['envoyes'] == 0  # personne n'est prévenu deux fois
+
+
+def test_fenetre_montree_une_seule_fois_par_compte(client_for, make_user):
+    fenetre = URL + 'fenetre/'
+    assert APIClient().get(fenetre).status_code == 401  # réservé aux comptes connectés
+    utilisateur = make_user()
+    client = client_for(utilisateur)
+    assert client.get(fenetre).data == {'vue': False}
+    assert client.post(fenetre).data == {'vue': True}
+    utilisateur.refresh_from_db()
+    premiere = utilisateur.fenetre_lancement_vue_le
+    assert premiere is not None
+    assert client.post(fenetre).data == {'vue': True}  # idempotent : la date de la première fois est gardée
+    utilisateur.refresh_from_db()
+    assert utilisateur.fenetre_lancement_vue_le == premiere
+    assert client_for(utilisateur).get(fenetre).data == {'vue': True}  # autre appareil, même compte

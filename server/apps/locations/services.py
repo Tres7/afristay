@@ -40,7 +40,7 @@ def categories_proposees():
     """Catégories actives qui ont au moins une formule avec un prix."""
     return CategorieVehiculeModel.objects.filter(actif=True).exclude(
         prix_jour_sans_chauffeur__isnull=True, prix_jour_avec_chauffeur__isnull=True,
-    )
+    ).prefetch_related('photos')
 
 
 def active() -> bool:
@@ -136,7 +136,7 @@ def demarrer_paiement(location: LocationModel, moyen: str) -> str:
         location.save(update_fields=['moyen'])
     return paiements.creer_paiement(
         objet=location, montant=location.prix, moyen=moyen, voyageur=location.voyageur,
-        description=f"Kwa-Ba {location.reference} — location {location.categorie.nom}, {location.lieu_prise.ville}",
+        description=f"Kwa-Ba {location.reference}, location {location.categorie.nom}, {location.lieu_prise.ville}",
         url_retour=f"{settings.FRONTEND_URL}/location/{location.id}",
     )
 

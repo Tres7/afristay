@@ -68,7 +68,7 @@ export default function MonthGrid({ month, onMonthChange, count = 1, minMonth, m
                     <button
                       key={iso} type="button" disabled={r.disabled} title={r.title}
                       onClick={() => onDayClick(iso)} onMouseEnter={() => onDayHover?.(iso)}
-                      aria-label={format(d, "EEEE d MMMM yyyy", { locale: dateLocale }) + (r.title ? ` — ${r.title}` : "")}
+                      aria-label={format(d, "EEEE d MMMM yyyy", { locale: dateLocale }) + (r.title ? `, ${r.title}` : "")}
                       className={cn("h-10 text-sm flex items-center justify-center transition-colors", r.className)}
                     >
                       {r.content ?? d.getDate()}

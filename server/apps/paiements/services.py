@@ -139,7 +139,7 @@ def demarrer_paiement(reservation, moyen: str = 'mobile_money') -> str:
         reservation.save(update_fields=['payment_method'])
     return creer_paiement(
         objet=reservation, montant=tarifs.montants_de(reservation).total, moyen=moyen, voyageur=reservation.guest,
-        description=f"Kwa-Ba {reservation.reference} — {reservation.hebergement.name}",
+        description=f"Kwa-Ba {reservation.reference}, {reservation.hebergement.name}",
         url_retour=f"{settings.FRONTEND_URL}/reservation/paiement/{reservation.id}",
     )
 

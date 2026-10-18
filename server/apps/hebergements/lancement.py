@@ -5,7 +5,7 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils import timezone
 from rest_framework import serializers, status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -37,6 +37,21 @@ class InscriptionLancementView(APIView):
         InscriptionLancementModel.objects.get_or_create(email=donnees.validated_data['email'].lower(),
                                                         defaults={'langue': donnees.validated_data['langue']})
         return Response({'inscrit': True}, status=status.HTTP_201_CREATED)
+
+
+class FenetreLancementView(APIView):
+    """Fenêtre « Logements bientôt disponibles » : montrée une seule fois par compte, sur tous les appareils.
+    GET {vue} : déjà montrée à ce compte ? POST : la marquer comme montrée (idempotent)."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response({'vue': request.user.fenetre_lancement_vue_le is not None})
+
+    def post(self, request):
+        if request.user.fenetre_lancement_vue_le is None:
+            request.user.fenetre_lancement_vue_le = timezone.now()
+            request.user.save(update_fields=['fenetre_lancement_vue_le'])
+        return Response({'vue': True})
 
 
 class LancementAdminView(APIView):

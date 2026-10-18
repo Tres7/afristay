@@ -63,7 +63,7 @@ class ReservationModel(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"RES-{str(self.id)[:8].upper()} — {self.hebergement.name}"
+        return f"RES-{str(self.id)[:8].upper()} · {self.hebergement.name}"
 
     @property
     def nights(self):

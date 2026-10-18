@@ -2,12 +2,12 @@
 
 Merci ! Votre don à {{ organisation }} a bien été reçu.
 
-  Bénéficiaire : {{ organisation }}{% if projet %} — {{ projet }}{% endif %}
+  Bénéficiaire : {{ organisation }}{% if projet %}, {{ projet }}{% endif %}
   Don : {{ montant }}
   Frais de paiement : {{ frais }}{% if couvre_frais %} (ajoutés par vous){% else %} (déduits du don){% endif %}
   Montant débité : {{ total }}
   Reversé à l'ONG : {{ montant_ong }}
-  Référence : {{ reference }} — {{ date }}
+  Référence : {{ reference }}, {{ date }}
 
 Kwa-Ba ne prélève aucune commission. Votre don sera reversé à {{ organisation }} au plus tard le {{ date_reversement }} ; nous vous écrirons à ce moment-là, et la preuve du virement sera publiée sur la page de l'ONG.
 

@@ -74,7 +74,7 @@ export default function GivePage() {
         <section id="organisations" aria-labelledby="ong-titre" className="scroll-mt-24">
           <div className="flex flex-wrap items-end justify-between gap-2 mb-4">
             <h2 id="ong-titre" className="font-heading font-bold text-dark text-xl">
-              {cause ? `${t("ongPartenaires")} — ${CAUSES[cause].nom}` : t("ongPartenaires")}
+              {cause ? `${t("ongPartenaires")} · ${CAUSES[cause].nom}` : t("ongPartenaires")}
             </h2>
             {cause && <button onClick={() => setCause(null)} className="text-sm font-bold text-primary hover:underline">{t("toutesCauses")}</button>}
           </div>

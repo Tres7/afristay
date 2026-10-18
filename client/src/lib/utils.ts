@@ -104,7 +104,7 @@ export function calculateServiceFee(subtotal: number, rate = SERVICE_FEE_RATE): 
 }
 
 export function formatDate(d: string, opts: Intl.DateTimeFormatOptions = { day: "numeric", month: "short", year: "numeric" }) {
-  if (!d) return "—";
+  if (!d) return "-";
   return new Date(d).toLocaleDateString(LOCALES[langueCourante], opts);
 }
 

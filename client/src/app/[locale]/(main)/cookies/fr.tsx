@@ -33,7 +33,7 @@ export default function ContenuFr() {
               <table>
                 <thead><tr><th>Nom</th><th>Rôle</th><th>Durée</th></tr></thead>
                 <tbody>
-                  <tr><td><code>authjs.session-token</code></td><td>Maintient votre connexion à votre compte (session chiffrée).</td><td>7 jours, ou jusqu&apos;à la déconnexion</td></tr>
+                  <tr><td><code>authjs.session-token</code></td><td>Maintient votre connexion à votre compte (session chiffrée).</td><td>30 jours après votre dernière visite, ou jusqu&apos;à la déconnexion</td></tr>
                   <tr><td><code>authjs.csrf-token</code></td><td>Protège les formulaires de connexion contre les requêtes frauduleuses.</td><td>Fermeture du navigateur</td></tr>
                   <tr><td><code>authjs.callback-url</code></td><td>Vous ramène à la page consultée après la connexion.</td><td>Fermeture du navigateur</td></tr>
                   <tr><td><code>NEXT_LOCALE</code></td><td>Mémorise la langue choisie (français ou anglais).</td><td>1 an</td></tr>
@@ -53,7 +53,7 @@ export default function ContenuFr() {
                 <tr><td><code>afristay_consentement</code></td><td>Mémorise vos choix de cookies (date et préférences).</td><td>6 mois, puis le choix vous est redemandé</td></tr>
                 <tr><td><code>verify_email</code></td><td>Retient l&apos;adresse saisie à l&apos;inscription le temps de la vérification par code.</td><td>Effacé après la vérification ou à la fermeture de l&apos;onglet</td></tr>
                 <tr><td><code>splash_shown</code></td><td>Évite de réafficher l&apos;écran d&apos;accueil animé à chaque page.</td><td>Fermeture de l&apos;onglet</td></tr>
-                <tr><td><code>kwaba_bientot_ferme</code></td><td>Retient que vous avez fermé la fenêtre « Logements bientôt disponibles ».</td><td>Jusqu&apos;à suppression</td></tr>
+                <tr><td><code>kwaba_bientot_ferme</code></td><td>Retient que la fenêtre « Logements bientôt disponibles » vous a déjà été montrée (si vous êtes connecté, votre compte le retient aussi).</td><td>Jusqu&apos;à suppression</td></tr>
                 <tr><td><code>kwaba_devise</code></td><td>Retient la devise choisie pour l&apos;affichage des prix (FCFA ou euro).</td><td>Jusqu&apos;à suppression</td></tr>
               </tbody>
             </table>

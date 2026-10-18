@@ -37,7 +37,7 @@ def fcfa(montant) -> str:
 
 def date(valeur, fmt='j F Y') -> str:
     if valeur is None:
-        return '—'
+        return '-'
     if hasattr(valeur, 'tzinfo') and getattr(valeur, 'hour', None) is not None:
         valeur = timezone.localtime(valeur)
     return formats.date_format(valeur, fmt)
@@ -119,7 +119,7 @@ class Document:
             canvas.line(20 * mm, 17 * mm, A4[0] - 20 * mm, 17 * mm)
             canvas.setFont('Helvetica', 7.5)
             canvas.setFillColor(GRIS)
-            texte = (mentions.replace('\n', ' ') + '  ·  ' if mentions else '') + f"{societe.site} — document généré le {date(timezone.now(), 'j F Y à H:i')}"
+            texte = (mentions.replace('\n', ' ') + '  ·  ' if mentions else '') + f"{societe.site} · document généré le {date(timezone.now(), 'j F Y à H:i')}"
             canvas.drawString(20 * mm, 12 * mm, texte[:150])
             canvas.drawRightString(A4[0] - 20 * mm, 12 * mm, f"Page {d.page}")
             canvas.restoreState()

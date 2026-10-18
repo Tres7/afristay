@@ -312,7 +312,7 @@ class CycleTests(TestCase):
         self.payer(resa)
         services.passe()
         sujets = sorted(m.subject for m in mail.outbox)
-        self.assertEqual(sujets, ['Nouvelle réservation payée — Villa test', 'Séjour confirmé — Villa test'])
+        self.assertEqual(sujets, ['Nouvelle réservation payée : Villa test', 'Séjour confirmé : Villa test'])
         self.assertIn('64 800 FCFA', [m for m in mail.outbox if m.to == ['voy@test.tg']][0].body)
         self.assertIn("pas encore indiqué où recevoir", [m for m in mail.outbox if m.to == ['hote@test.tg']][0].body)
         services.passe()

@@ -8,7 +8,9 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 from PIL import Image
 
-from apps.locations.models import CategorieVehiculeModel, LieuRemiseModel, LocationModel, PartenaireLocationModel
+from apps.locations.models import (
+    CategorieVehiculeModel, LieuRemiseModel, LocationModel, PartenaireLocationModel, PhotoVehiculeModel,
+)
 from apps.securite.models import JournalAuditModel
 
 B = '/api/v1/admin/location/'
@@ -21,7 +23,7 @@ def admin(make_user, client_for):
 
 @pytest.fixture(autouse=True)
 def stockage(tmp_path, monkeypatch):
-    monkeypatch.setattr(CategorieVehiculeModel._meta.get_field('image'), 'storage', FileSystemStorage(location=tmp_path))
+    monkeypatch.setattr(PhotoVehiculeModel._meta.get_field('image'), 'storage', FileSystemStorage(location=tmp_path))
 
 
 @pytest.fixture
@@ -68,18 +70,51 @@ def test_regles_creees_puis_modifiees(admin):
     assert JournalAuditModel.objects.filter(action='backoffice_modification', details__objet='regles_location').count() == 2
 
 
-def test_categorie_prix_photo_et_activation(admin):
+def _photo(nom='voiture.png'):
+    tampon = BytesIO()
+    Image.new('RGB', (900, 600), (20, 120, 200)).save(tampon, format='PNG')
+    return SimpleUploadedFile(nom, tampon.getvalue(), content_type='image/png')
+
+
+def test_categorie_prix_et_activation(admin):
     citadine = CategorieVehiculeModel.objects.get(nom='Citadine')
     url = f'{B}categories/{citadine.id}/'
     # Pas d'activation sans prix
     assert admin.patch(url, {'actif': True}, format='json').status_code == 400
     assert admin.patch(url, {'prix_jour_sans_chauffeur': 25000, 'actif': True}, format='json').data['actif'] is True
-    tampon = BytesIO()
-    Image.new('RGB', (900, 600), (20, 120, 200)).save(tampon, format='PNG')
-    reponse = admin.patch(url, {'image': SimpleUploadedFile('voiture.png', tampon.getvalue(), content_type='image/png')},
-                          format='multipart')
-    assert reponse.status_code == 200 and reponse.data['image'].endswith('.jpg')
     assert JournalAuditModel.objects.filter(action='backoffice_modification', details__objet='categorie_vehicule').exists()
+
+
+def test_categorie_plusieurs_photos(admin, monkeypatch):
+    citadine = CategorieVehiculeModel.objects.get(nom='Citadine')
+    url = f'{B}categories/{citadine.id}/photos/'
+    ids = []
+    for i in range(3):
+        reponse = admin.post(url, {'image': _photo(f'voiture{i}.png')}, format='multipart')
+        assert reponse.status_code == 201 and len(reponse.data) == i + 1
+        assert all(p['url'].endswith('.jpg') for p in reponse.data)
+        ids.append(reponse.data[-1]['id'])
+    assert [p['id'] for p in admin.get(f'{B}categories/{citadine.id}/').data['photos']] == ids
+    assert admin.post(url, {'image': SimpleUploadedFile('x.txt', b'pas une image')}, format='multipart').status_code == 400
+
+    # La troisième devient la photo principale, puis la première est retirée
+    assert [p['id'] for p in admin.patch(f'{url}{ids[2]}/', {'principale': True}, format='json').data] == [ids[2], ids[0], ids[1]]
+    assert [p['id'] for p in admin.delete(f'{url}{ids[0]}/').data] == [ids[2], ids[1]]
+    assert admin.delete(f'{url}{ids[0]}/').status_code == 404
+
+    # Le catalogue public montre toutes les photos, la principale en premier (aussi dans « image »)
+    citadine.prix_jour_sans_chauffeur, citadine.actif = 25000, True
+    citadine.save()
+    from apps.locations.models import ParametresLocationModel
+    ParametresLocationModel.objects.create(commission_pourcent=15, delai_min_jours=2, duree_max_jours=30, annulation_gratuite_heures=48)
+    LieuRemiseModel.objects.create(nom='Aéroport de Lomé', ville='Lomé', fuseau='Africa/Lome')
+    publique = next(c for c in admin.get('/api/v1/locations/catalogue/').data['categories'] if c['id'] == citadine.id)
+    assert len(publique['photos']) == 2 and publique['image'] == publique['photos'][0]
+
+    # Limite par catégorie
+    monkeypatch.setattr(PhotoVehiculeModel, 'MAX_PAR_CATEGORIE', 2)
+    assert admin.post(url, {'image': _photo()}, format='multipart').status_code == 400
+    assert JournalAuditModel.objects.filter(details__objet='categorie_vehicule', details__champs=['photos']).count() == 5
 
 
 def test_lieu_et_loueur(admin, berline):

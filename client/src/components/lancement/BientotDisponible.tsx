@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { AnimatePresence, motion } from "framer-motion";
 import { Car, CheckCircle2, HandHeart, Home, Loader2, Plane, X } from "lucide-react";
@@ -12,7 +13,8 @@ import api, { apiErrorMessage } from "@/lib/api";
 import { EVENEMENT, lireConsentement } from "@/lib/consentement";
 import { langue } from "@/lib/utils";
 
-const CLE_FERME = "kwaba_bientot_ferme";
+// Nom historique : la clé retient désormais que la fenêtre a été montrée (pas seulement fermée)
+const CLE_VUE = "kwaba_bientot_ferme";
 // Laisse passer l'écran d'accueil animé (2 s) avant d'ouvrir la fenêtre
 const DELAI_MS = 2400;
 // Pages où la fenêtre gênerait : devenir hôte, signature d'un contrat
@@ -28,13 +30,23 @@ export function useAucunLogement(): boolean {
   return data === true;
 }
 
-function dejaFermee(): boolean {
+function dejaVueIci(): boolean {
   try {
-    return window.localStorage.getItem(CLE_FERME) === "1";
+    return window.localStorage.getItem(CLE_VUE) === "1";
   } catch {
     return false;
   }
 }
+
+function memoriserIci() {
+  try {
+    window.localStorage.setItem(CLE_VUE, "1");
+  } catch { /* stockage indisponible : le compte, s'il y en a un, garde l'information */ }
+}
+
+const URL_FENETRE = "/v1/hebergements/lancement/fenetre/";
+/** Enregistre sur le compte que la fenêtre a été montrée (tous ses appareils). */
+const memoriserCompte = () => { api.post(URL_FENETRE).catch(() => { /* réessayé à la prochaine visite */ }); };
 
 /** Formulaire « Prévenez-moi » : l'email n'est utilisé que pour annoncer l'ouverture. */
 export function PrevenezMoi({ compact }: { compact?: boolean }) {
@@ -81,7 +93,9 @@ export function PrevenezMoi({ compact }: { compact?: boolean }) {
   );
 }
 
-/** Fenêtre affichée une fois par visiteur tant que le site n'a aucun logement publié. */
+/** Fenêtre affichée une seule fois tant que le site n'a aucun logement publié : une fois par compte (sur tous ses
+ * appareils), ou une fois par navigateur pour un visiteur non connecté. Elle est retenue dès qu'elle s'ouvre :
+ * actualiser la page ne la fait pas revenir. */
 export default function BientotDisponible() {
   const t = useTranslations("bientot");
   const pathname = usePathname();
@@ -92,26 +106,42 @@ export default function BientotDisponible() {
   useEffect(() => setMonte(true), []);
   const panneau = useRef<HTMLDivElement>(null);
   const exclue = PAGES_EXCLUES.test(pathname);
+  const { data: session, status } = useSession();
+  const connecte = status === "authenticated" && !!session && !session.error;
+  const { data: compte } = useQuery({
+    queryKey: ["lancement", "fenetre", session?.user.id],
+    queryFn: async () => (await api.get<{ vue: boolean }>(URL_FENETRE)).data,
+    enabled: connecte && aucunLogement,
+    staleTime: Infinity,
+  });
 
   // Après le choix des cookies (le bandeau de consentement passe en premier) et l'écran d'accueil
   useEffect(() => {
-    if (!aucunLogement || exclue || dejaFermee()) return;
+    if (!aucunLogement || exclue || status === "loading") return;
+    if (connecte && !compte) return; // réponse du compte attendue (ou en échec : on ne montre rien)
+    const vueIci = dejaVueIci();
+    if (compte?.vue || vueIci) {
+      if (compte?.vue && !vueIci) memoriserIci(); // déjà vue sur un autre appareil
+      if (connecte && !compte?.vue) memoriserCompte(); // vue sur ce navigateur avant la connexion
+      return;
+    }
     let minuteur: ReturnType<typeof setTimeout> | undefined;
-    const planifier = () => { minuteur = setTimeout(() => setOuverte(true), DELAI_MS); };
+    const planifier = () => {
+      minuteur = setTimeout(() => {
+        setOuverte(true);
+        memoriserIci();
+        if (connecte) memoriserCompte();
+      }, DELAI_MS);
+    };
     if (lireConsentement()) planifier();
     else window.addEventListener(EVENEMENT, planifier, { once: true });
     return () => {
       clearTimeout(minuteur);
       window.removeEventListener(EVENEMENT, planifier);
     };
-  }, [aucunLogement, exclue]);
+  }, [aucunLogement, exclue, status, connecte, compte]);
 
-  const fermer = useCallback(() => {
-    setOuverte(false);
-    try {
-      window.localStorage.setItem(CLE_FERME, "1");
-    } catch { /* stockage indisponible : la fenêtre reviendra à la prochaine visite */ }
-  }, []);
+  const fermer = useCallback(() => setOuverte(false), []);
 
   useEffect(() => {
     if (!ouverte) return;

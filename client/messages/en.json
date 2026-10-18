@@ -1,8 +1,8 @@
 {
   "meta": {
-    "titre": "Kwa-Ba — The world welcomes you",
+    "titre": "Kwa-Ba | The world welcomes you",
     "description": "Book places to stay in Africa. Discover the best homes, experiences and restaurants.",
-    "slogan": "Kwa-Ba — The world welcomes you.",
+    "slogan": "Kwa-Ba. The world welcomes you.",
     "pages": {
       "recherche": {
         "titre": "Places to stay in West Africa",
@@ -110,7 +110,7 @@
     "location": "Car hire"
   },
   "logo": {
-    "accueil": "Kwa-Ba — home"
+    "accueil": "Kwa-Ba, home"
   },
   "pied": {
     "accroche": "Book authentic places to stay in Africa and pay by Mobile Money or card.",
@@ -744,7 +744,7 @@
       "4": "Very good",
       "5": "Outstanding"
     },
-    "etoile": "{note} out of 5 — {libelle}",
+    "etoile": "{note} out of 5, {libelle}",
     "aides": {
       "proprete": "Was the place clean when you arrived?",
       "conformite": "Did the place match the listing and photos?",
@@ -1170,7 +1170,7 @@
   "transfertDetail": {
     "statuts": {
       "enAttente": "Payment pending",
-      "confirme": "Paid — driver being assigned",
+      "confirme": "Paid, driver being assigned",
       "chauffeurAttribue": "Driver assigned",
       "effectue": "Completed",
       "annule": "Cancelled"
@@ -1515,6 +1515,9 @@
   },
   "location": {
     "titre": "Hire a car",
+    "photoNumero": "{nom}, photo {numero} of {total}",
+    "photoPrecedente": "Previous photo",
+    "photoSuivante": "Next photo",
     "sousTitre": "With or without a driver, handed over at the airport or at your address, by our partner rental companies.",
     "bientot": "Car hire is coming soon to Kwa-Ba.",
     "bientotAide": "In the meantime, book an airport transfer.",
