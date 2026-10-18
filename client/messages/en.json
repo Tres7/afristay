@@ -1714,5 +1714,14 @@
     "fermerBandeau": "Hide this message",
     "badge": "Awaiting opening",
     "badgeAide": "Your listing is verified: travellers will see it as soon as bookings open."
+  },
+  "preinscription": {
+    "titre": "Pre-registration",
+    "intro": "Before creating your listing, please read and accept the pre-registration terms.",
+    "case": "I have read and accept these pre-registration terms.",
+    "accepter": "I accept",
+    "annuler": "Cancel",
+    "erreur": "Your acceptance could not be saved. Please try again.",
+    "chargement": "Loading the terms…"
   }
 }

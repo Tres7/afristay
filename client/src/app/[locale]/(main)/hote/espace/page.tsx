@@ -13,6 +13,7 @@ import HebergementForm from "@/components/hote/HebergementForm";
 import RatingBadge from "@/components/avis/RatingBadge";
 import RevenusHote from "@/components/hote/RevenusHote";
 import CandidatureHote from "@/components/hote/CandidatureHote";
+import PreinscriptionHote from "@/components/hote/PreinscriptionHote";
 import FenetreOuverture from "@/components/lancement/FenetreOuverture";
 import { usePrelancement } from "@/lib/usePrelancement";
 import type { Hebergement, Paginated, Reservation } from "@/types/api/models";
@@ -139,20 +140,24 @@ function EspaceHoteContent() {
   const revenue = reservations.filter((r) => r.status === "confirmed").reduce((s, r) => s + r.montants.montant_hote, 0);
 
   if (editing) {
+    const formulaire = (
+      <HebergementForm
+        initial={editing === "new" ? undefined : editing}
+        onCancel={() => setEditing(null)}
+        onSaved={(h) => {
+          toast.success(editing === "new" ? t("publiee") : t("miseAJour"));
+          setEditing(null);
+          refresh();
+          if (editing === "new") router.push(`/hebergements/${h.id}`);
+        }}
+      />
+    );
     return (
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
         <h1 className="font-heading font-bold text-2xl sm:text-3xl text-dark mb-6">{editing === "new" ? t("nouvelle") : t("modifier")}</h1>
         <div className="bg-white rounded-3xl shadow-card p-5 sm:p-8">
-          <HebergementForm
-            initial={editing === "new" ? undefined : editing}
-            onCancel={() => setEditing(null)}
-            onSaved={(h) => {
-              toast.success(editing === "new" ? t("publiee") : t("miseAJour"));
-              setEditing(null);
-              refresh();
-              if (editing === "new") router.push(`/hebergements/${h.id}`);
-            }}
-          />
+          {/* Pre-launch: a new listing starts with the pre-registration (shown only if still to be accepted) */}
+          {editing === "new" ? <PreinscriptionHote onCancel={() => setEditing(null)}>{formulaire}</PreinscriptionHote> : formulaire}
         </div>
       </div>
     );

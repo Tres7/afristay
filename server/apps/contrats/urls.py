@@ -8,5 +8,6 @@ urlpatterns = [
     path('signature/<str:jeton>/signer/', views.SignerPubliqueView.as_view(), name='contrats-signer'),
     path('hote/', views.ContratHoteView.as_view(), name='contrats-hote'),
     path('hote/signer/', views.SignerHoteView.as_view(), name='contrats-hote-signer'),
+    path('preinscription/', views.PreinscriptionView.as_view(), name='contrats-preinscription'),
     path('hote/pdf/', views.ContratHotePdfView.as_view(), name='contrats-hote-pdf'),
 ]

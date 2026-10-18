@@ -1714,5 +1714,14 @@
     "fermerBandeau": "Masquer ce message",
     "badge": "En attente d'ouverture",
     "badgeAide": "Votre annonce est vérifiée : elle sera visible des voyageurs dès l'ouverture des réservations."
+  },
+  "preinscription": {
+    "titre": "Pré-inscription",
+    "intro": "Avant de créer votre annonce, lisez et acceptez les conditions de pré-inscription.",
+    "case": "J'ai lu et j'accepte ces conditions de pré-inscription.",
+    "accepter": "J'accepte",
+    "annuler": "Annuler",
+    "erreur": "L'acceptation n'a pas pu être enregistrée. Réessayez.",
+    "chargement": "Chargement des conditions…"
   }
 }

@@ -97,6 +97,12 @@ export function apiErrorMessage(err: unknown, fallback?: string): string {
       en: "Kwa-Ba opens soon: bookings and payments are not open yet.",
     });
   }
+  if (e.response.data?.code === "preinscription_requise") {
+    return selon({
+      fr: "Acceptez d'abord la pré-inscription pour créer votre annonce.",
+      en: "Please accept the pre-registration first to create your listing.",
+    });
+  }
   return firstErrorMessage(e.response.data) ?? fallback ?? selon({ fr: "Une erreur est survenue. Veuillez réessayer.", en: "Something went wrong. Please try again." });
 }
 
