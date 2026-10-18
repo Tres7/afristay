@@ -20,13 +20,22 @@ function decodeExpiry(accessToken?: string): number {
 }
 
 async function refreshAccessToken(token: JWT): Promise<JWT> {
+  let res: Response;
   try {
-    const res = await fetch(`${getApiBaseUrl()}/v1/auth/refresh/`, {
+    res = await fetch(`${getApiBaseUrl()}/v1/auth/refresh/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refresh: token.refreshToken }),
     });
-    if (!res.ok) throw new Error(`refresh ${res.status}`);
+  } catch {
+    // API injoignable (redémarrage, réseau) : on garde la session, le renouvellement sera retenté
+    return token;
+  }
+  // Seul un refus explicite de l'API (jeton expiré, révoqué, invalide) ferme la session ;
+  // une erreur passagère (5xx, 429) ne doit pas déconnecter l'utilisateur
+  if (res.status === 400 || res.status === 401) return { ...token, error: "RefreshAccessTokenError" };
+  if (!res.ok) return token;
+  try {
     const data = (await res.json()) as { access: string; refresh?: string };
     return {
       ...token,
@@ -36,7 +45,7 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
       error: undefined,
     };
   } catch {
-    return { ...token, error: "RefreshAccessTokenError" };
+    return token;
   }
 }
 
@@ -86,8 +95,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   session: {
     strategy: "jwt",
-    // Aligné sur la durée du refresh token Django (7 jours)
-    maxAge: 60 * 60 * 24 * 7,
+    // Aligné sur la durée du refresh token Django (JWT_REFRESH_DAYS, 30 jours) ; prolongée à chaque visite
+    maxAge: 60 * 60 * 24 * 30,
   },
   cookies: {
     sessionToken: {

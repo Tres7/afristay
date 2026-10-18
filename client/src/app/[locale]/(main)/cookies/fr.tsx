@@ -33,7 +33,7 @@ export default function ContenuFr() {
               <table>
                 <thead><tr><th>Nom</th><th>Rôle</th><th>Durée</th></tr></thead>
                 <tbody>
-                  <tr><td><code>authjs.session-token</code></td><td>Maintient votre connexion à votre compte (session chiffrée).</td><td>7 jours, ou jusqu&apos;à la déconnexion</td></tr>
+                  <tr><td><code>authjs.session-token</code></td><td>Maintient votre connexion à votre compte (session chiffrée).</td><td>30 jours après votre dernière visite, ou jusqu&apos;à la déconnexion</td></tr>
                   <tr><td><code>authjs.csrf-token</code></td><td>Protège les formulaires de connexion contre les requêtes frauduleuses.</td><td>Fermeture du navigateur</td></tr>
                   <tr><td><code>authjs.callback-url</code></td><td>Vous ramène à la page consultée après la connexion.</td><td>Fermeture du navigateur</td></tr>
                   <tr><td><code>NEXT_LOCALE</code></td><td>Mémorise la langue choisie (français ou anglais).</td><td>1 an</td></tr>

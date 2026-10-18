@@ -39,16 +39,19 @@ api.interceptors.request.use(async (config) => {
 });
 
 // Plusieurs requêtes peuvent échouer en même temps : un seul renouvellement partagé
-let refreshing: Promise<string | null> | null = null;
+let refreshing: Promise<{ token: string | null; expiree: boolean }> | null = null;
 
-async function refreshAccessToken(): Promise<string | null> {
+/** `expiree` : l'API a refusé le refresh token (session réellement terminée). Une session illisible
+ * (réseau coupé au réveil de l'ordinateur, par ex.) n'est pas une expiration : on ne déconnecte pas. */
+async function refreshAccessToken(): Promise<{ token: string | null; expiree: boolean }> {
   if (!refreshing) {
     // getSession() rappelle NextAuth, dont le callback jwt renouvelle le token Django expiré
     refreshing = getSession()
       .then((session) => {
-        const token = session && !session.error ? session.accessToken || null : null;
-        setApiAccessToken(token);
-        return token;
+        const expiree = session?.error === "RefreshAccessTokenError";
+        const token = session && !expiree ? session.accessToken || null : null;
+        if (session) setApiAccessToken(token);
+        return { token, expiree };
       })
       .finally(() => { refreshing = null; });
   }
@@ -62,15 +65,16 @@ api.interceptors.response.use(
 
     if (typeof window !== "undefined" && error.response?.status === 401 && config?.headers?.Authorization) {
       // Token en cache expiré : on le renouvelle puis on rejoue la requête une seule fois
-      if (!config._retried) {
-        config._retried = true;
-        const token = await refreshAccessToken();
-        if (token && `Bearer ${token}` !== config.headers.Authorization) {
-          config.headers.Authorization = `Bearer ${token}`;
-          return api(config);
-        }
+      if (config._retried) return Promise.reject(error);
+      config._retried = true;
+      const { token, expiree } = await refreshAccessToken();
+      if (token && `Bearer ${token}` !== config.headers.Authorization) {
+        config.headers.Authorization = `Bearer ${token}`;
+        return api(config);
       }
-      // Refresh token Django expiré lui aussi : déconnexion propre
+      // Renouvellement impossible pour l'instant (API ou réseau indisponible) : la session est gardée
+      if (!expiree) return Promise.reject(error);
+      // Refresh token Django refusé : déconnexion propre
       setApiAccessToken(null);
       // La page de connexion reste dans la langue courante ; le retour se fait sans le préfixe /en (ajouté par le routeur)
       const prefixe = langue() === "en" ? "/en" : "";
