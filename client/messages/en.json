@@ -381,7 +381,8 @@
     "rechercher": "Search for an activity, a dish, a place…",
     "aucune": "No ideas match these filters.",
     "reinitialiser": "Reset filters",
-    "dormirA": "Stay in {ville}"
+    "dormirA": "Stay in {ville}",
+    "gratuit": "Free"
   },
   "recherche": {
     "typeLogement": "Type of place",

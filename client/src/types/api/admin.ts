@@ -90,6 +90,29 @@ export interface ReglesLocation {
   conditions: string;
 }
 
+export type CategorieExperience = "activites" | "restaurants" | "loisirs" | "sites";
+
+/** Expérience de la page Découvrir, telle que le back-office la gère (textes français et anglais). */
+export interface ExperienceAdmin {
+  id: number;
+  categorie: CategorieExperience;
+  nom: string;
+  nom_en: string;
+  etiquette: string;
+  etiquette_en: string;
+  ville: string;
+  pays: string;
+  pays_en: string;
+  description: string;
+  description_en: string;
+  prix: number | null;
+  gratuit: boolean;
+  /** Photo affichée (envoyée depuis le back-office, ou externe pour le guide d'origine). */
+  photo: string | null;
+  actif: boolean;
+  ordre: number;
+}
+
 export interface PhotoVehicule {
   id: number;
   url: string;

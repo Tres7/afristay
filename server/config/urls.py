@@ -26,6 +26,7 @@ urlpatterns = [
     path('api/v1/give/', include('apps.give.urls')),
     path('api/v1/verifications/', include('apps.verifications.urls')),
     path('api/v1/locations/', include('apps.locations.urls')),
+    path('api/v1/experiences/', include('apps.experiences.urls')),
     path('api/v1/admin/documents/', include('apps.documents.admin_urls')),
     path('api/v1/admin/contrats/', include('apps.contrats.admin_urls')),
     path('api/v1/admin/', include('apps.backoffice.urls')),
