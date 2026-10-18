@@ -109,7 +109,7 @@ class LocationSerializer(serializers.ModelSerializer):
     lieu_retour_detail = serializers.SerializerMethodField()
     debut_locale = serializers.SerializerMethodField()
     fin_locale = serializers.SerializerMethodField()
-    partenaire = serializers.SerializerMethodField()
+    vehicule_attribue = serializers.SerializerMethodField()
     paiement = serializers.SerializerMethodField()
     remboursement = serializers.SerializerMethodField()
     annulation_gratuite = serializers.SerializerMethodField()
@@ -121,7 +121,7 @@ class LocationSerializer(serializers.ModelSerializer):
             'adresse_prise', 'lieu_retour', 'lieu_retour_detail', 'adresse_retour', 'debut', 'fin', 'debut_locale',
             'fin_locale', 'passagers', 'telephone', 'precisions', 'conducteur', 'permis_numero', 'permis_pays',
             'reservation', 'jours', 'prix_jour', 'frais_lieux', 'prix', 'caution', 'moyen', 'statut', 'expire_le',
-            'annulee_par', 'partenaire', 'paiement', 'remboursement', 'annulation_gratuite', 'cree_le',
+            'annulee_par', 'vehicule_attribue', 'paiement', 'remboursement', 'annulation_gratuite', 'cree_le',
         ]
 
     def get_categorie_detail(self, obj):
@@ -139,14 +139,12 @@ class LocationSerializer(serializers.ModelSerializer):
     def get_fin_locale(self, obj):
         return obj.fin.astimezone(services.ZoneInfo(obj.lieu_retour.fuseau)).strftime('%Y-%m-%dT%H:%M')
 
-    def get_partenaire(self, obj):
-        # Coordonnées visibles par le voyageur une fois le loueur attribué
-        p = obj.partenaire
-        if not p or obj.statut not in ('partenaire_assigne', 'terminee'):
+    def get_vehicule_attribue(self, obj):
+        # Le site n'affiche jamais le loueur ni son chauffeur (nom, téléphone) : leurs coordonnées partent
+        # seulement par email au voyageur, une fois la location payée et attribuée (notifications.partenaire_au_voyageur)
+        if not obj.partenaire_id or obj.statut not in ('partenaire_assigne', 'terminee'):
             return None
-        return {'nom': p.nom, 'contact': p.contact, 'telephone': p.telephone, 'vehicule': obj.vehicule,
-                'immatriculation': obj.immatriculation, 'chauffeur': obj.chauffeur_nom,
-                'telephone_chauffeur': obj.chauffeur_telephone}
+        return {'vehicule': obj.vehicule, 'immatriculation': obj.immatriculation}
 
     def get_paiement(self, obj):
         dernier = max(obj.paiements.all(), key=lambda p: p.cree_le, default=None)

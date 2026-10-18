@@ -165,7 +165,7 @@ def test_full_cycle_payment_partner_payout(client_for, make_user, faux, catalogu
     client = client_for(voyageur)
     loc = _reserver_et_payer(client, faux, catalogue)
     assert faux.transaction['montant'] == 190000
-    assert client.get(f'{LOCATIONS}{loc.id}/').data['partenaire'] is None
+    assert client.get(f'{LOCATIONS}{loc.id}/').data['vehicule_attribue'] is None
 
     paiements.passe()
     sujets = {m.subject for m in mail.outbox}
@@ -177,10 +177,17 @@ def test_full_cycle_payment_partner_payout(client_for, make_user, faux, catalogu
                                  chauffeur_nom='Kodjo', chauffeur_telephone='+228 91 00 00 00')
     detail = client.get(f'{LOCATIONS}{loc.id}/').data
     assert detail['statut'] == 'partenaire_assigne'
-    assert detail['partenaire']['immatriculation'] == 'TG-5678-CD'
+    # Le site montre le véhicule, jamais le loueur ni son chauffeur
+    assert detail['vehicule_attribue'] == {'vehicule': 'Toyota Corolla blanche', 'immatriculation': 'TG-5678-CD'}
+    assert not any(x in str(detail) for x in ('Lomé Auto Location', 'Yao', '90 44 55 66', 'Kodjo', '91 00 00 00'))
     mail.outbox.clear()
     paiements.passe()
-    assert {m.to[0] for m in mail.outbox} == {'voyageur@test.afristay', 'yao@test.afristay'}
+    emails = {m.to[0]: m.body for m in mail.outbox}
+    assert set(emails) == {'voyageur@test.afristay', 'yao@test.afristay'}
+    # Coordonnées du loueur et du chauffeur : par email au voyageur, après le paiement
+    assert '+228 90 44 55 66' in emails['voyageur@test.afristay'] and '+228 91 00 00 00' in emails['voyageur@test.afristay']
+    # Le loueur n'a pas le téléphone du voyageur : il passe par Kwa-Ba
+    assert '12 34 56 78' not in emails['yao@test.afristay'] and 'siège enfant' in emails['yao@test.afristay']
 
     v = VersementPartenaireModel.objects.get(location=loc)
     assert (v.montant_brut, v.commission, v.montant) == (190000, 28500, 161500)  # 15 % de commission
@@ -190,6 +197,19 @@ def test_full_cycle_payment_partner_payout(client_for, make_user, faux, catalogu
     assert faux.payouts[0]['montant'] == 161500
     loc.refresh_from_db()
     assert loc.statut == 'terminee'
+
+
+def test_contacts_in_free_text_are_masked_for_the_partner(client_for, make_user, faux, catalogue, loueur):
+    client = client_for(make_user())
+    loc = _reserver_et_payer(client, faux, catalogue, lieu_prise=catalogue['livraison'].id,
+                             adresse_prise='Bè Kpota, appelez le 90 11 22 33',
+                             precisions='Siège enfant svp, écrivez-moi sur ama.k@gmail.com ou au 99 88 77 66.')
+    services.assigner_partenaire(loc, loueur)
+    mail.outbox.clear()
+    paiements.passe()
+    au_loueur = next(m.body for m in mail.outbox if m.to == ['yao@test.afristay'])
+    assert 'Bè Kpota' in au_loueur and 'Siège enfant' in au_loueur
+    assert not any(x in au_loueur for x in ('90 11 22 33', '99 88 77 66', 'ama.k@gmail.com'))
 
 
 def test_free_cancellation_then_refund_to_the_given_number(client_for, make_user, faux, catalogue, loueur):
