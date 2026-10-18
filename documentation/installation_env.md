@@ -8,8 +8,8 @@
 ## Etape 1 : Cloner et configurer
 
 ```bash
-git clone https://github.com/Tres7/afristay.git
-cd afristay
+git clone https://github.com/Tres7/kwaba.git
+cd kwaba
 cp .env.example .env
 ```
 
