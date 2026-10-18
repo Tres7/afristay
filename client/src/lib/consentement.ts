@@ -14,14 +14,27 @@ export interface Consentement {
 
 // À incrémenter quand une nouvelle catégorie ou un nouveau service tiers est ajouté : le choix est redemandé
 export const VERSION_CONSENTEMENT = 1;
-const CLE = "afristay_consentement";
+const CLE = "kwaba_consentement";
+// Key used before the AfriStay → Kwa-Ba rename: its choice is carried over once (original date kept), then removed
+const ANCIENNE_CLE = "afristay_consentement";
 // La CNIL recommande de redemander le choix au bout de 6 mois
 const DUREE_MS = 182 * 24 * 60 * 60 * 1000;
-export const EVENEMENT = "afristay:consentement";
+export const EVENEMENT = "kwaba:consentement";
+
+function lireBrut(): string | null {
+  const brut = window.localStorage.getItem(CLE);
+  if (brut) return brut;
+  const ancien = window.localStorage.getItem(ANCIENNE_CLE);
+  if (ancien) {
+    window.localStorage.setItem(CLE, ancien);
+    window.localStorage.removeItem(ANCIENNE_CLE);
+  }
+  return ancien;
+}
 
 export function lireConsentement(): Consentement | null {
   try {
-    const brut = window.localStorage.getItem(CLE);
+    const brut = lireBrut();
     if (!brut) return null;
     const c = JSON.parse(brut) as Consentement;
     if (c.version !== VERSION_CONSENTEMENT) return null;
@@ -36,6 +49,7 @@ export function enregistrerConsentement(contenusTiers: boolean): Consentement {
   const c: Consentement = { version: VERSION_CONSENTEMENT, date: new Date().toISOString(), contenusTiers };
   try {
     window.localStorage.setItem(CLE, JSON.stringify(c));
+    window.localStorage.removeItem(ANCIENNE_CLE);
   } catch {
     // Stockage indisponible (navigation privée stricte) : le choix vaut pour la page en cours
   }

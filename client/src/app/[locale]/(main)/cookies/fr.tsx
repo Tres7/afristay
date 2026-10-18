@@ -50,7 +50,7 @@ export default function ContenuFr() {
             <table>
               <thead><tr><th>Nom</th><th>Rôle</th><th>Durée</th></tr></thead>
               <tbody>
-                <tr><td><code>afristay_consentement</code></td><td>Mémorise vos choix de cookies (date et préférences).</td><td>6 mois, puis le choix vous est redemandé</td></tr>
+                <tr><td><code>kwaba_consentement</code></td><td>Mémorise vos choix de cookies (date et préférences).</td><td>6 mois, puis le choix vous est redemandé</td></tr>
                 <tr><td><code>verify_email</code></td><td>Retient l&apos;adresse saisie à l&apos;inscription le temps de la vérification par code.</td><td>Effacé après la vérification ou à la fermeture de l&apos;onglet</td></tr>
                 <tr><td><code>splash_shown</code></td><td>Évite de réafficher l&apos;écran d&apos;accueil animé à chaque page.</td><td>Fermeture de l&apos;onglet</td></tr>
                 <tr><td><code>kwaba_devise</code></td><td>Retient la devise choisie pour l&apos;affichage des prix (FCFA ou euro).</td><td>Jusqu&apos;à suppression</td></tr>
