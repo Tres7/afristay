@@ -119,7 +119,8 @@ class TestCatalogue:
              'lieu_retour': catalogue['livraison'].id, 'debut': _date(5, '10:00'), 'fin': _date(8, '12:00')}
         devis = api_client.get(f'{LOCATIONS}devis/', q).data
         # 3 jours + 2 h entamées = 4 jours ; frais : 5 000 (aéroport) + 3 000 (livraison)
-        assert devis == {'jours': 4, 'prix_jour': 30000, 'frais_lieux': 8000, 'prix': 128000, 'caution': 100000}
+        assert devis == {'jours': 4, 'prix_jour': 30000, 'frais_lieux': 8000, 'prix': 128000, 'caution': 100000,
+                         'caution_en_ligne': True, 'a_payer': 228000}  # caution payée avec la location
 
 
 class TestReservation:
@@ -247,3 +248,106 @@ def test_unpaid_rental_expires(client_for, make_user, faux, catalogue):
     assert services.expirer() == 1
     loc = LocationModel.objects.get(pk=r.data['id'])
     assert (loc.statut, loc.annulee_par) == ('annulee', 'expiration')
+
+
+# --- Caution payée en ligne et gardée par Kwa-Ba ---------------------------------------------------------------
+
+SANS_CHAUFFEUR = {'formule': 'sans_chauffeur', 'conducteur': 'Ama Kossi', 'permis_numero': 'TG-123456', 'permis_pays': 'Togo'}
+
+
+def _vehicule_rendu(loc, heures=25):
+    """Le véhicule a été pris il y a 3 jours et rendu il y a `heures` heures."""
+    maintenant = timezone.now()
+    LocationModel.objects.filter(pk=loc.pk).update(debut=maintenant - timedelta(days=3), fin=maintenant - timedelta(hours=heures))
+    VersementPartenaireModel.objects.filter(location=loc).update(date_prevue=maintenant - timedelta(minutes=1))
+    loc.refresh_from_db()
+    return loc
+
+
+def test_deposit_paid_online_then_refunded_minus_damages(client_for, make_user, faux, catalogue, loueur):
+    client = client_for(make_user(email='ama@test.afristay'))
+    loc = _reserver_et_payer(client, faux, catalogue, **SANS_CHAUFFEUR)
+    # 4 jours × 30 000 + 2 × 5 000 de frais, plus 100 000 de caution payés avec la location
+    assert (loc.prix, loc.caution, loc.caution_en_ligne) == (130000, 100000, True)
+    assert faux.transaction['montant'] == 230000
+    detail = client.get(f'{LOCATIONS}{loc.id}/').data
+    assert detail['a_payer'] == 230000 and detail['caution_etat']['restituee'] is False
+
+    services.assigner_partenaire(loc, loueur, vehicule='Toyota Yaris grise')
+    mail.outbox.clear()
+    paiements.passe()
+    au_loueur = next(m.body for m in mail.outbox if m.to == ['yao@test.afristay'])
+    assert 'ne lui demandez rien' in au_loueur and 'Signalez-le à Kwa-Ba dans les 24 heures' in au_loueur
+
+    loc = _vehicule_rendu(loc, heures=2)
+    services.retenir_caution(loc, 30000, 'Rétroviseur cassé')
+    v = VersementPartenaireModel.objects.get(location=loc)
+    assert (v.montant_brut, v.commission, v.montant) == (160000, 19500, 140500)  # la retenue s'ajoute, sans commission
+    paiements.passe()
+    loc.refresh_from_db()
+    assert loc.caution_restituee_le is None and faux.payouts == []  # délai de signalement pas écoulé : rien ne part
+
+    loc = _vehicule_rendu(loc, heures=25)
+    mail.outbox.clear()
+    paiements.passe()
+    loc.refresh_from_db()
+    assert loc.caution_restituee_le is not None
+    rb = RemboursementModel.objects.get(location=loc)
+    assert (rb.montant, rb.motif, rb.statut) == (70000, 'Restitution de la caution', 'attente_numero')
+    au_voyageur = next(m for m in mail.outbox if m.to == ['ama@test.afristay'] and 'caution' in m.subject)
+    assert '70 000' in au_voyageur.body and 'Rétroviseur cassé' in au_voyageur.body and 'numéro Mobile Money' in au_voyageur.body
+    assert [p['montant'] for p in faux.payouts] == [140500]  # loueur payé avec la retenue
+    with pytest.raises(services.LocationErreur):
+        services.retenir_caution(loc, 10000, 'Trop tard')
+
+
+def test_deposit_retention_rules(client_for, make_user, faux, catalogue, loueur):
+    loc = _reserver_et_payer(client_for(make_user()), faux, catalogue, **SANS_CHAUFFEUR)
+    services.assigner_partenaire(loc, loueur)
+    with pytest.raises(services.LocationErreur, match='pas encore été remis'):
+        services.retenir_caution(loc, 10000, 'Rayure')
+    loc = _vehicule_rendu(loc, heures=2)
+    with pytest.raises(services.LocationErreur, match='entre 0 et la caution'):
+        services.retenir_caution(loc, 100001, 'Trop')
+    with pytest.raises(services.LocationErreur, match='motif'):
+        services.retenir_caution(loc, 10000, '  ')
+    services.retenir_caution(loc, 10000, 'Rayure')
+    services.retenir_caution(loc, 0, '')  # annule la retenue
+    loc.refresh_from_db()
+    assert (loc.caution_retenue, loc.caution_motif) == (0, '')
+    assert VersementPartenaireModel.objects.get(location=loc).montant == loc.montant_partenaire
+
+
+def test_back_office_records_a_retention(client_for, make_user, faux, catalogue, loueur):
+    loc = _reserver_et_payer(client_for(make_user()), faux, catalogue, **SANS_CHAUFFEUR)
+    services.assigner_partenaire(loc, loueur)
+    loc = _vehicule_rendu(loc, heures=2)
+    admin = client_for(make_user(role='admin'))
+    url = f'/api/v1/admin/location/locations/{loc.id}/caution/'
+    assert client_for(make_user()).post(url, {'montant': 5000, 'motif': 'Plein non fait'}, format='json').status_code == 403
+    r = admin.post(url, {'montant': 5000, 'motif': 'Plein non fait'}, format='json')
+    assert r.status_code == 200 and (r.data['caution_retenue'], r.data['caution_motif']) == (5000, 'Plein non fait')
+    assert admin.post(url, {'montant': 200000, 'motif': 'Trop'}, format='json').status_code == 400
+
+
+def test_cancelled_rental_always_refunds_the_deposit(client_for, make_user, faux, catalogue, loueur):
+    client = client_for(make_user())
+    loc = _reserver_et_payer(client, faux, catalogue, **SANS_CHAUFFEUR)
+    services.assigner_partenaire(loc, loueur)
+    LocationModel.objects.filter(pk=loc.pk).update(debut=timezone.now() + timedelta(hours=20))
+    # Hors délai d'annulation gratuite : la location n'est pas remboursée, la caution si
+    assert client.delete(f'{LOCATIONS}{loc.id}/').data['rembourse'] == 100000
+    assert VersementPartenaireModel.objects.get(location=loc).statut == 'planifie'
+
+
+def test_deposit_paid_to_the_partner_when_online_deposit_is_off(client_for, make_user, faux, catalogue, loueur):
+    ParametresLocationModel.objects.filter(pk=1).update(caution_en_ligne=False)
+    client = client_for(make_user())
+    loc = _reserver_et_payer(client, faux, catalogue, **SANS_CHAUFFEUR)
+    assert faux.transaction['montant'] == 130000 and loc.caution_en_ligne is False
+    assert client.get(f'{LOCATIONS}{loc.id}/').data['caution_etat'] is None
+    services.assigner_partenaire(loc, loueur)
+    mail.outbox.clear()
+    paiements.passe()
+    au_loueur = next(m.body for m in mail.outbox if m.to == ['yao@test.afristay'])
+    assert 'Caution à encaisser à la remise : 100 000' in au_loueur

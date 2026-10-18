@@ -37,6 +37,8 @@ export default function Suivi() {
   const [erreurs, setErreurs] = useState<Record<string, string>>({});
   const [envoi, setEnvoi] = useState(false);
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
+  const [retenue, setRetenue] = useState<AdminLocation | null>(null);
+  const [formRetenue, setFormRetenue] = useState({ montant: "", motif: "" });
 
   const { data: loueurs = [] } = useQuery({
     queryKey: ["admin", "location", "loueurs-dispo", attribution?.id],
@@ -66,13 +68,41 @@ export default function Suivi() {
     }
   };
 
+  const ouvrirRetenue = (l: AdminLocation) => {
+    setRetenue(l);
+    setFormRetenue({ montant: l.caution_retenue ? String(l.caution_retenue) : "", motif: l.caution_motif });
+    setErreurs({});
+  };
+
+  const retenir = async () => {
+    if (!retenue) return;
+    setEnvoi(true);
+    try {
+      await api.post(`/v1/admin/location/locations/${retenue.id}/caution/`, { montant: Number(formRetenue.montant || 0), motif: formRetenue.motif });
+      toast.success(Number(formRetenue.montant) > 0 ? "Retenue enregistrée : elle sera versée au loueur" : "Retenue annulée");
+      setRetenue(null);
+      queryClient.invalidateQueries({ queryKey: ["admin"] });
+    } catch (err) {
+      setErreurs(erreursApi(err));
+    } finally {
+      setEnvoi(false);
+    }
+  };
+
+  const etatCaution = (l: AdminLocation) => {
+    if (!l.caution_en_ligne) return l.caution ? `Caution ${formatPrice(l.caution)} réglée au loueur` : "";
+    const retenueTexte = l.caution_retenue ? `, retenue ${formatPrice(l.caution_retenue)}` : "";
+    return `Caution ${formatPrice(l.caution)} ${l.caution_restituee_le ? "réglée" : "gardée"}${retenueTexte}`;
+  };
+
   const colonnes: Colonne<AdminLocation>[] = [
     { titre: "Location", masquerMobile: true, cellule: (l) => (
       <div className="min-w-0"><p className="font-semibold text-dark">{l.categorie} · {l.formule_libelle}</p><p className="text-xs text-muted font-mono">{l.reference}</p></div>
     ) },
     { titre: "Voyageur", cellule: (l) => <div className="text-xs"><p className="text-dark font-medium">{l.voyageur.nom}</p><p className="text-muted">{l.telephone}</p></div> },
     { titre: "Prise", cellule: (l) => <div className="text-xs"><p className="text-dark">{dateHeure(l.debut)}</p><p className="text-muted">{l.lieu_prise} · {l.jours} j</p></div> },
-    { titre: "Montant", cellule: (l) => <span className="tabular-nums whitespace-nowrap">{formatPrice(l.prix)}</span> },
+    { titre: "Montant", cellule: (l) => <div className="text-xs"><p className="tabular-nums whitespace-nowrap text-sm">{formatPrice(l.prix)}</p>
+      {etatCaution(l) && <p className="text-muted">{etatCaution(l)}</p>}</div> },
     { titre: "Statut", cellule: (l) => <div className="flex flex-col items-start gap-1"><Pill ton={TON[l.statut]}>{l.statut_libelle}</Pill>
       {l.partenaire && <span className="text-xs text-muted">{l.partenaire.nom}</span>}</div> },
   ];
@@ -83,10 +113,13 @@ export default function Suivi() {
       {(l.statut === "confirmee" || l.statut === "partenaire_assigne") && (
         <ActionButton onClick={() => ouvrir(l)}>{l.partenaire ? "Modifier le loueur" : "Attribuer"}</ActionButton>
       )}
+      {l.caution_en_ligne && !l.caution_restituee_le && l.statut === "partenaire_assigne" && new Date(l.debut) <= new Date() && (
+        <ActionButton onClick={() => ouvrirRetenue(l)}>{l.caution_retenue ? "Modifier la retenue" : "Retenue sur la caution"}</ActionButton>
+      )}
       {(l.statut === "confirmee" || l.statut === "partenaire_assigne" || l.statut === "en_attente_paiement") && (
         <ActionButton danger onClick={() => setConfirmation({
           titre: "Annuler la location", danger: true, motif: true, libelle: "Annuler et rembourser",
-          message: <>La location <strong>{l.reference}</strong> sera annulée et le voyageur remboursé intégralement s&apos;il a payé.</>,
+          message: <>La location <strong>{l.reference}</strong> sera annulée et le voyageur remboursé intégralement s&apos;il a payé{l.caution_en_ligne ? ", caution comprise" : ""}.</>,
           action: async (motif) => {
             try {
               await api.post(`/v1/admin/location/locations/${l.id}/annuler/`, { motif });
@@ -137,6 +170,21 @@ export default function Suivi() {
             <Champ label="Téléphone du chauffeur"><Saisie type="tel" value={form.chauffeur_telephone} onChange={(e) => setForm({ ...form, chauffeur_telephone: e.target.value })} required /></Champ>
           </div>
         )}
+      </Panneau>
+      <Panneau ouvert={!!retenue} titre="Retenue sur la caution" onFermer={() => setRetenue(null)} onValider={retenir} envoi={envoi} libelle="Enregistrer">
+        {retenue && (
+          <p className="text-sm bg-light-muted rounded-xl p-3 text-gray-600">
+            <strong className="text-dark">{retenue.reference}</strong> · caution de {formatPrice(retenue.caution)}, retour le {dateHeure(retenue.fin)}.
+            {" "}Dommage, carburant manquant… signalé par le loueur : la retenue lui est versée avec la location, le reste est remboursé au voyageur à la fin du délai de signalement. 0 annule la retenue.
+          </p>
+        )}
+        {erreurs.detail && <p role="alert" className="text-sm text-red-700 bg-red-50 rounded-xl p-3">{erreurs.detail}</p>}
+        <Champ label="Montant retenu (FCFA)" erreur={erreurs.montant}>
+          <Saisie type="number" min={0} max={retenue?.caution} value={formRetenue.montant} onChange={(e) => setFormRetenue({ ...formRetenue, montant: e.target.value })} required />
+        </Champ>
+        <Champ label="Motif" aide="Communiqué au voyageur" erreur={erreurs.motif}>
+          <Saisie value={formRetenue.motif} maxLength={255} onChange={(e) => setFormRetenue({ ...formRetenue, motif: e.target.value })} placeholder="Rétroviseur cassé (photos du loueur)" />
+        </Champ>
       </Panneau>
       <ConfirmDialog confirmation={confirmation} onClose={() => setConfirmation(null)} />
     </div>

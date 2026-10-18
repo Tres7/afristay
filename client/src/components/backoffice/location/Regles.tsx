@@ -4,10 +4,13 @@ import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import api from "@/lib/api";
-import { Champ, Saisie, Zone, erreursApi } from "@/components/backoffice/Panneau";
+import { Champ, Interrupteur, Saisie, Zone, erreursApi } from "@/components/backoffice/Panneau";
 import type { ReglesLocation } from "@/types/api/admin";
 
-const VIDE = { commission_pourcent: "15", delai_min_jours: "2", duree_max_jours: "30", annulation_gratuite_heures: "48", conditions: "" };
+const VIDE = {
+  commission_pourcent: "15", delai_min_jours: "2", duree_max_jours: "30", annulation_gratuite_heures: "48", conditions: "",
+  caution_en_ligne: true, restitution_caution_heures: "24",
+};
 
 /** Règles de la location : tant qu'elles ne sont pas enregistrées, la location n'est pas proposée sur le site. */
 export default function Regles() {
@@ -22,7 +25,7 @@ export default function Regles() {
 
   useEffect(() => {
     if (regles) setForm({ ...regles, delai_min_jours: String(regles.delai_min_jours), duree_max_jours: String(regles.duree_max_jours),
-      annulation_gratuite_heures: String(regles.annulation_gratuite_heures) });
+      annulation_gratuite_heures: String(regles.annulation_gratuite_heures), restitution_caution_heures: String(regles.restitution_caution_heures) });
   }, [regles]);
 
   const enregistrer = async (e: React.FormEvent) => {
@@ -58,6 +61,21 @@ export default function Regles() {
         <Champ label="Annulation gratuite (heures avant)" aide="Remboursement intégral au-delà ; rien ensuite" erreur={erreurs.annulation_gratuite_heures}>
           <Saisie type="number" min={0} value={form.annulation_gratuite_heures} onChange={(e) => setForm({ ...form, annulation_gratuite_heures: e.target.value })} required />
         </Champ>
+      </div>
+      <div className="rounded-xl border border-gray-100 p-4 space-y-3">
+        <Interrupteur label="Caution payée en ligne et gardée par Kwa-Ba" checked={form.caution_en_ligne}
+          onChange={(v) => setForm({ ...form, caution_en_ligne: v })} />
+        <p className="text-xs text-muted">
+          {form.caution_en_ligne
+            ? "Le voyageur paie la caution avec la location et ne règle rien au loueur. Après le retour, le loueur signale les dommages à Kwa-Ba ; la retenue (Suivi des locations) lui est versée, le reste est remboursé au voyageur."
+            : "Le voyageur règle la caution au loueur à la remise du véhicule : Kwa-Ba n'en a pas le contrôle."}
+        </p>
+        {form.caution_en_ligne && (
+          <Champ label="Signalement des dommages (heures après le retour)" aide="Ensuite, la caution moins la retenue est remboursée au voyageur et le loueur payé"
+            erreur={erreurs.restitution_caution_heures}>
+            <Saisie type="number" min={1} value={form.restitution_caution_heures} onChange={(e) => setForm({ ...form, restitution_caution_heures: e.target.value })} required />
+          </Champ>
+        )}
       </div>
       <Champ label="Conditions affichées au voyageur" aide="Âge minimum, permis, carburant, kilométrage…" erreur={erreurs.conditions}>
         <Zone rows={4} value={form.conditions} onChange={(e) => setForm({ ...form, conditions: e.target.value })} />

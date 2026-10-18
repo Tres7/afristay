@@ -31,7 +31,10 @@ export interface LieuRemise {
 
 export interface CatalogueLocation {
   active: boolean;
-  regles?: { delai_min_jours: number; duree_max_jours: number; annulation_gratuite_heures: number; conditions: string };
+  regles?: {
+    delai_min_jours: number; duree_max_jours: number; annulation_gratuite_heures: number; conditions: string;
+    caution_en_ligne: boolean; restitution_caution_heures: number;
+  };
   categories?: CategorieVehicule[];
   lieux?: LieuRemise[];
   filtres?: { gammes: { code: string; nom: string }[]; boites: { code: string; nom: string }[]; carburants: { code: string; nom: string }[] };
@@ -43,6 +46,10 @@ export interface DevisLocation {
   frais_lieux: number;
   prix: number;
   caution: number;
+  /** Caution payée avec la location et gardée par Kwa-Ba (sinon réglée au loueur à la remise). */
+  caution_en_ligne: boolean;
+  /** Montant payé en ligne : la location et, le cas échéant, la caution. */
+  a_payer: number;
 }
 
 export interface Location {
@@ -66,6 +73,10 @@ export interface Location {
   frais_lieux: number;
   prix: number;
   caution: number;
+  caution_en_ligne: boolean;
+  a_payer: number;
+  /** Caution gardée par Kwa-Ba : remboursée `restitution_heures` après le retour, moins la retenue. */
+  caution_etat: { restituee: boolean; retenue: number; motif: string; restitution_heures: number } | null;
   statut: StatutLocation;
   expire_le: string | null;
   annulee_par: string;

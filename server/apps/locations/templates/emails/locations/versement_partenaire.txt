@@ -4,7 +4,8 @@ Nous venons de vous envoyer {{ montant }} pour la location {{ reference }} du {{
 
   Prix de la location : {{ montant_brut }}
   Commission Kwa-Ba : {{ commission }}
-  Versé : {{ montant }}
+{% if retenue %}  Retenue sur la caution du voyageur : {{ retenue }}{% if motif %} ({{ motif }}){% endif %}
+{% endif %}  Versé : {{ montant }}
 
 Merci pour votre confiance,
 L'équipe Kwa-Ba

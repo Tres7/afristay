@@ -80,7 +80,8 @@ function LocationDetail() {
   };
 
   const annuler = async () => {
-    if (!window.confirm(l.paiement === "reussi" && !l.annulation_gratuite ? td("annulerTardif") : td("annulerQuestion"))) return;
+    const tardif = l.paiement === "reussi" && !l.annulation_gratuite;
+    if (!window.confirm(tardif ? td(l.caution_etat ? "annulerTardifCaution" : "annulerTardif") : td("annulerQuestion"))) return;
     setAnnulation(true);
     try {
       const res = await api.delete<{ rembourse: number; numero_requis: boolean }>(`/v1/locations/${l.id}/`);
@@ -150,8 +151,18 @@ function LocationDetail() {
           <div className="mt-5 pt-4 border-t border-gray-100 space-y-1 text-sm">
             <div className="flex justify-between"><span className="text-gray-600">{t("devisJours", { nombre: l.jours, prix: formatPrice(l.prix_jour) })}</span><span>{formatPrice(l.prix_jour * l.jours)}</span></div>
             {l.frais_lieux > 0 && <div className="flex justify-between"><span className="text-gray-600">{t("frais")}</span><span>{formatPrice(l.frais_lieux)}</span></div>}
-            <div className="flex justify-between pt-2"><span className="text-gray-600">{l.paiement === "reussi" ? td("prixPaye") : td("prix")}</span><span className="font-heading font-bold text-xl text-dark">{formatPrice(l.prix)}</span></div>
-            {l.caution > 0 && <p className="text-xs text-gray-500">{t("caution", { montant: formatPrice(l.caution) })}</p>}
+            {l.caution_etat && <div className="flex justify-between"><span className="text-gray-600">{t("cautionLigne")}</span><span>{formatPrice(l.caution)}</span></div>}
+            <div className="flex justify-between pt-2"><span className="text-gray-600">{l.paiement === "reussi" ? td("prixPaye") : td("prix")}</span><span className="font-heading font-bold text-xl text-dark">{formatPrice(l.a_payer)}</span></div>
+            {l.caution_etat ? (
+              l.statut !== "annulee" && (
+                <p className="text-xs text-gray-500">
+                  {l.caution_etat.restituee
+                    ? td("cautionRestituee", { montant: formatPrice(l.caution - l.caution_etat.retenue) })
+                    : t("cautionEnLigne", { heures: l.caution_etat.restitution_heures })}
+                  {l.caution_etat.retenue > 0 && <> {td("cautionRetenue", { montant: formatPrice(l.caution_etat.retenue), motif: l.caution_etat.motif })}</>}
+                </p>
+              )
+            ) : l.caution > 0 && <p className="text-xs text-gray-500">{t("caution", { montant: formatPrice(l.caution) })}</p>}
           </div>
           {l.remboursement && (
             l.remboursement.statut === "attente_numero" ? (

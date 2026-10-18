@@ -48,6 +48,7 @@ VARIABLES = {
     'date': "Date d'émission", 'tarifs.frais_voyageur': 'Frais de service voyageur (%)',
     'tarifs.commission_hote': 'Commission hôte (%)', 'tarifs.commission_chauffeur': 'Commission chauffeur (%)',
     'tarifs.commission_loueur': 'Commission loueur (%)', 'tarifs.delai_location': 'Délai minimal de réservation (jours)',
+    'tarifs.restitution_caution': 'Délai de signalement des dommages après la location (heures)',
     'give.jour_reversement': 'Jour du reversement mensuel aux ONG',
 }
 _VARIABLE = re.compile(r'\{\{\s*([\w.]+)\s*\}\}')
@@ -77,6 +78,7 @@ def _tarifs() -> dict:
         'tarifs.commission_chauffeur': _pourcent(COMMISSION_CHAUFFEUR * 100),
         'tarifs.commission_loueur': _pourcent(location.commission_pourcent) if location else '',
         'tarifs.delai_location': str(location.delai_min_jours) if location else '2',
+        'tarifs.restitution_caution': str(location.restitution_caution_heures) if location else '24',
         'give.jour_reversement': str(JOUR_REVERSEMENT),
     }
 

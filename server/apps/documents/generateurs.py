@@ -80,18 +80,21 @@ def bon_location(loc) -> bytes:
         ('Prise', f"{date(debut, 'l j F Y')} à {debut:%H:%M}, {loc.lieu_prise.nom}" + (f", {loc.adresse_prise}" if loc.adresse_prise else '')),
         ('Retour', f"{date(fin, 'l j F Y')} à {fin:%H:%M}, {loc.lieu_retour.nom}" + (f", {loc.adresse_retour}" if loc.adresse_retour else '')),
         ('Passagers', str(loc.passagers)), ('Conducteur', loc.conducteur),
-        ('Caution', fcfa(loc.caution) + ', à régler au loueur à la remise du véhicule' if loc.caution else ''),
+        ('Caution', (fcfa(loc.caution) + (', payée en ligne et gardée par Kwa-Ba, remboursée après le retour du véhicule'
+                                           if loc.caution_gardee else ', à régler au loueur à la remise du véhicule'))
+         if loc.caution else ''),
     ]
+    # Le bon se télécharge sur le site : il ne donne jamais le loueur ni le chauffeur (coordonnées envoyées par email)
     if loc.partenaire_id:
-        lignes += [('Loueur', f"{loc.partenaire.nom} · {loc.partenaire.telephone}"),
-                   ('Véhicule remis', ' · '.join(x for x in (loc.vehicule, loc.immatriculation) if x)),
-                   ('Chauffeur', ' · '.join(x for x in (loc.chauffeur_nom, loc.chauffeur_telephone) if x))]
+        lignes.append(('Véhicule remis', ' · '.join(x for x in (loc.vehicule, loc.immatriculation) if x)))
     doc.bloc('Votre location', lignes)
     location_seule = loc.jours * loc.prix_jour
     montants = [(f"Location, {loc.jours} jour(s)", str(loc.jours), fcfa(loc.prix_jour), fcfa(location_seule))]
     if loc.prix - location_seule > 0:
         montants.append(('Frais de remise et de retour', '1', fcfa(loc.prix - location_seule), fcfa(loc.prix - location_seule)))
-    doc.montants(montants, [('Total payé', fcfa(loc.prix))])
+    if loc.caution_gardee:
+        montants.append(('Caution (remboursée après le retour)', '1', fcfa(loc.caution_gardee), fcfa(loc.caution_gardee)))
+    doc.montants(montants, [('Total payé', fcfa(loc.montant_a_payer))])
     return doc.en_pdf()
 
 

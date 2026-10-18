@@ -33,6 +33,7 @@ urlpatterns = [
     path('location/locations/<uuid:pk>/loueurs/', locations.LocationPartenairesView.as_view(), name='admin-location-loueurs-dispo'),
     path('location/locations/<uuid:pk>/attribuer/', locations.LocationAttribuerView.as_view(), name='admin-location-attribuer'),
     path('location/locations/<uuid:pk>/annuler/', locations.LocationAnnulerView.as_view(), name='admin-location-annuler'),
+    path('location/locations/<uuid:pk>/caution/', locations.LocationCautionView.as_view(), name='admin-location-caution'),
     # Transferts aéroport
     path('transferts/aeroports/', transferts.AeroportsView.as_view(), name='admin-aeroports'),
     path('transferts/aeroports/<str:pk>/', transferts.AeroportView.as_view(), name='admin-aeroport'),
