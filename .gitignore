@@ -45,6 +45,7 @@ yarn-error.log*
 /client/node_modules/
 /client/.env
 *.tsbuildinfo
+AUDIT-SECURITE.md
 
 # =========================
 # Docker
