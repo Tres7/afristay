@@ -1,11 +1,11 @@
 "use client";
 
 import { Link, useRouter } from "@/i18n/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Pencil, Trash2, Eye, EyeOff, Calendar, CalendarDays, Users, MapPin, MessageCircle, ShieldCheck, Clock, AlertTriangle } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, Calendar, CalendarDays, Users, MapPin, MessageCircle, ShieldCheck, Clock, AlertTriangle, Hourglass } from "lucide-react";
 import { toast } from "sonner";
 import api, { apiErrorMessage } from "@/lib/api";
 import { cn, FALLBACK_IMAGE, formatDate, formatPrice, isoDate, TYPE_LABELS } from "@/lib/utils";
@@ -13,11 +13,16 @@ import HebergementForm from "@/components/hote/HebergementForm";
 import RatingBadge from "@/components/avis/RatingBadge";
 import RevenusHote from "@/components/hote/RevenusHote";
 import CandidatureHote from "@/components/hote/CandidatureHote";
+import FenetreOuverture from "@/components/lancement/FenetreOuverture";
+import { usePrelancement } from "@/lib/usePrelancement";
 import type { Hebergement, Paginated, Reservation } from "@/types/api/models";
 import type { MessagingConversation } from "@/types/api/messaging";
 import { useTranslations } from "next-intl";
 
 type Tab = "annonces" | "reservations" | "revenus";
+
+// Pre-launch window already shown when the host space opened, for this browsing session
+const CLE_FENETRE_VUE = "kwaba_fenetre_ouverture_vue";
 
 const PAYMENT_LABELS: Record<string, string> = { mobile_money: "mobileMoney", carte: "carte", paypal: "paypal" };
 
@@ -26,6 +31,9 @@ function EspaceHoteContent() {
   const tVerif = useTranslations("espaceHote.verification");
   const tAnnonce = useTranslations("annonce");
   const tRes = useTranslations("reservation");
+  const tPre = useTranslations("prelancement");
+  const prelancement = usePrelancement();
+  const [fenetre, setFenetre] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
@@ -47,6 +55,23 @@ function EspaceHoteContent() {
   };
 
   const isHost = session?.user?.role === "hote" || session?.user?.role === "admin";
+
+  // Pre-launch: the window comes before any new listing, and once per session when the host space opens
+  const nouvelle = () => (prelancement ? setFenetre(true) : setEditing("new"));
+  const fermerFenetre = useCallback(() => setFenetre(false), []);
+  const creerDepuisFenetre = () => {
+    setFenetre(false);
+    setEditing("new");
+  };
+
+  useEffect(() => {
+    if (!prelancement || !isHost) return;
+    try {
+      if (window.sessionStorage.getItem(CLE_FENETRE_VUE) === "1") return;
+      window.sessionStorage.setItem(CLE_FENETRE_VUE, "1");
+    } catch { /* storage unavailable: shown on every visit */ }
+    setFenetre(true);
+  }, [prelancement, isHost]);
 
   useEffect(() => {
     const onglet = searchParams.get("onglet");
@@ -135,17 +160,18 @@ function EspaceHoteContent() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 md:py-12">
+      <FenetreOuverture ouverte={fenetre} onCreer={creerDepuisFenetre} onFermer={fermerFenetre} />
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
         <div>
           <h1 className="font-heading font-bold text-2xl sm:text-3xl text-dark">{t("titre")}</h1>
           <p className="text-gray-500 text-sm mt-1">{t("sousTitre")}</p>
         </div>
-        <button onClick={() => setEditing("new")} className="flex items-center justify-center gap-2 bg-primary text-white font-bold px-5 py-3 rounded-xl shadow-button hover:bg-primary-600">
+        <button onClick={nouvelle} className="flex items-center justify-center gap-2 bg-primary text-white font-bold px-5 py-3 rounded-xl shadow-button hover:bg-primary-600">
           <Plus size={18} /> {t("nouvelle")}
         </button>
       </div>
 
-      <CandidatureHote nbAnnonces={annonces.length} onNouvelle={() => setEditing("new")} />
+      <CandidatureHote nbAnnonces={annonces.length} onNouvelle={nouvelle} />
 
       <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-8">
         {[
@@ -177,7 +203,7 @@ function EspaceHoteContent() {
         ) : annonces.length === 0 ? (
           <div className="bg-white rounded-3xl p-10 sm:p-16 text-center border border-gray-100">
             <p className="text-gray-500 mb-4">{t("aucuneAnnonce")}</p>
-            <button onClick={() => setEditing("new")} className="bg-primary text-white font-bold px-6 py-3 rounded-xl">{t("publierPremier")}</button>
+            <button onClick={nouvelle} className="bg-primary text-white font-bold px-6 py-3 rounded-xl">{t("publierPremier")}</button>
           </div>
         ) : (
           <div className="space-y-4">
@@ -201,7 +227,17 @@ function EspaceHoteContent() {
                       <AlertTriangle size={14} className="flex-shrink-0 mt-px" /> {tAnnonce("detailsManquants")}
                     </button>
                   )}
-                  {h.statut_verification === "verifiee" ? (
+                  {h.statut_verification === "verifiee" && prelancement ? (
+                    <div className="mt-3 text-sm bg-primary/5 text-primary rounded-xl px-3 py-2">
+                      <p className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                        <span className="flex items-center gap-1.5 text-xs font-bold text-green-700"><ShieldCheck size={14} aria-hidden /> {tVerif("verifiee")}</span>
+                        <span className="inline-flex items-center gap-1 bg-accent/15 text-amber-900 text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full">
+                          <Hourglass size={12} aria-hidden /> {tPre("badge")}
+                        </span>
+                      </p>
+                      <p className="mt-1 text-xs text-gray-600">{tPre("badgeAide")}</p>
+                    </div>
+                  ) : h.statut_verification === "verifiee" ? (
                     <p className="flex items-center gap-1.5 text-xs font-bold text-green-700 mt-2"><ShieldCheck size={14} /> {tVerif("verifiee")}</p>
                   ) : h.statut_verification === "refusee" ? (
                     <div role="alert" className="mt-3 text-sm bg-red-50 text-red-800 rounded-xl px-3 py-2">

@@ -90,6 +90,13 @@ api.interceptors.response.use(
 export function apiErrorMessage(err: unknown, fallback?: string): string {
   const e = err as AxiosError<Record<string, unknown>>;
   if (!e?.response) return selon({ fr: "Impossible de contacter le serveur.", en: "Unable to reach the server." });
+  // Pre-launch mode (config/prelancement.py on the API): bookings and payments are not open yet
+  if (e.response.data?.code === "prelancement") {
+    return selon({
+      fr: "Kwa-Ba ouvre bientôt : les réservations et les paiements ne sont pas encore ouverts.",
+      en: "Kwa-Ba opens soon: bookings and payments are not open yet.",
+    });
+  }
   return firstErrorMessage(e.response.data) ?? fallback ?? selon({ fr: "Une erreur est survenue. Veuillez réessayer.", en: "Something went wrong. Please try again." });
 }
 
