@@ -88,7 +88,7 @@ export default function FenetreOuverture({ ouverte, onCreer, onFermer }: Props) 
               {t("creer")}
             </button>
             <button type="button" onClick={onFermer}
-              className="mt-3 min-h-[44px] px-4 rounded-xl text-sm font-medium text-dark hover:underline focus-visible:!outline-accent">
+              className="w-full mt-3 min-h-[52px] rounded-xl bg-gray-100 text-dark font-bold hover:bg-gray-200 focus-visible:!outline-accent">
               {t("plusTard")}
             </button>
           </motion.div>
