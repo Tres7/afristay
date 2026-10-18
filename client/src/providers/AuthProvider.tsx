@@ -24,8 +24,9 @@ function SessionTokenSync() {
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
-    // Rafraîchit la session toutes les 5 min : le token mis en cache reste valide (durée de vie 60 min)
-    <SessionProvider refetchInterval={5 * 60} refetchOnWindowFocus>
+    // Relit la session chaque minute tant qu'un onglet est ouvert : chaque lecture prolonge la session de 5 min
+    // (session.maxAge dans auth.ts) et renouvelle le token d'accès avant son expiration
+    <SessionProvider refetchInterval={60} refetchOnWindowFocus>
       <SessionTokenSync />
       {children}
     </SessionProvider>

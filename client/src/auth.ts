@@ -95,8 +95,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   session: {
     strategy: "jwt",
-    // Aligné sur la durée du refresh token Django (JWT_REFRESH_DAYS, 30 jours) ; prolongée à chaque visite
-    maxAge: 60 * 60 * 24 * 30,
+    // 5 min après avoir quitté le site (onglet ou navigateur fermé), il faut se reconnecter : tant qu'un onglet
+    // est ouvert, AuthProvider relit la session chaque minute et chaque lecture repousse l'expiration
+    maxAge: 5 * 60,
   },
   cookies: {
     sessionToken: {
