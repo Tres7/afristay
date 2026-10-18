@@ -65,7 +65,7 @@ Les manifests v1 (client déployé depuis Git, avant le passage au VPS) restent 
 ### Configurer la CD App
 
 1. Profil GitHub → Settings → Developer settings → GitHub Apps → **New GitHub App** : webhook désactivé ; permission de dépôt **Contents : Read and write**, rien d'autre ; installable sur ce compte uniquement.
-2. Installer l'App sur le seul dépôt `afristay`.
+2. Installer l'App sur le seul dépôt `kwaba`.
 3. Dans le dépôt, Settings → Secrets and variables → Actions : variable **`CD_APP_CLIENT_ID`** (Client ID de l'App) et secret **`CD_APP_PRIVATE_KEY`** (contenu du fichier `.pem` généré).
 4. Ruleset « Protect main » → Bypass list : ajouter l'App.
 

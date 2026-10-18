@@ -23,8 +23,8 @@ Plateforme de reservation d'hebergements en Afrique avec support des paiements M
 ### 1. Cloner le repo
 
 ```bash
-git clone https://github.com/Tres7/afristay.git
-cd afristay
+git clone https://github.com/Tres7/kwaba.git
+cd kwaba
 ```
 
 ### 2. Configurer l'environnement
@@ -64,7 +64,7 @@ docker compose exec backend python manage.py createsuperuser
 ## Structure du projet
 
 ```
-afristay/
+kwaba/
 ├── client/                 # Frontend Next.js
 │   ├── src/
 │   │   └── app/            # App Router (pages, layouts)
