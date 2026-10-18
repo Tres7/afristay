@@ -6,6 +6,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from config.prelancement import verifier_ouverture
 from apps.paiements import services as paiements
 from apps.paiements.views import CompteRemboursementSerializer
 from apps.reservations.models import ReservationModel
@@ -229,6 +230,7 @@ class LocationsView(APIView):
         return Response({'results': data, 'count': len(data)})
 
     def post(self, request):
+        verifier_ouverture()
         serializer = LocationCreationSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         try:
@@ -268,6 +270,7 @@ class PayerLocationView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):
+        verifier_ouverture()
         location = _de_l_utilisateur(pk, request.user)
         if not location:
             return Response({'detail': 'Location introuvable.'}, status=status.HTTP_404_NOT_FOUND)

@@ -10,6 +10,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from config.prelancement import verifier_ouverture
 from apps.reservations.models import ReservationModel
 from apps.securite.audit import journaliser
 
@@ -51,6 +52,7 @@ class PayerView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):
+        verifier_ouverture()
         reservation = _reservation_du_voyageur(pk, request.user)
         if not reservation:
             return Response({'detail': 'Réservation introuvable.'}, status=status.HTTP_404_NOT_FOUND)

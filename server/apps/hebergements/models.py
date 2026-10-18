@@ -2,10 +2,14 @@ import uuid
 from django.conf import settings
 from django.db import models
 
+from config import prelancement
+
 
 class HebergementQuerySet(models.QuerySet):
     def publiees(self):
         """Annonces visibles du public : vérifiées par un agent de terrain et non masquées par l'hôte."""
+        if prelancement.actif():
+            return self.none()  # pre-launch: verified listings wait for the opening
         return self.filter(is_available=True, statut_verification='verifiee')
 
 
@@ -74,7 +78,7 @@ class HebergementModel(models.Model):
 
     @property
     def est_publiee(self) -> bool:
-        return self.is_available and self.statut_verification == 'verifiee'
+        return self.is_available and self.statut_verification == 'verifiee' and not prelancement.actif()
 
 
 def _photo_upload_path(instance, filename):

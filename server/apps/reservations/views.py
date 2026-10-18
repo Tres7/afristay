@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
+from config.prelancement import verifier_ouverture
 from apps.paiements import services as paiements
 
 from .models import ReservationModel
@@ -25,6 +26,7 @@ class ReservationListCreateView(APIView):
         return Response({'results': serializer.data, 'count': len(serializer.data)})
 
     def post(self, request):
+        verifier_ouverture()
         if not paiements.reservation_possible():
             return Response({'detail': paiements.INDISPONIBLE}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         serializer = ReservationCreateSerializer(data=request.data, context={'request': request})

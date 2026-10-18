@@ -5,6 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from config.prelancement import verifier_ouverture
 from apps.paiements import paypal
 from apps.paiements import services as paiements
 
@@ -186,6 +187,7 @@ class DonsView(APIView):
         return Response({'results': data, 'count': len(data), 'total_donne': payes['total'] or 0, 'nb_payes': payes['nb']})
 
     def post(self, request):
+        verifier_ouverture()
         serializer = DonCreationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
