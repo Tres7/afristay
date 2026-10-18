@@ -70,7 +70,7 @@ def catalogue():
 @pytest.fixture
 def loueur(catalogue):
     p = PartenaireLocationModel.objects.create(
-        nom='Lomé Auto Location', contact='Yao Mensah', telephone='+228 90 44 55 66', email='yao@test.afristay',
+        nom='Lomé Auto Location', contact='Yao Mensah', telephone='+228 90 44 55 66', email='yao@test.kwaba',
         pays_versement='TG', operateur_versement='togocel', numero_versement='90445566',
     )
     p.categories.add(catalogue['berline'])
@@ -161,8 +161,8 @@ class TestReservation:
 
 
 def test_full_cycle_payment_partner_payout(client_for, make_user, faux, catalogue, loueur):
-    make_user(role='admin', email='admin@test.afristay')
-    voyageur = make_user(email='voyageur@test.afristay')
+    make_user(role='admin', email='admin@test.kwaba')
+    voyageur = make_user(email='voyageur@test.kwaba')
     client = client_for(voyageur)
     loc = _reserver_et_payer(client, faux, catalogue)
     assert faux.transaction['montant'] == 190000
@@ -184,11 +184,11 @@ def test_full_cycle_payment_partner_payout(client_for, make_user, faux, catalogu
     mail.outbox.clear()
     paiements.passe()
     emails = {m.to[0]: m.body for m in mail.outbox}
-    assert set(emails) == {'voyageur@test.afristay', 'yao@test.afristay'}
+    assert set(emails) == {'voyageur@test.kwaba', 'yao@test.kwaba'}
     # Coordonnées du loueur et du chauffeur : par email au voyageur, après le paiement
-    assert '+228 90 44 55 66' in emails['voyageur@test.afristay'] and '+228 91 00 00 00' in emails['voyageur@test.afristay']
+    assert '+228 90 44 55 66' in emails['voyageur@test.kwaba'] and '+228 91 00 00 00' in emails['voyageur@test.kwaba']
     # Le loueur n'a pas le téléphone du voyageur : il passe par Kwa-Ba
-    assert '12 34 56 78' not in emails['yao@test.afristay'] and 'siège enfant' in emails['yao@test.afristay']
+    assert '12 34 56 78' not in emails['yao@test.kwaba'] and 'siège enfant' in emails['yao@test.kwaba']
 
     v = VersementPartenaireModel.objects.get(location=loc)
     assert (v.montant_brut, v.commission, v.montant) == (190000, 28500, 161500)  # 15 % de commission
@@ -208,7 +208,7 @@ def test_contacts_in_free_text_are_masked_for_the_partner(client_for, make_user,
     services.assigner_partenaire(loc, loueur)
     mail.outbox.clear()
     paiements.passe()
-    au_loueur = next(m.body for m in mail.outbox if m.to == ['yao@test.afristay'])
+    au_loueur = next(m.body for m in mail.outbox if m.to == ['yao@test.kwaba'])
     assert 'Bè Kpota' in au_loueur and 'Siège enfant' in au_loueur
     assert not any(x in au_loueur for x in ('90 11 22 33', '99 88 77 66', 'ama.k@gmail.com'))
 
@@ -265,7 +265,7 @@ def _vehicule_rendu(loc, heures=25):
 
 
 def test_deposit_paid_online_then_refunded_minus_damages(client_for, make_user, faux, catalogue, loueur):
-    client = client_for(make_user(email='ama@test.afristay'))
+    client = client_for(make_user(email='ama@test.kwaba'))
     loc = _reserver_et_payer(client, faux, catalogue, **SANS_CHAUFFEUR)
     # 4 jours × 30 000 + 2 × 5 000 de frais, plus 100 000 de caution payés avec la location
     assert (loc.prix, loc.caution, loc.caution_en_ligne) == (130000, 100000, True)
@@ -276,7 +276,7 @@ def test_deposit_paid_online_then_refunded_minus_damages(client_for, make_user, 
     services.assigner_partenaire(loc, loueur, vehicule='Toyota Yaris grise')
     mail.outbox.clear()
     paiements.passe()
-    au_loueur = next(m.body for m in mail.outbox if m.to == ['yao@test.afristay'])
+    au_loueur = next(m.body for m in mail.outbox if m.to == ['yao@test.kwaba'])
     assert 'ne lui demandez rien' in au_loueur and 'Signalez-le à Kwa-Ba dans les 24 heures' in au_loueur
 
     loc = _vehicule_rendu(loc, heures=2)
@@ -294,7 +294,7 @@ def test_deposit_paid_online_then_refunded_minus_damages(client_for, make_user, 
     assert loc.caution_restituee_le is not None
     rb = RemboursementModel.objects.get(location=loc)
     assert (rb.montant, rb.motif, rb.statut) == (70000, 'Restitution de la caution', 'attente_numero')
-    au_voyageur = next(m for m in mail.outbox if m.to == ['ama@test.afristay'] and 'caution' in m.subject)
+    au_voyageur = next(m for m in mail.outbox if m.to == ['ama@test.kwaba'] and 'caution' in m.subject)
     assert '70 000' in au_voyageur.body and 'Rétroviseur cassé' in au_voyageur.body and 'numéro Mobile Money' in au_voyageur.body
     assert [p['montant'] for p in faux.payouts] == [140500]  # loueur payé avec la retenue
     with pytest.raises(services.LocationErreur):
@@ -349,5 +349,5 @@ def test_deposit_paid_to_the_partner_when_online_deposit_is_off(client_for, make
     services.assigner_partenaire(loc, loueur)
     mail.outbox.clear()
     paiements.passe()
-    au_loueur = next(m.body for m in mail.outbox if m.to == ['yao@test.afristay'])
+    au_loueur = next(m.body for m in mail.outbox if m.to == ['yao@test.kwaba'])
     assert 'Caution à encaisser à la remise : 100 000' in au_loueur

@@ -98,7 +98,7 @@ PAYPAL_CLIENT_SECRET=...
 PAYPAL_ENV=sandbox
 PAIEMENT_EXPIRATION_MINUTES=30
 PAIEMENT_HORS_LIGNE=False              # True seulement en développement (défaut = DJANGO_DEBUG)
-BACKEND_URL=https://api.afristay…        # liens vers l'admin dans les alertes (défaut http://localhost:8000)
+BACKEND_URL=https://kwa-ba.com            # liens vers l'admin dans les alertes (défaut http://localhost:8000)
 PAIEMENTS_PAUSE_EMAIL=1                  # secondes entre deux emails du worker (0 avec un vrai fournisseur d'emails)
 ```
 

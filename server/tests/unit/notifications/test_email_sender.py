@@ -38,10 +38,10 @@ def test_password_reset_email(notifications, mailoutbox):
 
 def test_new_message_email(notifications, mailoutbox):
     notifications.send_new_message_email('kofi@example.tg', 'Kofi', 'Ama', 'Villa Océane', 'Bonjour, est-ce libre ?',
-                                         'https://afristay.example/messages/42')
+                                         'https://kwaba.example/messages/42')
     [email] = mailoutbox
     assert email.subject == 'Nouveau message de Ama sur Kwa-Ba'
-    for expected in ('Kofi', 'Villa Océane', 'Bonjour, est-ce libre ?', 'https://afristay.example/messages/42'):
+    for expected in ('Kofi', 'Villa Océane', 'Bonjour, est-ce libre ?', 'https://kwaba.example/messages/42'):
         assert expected in email.body
 
 
