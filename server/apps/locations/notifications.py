@@ -7,6 +7,7 @@ from django.conf import settings
 from django.utils import formats, timezone
 
 from apps.paiements.notifications import _admins, _documents, _envoyer, _fcfa, alerte_admin
+from apps.securite import coordonnees
 
 from .models import LocationModel, VersementPartenaireModel
 
@@ -64,11 +65,17 @@ def partenaire_au_voyageur(loc: LocationModel):
 
 
 def location_au_partenaire(loc: LocationModel):
+    """Le loueur ne reçoit pas le téléphone du voyageur (ni ceux glissés dans ses précisions ou son adresse) : pour le joindre, il
+    passe par Kwa-Ba. Le voyageur reçoit, lui, les coordonnées du loueur par email (partenaire_au_voyageur)."""
     p = loc.partenaire
     if not p.email:
         return  # loueur prévenu par téléphone par l'équipe
+    infos = _location(loc)
+    del infos['telephone_voyageur']
+    sans_coordonnees = {cle: coordonnees.analyser(infos[cle])[0] for cle in ('prise', 'retour', 'precisions')}
     _envoyer('emails/locations/location_partenaire.txt', f"Nouvelle location Kwa-Ba : {_date(loc, loc.debut)}", [p.email], {
-        **_location(loc), 'contact': p.contact, 'montant': _fcfa(loc.montant_partenaire),
+        **infos, **sans_coordonnees, 'contact': p.contact,
+        'montant': _fcfa(loc.montant_partenaire), 'assistance': settings.ASSISTANCE_CONTACT,
     })
 
 

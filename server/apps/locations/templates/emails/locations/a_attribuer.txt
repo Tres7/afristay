@@ -12,5 +12,7 @@
 Loueurs disponibles pour ce véhicule et ce lieu : {{ nb_partenaires }}
 Attribuer un loueur : {{ url_admin }}
 
+Le téléphone du voyageur reste chez Kwa-Ba : ne le transmettez pas au loueur, qui passe par nous pour le joindre.
+
 L'équipe Kwa-Ba
 {% endautoescape %}

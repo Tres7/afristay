@@ -69,7 +69,8 @@ export interface Location {
   statut: StatutLocation;
   expire_le: string | null;
   annulee_par: string;
-  partenaire: { nom: string; contact: string; telephone: string; vehicule: string; immatriculation: string; chauffeur: string; telephone_chauffeur: string } | null;
+  /** Véhicule attribué ; le loueur et son chauffeur ne sont jamais affichés (coordonnées envoyées par email). */
+  vehicule_attribue: { vehicule: string; immatriculation: string } | null;
   paiement: "en_attente" | "reussi" | "echoue" | "annule" | null;
   remboursement: { montant: number; statut: "attente_numero" | "en_cours" | "envoye" } | null;
   annulation_gratuite: boolean;

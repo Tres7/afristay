@@ -5,7 +5,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Calendar, Car, CheckCircle, Clock, Loader2, MapPin, MessageCircle, Phone, Users, XCircle } from "lucide-react";
+import { Calendar, Car, CheckCircle, Clock, Loader2, Mail, MapPin, Users, XCircle } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import api, { apiErrorMessage } from "@/lib/api";
 import { minutesRestantes, payerLocation, useConfigPaiement } from "@/lib/paiement";
@@ -67,7 +67,7 @@ function LocationDetail() {
   const aPayer = l.statut === "en_attente_paiement" && !enAttente;
   const moyens = (config?.moyens ?? []) as MoyenPaiement[];
   const minutes = minutesRestantes(l.expire_le);
-  const p = l.partenaire;
+  const v = l.vehicule_attribue;
 
   const payer = async (moyen: MoyenPaiement) => {
     setEnvoi(true);
@@ -125,26 +125,18 @@ function LocationDetail() {
           )}
         </div>
 
-        {p && (
+        {v && (
           <section className="bg-white rounded-3xl border-2 border-secondary/30 p-5 sm:p-6">
-            <h2 className="font-heading font-bold text-dark text-lg">{td("votreLoueur")}</h2>
-            <div className="flex items-center gap-4 mt-4">
-              <div className="w-14 h-14 rounded-full bg-secondary/10 text-secondary flex items-center justify-center flex-shrink-0"><Car size={24} /></div>
-              <div className="min-w-0">
-                <p className="font-bold text-dark">{p.nom} · {p.contact}</p>
-                {p.vehicule && <p className="text-sm text-gray-600">{p.vehicule}{p.immatriculation && <> · <span className="font-mono">{p.immatriculation}</span></>}</p>}
-                {p.chauffeur && <p className="text-sm text-gray-600">{td("chauffeur", { nom: p.chauffeur })}{p.telephone_chauffeur ? ` · ${p.telephone_chauffeur}` : ""}</p>}
+            <h2 className="font-heading font-bold text-dark text-lg">{td("votreVehicule")}</h2>
+            {v.vehicule && (
+              <div className="flex items-center gap-4 mt-4">
+                <div className="w-14 h-14 rounded-full bg-secondary/10 text-secondary flex items-center justify-center flex-shrink-0"><Car size={24} aria-hidden /></div>
+                <p className="min-w-0 font-bold text-dark">{v.vehicule}{v.immatriculation && <> · <span className="font-mono font-normal text-gray-600">{v.immatriculation}</span></>}</p>
               </div>
-            </div>
-            <div className="flex flex-wrap gap-2 mt-4">
-              <a href={`tel:${p.telephone.replace(/\s/g, "")}`} className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-secondary text-white text-sm font-bold">
-                <Phone size={15} /> {td("appeler", { telephone: p.telephone })}
-              </a>
-              <a href={`https://wa.me/${p.telephone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-gray-200 text-dark text-sm font-bold">
-                <MessageCircle size={15} /> WhatsApp
-              </a>
-            </div>
+            )}
+            <p className="flex items-start gap-2 mt-4 text-sm text-gray-600">
+              <Mail size={16} className="text-secondary flex-shrink-0 mt-0.5" aria-hidden /> {td("coordonneesParEmail")}
+            </p>
           </section>
         )}
 
