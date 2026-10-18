@@ -4,6 +4,7 @@ from datetime import timedelta
 import pytest
 from django.utils import timezone
 
+from apps.hebergements.models import HebergementModel
 from apps.paiements import services as paiements
 from apps.reservations.models import ReservationModel
 
@@ -85,3 +86,15 @@ def test_prelaunch_off_keeps_the_usual_behaviour(api_client, client_for, make_us
     assert api_client.get(HEBERGEMENTS).data['count'] == 1
     assert api_client.get(f'{HEBERGEMENTS}{hebergement.id}/').status_code == 200
     assert _book(client_for(make_user()), hebergement).status_code == 201
+
+
+def test_at_the_opening_the_oldest_listings_come_first(api_client, make_hebergement):
+    premier = make_hebergement(name='Inscrit en premier')
+    dernier = make_hebergement(name='Inscrit ensuite')
+    HebergementModel.objects.filter(pk=premier.pk).update(created_at=dernier.created_at - timedelta(days=30))
+
+    noms = [h['name'] for h in api_client.get(HEBERGEMENTS).data['results']]
+
+    assert noms == ['Inscrit en premier', 'Inscrit ensuite']
+    # Explicit sorts are unchanged
+    assert api_client.get(HEBERGEMENTS, {'sort': 'prix_asc'}).status_code == 200

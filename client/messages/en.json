@@ -1702,5 +1702,17 @@
     "fcfa": "CFA franc",
     "euro": "Euro",
     "debite": "Charged in CFA francs: {montant}"
+  },
+  "prelancement": {
+    "titre": "Kwa-Ba opens soon!",
+    "texte": "Create your listing now. Our team will review it and publish it as soon as bookings open. The first hosts to sign up will be featured.",
+    "creer": "Create my listing",
+    "plusTard": "Later",
+    "fermer": "Close",
+    "bandeau": "Bookings open very soon. Follow us to be among the first!",
+    "instagram": "Follow Kwa-Ba on Instagram",
+    "fermerBandeau": "Hide this message",
+    "badge": "Awaiting opening",
+    "badgeAide": "Your listing is verified: travellers will see it as soon as bookings open."
   }
 }

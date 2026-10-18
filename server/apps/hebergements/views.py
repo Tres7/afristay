@@ -95,6 +95,9 @@ class HebergementListView(APIView):
             qs = qs.order_by('-price_per_night')
         elif sort == 'note':
             qs = qs.order_by('-rating')
+        else:
+            # Hosts who signed up first come first: promise made to the hosts registered before the opening
+            qs = qs.order_by('created_at')
 
         # Au plus MAX_RESULTATS annonces par requête : la liste n'est pas paginée, une requête ne doit pas pouvoir
         # charger (et sérialiser) toute la base
