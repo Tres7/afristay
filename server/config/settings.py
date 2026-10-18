@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     'apps.locations.apps.LocationsConfig',
     'apps.documents.apps.DocumentsConfig',
     'apps.contrats.apps.ContratsConfig',
+    'apps.experiences.apps.ExperiencesConfig',
 ]
 
 MIDDLEWARE = [

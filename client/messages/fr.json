@@ -381,7 +381,8 @@
     "rechercher": "Rechercher une activité, un plat, un lieu…",
     "aucune": "Aucune idée de sortie ne correspond à ces critères.",
     "reinitialiser": "Réinitialiser les filtres",
-    "dormirA": "Dormir à {ville}"
+    "dormirA": "Dormir à {ville}",
+    "gratuit": "Gratuit"
   },
   "recherche": {
     "typeLogement": "Type de logement",
