@@ -1515,6 +1515,9 @@
   },
   "location": {
     "titre": "Louez une voiture",
+    "photoNumero": "{nom}, photo {numero} sur {total}",
+    "photoPrecedente": "Photo précédente",
+    "photoSuivante": "Photo suivante",
     "sousTitre": "Avec ou sans chauffeur, remise à l'aéroport ou à votre adresse, par nos loueurs partenaires.",
     "bientot": "La location de voitures arrive bientôt sur Kwa-Ba.",
     "bientotAide": "En attendant, réservez un transfert depuis l’aéroport.",

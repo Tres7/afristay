@@ -1,11 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Briefcase, Car, ChevronRight, Fuel, Snowflake, Users } from "lucide-react";
+import { Briefcase, Car, ChevronLeft, ChevronRight, Fuel, Snowflake, Users } from "lucide-react";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import api, { apiErrorMessage } from "@/lib/api";
 import Select from "@/components/ui/Select";
@@ -34,13 +34,44 @@ function Puce({ actif, onClick, children }: { actif: boolean; onClick: () => voi
   );
 }
 
+/** Photos du véhicule : défilement au doigt (aimanté), flèches au survol sur ordinateur, points de position. */
+function Galerie({ photos, nom }: { photos: string[]; nom: string }) {
+  const t = useTranslations("location");
+  const rail = useRef<HTMLDivElement>(null);
+  const [index, setIndex] = useState(0);
+  if (!photos.length) return <Car size={56} className="text-gray-300" aria-hidden />;
+  const aller = (i: number) => rail.current?.scrollTo({ left: i * rail.current.clientWidth, behavior: "smooth" });
+  const fleche = "absolute top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 text-dark shadow flex items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity";
+  return (
+    <div className="relative w-full h-full group">
+      <div ref={rail} className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+        onScroll={(e) => setIndex(Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth))}>
+        {photos.map((src, i) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img key={src} src={src} alt={photos.length > 1 ? t("photoNumero", { nom, numero: i + 1, total: photos.length }) : ""}
+            loading={i ? "lazy" : undefined} className="w-full h-full flex-shrink-0 object-cover snap-center" />
+        ))}
+      </div>
+      {photos.length > 1 && (
+        <>
+          {index > 0 && <button type="button" onClick={() => aller(index - 1)} aria-label={t("photoPrecedente")} className={cn(fleche, "left-2")}><ChevronLeft size={18} aria-hidden /></button>}
+          {index < photos.length - 1 && <button type="button" onClick={() => aller(index + 1)} aria-label={t("photoSuivante")} className={cn(fleche, "right-2")}><ChevronRight size={18} aria-hidden /></button>}
+          <div className="absolute bottom-2 inset-x-0 flex justify-center gap-1.5" aria-hidden>
+            {photos.map((src, i) => <span key={src} className={cn("w-1.5 h-1.5 rounded-full transition-colors", i === index ? "bg-white" : "bg-white/50")} />)}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function CarteVehicule({ c, formule, onChoisir }: { c: CategorieVehicule; formule: Formule; onChoisir: () => void }) {
   const t = useTranslations("location");
   const prix = c.prix_jour[formule];
   return (
     <article className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
       <div className="h-40 bg-gray-50 flex items-center justify-center">
-        {c.image ? <img src={c.image} alt="" className="w-full h-full object-cover" /> : <Car size={56} className="text-gray-300" aria-hidden />}
+        <Galerie photos={c.photos?.length ? c.photos : c.image ? [c.image] : []} nom={c.nom} />
       </div>
       <div className="p-5 flex flex-col flex-1">
         <p className="text-xs font-bold uppercase tracking-wide text-primary">{t(`gammes.${c.gamme}`)}</p>

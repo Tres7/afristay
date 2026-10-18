@@ -2,22 +2,21 @@
 
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Car, ImagePlus } from "lucide-react";
+import { Car, Images } from "lucide-react";
 import { toast } from "sonner";
-import api from "@/lib/api";
+import api, { apiErrorMessage } from "@/lib/api";
 import { formatPrice } from "@/lib/utils";
 import { Pill } from "@/components/backoffice/AdminTable";
 import Panneau, { Champ, Interrupteur, Liste, Saisie, Zone, erreursApi } from "@/components/backoffice/Panneau";
-import type { CategorieVehicule } from "@/types/api/admin";
+import PhotosVehicule, { envoyerPhotoVehicule, liberer, type FichierEnAttente } from "@/components/backoffice/location/PhotosVehicule";
+import type { CategorieVehicule, PhotoVehicule } from "@/types/api/admin";
 
 const GAMMES = [["citadine", "Citadine"], ["berline", "Berline"], ["suv", "SUV"], ["4x4", "4x4 tout-terrain"], ["minibus", "Minibus"], ["utilitaire", "Utilitaire"]];
 const BOITES = [["manuelle", "Manuelle"], ["automatique", "Automatique"]];
 const CARBURANTS = [["essence", "Essence"], ["diesel", "Diesel"], ["hybride", "Hybride"], ["electrique", "Électrique"]];
-// Le client API envoie du JSON par défaut : sans cet en-tête, le FormData (et la photo) serait converti en objet vide
-const MULTIPART = { headers: { "Content-Type": "multipart/form-data" } };
 const opts = (l: string[][]) => l.map(([value, label]) => ({ value, label }));
 
-type Formulaire = Omit<CategorieVehicule, "id" | "image" | "prix_jour_sans_chauffeur" | "prix_jour_avec_chauffeur" | "caution" | "places" | "bagages" | "ordre"> & {
+type Formulaire = Omit<CategorieVehicule, "id" | "photos" | "prix_jour_sans_chauffeur" | "prix_jour_avec_chauffeur" | "caution" | "places" | "bagages" | "ordre"> & {
   prix_jour_sans_chauffeur: string; prix_jour_avec_chauffeur: string; caution: string; places: string; bagages: string; ordre: string;
 };
 const VIDE: Formulaire = {
@@ -38,7 +37,8 @@ export default function Categories() {
   });
   const [edition, setEdition] = useState<CategorieVehicule | "nouvelle" | null>(null);
   const [form, setForm] = useState<Formulaire>(VIDE);
-  const [photo, setPhoto] = useState<File | null>(null);
+  const [photos, setPhotos] = useState<PhotoVehicule[]>([]);
+  const [enAttente, setEnAttente] = useState<FichierEnAttente[]>([]);
   const [erreurs, setErreurs] = useState<Record<string, string>>({});
   const [envoi, setEnvoi] = useState(false);
   const champ = <K extends keyof Formulaire>(k: K) => (v: Formulaire[K]) => setForm((f) => ({ ...f, [k]: v }));
@@ -46,31 +46,48 @@ export default function Categories() {
   const ouvrir = (c: CategorieVehicule | "nouvelle") => {
     setEdition(c);
     setForm(c === "nouvelle" ? VIDE : versFormulaire(c));
-    setPhoto(null);
+    setPhotos(c === "nouvelle" ? [] : c.photos);
+    liberer(enAttente);
+    setEnAttente([]);
     setErreurs({});
+  };
+
+  const fermer = () => {
+    liberer(enAttente);
+    setEnAttente([]);
+    setEdition(null);
+  };
+
+  // Photos ajoutées, retirées ou réordonnées : la liste des catégories (vignettes) suit
+  const surPhotos = (liste: PhotoVehicule[]) => {
+    setPhotos(liste);
+    queryClient.invalidateQueries({ queryKey: ["admin", "location", "categories"] });
   };
 
   const enregistrer = async () => {
     setEnvoi(true);
     setErreurs({});
-    const corps = new FormData();
-    for (const [k, v] of Object.entries(form)) {
-      if (k === "id" || k === "image") continue; // la photo n'est envoyée que si une nouvelle est choisie
-      // Prix vide = formule non proposée
-      if ((k === "prix_jour_sans_chauffeur" || k === "prix_jour_avec_chauffeur") && v === "") continue;
-      corps.append(k, typeof v === "boolean" ? (v ? "true" : "false") : String(v));
-    }
-    if (photo) corps.append("image", photo);
+    // Prix vide = formule non proposée (null) ; les photos ont leurs propres requêtes
+    const champs = Object.fromEntries(Object.entries(form).filter(([k]) => k !== "id" && k !== "photos"));
+    const corps = { ...champs, prix_jour_sans_chauffeur: form.prix_jour_sans_chauffeur || null, prix_jour_avec_chauffeur: form.prix_jour_avec_chauffeur || null };
     try {
-      if (edition === "nouvelle") await api.post("/v1/admin/location/categories/", corps, MULTIPART);
-      else if (edition) {
-        // Effacer un prix : envoyé à part en JSON (null), le multipart ne sait pas l'exprimer
-        await api.patch(`/v1/admin/location/categories/${edition.id}/`, corps, MULTIPART);
-        const nuls = Object.fromEntries((["prix_jour_sans_chauffeur", "prix_jour_avec_chauffeur"] as const).filter((k) => form[k] === "").map((k) => [k, null]));
-        if (Object.keys(nuls).length) await api.patch(`/v1/admin/location/categories/${edition.id}/`, nuls);
+      if (edition === "nouvelle") {
+        const creee = (await api.post<CategorieVehicule>("/v1/admin/location/categories/", corps)).data;
+        // Photos choisies avant la création : envoyées maintenant, l'une après l'autre
+        const echecs: string[] = [];
+        for (const f of enAttente) {
+          try {
+            await envoyerPhotoVehicule(creee.id, f.fichier);
+          } catch (err) {
+            echecs.push(`${f.fichier.name} : ${apiErrorMessage(err, "envoi impossible")}`);
+          }
+        }
+        if (echecs.length) toast.error(`Catégorie créée, mais ${echecs.length} photo(s) non envoyée(s). ${echecs.join(" ; ")}`, { duration: 10000 });
+      } else if (edition) {
+        await api.patch(`/v1/admin/location/categories/${edition.id}/`, corps);
       }
       toast.success("Catégorie enregistrée");
-      setEdition(null);
+      fermer();
       queryClient.invalidateQueries({ queryKey: ["admin", "location"] });
     } catch (err) {
       setErreurs(erreursApi(err));
@@ -90,11 +107,16 @@ export default function Categories() {
           {categories?.map((c) => (
             <li key={c.id}>
               <button type="button" onClick={() => ouvrir(c)} className="w-full text-left bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-card transition-shadow">
-                <div className="h-32 bg-gray-100 flex items-center justify-center">
-                  {c.image
+                <div className="relative h-32 bg-gray-100 flex items-center justify-center">
+                  {c.photos[0]
                     // eslint-disable-next-line @next/next/no-img-element
-                    ? <img src={c.image} alt="" className="w-full h-full object-cover" />
+                    ? <img src={c.photos[0].url} alt="" className="w-full h-full object-cover" />
                     : <Car size={36} className="text-gray-300" />}
+                  {c.photos.length > 1 && (
+                    <span className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/60 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                      <Images size={12} aria-hidden /> {c.photos.length}
+                    </span>
+                  )}
                 </div>
                 <div className="p-4">
                   <div className="flex items-center justify-between gap-2">
@@ -112,7 +134,7 @@ export default function Categories() {
         </ul>
       )}
 
-      <Panneau ouvert={!!edition} titre={edition === "nouvelle" ? "Nouvelle catégorie" : "Modifier la catégorie"} onFermer={() => setEdition(null)} onValider={enregistrer} envoi={envoi}>
+      <Panneau ouvert={!!edition} titre={edition === "nouvelle" ? "Nouvelle catégorie" : "Modifier la catégorie"} onFermer={fermer} onValider={enregistrer} envoi={envoi}>
         {erreurs.detail && <p role="alert" className="text-sm text-red-700 bg-red-50 rounded-xl p-3">{erreurs.detail}</p>}
         <Champ label="Nom" erreur={erreurs.nom}><Saisie value={form.nom} onChange={(e) => champ("nom")(e.target.value)} required maxLength={80} placeholder="Berline confort" /></Champ>
         <div className="grid grid-cols-2 gap-3">
@@ -134,10 +156,9 @@ export default function Categories() {
           <Champ label="Caution (FCFA)" aide="Réglée au loueur à la remise"><Saisie type="number" min={0} value={form.caution} onChange={(e) => champ("caution")(e.target.value)} /></Champ>
           <Champ label="Ordre d'affichage"><Saisie type="number" min={0} value={form.ordre} onChange={(e) => champ("ordre")(e.target.value)} /></Champ>
         </div>
-        <Champ label="Photo du véhicule" aide="JPEG, PNG ou WebP, 400 px minimum" erreur={erreurs.image}>
-          <span className="flex items-center gap-2 text-sm text-dark"><ImagePlus size={16} className="text-primary" />
-            <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setPhoto(e.target.files?.[0] ?? null)} className="text-sm" />
-          </span>
+        <Champ label="Photos du véhicule" aide="JPEG, PNG ou WebP, 400 px minimum. La première est la photo principale.">
+          <PhotosVehicule categorieId={edition && edition !== "nouvelle" ? edition.id : null} photos={photos} onPhotos={surPhotos}
+            enAttente={enAttente} onEnAttente={setEnAttente} />
         </Champ>
         <Interrupteur label="Climatisation" checked={form.climatisation} onChange={champ("climatisation")} />
         <Interrupteur label="Proposée aux voyageurs" checked={form.actif} onChange={champ("actif")} />

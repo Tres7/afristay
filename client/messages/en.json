@@ -1515,6 +1515,9 @@
   },
   "location": {
     "titre": "Hire a car",
+    "photoNumero": "{nom}, photo {numero} of {total}",
+    "photoPrecedente": "Previous photo",
+    "photoSuivante": "Next photo",
     "sousTitre": "With or without a driver, handed over at the airport or at your address, by our partner rental companies.",
     "bientot": "Car hire is coming soon to Kwa-Ba.",
     "bientotAide": "In the meantime, book an airport transfer.",

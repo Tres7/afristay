@@ -40,7 +40,7 @@ def categories_proposees():
     """Catégories actives qui ont au moins une formule avec un prix."""
     return CategorieVehiculeModel.objects.filter(actif=True).exclude(
         prix_jour_sans_chauffeur__isnull=True, prix_jour_avec_chauffeur__isnull=True,
-    )
+    ).prefetch_related('photos')
 
 
 def active() -> bool:

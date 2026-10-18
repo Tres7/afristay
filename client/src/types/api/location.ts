@@ -13,7 +13,9 @@ export interface CategorieVehicule {
   boite: "manuelle" | "automatique";
   carburant: string;
   climatisation: boolean;
+  /** Photo principale (première de `photos`). */
   image: string | null;
+  photos: string[];
   prix_jour: Record<Formule, number | null>;
   caution: number;
 }

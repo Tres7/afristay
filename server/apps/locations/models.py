@@ -74,7 +74,6 @@ class CategorieVehiculeModel(models.Model):
     boite = models.CharField(max_length=20, choices=BOITES)
     carburant = models.CharField(max_length=20, choices=CARBURANTS, default='essence')
     climatisation = models.BooleanField(default=True)
-    image = models.ImageField(upload_to='locations/', blank=True)
     prix_jour_sans_chauffeur = models.PositiveIntegerField(
         null=True, blank=True, help_text='FCFA par jour, le voyageur conduit. Vide : formule non proposée',
     )
@@ -97,6 +96,24 @@ class CategorieVehiculeModel(models.Model):
 
     def prix_jour(self, formule: str) -> int | None:
         return self.prix_jour_avec_chauffeur if formule == 'avec_chauffeur' else self.prix_jour_sans_chauffeur
+
+
+class PhotoVehiculeModel(models.Model):
+    """Photos d'une catégorie de véhicule ; la première (ordre le plus bas) est la photo principale."""
+    MAX_PAR_CATEGORIE = 10
+
+    categorie = models.ForeignKey(CategorieVehiculeModel, on_delete=models.CASCADE, related_name='photos')
+    image = models.ImageField(upload_to='locations/')
+    ordre = models.PositiveSmallIntegerField(default=0)
+    cree_le = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['ordre', 'id']
+        verbose_name = 'Photo de véhicule'
+        verbose_name_plural = 'Photos de véhicules'
+
+    def __str__(self):
+        return f"{self.categorie.nom} · photo {self.ordre + 1}"
 
 
 class LieuRemiseModel(models.Model):
@@ -210,7 +227,7 @@ class LocationModel(models.Model):
         verbose_name_plural = 'Locations de voitures'
 
     def __str__(self):
-        return f"{self.reference} — {self.categorie.nom}, {self.lieu_prise.ville}"
+        return f"{self.reference} · {self.categorie.nom}, {self.lieu_prise.ville}"
 
     @property
     def reference(self):
