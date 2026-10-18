@@ -95,7 +95,7 @@ pytest tests/integration/avis         # un dossier, un fichier ou un test (::nom
 pytest -rxX                           # affiche aussi la liste des anomalies connues (xfail)
 ```
 
-Les conteneurs sont démarrés **uniquement si un test en a besoin**. Le premier test qui touche la base lance `postgres-test` (`compose.test.yaml`, projet `afristay-test`, port 55432, données en mémoire), puis l'arrête en fin de session. `pytest -m unit` ne démarre rien. La stack de développement (`compose.yaml`) n'est jamais touchée.
+Les conteneurs sont démarrés **uniquement si un test en a besoin**. Le premier test qui touche la base lance `postgres-test` (`compose.test.yaml`, projet `kwaba-test`, port 55432, données en mémoire), puis l'arrête en fin de session. `pytest -m unit` ne démarre rien. La stack de développement (`compose.yaml`) n'est jamais touchée.
 
 | Variable | Effet |
 | --- | --- |
