@@ -1,8 +1,28 @@
 import uuid
 from django.conf import settings
 from django.db import models
+from django.db.models import Exists, OuterRef
+from django.db.models.functions import Trim
 
 from config import prelancement
+from apps.contrats.models import ContratModel
+from apps.documents.models import ParametresSocieteModel
+
+
+def _societe_immatriculee() -> Exists:
+    """Same rule as ParametresSocieteModel.immatriculee, as a SQL condition (no query when the queryset is built)."""
+    return Exists(
+        ParametresSocieteModel.objects.filter(pk=1)
+        .annotate(_raison=Trim('raison_sociale'), _adresse=Trim('adresse'), _rccm=Trim('rccm'), _nif=Trim('nif'))
+        .exclude(_raison='').exclude(_adresse='').exclude(_rccm='').exclude(_nif='')
+    )
+
+
+def contrat_hote_exige() -> bool:
+    """Once the company is registered (RCCM and NIF), a listing is public only if its host signed the agreement."""
+    # One read, never a write (courants() would create the row during a public request)
+    societe = ParametresSocieteModel.objects.filter(pk=1).first()
+    return bool(societe and societe.immatriculee)
 
 
 class HebergementQuerySet(models.QuerySet):
@@ -10,7 +30,11 @@ class HebergementQuerySet(models.QuerySet):
         """Annonces visibles du public : vérifiées par un agent de terrain et non masquées par l'hôte."""
         if prelancement.actif():
             return self.none()  # pre-launch: verified listings wait for the opening
-        return self.filter(is_available=True, statut_verification='verifiee')
+        # Once the company is registered, listings verified before wait for their host's signed agreement. The rule is
+        # a SQL condition, evaluated by the database at each query: this queryset can be built at import time
+        # (serializer fields), before the tables exist, and must follow a registration made while the API runs.
+        contrat_signe = Exists(ContratModel.objects.filter(hote=OuterRef('host'), statut='signe'))
+        return self.filter(is_available=True, statut_verification='verifiee').filter(~_societe_immatriculee() | contrat_signe)
 
 
 class HebergementModel(models.Model):
@@ -78,7 +102,9 @@ class HebergementModel(models.Model):
 
     @property
     def est_publiee(self) -> bool:
-        return self.is_available and self.statut_verification == 'verifiee' and not prelancement.actif()
+        if not (self.is_available and self.statut_verification == 'verifiee') or prelancement.actif():
+            return False
+        return not contrat_hote_exige() or self.host.contrats.filter(statut='signe').exists()
 
 
 def _photo_upload_path(instance, filename):

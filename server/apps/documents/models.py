@@ -50,6 +50,12 @@ class ParametresSocieteModel(models.Model):
     def complets(self) -> bool:
         return bool(self.raison_sociale.strip() and self.adresse.strip())
 
+    @property
+    def immatriculee(self) -> bool:
+        """Registered company (RCCM and NIF filled in): the host agreement can be signed, and is then required
+        before a listing is public. Invoices only need `complets`."""
+        return self.complets and bool(self.rccm.strip() and self.nif.strip())
+
     def __str__(self):
         return self.raison_sociale or self.nom_commercial
 

@@ -21,6 +21,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from django.db import IntegrityError, transaction
+from django.db.models import Q
 from django.template.loader import render_to_string
 from django.utils import timezone
 from PIL import Image, UnidentifiedImageError
@@ -301,6 +302,33 @@ def contrat_hote(hote) -> ContratModel:
 
 def hote_a_signe(hote) -> bool:
     return ContratModel.objects.filter(hote=hote, statut='signe').exists()
+
+
+def hotes_a_inviter():
+    """Active hosts who pre-registered or created a listing and have not signed their agreement yet."""
+    return (get_user_model().objects.filter(role='hote', is_active=True)
+            .filter(Q(preinscriptions__isnull=False) | Q(hebergements__isnull=False))
+            .exclude(contrats__statut='signe').distinct())
+
+
+def inviter_hotes_a_signer() -> int:
+    """The company has just been registered (RCCM and NIF): each host still to sign receives an email, in the language
+    of their pre-registration, pointing to the agreement in their host space. Returns the number of emails sent."""
+    site = settings.FRONTEND_URL.rstrip('/')
+    envoyes = 0
+    for hote in hotes_a_inviter():
+        derniere = hote.preinscriptions.first()  # most recent first (Meta.ordering)
+        langue = derniere.langue if derniere else 'fr'
+        sujet = 'Your Kwa-Ba host agreement is ready to sign' if langue == 'en' else 'Votre contrat hôte Kwa-Ba est prêt à signer'
+        corps = render_to_string('emails/contrats/contrat_disponible.txt', {
+            'langue': langue, 'prenom': hote.first_name,
+            'lien': f"{site}{'/en' if langue == 'en' else ''}/hote/espace/contrat",
+        })
+        try:
+            envoyes += send_mail(sujet, corps, settings.DEFAULT_FROM_EMAIL, [hote.email])
+        except Exception:
+            logger.exception("Invitation à signer le contrat non envoyée (user_id=%s)", hote.pk)
+    return envoyes
 
 
 # --- Signature --------------------------------------------------------------------------------------

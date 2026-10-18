@@ -1713,7 +1713,9 @@
     "instagram": "Suivre Kwa-Ba sur Instagram",
     "fermerBandeau": "Masquer ce message",
     "badge": "En attente d'ouverture",
-    "badgeAide": "Votre annonce est vérifiée : elle sera visible des voyageurs dès l'ouverture des réservations."
+    "badgeAide": "Votre annonce est vérifiée : elle sera visible des voyageurs dès l'ouverture des réservations.",
+    "contratRequis": "Vérifiée, pas encore en ligne : signez votre contrat hôte pour la publier.",
+    "signerContrat": "Signer mon contrat"
   },
   "preinscription": {
     "titre": "Pré-inscription",

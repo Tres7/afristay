@@ -242,6 +242,11 @@ function EspaceHoteContent() {
                       </p>
                       <p className="mt-1 text-xs text-gray-600">{tPre("badgeAide")}</p>
                     </div>
+                  ) : h.statut_verification === "verifiee" && h.en_ligne === false && h.is_available ? (
+                    <div className="mt-3 text-sm bg-amber-50 text-amber-900 rounded-xl px-3 py-2">
+                      <p className="flex items-center gap-1.5 font-bold"><AlertTriangle size={14} aria-hidden /> {tPre("contratRequis")}</p>
+                      <Link href="/hote/espace/contrat" className="inline-block mt-1 text-xs font-bold underline">{tPre("signerContrat")}</Link>
+                    </div>
                   ) : h.statut_verification === "verifiee" ? (
                     <p className="flex items-center gap-1.5 text-xs font-bold text-green-700 mt-2"><ShieldCheck size={14} /> {tVerif("verifiee")}</p>
                   ) : h.statut_verification === "refusee" ? (

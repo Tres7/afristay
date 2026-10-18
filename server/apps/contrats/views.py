@@ -102,7 +102,8 @@ def _apercu_hote(user) -> dict | None:
     if contrat:
         return _public(contrat)
     modele = ModeleContratModel.objects.filter(type='hote').first()
-    if not modele or not ParametresSocieteModel.courants().complets:
+    # The host agreement is offered once the company is registered (RCCM and NIF), as the pre-registration says
+    if not modele or not ParametresSocieteModel.courants().immatriculee:
         return None
     infos = services.partie('hote', user)
     return {

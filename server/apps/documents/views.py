@@ -93,9 +93,10 @@ class SocieteView(APIView):
         return Response(SocieteSerializer(ParametresSocieteModel.courants()).data)
 
     def put(self, request):
-        from apps.contrats.services import ContratErreur, signature_png
+        from apps.contrats.services import ContratErreur, inviter_hotes_a_signer, signature_png
 
         societe = ParametresSocieteModel.courants()
+        etait_immatriculee = societe.immatriculee
         serializer = SocieteSerializer(societe, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         fichier = request.FILES.get('signature_representant')
@@ -113,6 +114,10 @@ class SocieteView(APIView):
         elif str(request.data.get('supprimer_signature')).lower() == 'true' and societe.signature_representant:
             societe.signature_representant.delete(save=True)
         journaliser("backoffice_modification", request, utilisateur=request.user, objet="societe", champs=sorted(request.data.keys()))
+        if societe.immatriculee and not etait_immatriculee:
+            # RCCM and NIF just filled in: hosts are invited to sign their agreement, once
+            invites = inviter_hotes_a_signer()
+            journaliser("backoffice_modification", request, utilisateur=request.user, objet="contrats_hotes", invites=invites)
         return Response(SocieteSerializer(societe).data)
 
 

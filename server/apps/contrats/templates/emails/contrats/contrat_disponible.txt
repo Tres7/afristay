@@ -1,0 +1,22 @@
+{% autoescape off %}{% if langue == 'en' %}Hello {{ prenom }},
+
+Kwaba SAS is now registered: your Kwa-Ba host agreement is ready to be signed.
+
+Read and sign it in a few minutes from your host space:
+{{ lien }}
+
+Your listings will only be published once the agreement is signed. No payment or booking takes place before.
+Any question about the agreement? Simply reply to this email.
+
+The Kwa-Ba team{% else %}Bonjour {{ prenom }},
+
+Kwaba SAS est maintenant immatriculée : votre contrat hôte Kwa-Ba est prêt à être signé.
+
+Lisez-le et signez-le en quelques minutes depuis votre espace hôte :
+{{ lien }}
+
+Vos annonces ne seront publiées qu'après la signature du contrat. Aucun paiement ni aucune réservation n'a lieu avant.
+Une question sur le contrat ? Répondez simplement à cet email.
+
+L'équipe Kwa-Ba{% endif %}
+{% endautoescape %}

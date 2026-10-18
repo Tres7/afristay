@@ -1713,7 +1713,9 @@
     "instagram": "Follow Kwa-Ba on Instagram",
     "fermerBandeau": "Hide this message",
     "badge": "Awaiting opening",
-    "badgeAide": "Your listing is verified: travellers will see it as soon as bookings open."
+    "badgeAide": "Your listing is verified: travellers will see it as soon as bookings open.",
+    "contratRequis": "Verified, not online yet: sign your host agreement to publish it.",
+    "signerContrat": "Sign my agreement"
   },
   "preinscription": {
     "titre": "Pre-registration",
