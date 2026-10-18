@@ -50,10 +50,10 @@ def _verificateurs() -> list[str]:
 
 
 def contrats_disponibles() -> bool:
-    """Le contrat hôte devient obligatoire dès que Kwa-Ba a renseigné ses informations légales."""
+    """Le contrat hôte devient obligatoire dès que Kwa-Ba est immatriculée (RCCM et NIF renseignés)."""
     from apps.documents.models import ParametresSocieteModel
 
-    return ParametresSocieteModel.courants().complets
+    return ParametresSocieteModel.courants().immatriculee
 
 
 def contrat_manquant(hote) -> bool:

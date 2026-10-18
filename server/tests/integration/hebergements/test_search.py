@@ -91,7 +91,8 @@ def test_is_favorite_for_current_user(client_for, make_user, listings):
 def test_query_count_does_not_grow_with_results(api_client, make_hebergement, django_assert_max_num_queries):
     for i in range(15):
         make_hebergement(name=f'Logement {i}')
-    with django_assert_max_num_queries(3):
+    # 4 whatever the number of results: listings, favourites, and the company settings (signed agreement rule)
+    with django_assert_max_num_queries(4):
         api_client.get(HEBERGEMENTS)
 
 

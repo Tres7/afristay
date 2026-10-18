@@ -31,6 +31,8 @@ export interface Hebergement {
   verifiee_le: string | null;
   /** Motif de refus de l'agent : rempli seulement pour l'hôte de l'annonce */
   motif_refus: string;
+  /** Owner only: actually public (verified, not hidden, opening done, host agreement signed). null for others. */
+  en_ligne?: boolean | null;
   host_id: string;
   host_name: string;
   /** Pièce d'identité de l'hôte contrôlée par Kwa-Ba (badge « Hôte vérifié »). */

@@ -17,6 +17,7 @@ class HebergementSerializer(serializers.ModelSerializer):
     hote_verifie = serializers.SerializerMethodField()
     is_favorite = serializers.SerializerMethodField()
     motif_refus = serializers.SerializerMethodField()
+    en_ligne = serializers.SerializerMethodField()
 
     class Meta:
         model = HebergementModel
@@ -24,7 +25,7 @@ class HebergementSerializer(serializers.ModelSerializer):
             'id', 'name', 'description', 'type', 'city', 'location',
             'price_per_night', 'rating', 'review_count', 'image_url', 'images',
             'max_guests', 'amenities', 'is_available', 'host_id', 'host_name', 'hote_verifie',
-            'is_favorite', 'created_at', 'statut_verification', 'verifiee_le', 'motif_refus',
+            'is_favorite', 'created_at', 'statut_verification', 'verifiee_le', 'motif_refus', 'en_ligne',
             'surface_m2', 'chambres', 'salles_de_bain', 'lits_doubles', 'lits_simples', 'canapes_lits',
             'petit_dejeuner', 'petit_dejeuner_prix', 'arrivee_a_partir', 'depart_avant',
         ]
@@ -50,6 +51,10 @@ class HebergementSerializer(serializers.ModelSerializer):
     def get_motif_refus(self, obj):
         # Message de l'agent destiné à l'hôte : jamais montré aux voyageurs
         return obj.motif_refus if self.context.get('proprietaire') else ''
+
+    def get_en_ligne(self, obj):
+        # For the host only: is the listing actually public (verified, not hidden, opening done, agreement signed)?
+        return obj.est_publiee if self.context.get('proprietaire') else None
 
     def get_is_favorite(self, obj):
         favorite_ids = self.context.get('favorite_ids')

@@ -17,6 +17,7 @@ from .photos import InvalidPhoto, normalize_photo
 from apps.securite import fraude
 
 from .serializers import BlocageSerializer, HebergementSerializer, HebergementCreateSerializer, RechercheSerializer
+from apps.contrats import preinscription
 from apps.verifications import services as verifications
 
 HOST_ROLES = ('hote', 'admin')
@@ -115,7 +116,6 @@ class HebergementListView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        from apps.contrats import preinscription  # local import: contrats depends on this app
         if preinscription.requise(request.user):
             return Response(
                 {'detail': "Acceptez d'abord la pré-inscription pour créer votre annonce.", 'code': 'preinscription_requise'},
