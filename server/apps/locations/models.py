@@ -101,7 +101,7 @@ class CategorieVehiculeModel(models.Model):
 
 class LieuRemiseModel(models.Model):
     """Où le véhicule est remis et rendu : aéroport, agence, ou livraison à l'adresse du voyageur."""
-    nom = models.CharField(max_length=120, help_text='Par ex. « Aéroport de Lomé » ou « Livraison à votre adresse — Lomé »')
+    nom = models.CharField(max_length=120, help_text='Par ex. « Aéroport de Lomé » ou « Livraison à votre adresse, Lomé »')
     ville = models.CharField(max_length=100)
     fuseau = models.CharField(max_length=40, choices=FUSEAUX, help_text='Heure locale des réservations')
     adresse_requise = models.BooleanField(default=False, help_text='Le voyageur indique une adresse (livraison)')

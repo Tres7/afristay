@@ -136,7 +136,7 @@ def demarrer_paiement(location: LocationModel, moyen: str) -> str:
         location.save(update_fields=['moyen'])
     return paiements.creer_paiement(
         objet=location, montant=location.prix, moyen=moyen, voyageur=location.voyageur,
-        description=f"Kwa-Ba {location.reference} — location {location.categorie.nom}, {location.lieu_prise.ville}",
+        description=f"Kwa-Ba {location.reference}, location {location.categorie.nom}, {location.lieu_prise.ville}",
         url_retour=f"{settings.FRONTEND_URL}/location/{location.id}",
     )
 

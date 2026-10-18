@@ -62,7 +62,7 @@ def catalogue():
     berline.actif = True
     berline.save()
     aeroport = LieuRemiseModel.objects.create(nom='Aéroport de Lomé', ville='Lomé', fuseau='Africa/Lome', frais=5000)
-    livraison = LieuRemiseModel.objects.create(nom='Livraison à votre adresse — Lomé', ville='Lomé', fuseau='Africa/Lome',
+    livraison = LieuRemiseModel.objects.create(nom='Livraison à votre adresse, Lomé', ville='Lomé', fuseau='Africa/Lome',
                                                adresse_requise=True, frais=3000)
     return {'berline': berline, 'aeroport': aeroport, 'livraison': livraison}
 
@@ -169,7 +169,7 @@ def test_full_cycle_payment_partner_payout(client_for, make_user, faux, catalogu
 
     paiements.passe()
     sujets = {m.subject for m in mail.outbox}
-    assert 'Location confirmée — Lomé' in sujets
+    assert 'Location confirmée : Lomé' in sujets
     assert any(s.startswith('[Kwa-Ba] Loueur à attribuer') for s in sujets)
 
     assert list(services.partenaires_disponibles(loc)) == [loueur]

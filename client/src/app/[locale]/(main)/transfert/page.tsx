@@ -158,7 +158,7 @@ function TransfertContent() {
             <div>
               <p className={etiquette}>{t("aeroport")}</p>
               <Select label={t("aeroport")} value={aeroport} onChange={setAeroport}
-                options={aeroports.map((a) => ({ value: a.code, label: `${a.ville} — ${a.code}`, hint: a.nom }))} />
+                options={aeroports.map((a) => ({ value: a.code, label: `${a.ville} (${a.code})`, hint: a.nom }))} />
               {erreurs.aeroport && <p className="text-xs text-red-600 mt-1.5 ml-1">{erreurs.aeroport}</p>}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

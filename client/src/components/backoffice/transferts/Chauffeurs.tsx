@@ -58,7 +58,7 @@ export default function Chauffeurs() {
   const colonnes: Colonne<ChauffeurAdmin>[] = [
     { titre: "Chauffeur", masquerMobile: true, cellule: (c) => <div><p className="font-semibold text-dark">{c.prenom} {c.nom}</p><p className="text-xs text-muted">{c.telephone}</p></div> },
     { titre: "Véhicule", cellule: (c) => <span className="text-xs">{nomCategorie(c.categorie)} · {c.vehicule} · {c.immatriculation}</span> },
-    { titre: "Aéroports", cellule: (c) => <span className="text-xs">{c.aeroports.join(", ") || "—"}</span> },
+    { titre: "Aéroports", cellule: (c) => <span className="text-xs">{c.aeroports.join(", ") || "-"}</span> },
     { titre: "Courses", cellule: (c) => <span className="tabular-nums">{c.nb_transferts}</span> },
     { titre: "Statut", cellule: (c) => <Pill ton={c.actif ? "vert" : "gris"}>{c.actif ? "Actif" : "Désactivé"}</Pill> },
   ];

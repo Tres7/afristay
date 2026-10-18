@@ -14,11 +14,11 @@ export default function ContenuFr() {
           titre: "Éditeur du site",
           contenu: (
             <ul>
-              <li>Dénomination : <AC>raison sociale</AC> — <AC>forme juridique et capital social</AC></li>
+              <li>Dénomination : <AC>raison sociale</AC>, <AC>forme juridique et capital social</AC></li>
               <li>Siège social : <AC>adresse complète</AC></li>
               <li>Immatriculation : <AC>numéro RCS / RCCM et ville d&apos;immatriculation</AC></li>
               <li>Numéro de TVA intracommunautaire : <AC>si applicable</AC></li>
-              <li>Contact : <LienContact /> — <AC>téléphone</AC></li>
+              <li>Contact : <LienContact />, <AC>téléphone</AC></li>
               <li>Directeur ou directrice de la publication : <AC>nom et fonction</AC></li>
             </ul>
           ),

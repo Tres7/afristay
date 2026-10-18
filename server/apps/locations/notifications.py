@@ -23,8 +23,8 @@ def _location(loc: LocationModel) -> dict:
     return {
         'reference': loc.reference, 'categorie': loc.categorie.nom, 'exemple': loc.categorie.exemple_modele,
         'formule': loc.get_formule_display(), 'avec_chauffeur': loc.formule == 'avec_chauffeur',
-        'prise': f"{loc.lieu_prise.nom}{' — ' + loc.adresse_prise if loc.adresse_prise else ''}",
-        'retour': f"{loc.lieu_retour.nom}{' — ' + loc.adresse_retour if loc.adresse_retour else ''}",
+        'prise': f"{loc.lieu_prise.nom}{', ' + loc.adresse_prise if loc.adresse_prise else ''}",
+        'retour': f"{loc.lieu_retour.nom}{', ' + loc.adresse_retour if loc.adresse_retour else ''}",
         'debut': _date(loc, loc.debut), 'fin': _date(loc, loc.fin), 'jours': loc.jours, 'passagers': loc.passagers,
         'precisions': loc.precisions, 'voyageur': f"{loc.voyageur.first_name} {loc.voyageur.last_name}".strip(),
         'telephone_voyageur': loc.telephone, 'conducteur': loc.conducteur, 'permis': loc.permis_numero,
@@ -34,7 +34,7 @@ def _location(loc: LocationModel) -> dict:
 
 
 def confirmee(loc: LocationModel):
-    _envoyer('emails/locations/location_confirmee.txt', f"Location confirmée — {loc.lieu_prise.ville}", [loc.voyageur.email], {
+    _envoyer('emails/locations/location_confirmee.txt', f"Location confirmée : {loc.lieu_prise.ville}", [loc.voyageur.email], {
         **_location(loc), 'prenom': loc.voyageur.first_name, 'montant': _fcfa(loc.prix),
     }, pieces_jointes=_documents(loc))
 
@@ -46,7 +46,7 @@ def a_attribuer(loc: LocationModel, urgent: bool = False):
         return
     from .services import partenaires_disponibles
 
-    sujet = f"[Kwa-Ba] {'URGENT — ' if urgent else ''}Loueur à attribuer — {loc.reference}"
+    sujet = f"[Kwa-Ba] {'URGENT : ' if urgent else ''}Loueur à attribuer : {loc.reference}"
     _envoyer('emails/locations/a_attribuer.txt', sujet, destinataires, {
         **_location(loc), 'urgent': urgent, 'nb_partenaires': partenaires_disponibles(loc).count(),
         'url_admin': f"{settings.BACKEND_URL}/admin/locations/locationmodel/{loc.id}/change/",
@@ -67,7 +67,7 @@ def location_au_partenaire(loc: LocationModel):
     p = loc.partenaire
     if not p.email:
         return  # loueur prévenu par téléphone par l'équipe
-    _envoyer('emails/locations/location_partenaire.txt', f"Nouvelle location Kwa-Ba — {_date(loc, loc.debut)}", [p.email], {
+    _envoyer('emails/locations/location_partenaire.txt', f"Nouvelle location Kwa-Ba : {_date(loc, loc.debut)}", [p.email], {
         **_location(loc), 'contact': p.contact, 'montant': _fcfa(loc.montant_partenaire),
     })
 

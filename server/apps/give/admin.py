@@ -56,7 +56,7 @@ class ReversementAdmin(admin.ModelAdmin):
 
     @admin.display(description="Coordonnées de reversement de l'ONG")
     def coordonnees(self, r):
-        return r.organisation.coordonnees_reversement or '— à renseigner sur la fiche de l\'ONG —'
+        return r.organisation.coordonnees_reversement or 'À renseigner sur la fiche de l\'ONG'
 
     def has_add_permission(self, request):
         return False  # créés chaque mois par le worker

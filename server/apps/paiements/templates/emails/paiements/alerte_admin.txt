@@ -1,7 +1,7 @@
 {% autoescape off %}Une opération de paiement demande une intervention.
 
   Type : {{ type }}
-  Réservation : {{ reference }} — {{ hebergement }}
+  Réservation : {{ reference }}, {{ hebergement }}
   Montant : {{ montant }}
   Bénéficiaire : {{ beneficiaire }}
   Dernière erreur : {{ erreur }}

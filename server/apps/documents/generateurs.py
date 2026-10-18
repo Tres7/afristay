@@ -35,11 +35,11 @@ def bon_reservation(r) -> bytes:
         ('Arrivée', f"{date(r.check_in, 'l j F Y')}" + (f", à partir de {_heure(h.arrivee_a_partir)}" if h.arrivee_a_partir else '')),
         ('Départ', f"{date(r.check_out, 'l j F Y')}" + (f", avant {_heure(h.depart_avant)}" if h.depart_avant else '')),
         ('Durée', f"{r.nights} nuit(s)"), ('Voyageurs', str(r.guests_count)),
-        ('Hôte', _nom(h.host) + ' — contact par la messagerie Kwa-Ba'),
+        ('Hôte', _nom(h.host) + ', contact par la messagerie Kwa-Ba'),
     ])
     lignes = []
     if r.prix_nuits is not None:
-        lignes.append((f"Hébergement — {r.nights} nuit(s)", str(r.nights), fcfa(r.prix_nuits // max(r.nights, 1)), fcfa(r.prix_nuits)))
+        lignes.append((f"Hébergement, {r.nights} nuit(s)", str(r.nights), fcfa(r.prix_nuits // max(r.nights, 1)), fcfa(r.prix_nuits)))
         lignes.append(('Frais de service Kwa-Ba', '1', fcfa(r.frais_service or 0), fcfa(r.frais_service or 0)))
     else:
         lignes.append(('Séjour', '1', fcfa(r.total_price), fcfa(r.total_price)))
@@ -77,10 +77,10 @@ def bon_location(loc) -> bytes:
                    destinataire=[_nom(loc.voyageur), loc.voyageur.email])
     lignes = [
         ('Véhicule', f"{loc.categorie.nom} · {loc.get_formule_display()}"),
-        ('Prise', f"{date(debut, 'l j F Y')} à {debut:%H:%M} — {loc.lieu_prise.nom}" + (f", {loc.adresse_prise}" if loc.adresse_prise else '')),
-        ('Retour', f"{date(fin, 'l j F Y')} à {fin:%H:%M} — {loc.lieu_retour.nom}" + (f", {loc.adresse_retour}" if loc.adresse_retour else '')),
+        ('Prise', f"{date(debut, 'l j F Y')} à {debut:%H:%M}, {loc.lieu_prise.nom}" + (f", {loc.adresse_prise}" if loc.adresse_prise else '')),
+        ('Retour', f"{date(fin, 'l j F Y')} à {fin:%H:%M}, {loc.lieu_retour.nom}" + (f", {loc.adresse_retour}" if loc.adresse_retour else '')),
         ('Passagers', str(loc.passagers)), ('Conducteur', loc.conducteur),
-        ('Caution', fcfa(loc.caution) + ' — à régler au loueur à la remise du véhicule' if loc.caution else ''),
+        ('Caution', fcfa(loc.caution) + ', à régler au loueur à la remise du véhicule' if loc.caution else ''),
     ]
     if loc.partenaire_id:
         lignes += [('Loueur', f"{loc.partenaire.nom} · {loc.partenaire.telephone}"),
@@ -88,7 +88,7 @@ def bon_location(loc) -> bytes:
                    ('Chauffeur', ' · '.join(x for x in (loc.chauffeur_nom, loc.chauffeur_telephone) if x))]
     doc.bloc('Votre location', lignes)
     location_seule = loc.jours * loc.prix_jour
-    montants = [(f"Location — {loc.jours} jour(s)", str(loc.jours), fcfa(loc.prix_jour), fcfa(location_seule))]
+    montants = [(f"Location, {loc.jours} jour(s)", str(loc.jours), fcfa(loc.prix_jour), fcfa(location_seule))]
     if loc.prix - location_seule > 0:
         montants.append(('Frais de remise et de retour', '1', fcfa(loc.prix - location_seule), fcfa(loc.prix - location_seule)))
     doc.montants(montants, [('Total payé', fcfa(loc.prix))])
@@ -105,7 +105,7 @@ def recu_paiement(p: PaiementModel) -> bytes:
              else 'Mobile Money' if p.mode else 'FedaPay')
     doc.bloc('Paiement', [
         ('Objet', p.libelle), ('Référence', p.reference), ('Date', date(p.mis_a_jour_le, 'j F Y à H:i')),
-        ('Moyen', moyen), ('Transaction', p.transaction_id or '—'),
+        ('Moyen', moyen), ('Transaction', p.transaction_id or '-'),
         ('Montant en euros', f"{p.montant_eur} €".replace('.', ',') if p.montant_eur else ''),
     ])
     doc.montants([('Montant payé', '1', fcfa(p.montant), fcfa(p.montant))], [('Total', fcfa(p.montant))])
@@ -117,7 +117,7 @@ def recu_don(d) -> bytes:
     doc = Document('Reçu de don', d.reference, sous_titre=f"don du {date(d.paye_le)}", destinataire=[_nom(d.donateur), d.donateur.email])
     reversement = montants_dons.date_reversement(timezone.localtime(d.paye_le).date())
     doc.bloc('Votre don', [
-        ('Association', f"{d.organisation.nom} — {d.organisation.ville}"), ('Projet', d.projet.titre if d.projet_id else 'Don libre'),
+        ('Association', f"{d.organisation.nom}, {d.organisation.ville}"), ('Projet', d.projet.titre if d.projet_id else 'Don libre'),
         ("N° d'enregistrement", d.organisation.numero_enregistrement), ('Reversement prévu', f"au plus tard le {date(reversement)}"),
     ])
     lignes = [('Don', '1', fcfa(d.montant), fcfa(d.montant))]

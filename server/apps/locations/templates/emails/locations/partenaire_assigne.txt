@@ -2,10 +2,10 @@
 
 Votre véhicule du {{ debut }} est attribué :
 
-  Loueur : {{ partenaire }} — {{ contact }}
+  Loueur : {{ partenaire }}, {{ contact }}
   Téléphone / WhatsApp : {{ telephone_partenaire }}
-{% if vehicule %}  Véhicule : {{ vehicule }}{% if immatriculation %} — immatriculation {{ immatriculation }}{% endif %}
-{% endif %}{% if avec_chauffeur and chauffeur %}  Votre chauffeur : {{ chauffeur }}{% if telephone_chauffeur %} — {{ telephone_chauffeur }}{% endif %}
+{% if vehicule %}  Véhicule : {{ vehicule }}{% if immatriculation %}, immatriculation {{ immatriculation }}{% endif %}
+{% endif %}{% if avec_chauffeur and chauffeur %}  Votre chauffeur : {{ chauffeur }}{% if telephone_chauffeur %}, {{ telephone_chauffeur }}{% endif %}
 {% endif %}
   Prise : {{ prise }}
   Retour : {{ fin }}, {{ retour }}

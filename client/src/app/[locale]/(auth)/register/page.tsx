@@ -199,7 +199,7 @@ function RegisterForm() {
                   <div key={i} className={cn("h-1 flex-1 rounded-full", i <= strength.score ? (strength.score <= 2 ? "bg-red-400" : strength.score === 3 ? "bg-amber-400" : "bg-green-500") : "bg-gray-200")} />
                 ))}
               </div>
-              <p className="text-xs text-gray-400 mt-1">{t(`force.${strength.score}`)} — {t("forceConseil")}</p>
+              <p className="text-xs text-gray-400 mt-1">{t(`force.${strength.score}`)}, {t("forceConseil")}</p>
             </div>
           )}
         </div>

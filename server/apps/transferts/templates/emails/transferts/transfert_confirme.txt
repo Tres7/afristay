@@ -3,7 +3,7 @@
 Votre transfert depuis l'aéroport est payé ({{ montant }}).
 
   Aéroport : {{ aeroport }}
-  Arrivée : {{ arrivee }} — vol {{ vol }}
+  Arrivée : {{ arrivee }}, vol {{ vol }}
   Destination : {{ destination }}
   Véhicule : {{ vehicule }} · {{ passagers }} passager{{ passagers|pluralize }}, {{ bagages }} bagage{{ bagages|pluralize }}
   Référence : {{ reference }}

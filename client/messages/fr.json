@@ -1,8 +1,8 @@
 {
   "meta": {
-    "titre": "Kwa-Ba — Le monde vous accueille",
+    "titre": "Kwa-Ba | Le monde vous accueille",
     "description": "Plateforme de réservation d'hébergements en Afrique. Découvrez les meilleurs logements, activités et restaurants.",
-    "slogan": "Kwa-Ba — Le monde vous accueille.",
+    "slogan": "Kwa-Ba. Le monde vous accueille.",
     "pages": {
       "recherche": {
         "titre": "Hébergements en Afrique de l'Ouest",
@@ -110,7 +110,7 @@
     "location": "Location de voiture"
   },
   "logo": {
-    "accueil": "Kwa-Ba — accueil"
+    "accueil": "Kwa-Ba, accueil"
   },
   "pied": {
     "accroche": "Réservez des hébergements authentiques en Afrique et payez par Mobile Money ou carte.",
@@ -744,7 +744,7 @@
       "4": "Très bien",
       "5": "Exceptionnel"
     },
-    "etoile": "{note} sur 5 — {libelle}",
+    "etoile": "{note} sur 5, {libelle}",
     "aides": {
       "proprete": "Le logement était-il propre à votre arrivée ?",
       "conformite": "Le logement correspondait-il à l'annonce et aux photos ?",
@@ -1170,7 +1170,7 @@
   "transfertDetail": {
     "statuts": {
       "enAttente": "Paiement en attente",
-      "confirme": "Payé — chauffeur bientôt attribué",
+      "confirme": "Payé, chauffeur bientôt attribué",
       "chauffeurAttribue": "Chauffeur attribué",
       "effectue": "Effectué",
       "annule": "Annulé"

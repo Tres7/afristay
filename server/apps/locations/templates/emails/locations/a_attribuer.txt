@@ -2,10 +2,10 @@
 
 {% endif %}Une location payée attend un loueur.
 
-  {{ reference }} — {{ categorie }}, {{ formule }}
+  {{ reference }} · {{ categorie }}, {{ formule }}
   Prise : {{ debut }}, {{ prise }}
   Retour : {{ fin }}, {{ retour }} ({{ jours }} jour(s))
-  Voyageur : {{ voyageur }} — {{ telephone_voyageur }} · {{ passagers }} personne(s)
+  Voyageur : {{ voyageur }}, {{ telephone_voyageur }} · {{ passagers }} personne(s)
 {% if conducteur %}  Conducteur : {{ conducteur }}, permis {{ permis }} ({{ permis_pays }})
 {% endif %}  Précisions du voyageur : « {{ precisions }} »
 

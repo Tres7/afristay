@@ -67,7 +67,7 @@ export default function Lieux() {
 
       <Panneau ouvert={!!edition} titre={edition === "nouveau" ? "Nouveau lieu de remise" : "Modifier le lieu"} onFermer={() => setEdition(null)} onValider={enregistrer} envoi={envoi}>
         {erreurs.detail && <p role="alert" className="text-sm text-red-700 bg-red-50 rounded-xl p-3">{erreurs.detail}</p>}
-        <Champ label="Nom" erreur={erreurs.nom} aide="Par ex. « Aéroport de Lomé » ou « Livraison à votre adresse — Lomé »">
+        <Champ label="Nom" erreur={erreurs.nom} aide="Par ex. « Aéroport de Lomé » ou « Livraison à votre adresse, Lomé »">
           <Saisie value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} required maxLength={120} />
         </Champ>
         <Champ label="Ville" erreur={erreurs.ville}><Saisie value={form.ville} onChange={(e) => setForm({ ...form, ville: e.target.value })} required /></Champ>

@@ -22,7 +22,7 @@ class AeroportModel(models.Model):
         verbose_name = 'Aéroport'
 
     def __str__(self):
-        return f"{self.ville} — {self.nom} ({self.code})"
+        return f"{self.ville} · {self.nom} ({self.code})"
 
 
 class TarifTransfertModel(models.Model):
@@ -38,7 +38,7 @@ class TarifTransfertModel(models.Model):
         constraints = [models.UniqueConstraint(fields=['aeroport', 'categorie'], name='tarif_unique_par_categorie')]
 
     def __str__(self):
-        return f"{self.aeroport_id} — {self.get_categorie_display()} : {self.prix} FCFA"
+        return f"{self.aeroport_id} · {self.get_categorie_display()} : {self.prix} FCFA"
 
 
 class ChauffeurModel(models.Model):
@@ -65,7 +65,7 @@ class ChauffeurModel(models.Model):
         verbose_name_plural = 'Chauffeurs partenaires'
 
     def __str__(self):
-        return f"{self.prenom} {self.nom} — {self.vehicule} ({self.get_categorie_display()})"
+        return f"{self.prenom} {self.nom} · {self.vehicule} ({self.get_categorie_display()})"
 
 
 class TransfertModel(models.Model):
@@ -126,7 +126,7 @@ class TransfertModel(models.Model):
         verbose_name_plural = 'Transferts aéroport'
 
     def __str__(self):
-        return f"{self.reference} — {self.aeroport_id} → {self.destination[:40]}"
+        return f"{self.reference} · {self.aeroport_id} → {self.destination[:40]}"
 
     @property
     def reference(self):

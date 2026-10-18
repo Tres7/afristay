@@ -3,7 +3,7 @@
 Kwa-Ba vous confie une course.
 
   Prise en charge : aéroport {{ aeroport }}, le {{ arrivee }} (vol {{ vol }})
-  Voyageur : {{ voyageur }} — {{ telephone_voyageur }}
+  Voyageur : {{ voyageur }}, {{ telephone_voyageur }}
   Passagers : {{ passagers }} · Bagages : {{ bagages }}
   Destination : {{ destination }}
 {% if message %}  Message du voyageur : « {{ message }} »

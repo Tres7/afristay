@@ -88,4 +88,4 @@ class FactureModel(models.Model):
                                                name='une_facture_par_objet')]
 
     def __str__(self):
-        return f"{self.numero} — {self.client_nom} — {self.total_ttc} FCFA"
+        return f"{self.numero} · {self.client_nom} · {self.total_ttc} FCFA"

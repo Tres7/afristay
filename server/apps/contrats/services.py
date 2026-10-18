@@ -216,7 +216,7 @@ def lien(jeton: str) -> str:
 
 
 def _envoyer_lien(contrat: ContratModel, jeton: str) -> None:
-    _envoyer('a_signer', f"Votre contrat Kwa-Ba à signer — {contrat.reference}", [contrat.partie_email], {
+    _envoyer('a_signer', f"Votre contrat Kwa-Ba à signer : {contrat.reference}", [contrat.partie_email], {
         'nom': contrat.partie_nom, 'titre': contrat.titre, 'reference': contrat.reference, 'lien': lien(jeton),
         'expire_le': date(contrat.expire_le),
     })
@@ -338,6 +338,6 @@ def signer(contrat: ContratModel, *, nom: str, signature: str, accepte: bool, ip
     contexte_email = {'nom': contrat.partie_nom, 'titre': contrat.titre, 'reference': contrat.reference,
                       'signe_le': date(contrat.signe_le, 'j F Y à H:i'), 'empreinte': contrat.empreinte_pdf,
                       'type': contrat.get_type_display()}
-    _envoyer('signe', f"Contrat signé — {contrat.reference}", [contrat.partie_email], contexte_email, piece)
-    _envoyer('signe_kwaba', f"Contrat signé par {contrat.partie_nom} — {contrat.reference}", _destinataires_kwaba(), contexte_email, piece)
+    _envoyer('signe', f"Contrat signé : {contrat.reference}", [contrat.partie_email], contexte_email, piece)
+    _envoyer('signe_kwaba', f"Contrat signé par {contrat.partie_nom} : {contrat.reference}", _destinataires_kwaba(), contexte_email, piece)
     return contrat

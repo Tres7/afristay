@@ -77,7 +77,7 @@ class VisiteModel(models.Model):
         verbose_name_plural = 'Visites de vérification'
 
     def __str__(self):
-        return f"Visite {self.get_decision_display().lower()} — {self.hebergement}"
+        return f"Visite {self.get_decision_display().lower()} · {self.hebergement}"
 
 
 class PhotoVisiteModel(models.Model):

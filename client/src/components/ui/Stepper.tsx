@@ -27,12 +27,12 @@ export default function Stepper({ value, onChange, min = 0, max = 99, label, hin
       </div>
       <div className="flex items-center gap-3" role="group" aria-label={label}>
         <button type="button" onClick={() => onChange(Math.max(min, value - 1))} disabled={value <= min}
-          aria-label={`${t("moins")} — ${label}`} className={cn(bouton, "border-gray-300 text-dark hover:border-dark")}>
+          aria-label={`${t("moins")} : ${label}`} className={cn(bouton, "border-gray-300 text-dark hover:border-dark")}>
           <Minus size={15} />
         </button>
         <span className="w-6 text-center font-semibold text-dark tabular-nums" aria-live="polite">{value}</span>
         <button type="button" onClick={() => onChange(Math.min(max, value + 1))} disabled={value >= max}
-          aria-label={`${t("plus")} — ${label}`} className={cn(bouton, "border-gray-300 text-dark hover:border-dark")}>
+          aria-label={`${t("plus")} : ${label}`} className={cn(bouton, "border-gray-300 text-dark hover:border-dark")}>
           <Plus size={15} />
         </button>
       </div>

@@ -163,7 +163,7 @@ function Logements({ v, appliquer, recharger }: SectionProps) {
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 bg-secondary/10 border border-secondary/30 rounded-2xl p-4">
           <Award size={22} className="text-secondary flex-shrink-0" />
           <p className="flex-1 text-sm text-dark">{t.rich("retenu", { nom: retenue.hebergement.name, strong: (x) => <strong>{x}</strong> })}
-            {retenue.budget && <> — {t("parPersonne", { montant: formatPrice(retenue.budget.par_personne) })}</>}</p>
+            {retenue.budget && <>, {t("parPersonne", { montant: formatPrice(retenue.budget.par_personne) })}</>}</p>
           {reserverUrl && v.est_organisateur && (
             <Link href={reserverUrl} className="px-5 py-2.5 rounded-full bg-secondary text-white text-sm font-bold text-center">{t("reserverGroupe")}</Link>
           )}
@@ -197,7 +197,7 @@ function Logements({ v, appliquer, recharger }: SectionProps) {
                     </div>
                     {v.proposition_retenue === p.id && <span className="text-xs font-bold bg-secondary text-white px-2.5 py-1 rounded-full">{t("retenuBadge")}</span>}
                   </div>
-                  {p.commentaire && <p className="text-sm text-gray-700 italic mt-2">« {p.commentaire} » — {p.propose_par}</p>}
+                  {p.commentaire && <p className="text-sm text-gray-700 italic mt-2">« {p.commentaire} » · {p.propose_par}</p>}
                   <div className="flex flex-wrap gap-2 mt-2 text-xs">
                     {p.disponible === false && <span className="px-2 py-1 rounded-full bg-red-50 text-red-700 font-semibold">{t("pris")}</span>}
                     {!p.assez_grand && <span className="px-2 py-1 rounded-full bg-amber-50 text-amber-800 font-semibold">{t("tropPetit", { nombre: v.nb_voyageurs })}</span>}

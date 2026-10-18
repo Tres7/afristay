@@ -63,7 +63,7 @@ export default function TableauDeBord() {
             </div>
             <div className="space-y-4">
               <Tuile
-                titre="Avis" valeur={s.avis.moyenne !== null ? `${s.avis.moyenne.toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} / 5` : "—"}
+                titre="Avis" valeur={s.avis.moyenne !== null ? `${s.avis.moyenne.toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} / 5` : "-"}
                 detail={`${s.avis.total} avis vérifiés`} icone={Star} href="/backoffice/avis"
               />
               <div className="bg-white rounded-2xl border border-gray-100 p-5">

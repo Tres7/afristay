@@ -14,7 +14,7 @@
 Police des titres : **Montserrat** (800 pour le logo), texte : Inter.
 
 ## Fichiers
-- `kwaba-icone.svg` et `kwaba-icone-{16,32,48,180,192,512}.png` : pictogramme (le « A » au soleil levant sur fond vert) — favicon, icône Apple et application ;
+- `kwaba-icone.svg` et `kwaba-icone-{16,32,48,180,192,512}.png` : pictogramme (le « A » au soleil levant sur fond vert) : favicon, icône Apple et application ;
 - `kwaba-logo.png` / `kwaba-logo-blanc.png` : logotype « KWA-BA » sur fond transparent (clair / sombre) ;
 - `kwaba-logo-email.png` : logotype sur fond blanc, intégré aux emails ;
 - `kwaba-partage-1200x630.png` : aperçu des liens partagés (Open Graph).

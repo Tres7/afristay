@@ -95,7 +95,7 @@ function LocationDetail() {
     }
   };
 
-  const lieu = (nom: string, adresse: string) => (adresse ? `${nom} — ${adresse}` : nom);
+  const lieu = (nom: string, adresse: string) => (adresse ? `${nom}, ${adresse}` : nom);
 
   return (
     <div className="bg-light min-h-[70vh]">

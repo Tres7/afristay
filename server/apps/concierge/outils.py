@@ -231,5 +231,5 @@ def executer(nom: str, entree) -> tuple[str, list, bool]:
     try:
         resultat, cartes = fonction(entree)
     except EntreeInvalide as exc:
-        return f"Entrée invalide — {exc}", [], True
+        return f"Entrée invalide : {exc}", [], True
     return json.dumps(resultat, ensure_ascii=False, default=str), cartes, False

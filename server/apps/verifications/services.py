@@ -98,11 +98,11 @@ def visite_a_planifier(hebergement, modification: bool = False) -> None:
     hote = hebergement.host
     if not identite_verifiee(hote) or contrat_manquant(hote):
         return
-    _envoyer('visite_a_planifier', f"[Kwa-Ba] Visite à planifier — {hebergement.name} ({hebergement.city})",
+    _envoyer('visite_a_planifier', f"[Kwa-Ba] Visite à planifier : {hebergement.name} ({hebergement.city})",
              _verificateurs(), {
                  'modification': modification, 'hebergement': hebergement.name, 'ville': hebergement.city,
                  'adresse': hebergement.location, 'hote': f"{hote.first_name} {hote.last_name}".strip(),
-                 'telephone': hote.phone or '—', 'email': hote.email,
+                 'telephone': hote.phone or '-', 'email': hote.email,
                  'url': f"{settings.FRONTEND_URL}/agent",
              })
 
@@ -118,10 +118,10 @@ def contrat_hote_signe(hote) -> None:
 def piece_a_controler(piece) -> None:
     """Prévient les agents qu'une pièce d'identité vient d'être envoyée (ou remplacée)."""
     hote = piece.hote
-    _envoyer('piece_a_controler', f"[Kwa-Ba] Pièce d'identité à contrôler — {hote.first_name} {hote.last_name}".strip(),
+    _envoyer('piece_a_controler', f"[Kwa-Ba] Pièce d'identité à contrôler : {hote.first_name} {hote.last_name}".strip(),
              _verificateurs(), {
                  'hote': f"{hote.first_name} {hote.last_name}".strip(), 'email': hote.email,
-                 'telephone': hote.phone or '—', 'type_piece': piece.get_type_piece_display(),
+                 'telephone': hote.phone or '-', 'type_piece': piece.get_type_piece_display(),
                  'url': f"{settings.FRONTEND_URL}/agent",
              })
 
@@ -225,10 +225,10 @@ def decider(hebergement, agent, *, decision: str, controles: dict, commentaire: 
                 'url_annonce': f"{settings.FRONTEND_URL}/hebergements/{hebergement.id}"}
     if decision == 'validee':
         hebergement.statut_verification, hebergement.verifiee_le, hebergement.motif_refus = 'verifiee', maintenant, ''
-        _envoyer('annonce_verifiee', f"Votre logement est vérifié — {hebergement.name}", [hote.email], contexte)
+        _envoyer('annonce_verifiee', f"Votre logement est vérifié : {hebergement.name}", [hote.email], contexte)
     else:
         hebergement.statut_verification, hebergement.motif_refus = 'refusee', commentaire
-        _envoyer('annonce_refusee', f"Votre annonce n'est pas encore publiée — {hebergement.name}", [hote.email],
+        _envoyer('annonce_refusee', f"Votre annonce n'est pas encore publiée : {hebergement.name}", [hote.email],
                  {**contexte, 'motif': commentaire})
     hebergement.save(update_fields=['statut_verification', 'verifiee_le', 'motif_refus', 'updated_at'])
     return visite

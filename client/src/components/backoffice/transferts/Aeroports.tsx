@@ -78,7 +78,7 @@ export default function Aeroports() {
                     return (
                       <li key={code} className="flex justify-between gap-2">
                         <span className="text-gray-600">{nom}</span>
-                        <span className={t?.actif ? "text-dark tabular-nums" : "text-gray-400 tabular-nums"}>{t ? formatPrice(t.prix) : "—"}{t && !t.actif ? " (désactivé)" : ""}</span>
+                        <span className={t?.actif ? "text-dark tabular-nums" : "text-gray-400 tabular-nums"}>{t ? formatPrice(t.prix) : "-"}{t && !t.actif ? " (désactivé)" : ""}</span>
                       </li>
                     );
                   })}

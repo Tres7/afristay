@@ -21,7 +21,7 @@ export default function ReservationsChart({ jours }: { jours: Jour[] }) {
   return (
     <div>
       <div className="flex items-center justify-between gap-3 mb-4">
-        <h2 className="font-heading font-bold text-dark">Réservations confirmées — 30 derniers jours</h2>
+        <h2 className="font-heading font-bold text-dark">Réservations confirmées (30 derniers jours)</h2>
         <button onClick={() => setTableau(!tableau)} className="text-xs font-semibold text-primary hover:underline flex-shrink-0">
           {tableau ? "Voir le graphique" : "Voir le tableau"}
         </button>

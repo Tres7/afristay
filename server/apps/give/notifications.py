@@ -33,7 +33,7 @@ def reversement_a_effectuer(r: ReversementModel):
     if not destinataires:
         logger.error("Reversement %s à effectuer mais aucun administrateur à prévenir", r.reference)
         return
-    _envoyer('emails/give/reversement_a_effectuer.txt', f"[Kwa-Ba Give] Reversement à effectuer — {r.organisation.nom}",
+    _envoyer('emails/give/reversement_a_effectuer.txt', f"[Kwa-Ba Give] Reversement à effectuer : {r.organisation.nom}",
              destinataires, {
                  'organisation': r.organisation.nom, 'mois': _mois(r.periode), 'montant': _fcfa(r.montant),
                  'nb_dons': r.nb_dons, 'date_prevue': formats.date_format(r.date_prevue, 'j F Y'),

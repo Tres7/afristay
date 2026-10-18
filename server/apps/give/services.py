@@ -57,7 +57,7 @@ def donner(*, donateur, organisation: OrganisationModel, projet=None, montant: i
             )
             url = paiements.creer_paiement(
                 objet=don, montant=don.total, moyen=moyen, voyageur=donateur,
-                description=f"Don Kwa-Ba Give {don.reference} — {organisation.nom}",
+                description=f"Don Kwa-Ba Give {don.reference}, {organisation.nom}",
                 url_retour=f"{settings.FRONTEND_URL}/give/don/{don.id}",
             )
     except paiements.PaiementErreur as exc:

@@ -46,4 +46,4 @@ class AvisModel(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.note}/5 — {self.hebergement_id} par {self.auteur_id}"
+        return f"{self.note}/5 · {self.hebergement_id} par {self.auteur_id}"

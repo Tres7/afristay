@@ -30,7 +30,7 @@ def lignes_de(objet) -> list[dict]:
         if r.prix_nuits is None:
             return [{'libelle': f"Séjour « {h.name} » du {generateurs.date(r.check_in)} au {generateurs.date(r.check_out)}",
                      'quantite': 1, 'prix_unitaire': int(r.total_price)}]
-        lignes = [{'libelle': f"Hébergement « {h.name} », {h.city} — du {generateurs.date(r.check_in)} au {generateurs.date(r.check_out)}",
+        lignes = [{'libelle': f"Hébergement « {h.name} », {h.city}, du {generateurs.date(r.check_in)} au {generateurs.date(r.check_out)}",
                    'quantite': r.nights, 'prix_unitaire': r.prix_nuits // max(r.nights, 1)}]
         reste = r.prix_nuits - lignes[0]['quantite'] * lignes[0]['prix_unitaire']
         if reste:
@@ -39,10 +39,10 @@ def lignes_de(objet) -> list[dict]:
         return lignes
     if type(objet).__name__ == 'TransfertModel':
         t = objet
-        return [{'libelle': f"Transfert aéroport {t.aeroport.ville} — {t.get_categorie_display()}{' (nuit)' if t.majoration_nuit else ''}, "
+        return [{'libelle': f"Transfert aéroport {t.aeroport.ville}, {t.get_categorie_display()}{' (nuit)' if t.majoration_nuit else ''}, "
                             f"vol {t.numero_vol}", 'quantite': 1, 'prix_unitaire': t.prix}]
     loc = objet
-    lignes = [{'libelle': f"Location {loc.categorie.nom} ({loc.get_formule_display()}) — {loc.lieu_prise.ville}",
+    lignes = [{'libelle': f"Location {loc.categorie.nom} ({loc.get_formule_display()}), {loc.lieu_prise.ville}",
                'quantite': loc.jours, 'prix_unitaire': loc.prix_jour}]
     if loc.prix - loc.jours * loc.prix_jour:
         lignes.append({'libelle': 'Frais de remise et de retour', 'quantite': 1, 'prix_unitaire': loc.prix - loc.jours * loc.prix_jour})

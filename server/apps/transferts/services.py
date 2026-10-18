@@ -84,7 +84,7 @@ def demarrer_paiement(transfert: TransfertModel, moyen: str) -> str:
         transfert.save(update_fields=['moyen'])
     return paiements.creer_paiement(
         objet=transfert, montant=transfert.prix, moyen=moyen, voyageur=transfert.voyageur,
-        description=f"Kwa-Ba {transfert.reference} — transfert aéroport {transfert.aeroport.ville}",
+        description=f"Kwa-Ba {transfert.reference}, transfert aéroport {transfert.aeroport.ville}",
         url_retour=f"{settings.FRONTEND_URL}/transfert/{transfert.id}",
     )
 

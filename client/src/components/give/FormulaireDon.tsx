@@ -65,7 +65,7 @@ export default function FormulaireDon({ organisation, projetId }: { organisation
       <div>
         <h2 id="don-titre" className="font-heading font-bold text-dark text-xl">{t("titre")}</h2>
         <p className="text-sm text-gray-600 mt-1">
-          {t.rich("beneficiaire", { nom: organisation.nom, strong: (x) => <strong className="text-dark">{x}</strong> })}{projet && <> — {t("projet", { titre: projet.titre })}</>}
+          {t.rich("beneficiaire", { nom: organisation.nom, strong: (x) => <strong className="text-dark">{x}</strong> })}{projet && <>, {t("projet", { titre: projet.titre })}</>}
         </p>
       </div>
 

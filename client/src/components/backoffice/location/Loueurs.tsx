@@ -80,7 +80,7 @@ export default function Loueurs() {
     }
   };
 
-  const nomsDe = <T extends { id: number; nom: string }>(ids: number[], liste: T[]) => liste.filter((x) => ids.includes(x.id)).map((x) => x.nom).join(", ") || "—";
+  const nomsDe = <T extends { id: number; nom: string }>(ids: number[], liste: T[]) => liste.filter((x) => ids.includes(x.id)).map((x) => x.nom).join(", ") || "-";
   const colonnes: Colonne<Loueur>[] = [
     { titre: "Loueur", masquerMobile: true, cellule: (l) => <div><p className="font-semibold text-dark">{l.nom}</p><p className="text-xs text-muted">{l.contact} · {l.telephone}</p></div> },
     { titre: "Catégories", cellule: (l) => <span className="text-xs">{nomsDe(l.categories, categories)}</span> },

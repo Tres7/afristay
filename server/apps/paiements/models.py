@@ -21,7 +21,7 @@ class ProfilVersementModel(models.Model):
         verbose_name_plural = 'Profils de versement'
 
     def __str__(self):
-        return f"{self.hote.email} — {self.get_operateur_display()} {self.numero}"
+        return f"{self.hote.email} · {self.get_operateur_display()} {self.numero}"
 
 
 class ObjetPayeMixin:
@@ -54,7 +54,7 @@ class ObjetPayeMixin:
         if self.transfert_id:
             return f"Transfert depuis l'aéroport {self.transfert.aeroport.ville}"
         if getattr(self, 'location_id', None):
-            return f"Location {self.location.categorie.nom} — {self.location.lieu_prise.ville}"
+            return f"Location {self.location.categorie.nom}, {self.location.lieu_prise.ville}"
         return f"Don à {self.don.organisation.nom}"
 
 
@@ -116,7 +116,7 @@ class PaiementModel(ObjetPayeMixin, models.Model):
         )]
 
     def __str__(self):
-        return f"{self.montant} FCFA — {self.get_statut_display()} — {self.reference}"
+        return f"{self.montant} FCFA · {self.get_statut_display()} · {self.reference}"
 
 
 class VersementModel(models.Model):
@@ -202,4 +202,4 @@ class RemboursementModel(ObjetPayeMixin, models.Model):
         verbose_name = 'Remboursement'
 
     def __str__(self):
-        return f"{self.montant} FCFA — {self.reference} ({self.get_statut_display()})"
+        return f"{self.montant} FCFA · {self.reference} ({self.get_statut_display()})"

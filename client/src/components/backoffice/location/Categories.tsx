@@ -101,9 +101,9 @@ export default function Categories() {
                     <p className="font-heading font-bold text-dark">{c.nom}</p>
                     <Pill ton={c.actif ? "vert" : "gris"}>{c.actif ? "Proposée" : "Désactivée"}</Pill>
                   </div>
-                  <p className="text-xs text-muted mt-0.5">{c.exemple_modele || "—"} · {c.places} places</p>
+                  <p className="text-xs text-muted mt-0.5">{c.exemple_modele || "-"} · {c.places} places</p>
                   <p className="text-sm text-dark mt-2 tabular-nums">
-                    Seule : {c.prix_jour_sans_chauffeur ? formatPrice(c.prix_jour_sans_chauffeur) : "—"} · Avec chauffeur : {c.prix_jour_avec_chauffeur ? formatPrice(c.prix_jour_avec_chauffeur) : "—"}
+                    Seule : {c.prix_jour_sans_chauffeur ? formatPrice(c.prix_jour_sans_chauffeur) : "-"} · Avec chauffeur : {c.prix_jour_avec_chauffeur ? formatPrice(c.prix_jour_avec_chauffeur) : "-"}
                   </p>
                 </div>
               </button>
