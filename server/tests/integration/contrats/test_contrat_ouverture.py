@@ -10,6 +10,7 @@ from django.utils import timezone
 from apps.contrats import preinscription
 from apps.contrats.models import ContratModel, PreinscriptionModel
 from apps.documents.models import ParametresSocieteModel
+from apps.hebergements.models import HebergementModel
 
 HEBERGEMENTS = '/api/v1/hebergements/'
 SOCIETE = '/api/v1/admin/documents/societe/'
@@ -110,3 +111,21 @@ def test_reminder_command(make_hebergement, societe):
     mail.outbox.clear()
     call_command('inviter_hotes_contrat')
     assert len(mail.outbox) == 1
+
+
+def test_building_the_public_queryset_runs_no_query(django_assert_num_queries):
+    # Serializer fields build it at import time, before the tables exist (manage.py check, migrate on a new database)
+    with django_assert_num_queries(0):
+        HebergementModel.objects.publiees()
+
+
+def test_favourites_follow_a_registration_made_while_the_api_runs(client_for, make_user, make_hebergement, societe):
+    hebergement = make_hebergement()
+    client = client_for(make_user())
+    societe.rccm, societe.nif = 'TG-LOM-2026-B-1', '1000123456'
+    societe.save()
+
+    # The favourites serializer was built before the registration: its listing rule must still apply now
+    assert client.post('/api/v1/favoris/', {'hebergement': str(hebergement.id)}, format='json').status_code == 400
+    _contrat_signe(hebergement.host)
+    assert client.post('/api/v1/favoris/', {'hebergement': str(hebergement.id)}, format='json').status_code == 201
