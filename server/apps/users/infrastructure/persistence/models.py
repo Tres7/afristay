@@ -45,8 +45,6 @@ class UserModel(AbstractUser):
     avatar      = models.ImageField(upload_to='avatars/', null=True, blank=True)
     role        = models.CharField(max_length=20, choices=ROLE_CHOICES)
     is_verified = models.BooleanField(default=False)
-    # Fenêtre « Logements bientôt disponibles » déjà montrée à ce compte : elle ne s'affiche qu'une fois par compte
-    fenetre_lancement_vue_le = models.DateTimeField(null=True, blank=True)
     USERNAME_FIELD  = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name']
     objects = UserModelManager()
