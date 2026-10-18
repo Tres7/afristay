@@ -325,6 +325,6 @@ class TestCandidatureHote:
 def test_agent_role_cannot_be_chosen_at_registration(api_client):
     response = api_client.post('/api/v1/auth/register/', {
         'email': 'faux.agent@example.tg', 'first_name': 'A', 'last_name': 'B', 'role': 'agent',
-        'password': 'Afristay-Test-2026!', 'password_confirm': 'Afristay-Test-2026!',
+        'password': 'Kwaba-Test-2026!', 'password_confirm': 'Kwaba-Test-2026!',
     }, format='json')
     assert response.status_code == 400

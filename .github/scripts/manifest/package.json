@@ -1,5 +1,5 @@
 {
-  "name": "afristay-deploy-manifest",
+  "name": "kwaba-deploy-manifest",
   "private": true,
   "type": "module",
   "description": "Création et validation des manifests de déploiement (deploy/manifests)",

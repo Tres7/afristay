@@ -49,7 +49,7 @@ def faux(settings, monkeypatch):
 @pytest.fixture
 def chauffeur():
     c = ChauffeurModel.objects.create(
-        prenom='Komi', nom='Ablodé', telephone='+228 90 11 22 33', email='komi@test.afristay', categorie='confort',
+        prenom='Komi', nom='Ablodé', telephone='+228 90 11 22 33', email='komi@test.kwaba', categorie='confort',
         vehicule='Toyota RAV4 grise', immatriculation='TG-1234-AB',
         pays_versement='TG', operateur_versement='togocel', numero_versement='90112233',
     )
@@ -121,8 +121,8 @@ def test_sans_paiement_en_ligne_confirme_directement(client_for, make_user, sett
 
 
 def test_cycle_complet_paiement_attribution_versement(client_for, make_user, faux, chauffeur, settings):
-    make_user(role='admin', email='admin@test.afristay')
-    voyageur = make_user(email='voyageur@test.afristay')
+    make_user(role='admin', email='admin@test.kwaba')
+    voyageur = make_user(email='voyageur@test.kwaba')
     client = client_for(voyageur)
     t = _reserver_et_payer(client, faux, categorie='berline')
     assert faux.transaction['montant'] == 10000
@@ -141,7 +141,7 @@ def test_cycle_complet_paiement_attribution_versement(client_for, make_user, fau
     assert detail['chauffeur']['telephone'] == '+228 90 11 22 33'
     mail.outbox.clear()
     paiements.passe()
-    assert {m.to[0] for m in mail.outbox} == {'voyageur@test.afristay', 'komi@test.afristay'}
+    assert {m.to[0] for m in mail.outbox} == {'voyageur@test.kwaba', 'komi@test.kwaba'}
 
     v = VersementChauffeurModel.objects.get(transfert=t)
     assert (v.montant, v.commission) == (8000, 2000)
@@ -177,7 +177,7 @@ def test_annulation_moins_de_24h_pas_de_remboursement(client_for, make_user, fau
     assert VersementChauffeurModel.objects.get(transfert=t).statut == 'planifie'  # le chauffeur reste payé
 
 
-def test_annulation_par_afristay_rembourse_tout(client_for, make_user, faux):
+def test_annulation_par_kwaba_rembourse_tout(client_for, make_user, faux):
     client = client_for(make_user())
     t = _reserver_et_payer(client, faux, arrivee=_arrivee(dans_heures=12, heure=(timezone.localtime() + timedelta(hours=12)).strftime('%H:%M')))
     assert services.annuler(t, par='plateforme') == t.prix  # remboursement intégral, majoration de nuit comprise

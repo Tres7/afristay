@@ -61,7 +61,7 @@ class TestLimitesParIP:
     def _inscrire(self, client, n, **extra):
         return client.post(REGISTER, {
             'email': f'nouveau{n}@example.tg', 'first_name': 'Ama', 'last_name': 'Kossi',
-            'password': 'Afristay-Test-2026!', 'password_confirm': 'Afristay-Test-2026!',
+            'password': 'Kwaba-Test-2026!', 'password_confirm': 'Kwaba-Test-2026!',
         }, format='json', **extra)
 
     def test_eleventh_registration_in_an_hour_is_throttled(self, api_client):
@@ -166,7 +166,7 @@ class TestEntreesInvalides:
 
     def test_listing_size_is_capped(self, api_client, make_hebergement, monkeypatch):
         monkeypatch.setattr(hebergements_views, 'MAX_RESULTATS', 3)
-        hote = get_user_model().objects.create_user(email='hote@test.afristay', password='x', role='hote')
+        hote = get_user_model().objects.create_user(email='hote@test.kwaba', password='x', role='hote')
         for _ in range(5):
             make_hebergement(host=hote)
         assert api_client.get('/api/v1/hebergements/?limit=1000').data['count'] == 3

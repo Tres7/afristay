@@ -11,7 +11,7 @@ from apps.reservations.models import ReservationModel
 from apps.users.infrastructure.messaging.RabbitMQEventBus import RabbitMQEventBus
 from apps.users.infrastructure.persistence.models import UserModel
 
-PASSWORD = 'Afristay-Test-2026!'
+PASSWORD = 'Kwaba-Test-2026!'
 
 
 @pytest.fixture(autouse=True)
@@ -54,7 +54,7 @@ def make_user():
 
     def _make(role='voyageur', is_verified=True, **fields):
         n = next(counter)
-        fields.setdefault('email', f'{role}{n}@test.afristay')
+        fields.setdefault('email', f'{role}{n}@test.kwaba')
         fields.setdefault('first_name', 'Test')
         fields.setdefault('last_name', f'{role.capitalize()} {n}')
         if role == 'hote':

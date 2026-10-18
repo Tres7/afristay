@@ -62,7 +62,7 @@ def test_unprocessable_message_goes_to_dead_letter(channel, mailoutbox, routing_
 
 
 def test_new_message_link_has_no_double_slash(channel, mailoutbox, settings):
-    settings.FRONTEND_URL = 'https://afristay.example/'
+    settings.FRONTEND_URL = 'https://kwaba.example/'
     _deliver(channel, 'messaging.new_message_email_requested',
              json.dumps(EVENTS['messaging.new_message_email_requested']))
-    assert 'https://afristay.example/messages/c-42' in mailoutbox[0].body
+    assert 'https://kwaba.example/messages/c-42' in mailoutbox[0].body

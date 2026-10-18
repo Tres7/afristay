@@ -106,7 +106,7 @@ def test_worker_une_passe(faux, make_user, make_hebergement, monkeypatch):
 
 
 def test_versement_refuse_puis_echoue_et_alerte(faux, make_user, make_hebergement):
-    make_user(role='admin', email='admin@test.afristay')
+    make_user(role='admin', email='admin@test.kwaba')
     hote = make_user(role='hote')
     resa = _reservation_payee(_client(make_user()), make_hebergement(host=hote))
     ProfilVersementModel.objects.create(hote=hote, pays='TG', operateur='togocel', numero='90000001', titulaire='Ama')

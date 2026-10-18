@@ -57,14 +57,14 @@ class TestPhotoUpload:
 
 
 def test_seed_demo_is_idempotent(api_client, monkeypatch):
-    monkeypatch.setenv('DEMO_HOST_EMAIL', 'hote.demo@afristay.com')
-    monkeypatch.setenv('DEMO_HOST_PASSWORD', 'AfriStay2026!')
+    monkeypatch.setenv('DEMO_HOST_EMAIL', 'hote.demo@kwa-ba.com')
+    monkeypatch.setenv('DEMO_HOST_PASSWORD', 'Kwa-Ba2026!')
 
     call_command('seed_demo', stdout=StringIO())
     call_command('seed_demo', stdout=StringIO())
 
-    host = UserModel.objects.get(email='hote.demo@afristay.com')
+    host = UserModel.objects.get(email='hote.demo@kwa-ba.com')
     assert HebergementModel.objects.filter(host=host).count() == 12
-    response = api_client.post('/api/v1/auth/login/', {'email': host.email, 'password': 'AfriStay2026!'},
+    response = api_client.post('/api/v1/auth/login/', {'email': host.email, 'password': 'Kwa-Ba2026!'},
                                format='json')
     assert response.status_code == 200

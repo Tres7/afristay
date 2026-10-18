@@ -71,7 +71,7 @@ class Command(BaseCommand):
     help = "Crée un hôte de démonstration et des hébergements réalistes (idempotent)."
 
     def handle(self, *args, **options):
-        email = os.getenv('DEMO_HOST_EMAIL', 'hote.demo@afristay.com')
+        email = os.getenv('DEMO_HOST_EMAIL', 'hote.demo@kwa-ba.com')
         password = os.getenv('DEMO_HOST_PASSWORD', 'Kwa-Ba2026!')
 
         host, created = UserModel.objects.get_or_create(

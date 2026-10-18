@@ -35,7 +35,7 @@ def turnstile(settings, monkeypatch):
 
 def _inscription(**extra):
     return {'email': 'nouveau@test.tg', 'first_name': 'Ama', 'last_name': 'Koffi',
-            'password': 'Afristay-Test-2026!', 'password_confirm': 'Afristay-Test-2026!', **extra}
+            'password': 'Kwaba-Test-2026!', 'password_confirm': 'Kwaba-Test-2026!', **extra}
 
 
 def test_cle_publique_exposee_seulement_si_actif(api_client, settings):
