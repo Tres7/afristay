@@ -16,8 +16,8 @@ import type { ContratAdmin, PartieContrat } from "@/types/api/admin";
 import type { TypeContrat } from "@/types/api/contrat";
 
 export const TYPES: { value: TypeContrat; label: string }[] = [
-  { value: "hote", label: "Hôte" }, { value: "loueur", label: "Loueur de véhicules" },
-  { value: "chauffeur", label: "Chauffeur (transferts)" }, { value: "ong", label: "ONG (Kwa-Ba Give)" },
+  { value: "hote", label: "Hôte particulier" }, { value: "hotel", label: "Hôtel" }, { value: "loueur", label: "Propriétaire de véhicule" },
+  { value: "chauffeur", label: "Chauffeur" }, { value: "ong", label: "ONG (Kwa-Ba Give)" },
 ];
 const FILTRE_TYPES = [{ value: "", label: "Tous les types" }, ...TYPES];
 const STATUTS = [{ value: "", label: "Tous" }, { value: "a_signer", label: "À signer" }, { value: "signe", label: "Signés" }, { value: "annule", label: "Annulés" }];

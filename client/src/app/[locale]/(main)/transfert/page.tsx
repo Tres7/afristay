@@ -284,7 +284,7 @@ function TransfertContent() {
                     : t("reserver")}
             </button>
             <p className="text-xs text-gray-600 text-center leading-relaxed">
-              {t.rich("infoChauffeur", { cgu: (x) => <Link href="/cgu" className="text-primary font-medium">{x}</Link> })}
+              {t.rich("infoChauffeur", { cgu: (x) => <Link href="/cgv" className="text-primary font-medium">{x}</Link> })}
             </p>
           </div>
         </aside>

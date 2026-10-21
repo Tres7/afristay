@@ -245,7 +245,7 @@ function ReservationContent() {
 
               <p className="text-center text-gray-400 text-xs mt-4 leading-relaxed">
                 {t.rich(enLigne ? "accepterPaiement" : "accepterConfirmation", {
-                  cgu: (x) => <Link href="/cgu" className="text-primary font-medium">{x}</Link>,
+                  cgu: (x) => <Link href="/cgv" className="text-primary font-medium">{x}</Link>,
                   annulation: (x) => <Link href="/remboursement" className="text-primary font-medium">{x}</Link>,
                 })}
               </p>

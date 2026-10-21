@@ -5,6 +5,8 @@ export interface SectionLegale {
   id: string;
   titre: string;
   contenu: React.ReactNode;
+  /** Numéro affiché devant le titre (par défaut, le rang de la section) ; "" pour une annexe. */
+  numero?: string;
 }
 
 interface LegalPageProps {
@@ -17,6 +19,7 @@ interface LegalPageProps {
 const PAGES = [
   { href: "/mentions-legales", cle: "mentions" },
   { href: "/cgu", cle: "cgu" },
+  { href: "/cgv", cle: "cgv" },
   { href: "/confidentialite", cle: "confidentialite" },
   { href: "/cookies", cle: "cookies" },
   { href: "/remboursement", cle: "remboursement" },
@@ -46,14 +49,14 @@ export default function LegalPage({ titre, miseAJour, intro, sections }: LegalPa
             <p className="font-semibold text-dark text-sm mb-2">{t("sommaire")}</p>
             <ol className="list-decimal list-inside space-y-1 text-sm">
               {sections.map((s) => (
-                <li key={s.id}><a href={`#${s.id}`} className="text-primary hover:underline">{s.titre}</a></li>
+                <li key={s.id} className={s.numero === "" ? "list-none" : undefined}><a href={`#${s.id}`} className="text-primary hover:underline">{s.titre}</a></li>
               ))}
             </ol>
           </nav>
 
           {sections.map((s, i) => (
             <section key={s.id} id={s.id} className="mt-10 scroll-mt-28" aria-labelledby={`${s.id}-titre`}>
-              <h2 id={`${s.id}-titre`} className="font-heading font-bold text-xl text-dark mb-3">{i + 1}. {s.titre}</h2>
+              <h2 id={`${s.id}-titre`} className="font-heading font-bold text-xl text-dark mb-3">{s.numero === "" ? "" : `${s.numero ?? i + 1}. `}{s.titre}</h2>
               <div className="text-gray-700 leading-relaxed space-y-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1 [&_a]:text-primary [&_a]:underline [&_table]:w-full [&_table]:text-sm [&_th]:text-left [&_th]:p-2 [&_th]:bg-gray-50 [&_td]:p-2 [&_td]:align-top [&_tr]:border-b [&_tr]:border-gray-100">
                 {s.contenu}
               </div>

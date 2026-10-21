@@ -143,7 +143,7 @@ class VisitesView(APIView):
               .order_by('created_at'))
         if services.contrats_disponibles():
             # …et qui ont signé leur contrat hôte
-            qs = qs.filter(host__contrats__type='hote', host__contrats__statut='signe')
+            qs = qs.filter(host__contrats__type__in=('hote', 'hotel'), host__contrats__statut='signe')
         ville = request.query_params.get('ville', '').strip()
         if ville:
             qs = qs.filter(city__icontains=ville)

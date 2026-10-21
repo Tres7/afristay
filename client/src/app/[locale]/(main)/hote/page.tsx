@@ -3,10 +3,21 @@
 import { Link, useRouter } from "@/i18n/navigation";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
-import { CheckCircle, Home, MessageCircle, Wallet } from "lucide-react";
+import { Car, CheckCircle, Home, MessageCircle, Wallet } from "lucide-react";
+import { CONTACT_EMAIL } from "@/lib/contact";
+import { formatFcfa } from "@/lib/utils";
 import { toast } from "sonner";
 import api, { apiErrorMessage } from "@/lib/api";
 import { useTranslations } from "next-intl";
+
+// Comparaison d'un séjour de 2,5 nuits à 25 000 FCFA (62 500 FCFA), grille tarifaire du 18 octobre 2026
+const COMPARAISON = [
+  { cle: "airbnb", voyageur: 62500, hote: 52813 },
+  { cle: "booking", voyageur: 62500, hote: 53125 },
+  { cle: "kwaba", voyageur: 66250, hote: 57500, kwaba: true },
+  { cle: "fondateur", voyageur: 66250, hote: 59375, kwaba: true },
+];
+const TAUX = ["particulier", "hotel", "fondateur", "voyageur"] as const;
 
 const STEPS = [
   { icon: Home, id: "publier" },
@@ -77,6 +88,52 @@ export default function DevenirHotePage() {
               <p className="text-gray-500 text-sm leading-relaxed">{t(`etapes.${id}.texte`)}</p>
             </div>
           ))}
+        </div>
+
+        <div className="mt-12">
+          <h2 className="font-heading font-bold text-dark text-2xl md:text-3xl text-center mb-3">{t("tarifs.titre")}</h2>
+          <p className="text-gray-500 text-center max-w-2xl mx-auto mb-8">{t("tarifs.intro")}</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {TAUX.map((cle) => (
+              <div key={cle} className="bg-white rounded-3xl p-5 border border-gray-100 text-center">
+                <p className="font-heading font-bold text-primary text-3xl">{t(`tarifs.taux.${cle}.valeur`)}</p>
+                <p className="font-semibold text-dark text-sm mt-1">{t(`tarifs.taux.${cle}.titre`)}</p>
+                <p className="text-gray-500 text-xs mt-1 leading-relaxed">{t(`tarifs.taux.${cle}.texte`)}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-6 bg-white rounded-3xl p-5 md:p-6 border border-gray-100 overflow-x-auto">
+            <p className="font-semibold text-dark mb-3">{t("tarifs.exemple")}</p>
+            <table className="w-full text-sm min-w-[28rem]">
+              <thead>
+                <tr className="text-left text-gray-500 border-b border-gray-100">
+                  <th className="py-2 pr-3 font-medium">{t("tarifs.colonnes.plateforme")}</th>
+                  <th className="py-2 pr-3 font-medium text-right">{t("tarifs.colonnes.voyageur")}</th>
+                  <th className="py-2 font-medium text-right">{t("tarifs.colonnes.hote")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARAISON.map((l) => (
+                  <tr key={l.cle} className={`border-b border-gray-50 ${l.kwaba ? "font-semibold text-dark" : "text-gray-600"}`}>
+                    <td className="py-2 pr-3">{t(`tarifs.lignes.${l.cle}`)}</td>
+                    <td className="py-2 pr-3 text-right whitespace-nowrap">{formatFcfa(l.voyageur)}</td>
+                    <td className={`py-2 text-right whitespace-nowrap ${l.kwaba ? "text-secondary" : ""}`}>{formatFcfa(l.hote)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="text-xs text-gray-400 mt-3">{t("tarifs.note")}</p>
+          </div>
+
+          <div className="mt-6 bg-primary/5 rounded-3xl p-5 md:p-6 flex flex-col sm:flex-row gap-4 sm:items-center">
+            <span className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0"><Car size={22} /></span>
+            <div className="flex-1">
+              <p className="font-heading font-bold text-dark">{t("tarifs.mobilite.titre")}</p>
+              <p className="text-sm text-gray-600 mt-1 leading-relaxed">{t("tarifs.mobilite.texte")}</p>
+            </div>
+            <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(t("tarifs.mobilite.sujet"))}`} className="text-sm font-bold text-primary hover:underline whitespace-nowrap">{t("tarifs.mobilite.cta")}</a>
+          </div>
         </div>
 
         <div className="mt-12 bg-white rounded-3xl p-6 md:p-8 border border-gray-100">

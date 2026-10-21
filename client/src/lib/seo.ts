@@ -12,7 +12,7 @@ export const IMAGE_PARTAGE = "/brand/kwaba-partage-1200x630.png";
 export const PAGES_PUBLIQUES = [
   "/", "/recherche", "/decouvrir", "/transfert", "/location", "/together", "/concierge", "/hote",
   "/give", "/give/impact", "/profil/aide",
-  "/cgu", "/confidentialite", "/cookies", "/mentions-legales", "/remboursement",
+  "/cgu", "/cgv", "/confidentialite", "/cookies", "/mentions-legales", "/remboursement",
 ] as const;
 
 /**
