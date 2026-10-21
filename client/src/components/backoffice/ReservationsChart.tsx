@@ -15,7 +15,8 @@ export default function ReservationsChart({ jours }: { jours: Jour[] }) {
   const [survol, setSurvol] = useState<number | null>(null);
   const [tableau, setTableau] = useState(false);
   const max = Math.max(1, ...jours.map((j) => j.nombre));
-  const graduations = [0, Math.ceil(max / 2), max];
+  // Without duplicates: with max = 1 the middle line would also be 1 (two "1" on the axis, same React key)
+  const graduations = [...new Set([0, Math.ceil(max / 2), max])];
   const courant = survol !== null ? jours[survol] : null;
 
   return (
