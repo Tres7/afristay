@@ -62,6 +62,22 @@ def contrat_manquant(hote) -> bool:
     return contrats_disponibles() and not hote_a_signe(hote)
 
 
+def pieces_a_controler():
+    """Identity documents sent by hosts and not checked yet, oldest first (agent space and counters)."""
+    return PieceIdentiteModel.objects.filter(statut='soumise').order_by('soumise_le')
+
+
+def annonces_a_visiter():
+    """Listings an agent can visit now, oldest first: waiting, host identity verified, and host agreement signed once
+    it is required. Same list in the agent space and in the counters."""
+    from apps.hebergements.models import HebergementModel  # local import, as in the rest of this module
+
+    qs = HebergementModel.objects.filter(statut_verification='en_attente', host__piece_identite__statut='verifiee')
+    if contrats_disponibles():
+        qs = qs.filter(host__contrats__type='hote', host__contrats__statut='signe')
+    return qs.order_by('created_at')
+
+
 def statut_piece(hote) -> str:
     piece = PieceIdentiteModel.objects.filter(hote=hote).first()
     return piece.statut if piece else 'absente'

@@ -48,6 +48,7 @@ class TestStats:
         logement = make_hebergement(price_per_night=10000)
         make_hebergement(statut_verification='en_attente')
         make_hebergement(is_available=False)
+        make_hebergement(statut_verification='refusee')  # waits for the host, not for an agent
         confirmee = make_reservation(logement, status='confirmed')
         ReservationModel.objects.filter(pk=confirmee.pk).update(total_price=30000)
         make_reservation(logement, status='cancelled')
@@ -59,7 +60,7 @@ class TestStats:
         d = api_admin.get(ADMIN + 'stats/').data
 
         assert d['utilisateurs']['desactives'] == 1
-        assert d['annonces'] == {'total': 3, 'visibles': 1, 'verifiees': 2}
+        assert d['annonces'] == {'total': 4, 'visibles': 1, 'verifiees': 2, 'en_attente': 1}
         assert d['reservations'] == {'confirmees_30j': 1, 'annulees_30j': 1, 'volume_30j': 30000}
         assert d['avis'] == {'total': 2, 'moyenne': 4.5}
         serie = d['reservations_par_jour']

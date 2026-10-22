@@ -102,6 +102,8 @@ class StatsView(VueAdmin):
             total=Count('id'),
             visibles=Count('id', filter=Q(is_available=True, statut_verification='verifiee')),
             verifiees=Count('id', filter=Q(statut_verification='verifiee')),
+            # Waiting for an agent's visit (refused listings wait for the host, not for an agent)
+            en_attente=Count('id', filter=Q(statut_verification='en_attente')),
         )
         recentes = ReservationModel.objects.filter(created_at__gte=il_y_a_30j)
         reservations = recentes.aggregate(
@@ -229,6 +231,8 @@ class HebergementListView(VueAdmin):
             qs = qs.filter(is_available=visible)
         if (verifie := _booleen(params.get('verifie'))) is not None:
             qs = qs.filter(statut_verification='verifiee') if verifie else qs.exclude(statut_verification='verifiee')
+        if (statut := params.get('statut', '')) in dict(HebergementModel.STATUTS_VERIFICATION):
+            qs = qs.filter(statut_verification=statut)
         return _paginer(request, qs, _hebergement)
 
 
