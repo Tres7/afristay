@@ -1,16 +1,19 @@
 {% autoescape off %}Bonjour {{ prenom }},
 
-Votre location est payée ({{ montant }}). Nous attribuons maintenant votre véhicule à l'un de nos loueurs partenaires : vous recevrez ses coordonnées par email.
+Votre réservation est payée ({{ montant }}). Nous attribuons maintenant {% if chauffeur_seul %}votre chauffeur{% else %}votre véhicule{% if avec_chauffeur %} et votre chauffeur{% endif %}{% endif %} parmi nos partenaires vérifiés : vous recevrez leurs coordonnées par email.
 
   {{ categorie }}{% if exemple %} ({{ exemple }}){% endif %}, {{ formule }}
-  Prise : {{ debut }}, {{ prise }}
-  Retour : {{ fin }}, {{ retour }}
+  {% if chauffeur_seul %}Début{% else %}Prise{% endif %} : {{ debut }}, {{ prise }}
+  {% if chauffeur_seul %}Fin{% else %}Retour{% endif %} : {{ fin }}, {{ retour }}
   Durée : {{ jours }} jour(s) · {{ passagers }} personne(s)
-{% if caution_en_ligne %}  Caution : {{ caution }}, comprise dans votre paiement et gardée par Kwa-Ba. Elle vous est remboursée {{ restitution_heures }} h après le retour du véhicule, moins les éventuels dommages constatés. Vous ne réglez rien au loueur.
-{% elif caution %}  Caution à régler au loueur à la remise du véhicule : {{ caution }}
+{% if avec_chauffeur %}  Chauffeur : 7 000 FCFA par jour de 10 heures au plus{% if primes %}, primes de déplacement {{ primes }}{% endif %} ; heure supplémentaire : 1 000 FCFA
+{% endif %}{% if caution_en_ligne %}  Caution : {{ caution }}, comprise dans votre paiement et gardée par Kwa-Ba. Elle vous est remboursée {{ restitution_heures }} h après le retour du véhicule, moins les éventuels dommages constatés. Vous ne réglez rien au propriétaire.
+{% elif caution %}  Caution à régler au propriétaire à la remise du véhicule : {{ caution }}
 {% endif %}  Référence : {{ reference }}
 
-Votre location : {{ url }}
+Annulation : remboursement intégral jusqu'à 48 heures avant, 50 % entre 48 et 24 heures, rien ensuite.
+
+Votre réservation : {{ url }}
 
 L'équipe Kwa-Ba
 {% endautoescape %}

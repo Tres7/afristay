@@ -4,6 +4,7 @@ from zoneinfo import ZoneInfo
 from django.utils import timezone
 
 from apps.give import montants as montants_dons
+from apps.paiements import tarifs
 from apps.paiements.models import PaiementModel
 
 from .models import FactureModel
@@ -44,8 +45,7 @@ def bon_reservation(r) -> bytes:
     else:
         lignes.append(('Séjour', '1', fcfa(r.total_price), fcfa(r.total_price)))
     doc.montants(lignes, [('Total payé', fcfa(r.total_price))])
-    doc.bloc('Annulation', [('Conditions', "Plus de 7 jours avant l'arrivée : remboursement intégral. Entre 7 jours et 48 heures : "
-                                           "50 % des nuits retenues, frais de service remboursés. Moins de 48 heures : aucun remboursement.")])
+    doc.bloc('Annulation', [('Conditions', tarifs.texte_politique(r))])
     doc.paragraphe("Présentez ce bon (sur votre téléphone ou imprimé) à votre arrivée.", 'petit')
     return doc.en_pdf()
 
@@ -76,22 +76,24 @@ def bon_location(loc) -> bytes:
     doc = Document('Bon de location', loc.reference, sous_titre=f"émis le {date(timezone.now())}",
                    destinataire=[_nom(loc.voyageur), loc.voyageur.email])
     lignes = [
-        ('Véhicule', f"{loc.categorie.nom} · {loc.get_formule_display()}"),
+        ('Véhicule', f"{loc.libelle} · {loc.get_formule_display()}"),
         ('Prise', f"{date(debut, 'l j F Y')} à {debut:%H:%M}, {loc.lieu_prise.nom}" + (f", {loc.adresse_prise}" if loc.adresse_prise else '')),
         ('Retour', f"{date(fin, 'l j F Y')} à {fin:%H:%M}, {loc.lieu_retour.nom}" + (f", {loc.adresse_retour}" if loc.adresse_retour else '')),
         ('Passagers', str(loc.passagers)), ('Conducteur', loc.conducteur),
         ('Caution', (fcfa(loc.caution) + (', payée en ligne et gardée par Kwa-Ba, remboursée après le retour du véhicule'
-                                           if loc.caution_gardee else ', à régler au loueur à la remise du véhicule'))
+                                           if loc.caution_gardee else ', à régler au propriétaire à la remise du véhicule'))
          if loc.caution else ''),
+        ('Déplacements', f"{loc.jours_hors_lome} jour(s) hors de Lomé, {loc.jours_hors_pays} jour(s) hors du pays"
+         if loc.jours_hors_lome or loc.jours_hors_pays else ''),
     ]
-    # Le bon se télécharge sur le site : il ne donne jamais le loueur ni le chauffeur (coordonnées envoyées par email)
-    if loc.partenaire_id:
+    # Le bon se télécharge sur le site : il ne donne jamais le propriétaire ni le chauffeur (coordonnées envoyées par email)
+    if loc.statut in ('partenaire_assigne', 'terminee') and (loc.vehicule or loc.immatriculation):
         lignes.append(('Véhicule remis', ' · '.join(x for x in (loc.vehicule, loc.immatriculation) if x)))
     doc.bloc('Votre location', lignes)
-    location_seule = loc.jours * loc.prix_jour
-    montants = [(f"Location, {loc.jours} jour(s)", str(loc.jours), fcfa(loc.prix_jour), fcfa(location_seule))]
-    if loc.prix - location_seule > 0:
-        montants.append(('Frais de remise et de retour', '1', fcfa(loc.prix - location_seule), fcfa(loc.prix - location_seule)))
+    from .services import lignes_de
+
+    montants = [(ligne['libelle'], str(ligne['quantite']), fcfa(ligne['prix_unitaire']), fcfa(ligne['quantite'] * ligne['prix_unitaire']))
+                for ligne in lignes_de(loc)]
     if loc.caution_gardee:
         montants.append(('Caution (remboursée après le retour)', '1', fcfa(loc.caution_gardee), fcfa(loc.caution_gardee)))
     doc.montants(montants, [('Total payé', fcfa(loc.montant_a_payer))])

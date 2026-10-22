@@ -3,6 +3,7 @@ from datetime import timedelta
 
 from django.utils import timezone
 
+from apps.paiements import tarifs
 from apps.securite import coordonnees
 from apps.securite.images import MESSAGE as IMAGE_REFUSEE, url_image_autorisee
 
@@ -18,6 +19,7 @@ class HebergementSerializer(serializers.ModelSerializer):
     is_favorite = serializers.SerializerMethodField()
     motif_refus = serializers.SerializerMethodField()
     en_ligne = serializers.SerializerMethodField()
+    frais_voyageur = serializers.SerializerMethodField()
 
     class Meta:
         model = HebergementModel
@@ -28,6 +30,7 @@ class HebergementSerializer(serializers.ModelSerializer):
             'is_favorite', 'created_at', 'statut_verification', 'verifiee_le', 'motif_refus', 'en_ligne',
             'surface_m2', 'chambres', 'salles_de_bain', 'lits_doubles', 'lits_simples', 'canapes_lits',
             'petit_dejeuner', 'petit_dejeuner_prix', 'arrivee_a_partir', 'depart_avant',
+            'politique_annulation', 'frais_voyageur',
         ]
         read_only_fields = ['id', 'rating', 'review_count', 'host_id', 'created_at', 'statut_verification', 'verifiee_le']
 
@@ -56,6 +59,14 @@ class HebergementSerializer(serializers.ModelSerializer):
         # For the host only: is the listing actually public (verified, not hidden, opening done, agreement signed)?
         return obj.est_publiee if self.context.get('proprietaire') else None
 
+    def get_frais_voyageur(self, obj):
+        """Taux des frais de service pour le visiteur : 6 %, ou 3 % s'il a déjà séjourné chez cet hôte (Client fidèle)."""
+        request = self.context.get('request')
+        if '_hotes_visites' not in self.context:
+            self.context['_hotes_visites'] = tarifs.hotes_deja_visites(request.user if request else None)
+        reduit = obj.host_id in self.context['_hotes_visites']
+        return float(tarifs.FRAIS_REDUITS if reduit else tarifs.FRAIS_VOYAGEUR)
+
     def get_is_favorite(self, obj):
         favorite_ids = self.context.get('favorite_ids')
         if favorite_ids is None:
@@ -71,7 +82,7 @@ class HebergementCreateSerializer(serializers.ModelSerializer):
             'price_per_night', 'image_url', 'images', 'max_guests',
             'amenities', 'is_available',
             'surface_m2', 'chambres', 'salles_de_bain', 'lits_doubles', 'lits_simples', 'canapes_lits',
-            'petit_dejeuner', 'petit_dejeuner_prix', 'arrivee_a_partir', 'depart_avant',
+            'petit_dejeuner', 'petit_dejeuner_prix', 'arrivee_a_partir', 'depart_avant', 'politique_annulation',
         ]
         extra_kwargs = {
             'surface_m2': {'min_value': 5, 'max_value': 100000},

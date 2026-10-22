@@ -10,13 +10,14 @@ import { ArrowLeft, BadgeCheck, MapPin, ChevronDown, ChevronUp, Share2, Calendar
 import { toast } from "sonner";
 import AmenityBadge from "@/components/hebergement/AmenityBadge";
 import DetailsLogement from "@/components/hebergement/DetailsLogement";
+import PolitiqueAnnulation from "@/components/hebergement/PolitiqueAnnulation";
 import FavoriteButton from "@/components/hebergement/FavoriteButton";
 import RatingBadge from "@/components/avis/RatingBadge";
 import AvisSection from "@/components/avis/AvisSection";
 import ProposerAuGroupe from "@/components/voyage/ProposerAuGroupe";
 import MapEmbed from "@/components/hebergement/MapEmbed";
 import api, { apiErrorMessage } from "@/lib/api";
-import { addDays, calculateNights, calculateServiceFee, cn, FALLBACK_IMAGE, formatDate, formatPrice, isoDate, TYPE_LABELS } from "@/lib/utils";
+import { addDays, calculateNights, calculateServiceFee, SERVICE_FEE_RATE, cn, FALLBACK_IMAGE, formatDate, formatPrice, isoDate, TYPE_LABELS } from "@/lib/utils";
 import { nuitsIndisponibles, useDisponibilites } from "@/lib/useDisponibilites";
 import DateRangeCalendar from "@/components/calendrier/DateRangeCalendar";
 import Stepper from "@/components/ui/Stepper";
@@ -77,7 +78,9 @@ function HebergementContent() {
   const isOwner = session?.user?.id === hebergement.host_id;
   const nights = calculateNights(checkIn, checkOut);
   const subtotal = hebergement.price_per_night * nights;
-  const serviceFee = calculateServiceFee(subtotal);
+  // Taux du visiteur : 6 %, ou 3 % s'il a déjà séjourné chez cet hôte (Client fidèle)
+  const tauxFrais = hebergement.frais_voyageur ?? SERVICE_FEE_RATE;
+  const serviceFee = calculateServiceFee(subtotal, tauxFrais);
   const total = subtotal + serviceFee;
   const gallery = [hebergement.image_url, ...hebergement.images.filter((i) => i !== hebergement.image_url)].filter(Boolean);
   const photos = gallery.length ? gallery : [FALLBACK_IMAGE];
@@ -245,6 +248,8 @@ function HebergementContent() {
               )}
             </section>
 
+            <PolitiqueAnnulation politique={hebergement.politique_annulation ?? "moderee"} />
+
             <AvisSection hebergementId={hebergement.id} isOwner={isOwner} hostName={hebergement.host_name || t("lHote")} />
 
             <section className="bg-white rounded-2xl shadow-card p-5 sm:p-6">
@@ -303,7 +308,10 @@ function HebergementContent() {
                     <span className="text-dark">{formatPrice(subtotal)}</span>
                   </div>
                   <div className="flex justify-between gap-2">
-                    <span className="text-gray-600">{t("fraisService")}</span>
+                    <span className="text-gray-600">
+                      {t("fraisService", { taux: Math.round(tauxFrais * 100) })}
+                      {tauxFrais < SERVICE_FEE_RATE && <span className="block text-xs text-secondary font-semibold">{t("clientFidele")}</span>}
+                    </span>
                     <span className="text-dark">{formatPrice(serviceFee)}</span>
                   </div>
                   <div className="flex justify-between font-heading font-bold pt-3 border-t border-gray-100 text-lg">

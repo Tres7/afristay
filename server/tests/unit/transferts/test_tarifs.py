@@ -6,7 +6,7 @@ from apps.transferts import tarifs
 def test_prix_de_jour_sans_majoration():
     p = tarifs.calculer(10000, datetime(2026, 11, 2, 14, 30))
     assert (p.prix, p.nuit) == (10000, False)
-    assert (p.commission, p.montant_chauffeur) == (2000, 8000)
+    assert (p.commission, p.montant_chauffeur) == (1500, 8500)  # 15 % (grille du 18 octobre 2026)
 
 
 def test_majoration_de_nuit_arrondie_a_500():

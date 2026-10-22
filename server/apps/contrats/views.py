@@ -101,15 +101,16 @@ def _apercu_hote(user) -> dict | None:
     contrat = ContratModel.objects.filter(hote=user).exclude(statut='annule').first()
     if contrat:
         return _public(contrat)
-    modele = ModeleContratModel.objects.filter(type='hote').first()
+    type_contrat = services.type_contrat_hote(user)
+    modele = ModeleContratModel.objects.filter(type=type_contrat).first()
     # The host agreement is offered once the company is registered (RCCM and NIF), as the pre-registration says
     if not modele or not ParametresSocieteModel.courants().immatriculee:
         return None
-    infos = services.partie('hote', user)
+    infos = services.partie(type_contrat, user)
     return {
-        'reference': None, 'titre': modele.titre, 'type': 'hote', 'type_libelle': 'Hôte', 'statut': 'a_signer',
+        'reference': None, 'titre': modele.titre, 'type': type_contrat, 'type_libelle': modele.get_type_display(), 'statut': 'a_signer',
         'partie_nom': infos['nom'], 'kwaba_signataire': '', 'version': modele.version,
-        'blocs': services.blocs(services.rendre(modele.corps, services.contexte('hote', infos))),
+        'blocs': services.blocs(services.rendre(modele.corps, services.contexte(type_contrat, infos))),
         'expire_le': None, 'expire': False, 'signe_le': None, 'signataire_nom': '',
     }
 
@@ -189,7 +190,7 @@ def _cible(type_contrat: str, pk):
     from apps.locations.models import PartenaireLocationModel
     from apps.transferts.models import ChauffeurModel
 
-    modeles = {'hote': get_user_model(), 'chauffeur': ChauffeurModel, 'loueur': PartenaireLocationModel, 'ong': OrganisationModel}
+    modeles = {'hote': get_user_model(), 'hotel': get_user_model(), 'chauffeur': ChauffeurModel, 'loueur': PartenaireLocationModel, 'ong': OrganisationModel}
     try:
         return modeles[type_contrat].objects.filter(pk=pk).first()
     except (ValueError, TypeError, ValidationError):
@@ -217,7 +218,7 @@ class ContratsAdminView(APIView):
         if type_contrat not in dict(TYPES):
             return Response({'type': ['Type de contrat inconnu.']}, status=status.HTTP_400_BAD_REQUEST)
         cible = _cible(type_contrat, request.data.get('partie_id'))
-        if not cible or (type_contrat == 'hote' and cible.role not in ('hote', 'voyageur')):
+        if not cible or (type_contrat in services.TYPES_HOTE and cible.role not in ('hote', 'voyageur')):
             return Response({'partie_id': ['Partie introuvable.']}, status=status.HTTP_400_BAD_REQUEST)
         try:
             contrat = services.emettre(type_contrat, cible, par=request.user)
@@ -240,7 +241,7 @@ class PartiesAdminView(APIView):
 
         type_contrat = request.query_params.get('type')
         q = request.query_params.get('q', '').strip()
-        if type_contrat == 'hote':
+        if type_contrat in services.TYPES_HOTE:
             qs = get_user_model().objects.filter(role='hote', is_active=True)
             if q:
                 qs = qs.filter(Q(email__icontains=q) | Q(first_name__icontains=q) | Q(last_name__icontains=q))
@@ -262,7 +263,7 @@ class PartiesAdminView(APIView):
             lignes = [(o.pk, o.nom, o.contact_email) for o in qs.order_by('nom')[:30]]
         else:
             return Response({'type': ['Type de contrat inconnu.']}, status=status.HTTP_400_BAD_REQUEST)
-        champ = {'hote': 'hote_id', 'chauffeur': 'chauffeur_id', 'loueur': 'loueur_id', 'ong': 'organisation_id'}[type_contrat]
+        champ = {'hote': 'hote_id', 'hotel': 'hote_id', 'chauffeur': 'chauffeur_id', 'loueur': 'loueur_id', 'ong': 'organisation_id'}[type_contrat]
         statuts = dict(ContratModel.objects.filter(**{f"{champ}__in": [pk for pk, _, _ in lignes]}).exclude(statut='annule')
                        .values_list(champ, 'statut'))
         return Response([{'id': str(pk), 'nom': nom, 'email': email or '', 'contrat': statuts.get(pk)} for pk, nom, email in lignes])

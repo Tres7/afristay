@@ -1,0 +1,19 @@
+{% autoescape off %}Bonjour {{ prenom_chauffeur }},
+
+Kwa-Ba vous confie une mission.
+
+  {{ formule }}{% if vehicule %} : {{ vehicule }}{% if immatriculation %}, {{ immatriculation }}{% endif %}{% endif %}
+  Début : {{ debut }}, {{ prise }}
+  Fin : {{ fin }}, {{ retour }} ({{ jours }} jour(s) de 10 heures au plus)
+  Client : {{ voyageur }} · {{ passagers }} personne(s)
+{% if jours_hors_lome or jours_hors_pays %}  Déplacements prévus : {{ jours_hors_lome }} jour(s) hors de Lomé, {{ jours_hors_pays }} jour(s) hors du pays
+{% endif %}  Précisions du client : « {{ precisions }} »
+  Référence : {{ reference }}
+
+Vous recevrez {{ montant }} sur votre Mobile Money 24 heures après la fin de la mission{% if primes %} (primes de déplacement comprises){% endif %}.
+{% if chauffeur_seul %}Avant de partir, vérifiez que l'assurance du véhicule du client couvre votre conduite ; sinon, refusez la mission et prévenez Kwa-Ba.
+{% endif %}
+Ponctualité, tenue correcte, aucun alcool. N'encaissez rien du client et ne lui donnez pas votre numéro pour des missions hors Kwa-Ba. Pour le joindre, passez par Kwa-Ba : {{ assistance }}.
+
+L'équipe Kwa-Ba
+{% endautoescape %}

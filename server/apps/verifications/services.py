@@ -74,7 +74,7 @@ def annonces_a_visiter():
 
     qs = HebergementModel.objects.filter(statut_verification='en_attente', host__piece_identite__statut='verifiee')
     if contrats_disponibles():
-        qs = qs.filter(host__contrats__type='hote', host__contrats__statut='signe')
+        qs = qs.filter(host__contrats__type__in=('hote', 'hotel'), host__contrats__statut='signe')
     return qs.order_by('created_at')
 
 

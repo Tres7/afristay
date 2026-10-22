@@ -1,3 +1,4 @@
+import { Link } from "@/i18n/navigation";
 import LienContact from "@/components/legal/LienContact";
 import LegalPage, { AC, VersionFrancaiseFaitFoi } from "@/components/legal/LegalPage";
 
@@ -6,7 +7,7 @@ export default function ContenuEn() {
   return (
     <LegalPage
       titre="Legal notice"
-      miseAJour="7 October 2026"
+      miseAJour="22 October 2026"
       intro={
         <>
           <p>Information about the publisher of the Kwa-Ba website, its host and the content published on it.</p>
@@ -19,12 +20,13 @@ export default function ContenuEn() {
           titre: "Website publisher",
           contenu: (
             <ul>
-              <li>Company name: <AC>company name</AC>, <AC>legal form and share capital</AC></li>
-              <li>Registered office: <AC>full address</AC></li>
-              <li>Registration: <AC>RCS / RCCM number and city of registration</AC></li>
-              <li>VAT number: <AC>if applicable</AC></li>
-              <li>Contact: <LienContact />, <AC>phone</AC></li>
-              <li>Publication director: <AC>name and position</AC></li>
+              <li>Company name: <strong>KWA-BA SARL</strong>, a limited liability company with a share capital of 100,000 F CFA</li>
+              <li>Registered office: Totsi Gblenkomé district, street 243, Lomé (Togo)</li>
+              <li>Registration: Lomé RCCM no. <AC>RCCM</AC>; tax number (NIF) <AC>NIF</AC></li>
+              <li>E-commerce: registered as an e-commerce provider under no. <AC>number</AC> (decree no. 2018-062/PR)</li>
+              <li>Personal data: declaration to the personal data protection authority (IPDCP) no. <AC>number</AC></li>
+              <li>Contact: <LienContact />; WhatsApp <AC>number</AC>; postal address <AC>postal address</AC></li>
+              <li>Publication director: Mr MENDE Fadel, manager and Chief Executive Officer (gérant et directeur général)</li>
             </ul>
           ),
         },
@@ -40,12 +42,17 @@ export default function ContenuEn() {
           ),
         },
         {
+          id: "paiement",
+          titre: "Payment provider",
+          contenu: <p>FedaPay, a payment institution licensed by the BCEAO; if needed, another licensed provider (<Link href="/cgv#paiement">terms of sale, art. 7</Link>).</p>,
+        },
+        {
           id: "propriete",
           titre: "Intellectual property",
           contenu: (
             <p>
-              The Kwa-Ba name, its logo and all graphic and written content on the site belong to the publisher, unless stated
-              otherwise. Any reproduction without permission is prohibited. Listings, photos and reviews published by users remain the
+              The Kwa-Ba name, logo, graphic charter, texts and code of the Platform belong to KWA-BA SARL, unless stated otherwise{" "}
+              <AC>trademark registered with OAPI under no. …, if filed</AC>. Any reproduction without permission is prohibited. Listings, photos and reviews published by users remain the
               property of their authors.
             </p>
           ),

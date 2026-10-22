@@ -11,9 +11,9 @@ import Regles from "@/components/backoffice/location/Regles";
 
 const ONGLETS = [
   { id: "suivi", label: "Locations", Composant: Suivi },
-  { id: "categories", label: "Catégories et prix", Composant: Categories },
+  { id: "categories", label: "Véhicules", Composant: Categories },
   { id: "lieux", label: "Lieux de remise", Composant: Lieux },
-  { id: "loueurs", label: "Loueurs", Composant: Loueurs },
+  { id: "loueurs", label: "Propriétaires", Composant: Loueurs },
   { id: "regles", label: "Règles", Composant: Regles },
 ];
 
@@ -26,7 +26,7 @@ function Location() {
     <div className="space-y-5">
       <div>
         <h1 className="font-heading font-bold text-2xl sm:text-3xl text-dark">Location de voiture</h1>
-        <p className="text-muted text-sm mt-1">Locations à attribuer, catalogue, lieux, loueurs partenaires et règles.</p>
+        <p className="text-muted text-sm mt-1">Locations et chauffeurs à attribuer, véhicules des propriétaires, lieux, propriétaires partenaires et règles.</p>
       </div>
       <div role="tablist" className="flex gap-5 overflow-x-auto scrollbar-hide border-b border-gray-200">
         {ONGLETS.map((o) => (
