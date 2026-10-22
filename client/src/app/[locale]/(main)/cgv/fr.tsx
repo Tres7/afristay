@@ -19,11 +19,11 @@ export default function ContenuFr() {
             Le site kwa-ba.com et ses applications (la « Plateforme ») sont exploités par <strong>KWA-BA SARL</strong>, société à
             responsabilité limitée au capital de 100 000 F CFA, dont le siège est situé quartier Totsi Gblenkomé, rue 243, Lomé (Togo),
             immatriculée au RCCM de Lomé sous le numéro <AC>RCCM</AC>, NIF <AC>NIF</AC>, enregistrée comme prestataire de commerce
-            électronique sous le numéro <AC>numéro d&apos;enregistrement</AC>, représentée par son gérant, M. MENDE Fadel.
+            électronique sous le numéro <AC>numéro d&apos;enregistrement</AC>, représentée par son directeur général, M. MENDE Fadel.
           </p>
           <ul className="list-disc pl-5 space-y-1">
             <li>Contact : <LienContact sujet="Conditions générales de vente" /> ; WhatsApp <AC>numéro WhatsApp</AC> ; adresse postale <AC>adresse postale</AC>.</li>
-            <li>Directeur de la publication : M. MENDE Fadel, gérant.</li>
+            <li>Directeur de la publication : M. MENDE Fadel, directeur général.</li>
           </ul>
           <p>
             Les présentes conditions générales de vente (les « CGV ») complètent les <Link href="/cgu">conditions générales d’utilisation</Link> (les

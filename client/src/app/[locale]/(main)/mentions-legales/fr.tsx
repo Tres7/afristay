@@ -21,7 +21,7 @@ export default function ContenuFr() {
               <li>Commerce électronique : enregistrée comme prestataire de commerce électronique sous le n° <AC>numéro</AC> (décret n° 2018-062/PR)</li>
               <li>Données personnelles : déclaration auprès de l&apos;Instance de protection des données à caractère personnel (IPDCP) n° <AC>numéro</AC></li>
               <li>Contact : <LienContact /> ; WhatsApp <AC>numéro</AC> ; adresse postale <AC>adresse postale</AC></li>
-              <li>Directeur de la publication : M. MENDE Fadel, gérant</li>
+              <li>Directeur de la publication : M. MENDE Fadel, directeur général</li>
             </ul>
           ),
         },

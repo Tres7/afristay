@@ -26,7 +26,7 @@ export default function ContenuEn() {
               <li>E-commerce: registered as an e-commerce provider under no. <AC>number</AC> (decree no. 2018-062/PR)</li>
               <li>Personal data: declaration to the personal data protection authority (IPDCP) no. <AC>number</AC></li>
               <li>Contact: <LienContact />; WhatsApp <AC>number</AC>; postal address <AC>postal address</AC></li>
-              <li>Publication director: Mr MENDE Fadel, manager (gérant)</li>
+              <li>Publication director: Mr MENDE Fadel, Chief Executive Officer (directeur général)</li>
             </ul>
           ),
         },

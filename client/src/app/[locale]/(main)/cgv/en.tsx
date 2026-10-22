@@ -20,11 +20,11 @@ export default function ContenuEn() {
             The kwa-ba.com website and its applications (the “Platform”) are operated by <strong>KWA-BA SARL</strong>, a limited liability
             company (SARL) with a share capital of 100,000 F CFA, whose registered office is in the Totsi Gblenkomé district, street 243,
             Lomé (Togo), registered with the Lomé RCCM under number <AC>RCCM</AC>, tax number (NIF) <AC>NIF</AC>, registered as an
-            e-commerce provider under number <AC>registration number</AC>, represented by its manager (gérant), Mr MENDE Fadel.
+            e-commerce provider under number <AC>registration number</AC>, represented by its Chief Executive Officer (directeur général), Mr MENDE Fadel.
           </p>
           <ul className="list-disc pl-5 space-y-1">
             <li>Contact: <LienContact sujet="Terms of sale" />; WhatsApp <AC>WhatsApp number</AC>; postal address <AC>postal address</AC>.</li>
-            <li>Publication director: Mr MENDE Fadel, manager.</li>
+            <li>Publication director: Mr MENDE Fadel, Chief Executive Officer.</li>
           </ul>
           <p>
             These terms of sale (the “Terms of Sale”) supplement the <Link href="/cgu">terms of use</Link> and the{" "}
