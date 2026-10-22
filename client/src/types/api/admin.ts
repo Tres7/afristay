@@ -11,7 +11,8 @@ export interface AdminPage<T> {
 
 export interface AdminStats {
   utilisateurs: { total: number; nouveaux_30j: number; hotes: number; desactives: number };
-  annonces: { total: number; visibles: number; verifiees: number };
+  /** en_attente: waiting for an agent's visit (refused listings wait for their host). */
+  annonces: { total: number; visibles: number; verifiees: number; en_attente: number };
   reservations: { confirmees_30j: number; annulees_30j: number; volume_30j: number };
   avis: { total: number; moyenne: number | null };
   reservations_par_jour: { date: string; nombre: number; volume: number }[];

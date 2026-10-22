@@ -98,9 +98,8 @@ class PiecesView(APIView):
     permission_classes = [EstVerificateur]
 
     def get(self, request):
-        pieces = (PieceIdentiteModel.objects.filter(statut='soumise').select_related('hote')
-                  .annotate(nb_annonces=Count('hote__hebergements'))
-                  .order_by('soumise_le')[:100])
+        pieces = (services.pieces_a_controler().select_related('hote')
+                  .annotate(nb_annonces=Count('hote__hebergements'))[:100])
         resultats = [{
             'hote': {
                 'id': str(p.hote_id), 'nom': f"{p.hote.first_name} {p.hote.last_name}".strip(),
@@ -136,14 +135,9 @@ class VisitesView(APIView):
     permission_classes = [EstVerificateur]
 
     def get(self, request):
-        # Seulement les hôtes dont l'identité est déjà vérifiée : pas de déplacement pour un hôte non contrôlé
-        qs = (HebergementModel.objects.filter(statut_verification='en_attente', host__piece_identite__statut='verifiee')
-              .select_related('host', 'host__piece_identite')
-              .prefetch_related(Prefetch('visites', queryset=VisiteModel.objects.only('id', 'decision', 'hebergement')))
-              .order_by('created_at'))
-        if services.contrats_disponibles():
-            # …et qui ont signé leur contrat hôte
-            qs = qs.filter(host__contrats__type__in=('hote', 'hotel'), host__contrats__statut='signe')
+        # Seulement les hôtes dont l'identité est vérifiée (et le contrat signé, une fois exigé) : services.annonces_a_visiter
+        qs = (services.annonces_a_visiter().select_related('host', 'host__piece_identite')
+              .prefetch_related(Prefetch('visites', queryset=VisiteModel.objects.only('id', 'decision', 'hebergement'))))
         ville = request.query_params.get('ville', '').strip()
         if ville:
             qs = qs.filter(city__icontains=ville)
@@ -201,3 +195,13 @@ class FichierPieceView(APIView):
         # Le document ne peut exécuter aucun script, même ouvert directement dans le navigateur
         reponse['Content-Security-Policy'] = "default-src 'none'; img-src 'self'; sandbox"
         return reponse
+
+
+class CompteursView(APIView):
+    """GET : what waits for an agent, for the badges of the back-office and the agent space (polled every minute)."""
+    permission_classes = [EstVerificateur]
+
+    def get(self, request):
+        pieces = services.pieces_a_controler().count()
+        visites = services.annonces_a_visiter().count()
+        return Response({'pieces': pieces, 'visites': visites, 'total': pieces + visites})
