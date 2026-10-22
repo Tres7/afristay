@@ -7,17 +7,18 @@ Kwa-Ba vous confie une location.
   Retour : {{ fin }}, {{ retour }} ({{ jours }} jour(s))
   Voyageur : {{ voyageur }} · {{ passagers }} personne(s)
 {% if conducteur %}  Conducteur : {{ conducteur }}, permis {{ permis }} ({{ permis_pays }})
+{% endif %}{% if chauffeur %}  Chauffeur partenaire Kwa-Ba : {{ chauffeur }}{% if telephone_chauffeur %}, {{ telephone_chauffeur }}{% endif %}
 {% endif %}{% if caution_en_ligne %}  Caution : {{ caution }}, payée par le voyageur et gardée par Kwa-Ba : ne lui demandez rien à la remise.
 {% elif caution %}  Caution à encaisser à la remise : {{ caution }}
 {% endif %}  Précisions du voyageur : « {{ precisions }} »
   Référence : {{ reference }}
 
-Pour joindre le voyageur (retard, point de rendez-vous, livraison…), passez par Kwa-Ba : {{ assistance }}, en indiquant la référence.
+Faites l'état des lieux photographié au départ et au retour, avec le voyageur. Pour le joindre (retard, point de rendez-vous, livraison…), passez par Kwa-Ba : {{ assistance }}, en indiquant la référence.
 
 {% if caution_en_ligne %}Un dommage, du carburant manquant au retour ? Signalez-le à Kwa-Ba dans les {{ restitution_heures }} heures suivant le retour, photos à l'appui : le montant retenu sur la caution vous est versé avec la location.
 
-Vous recevrez {{ montant }} sur votre Mobile Money à la fin de ce délai.
-{% else %}Vous recevrez {{ montant }} sur votre Mobile Money 24 heures après le retour du véhicule.
+Vous recevrez {{ montant }} (commission Kwa-Ba déduite) sur votre Mobile Money à la fin de ce délai.
+{% else %}Vous recevrez {{ montant }} (commission Kwa-Ba déduite) sur votre Mobile Money 24 heures après le début de la location.
 {% endif %}
 L'équipe Kwa-Ba
 {% endautoescape %}

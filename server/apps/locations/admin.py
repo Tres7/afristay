@@ -3,7 +3,7 @@ from django.contrib import admin, messages
 from . import services
 from .models import (
     CategorieVehiculeModel, LieuRemiseModel, LocationModel, ParametresLocationModel, PartenaireLocationModel,
-    VersementPartenaireModel,
+    VersementChauffeurLocationModel, VersementPartenaireModel,
 )
 
 
@@ -21,11 +21,11 @@ class ParametresAdmin(admin.ModelAdmin):
 
 @admin.register(CategorieVehiculeModel)
 class CategorieAdmin(admin.ModelAdmin):
-    """Prix et activation modifiables directement dans la liste. Sans aucun prix, la catégorie n'est pas proposée."""
-    list_display = ['nom', 'gamme', 'places', 'boite', 'prix_jour_sans_chauffeur', 'prix_jour_avec_chauffeur', 'caution',
-                    'actif', 'ordre']
-    list_editable = ['prix_jour_sans_chauffeur', 'prix_jour_avec_chauffeur', 'caution', 'actif', 'ordre']
-    list_filter = ['actif', 'gamme', 'boite']
+    """Véhicules des propriétaires. Sans prix par jour, le véhicule n'est pas proposé."""
+    list_display = ['nom', 'proprietaire', 'gamme', 'places', 'prix_jour', 'caution_jours', 'caution', 'actif', 'ordre']
+    list_editable = ['prix_jour', 'caution_jours', 'actif', 'ordre']
+    list_filter = ['actif', 'gamme', 'boite', 'proprietaire']
+    readonly_fields = ['caution']
 
 
 @admin.register(LieuRemiseModel)
@@ -37,7 +37,7 @@ class LieuAdmin(admin.ModelAdmin):
 
 @admin.register(PartenaireLocationModel)
 class PartenaireAdmin(admin.ModelAdmin):
-    list_display = ['nom', 'contact', 'telephone', 'actif']
+    list_display = ['nom', 'contact', 'telephone', 'actif', 'fondateur_fin']
     list_filter = ['actif', 'lieux__ville']
     search_fields = ['nom', 'contact', 'telephone']
     filter_horizontal = ['categories', 'lieux']
@@ -45,24 +45,26 @@ class PartenaireAdmin(admin.ModelAdmin):
 
 @admin.register(LocationModel)
 class LocationAdmin(admin.ModelAdmin):
-    """Pour attribuer un loueur : ouvrir la location, choisir le loueur et le véhicule remis, enregistrer."""
-    list_display = ['reference', 'categorie', 'formule', 'lieu_prise', 'debut', 'jours', 'prix', 'statut', 'partenaire']
+    """Pour attribuer : ouvrir la location, choisir le propriétaire (et le chauffeur) et le véhicule remis, enregistrer."""
+    list_display = ['reference', 'categorie', 'formule', 'lieu_prise', 'debut', 'jours', 'prix', 'statut', 'partenaire',
+                    'chauffeur_partenaire']
     list_filter = ['statut', 'formule', 'lieu_prise__ville', 'categorie__gamme']
     search_fields = ['voyageur__email', 'telephone', 'conducteur']
     ordering = ['debut']
     readonly_fields = [
         'voyageur', 'reservation', 'categorie', 'formule', 'lieu_prise', 'adresse_prise', 'lieu_retour', 'adresse_retour',
         'debut', 'fin', 'passagers', 'telephone', 'precisions', 'conducteur', 'permis_numero', 'permis_pays', 'jours',
-        'prix_jour', 'frais_lieux', 'prix', 'commission', 'caution', 'moyen', 'statut', 'expire_le', 'annulee_par',
-        'annulee_le', 'cree_le',
+        'jours_hors_lome', 'jours_hors_pays', 'chauffeur_demande', 'prix_jour', 'frais_lieux', 'prix_chauffeur', 'primes',
+        'prix', 'commission', 'part_kwaba_chauffeur', 'caution', 'moyen', 'statut', 'expire_le', 'annulee_par',
+        'annulee_le', 'cree_le', 'chauffeur_nom', 'chauffeur_telephone',
     ]
     exclude = ['confirmation_notifiee', 'admins_notifies', 'alerte_sans_partenaire', 'partenaire_notifie',
-               'location_envoyee_partenaire']
+               'location_envoyee_partenaire', 'mission_envoyee_chauffeur']
     actions = ['annuler_et_rembourser']
-    CHAMPS_VEHICULE = ('vehicule', 'immatriculation', 'chauffeur_nom', 'chauffeur_telephone')
+    CHAMPS = ('partenaire', 'chauffeur_partenaire', 'vehicule', 'immatriculation')
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        # Seuls les loueurs qui proposent cette catégorie à ce lieu de remise sont proposés
+        # Seuls les propriétaires qui peuvent fournir ce véhicule à ce lieu de remise sont proposés
         if db_field.name == 'partenaire':
             pk = request.resolver_match.kwargs.get('object_id')
             location = LocationModel.objects.filter(pk=pk).first() if pk else None
@@ -71,19 +73,20 @@ class LocationAdmin(admin.ModelAdmin):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def save_model(self, request, obj, form, change):
-        if obj.partenaire_id and ({'partenaire', *self.CHAMPS_VEHICULE} & set(form.changed_data)):
-            partenaire = obj.partenaire
-            vehicule = {champ: getattr(obj, champ) for champ in self.CHAMPS_VEHICULE}
+        if set(self.CHAMPS) & set(form.changed_data):
+            choix = {champ: getattr(obj, champ) for champ in self.CHAMPS}
             obj.partenaire_id = form.initial.get('partenaire')  # l'attribution passe par le service
+            obj.chauffeur_partenaire_id = form.initial.get('chauffeur_partenaire')
             try:
-                services.assigner_partenaire(obj, partenaire, **vehicule)
-                self.message_user(request, f"{partenaire} attribué : le voyageur va recevoir ses coordonnées.")
+                services.attribuer(obj, partenaire=choix['partenaire'], chauffeur=choix['chauffeur_partenaire'],
+                                   vehicule=choix['vehicule'], immatriculation=choix['immatriculation'])
+                self.message_user(request, "Location attribuée : le voyageur va recevoir les coordonnées.")
             except services.LocationErreur as exc:
                 self.message_user(request, str(exc), level=messages.ERROR)
             return
         super().save_model(request, obj, form, change)
 
-    @admin.action(description="Annuler et rembourser intégralement (aucun loueur disponible…)")
+    @admin.action(description="Annuler et rembourser intégralement (aucun propriétaire ou chauffeur disponible…)")
     def annuler_et_rembourser(self, request, queryset):
         for location in queryset:
             try:
@@ -95,4 +98,10 @@ class LocationAdmin(admin.ModelAdmin):
 @admin.register(VersementPartenaireModel)
 class VersementPartenaireAdmin(admin.ModelAdmin):
     list_display = ['location', 'partenaire', 'montant', 'commission', 'statut', 'date_prevue', 'derniere_erreur']
+    list_filter = ['statut']
+
+
+@admin.register(VersementChauffeurLocationModel)
+class VersementChauffeurLocationAdmin(admin.ModelAdmin):
+    list_display = ['location', 'chauffeur', 'montant', 'commission', 'statut', 'date_prevue', 'derniere_erreur']
     list_filter = ['statut']

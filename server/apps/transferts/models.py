@@ -42,7 +42,8 @@ class TarifTransfertModel(models.Model):
 
 
 class ChauffeurModel(models.Model):
-    """Chauffeur partenaire (indépendant), payé par Mobile Money après chaque course."""
+    """Chauffeur partenaire (indépendant), payé par Mobile Money après chaque course ou mission (contrat chauffeur) :
+    transferts avec son véhicule, et missions à la journée (voiture d'un propriétaire, véhicule du client)."""
     prenom = models.CharField(max_length=60)
     nom = models.CharField(max_length=60)
     telephone = models.CharField(max_length=20, help_text='Avec l\'indicatif, par ex. +228 90 00 00 00')
@@ -52,6 +53,10 @@ class ChauffeurModel(models.Model):
     vehicule = models.CharField(max_length=120, help_text='Marque, modèle et couleur')
     immatriculation = models.CharField(max_length=20)
     actif = models.BooleanField(default=True)
+    excellence = models.BooleanField(
+        default=False, db_default=False,
+        help_text='Statut « Chauffeur Excellence » (revu chaque trimestre) : 6 500 FCFA par jour au lieu de 6 000',
+    )
     # Compte Mobile Money pour ses versements
     pays_versement = models.CharField(max_length=2, choices=PAYS_CHOICES)
     operateur_versement = models.CharField(max_length=30, choices=OPERATEUR_CHOICES)

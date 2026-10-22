@@ -1,21 +1,23 @@
 {% autoescape off %}Bonjour {{ prenom }},
 
-Votre véhicule du {{ debut }} est attribué :
+Votre {% if chauffeur_seul %}chauffeur{% else %}véhicule{% endif %} du {{ debut }} est attribué :
 
-  Loueur : {{ partenaire }}, {{ contact }}
+{% if partenaire %}  Propriétaire du véhicule : {{ partenaire }}, {{ contact }}
   Téléphone / WhatsApp : {{ telephone_partenaire }}
-{% if vehicule %}  Véhicule : {{ vehicule }}{% if immatriculation %}, immatriculation {{ immatriculation }}{% endif %}
+{% endif %}{% if vehicule %}  Véhicule : {{ vehicule }}{% if immatriculation %}, immatriculation {{ immatriculation }}{% endif %}
 {% endif %}{% if avec_chauffeur and chauffeur %}  Votre chauffeur : {{ chauffeur }}{% if telephone_chauffeur %}, {{ telephone_chauffeur }}{% endif %}
 {% endif %}
-  Prise : {{ prise }}
-  Retour : {{ fin }}, {{ retour }}
-{% if caution_en_ligne %}  Caution : {{ caution }}, déjà payée et gardée par Kwa-Ba : vous ne réglez rien au loueur. Elle vous est remboursée {{ restitution_heures }} h après le retour, moins les éventuels dommages constatés.
-{% elif caution %}  Caution à régler au loueur à la remise du véhicule : {{ caution }}
-{% endif %}{% if not avec_chauffeur %}  Pensez à votre permis de conduire et à une pièce d'identité.
+  {% if chauffeur_seul %}Rendez-vous{% else %}Prise{% endif %} : {{ prise }}
+  {% if chauffeur_seul %}Fin de la mission{% else %}Retour{% endif %} : {{ fin }}, {{ retour }}
+{% if caution_en_ligne %}  Caution : {{ caution }}, déjà payée et gardée par Kwa-Ba : vous ne réglez rien au propriétaire. Elle vous est remboursée {{ restitution_heures }} h après le retour, moins les éventuels dommages constatés.
+{% elif caution %}  Caution à régler au propriétaire à la remise du véhicule : {{ caution }}
+{% endif %}{% if formule_sans_chauffeur %}  Pensez à votre permis de conduire et à une pièce d'identité.
+{% endif %}{% if chauffeur_seul %}  Votre véhicule doit être en règle (papiers, visite technique) et votre assurance doit couvrir la conduite par un tiers.
 {% endif %}
+Tout se règle par Kwa-Ba : ne payez rien sur place, sauf un pourboire si vous le souhaitez.
 Un souci ? Assistance Kwa-Ba : {{ assistance }}
 
-Votre location : {{ url }}
+Votre réservation : {{ url }}
 
 Bonne route,
 L'équipe Kwa-Ba

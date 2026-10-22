@@ -51,7 +51,7 @@ def _transfert(t) -> Objet:
 
 
 def _location(loc) -> Objet:
-    return Objet(loc.voyageur, f"votre location « {loc.categorie.nom} », "
+    return Objet(loc.voyageur, f"votre location « {loc.libelle} », "
                                f"du {formats.date_format(loc.debut.astimezone(FUSEAU), 'j F')} "
                                f"au {formats.date_format(loc.fin.astimezone(FUSEAU), 'j F Y')}",
                  loc.prix, f"{settings.FRONTEND_URL}/location/{loc.id}")

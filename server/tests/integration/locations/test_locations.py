@@ -1,4 +1,4 @@
-"""Location de voitures (PostgreSQL). FedaPay est simulé : aucun appel réseau."""
+"""Location de voitures et chauffeurs (PostgreSQL). FedaPay est simulé : aucun appel réseau."""
 from datetime import timedelta
 from decimal import Decimal
 from unittest import mock
@@ -10,11 +10,12 @@ from django.utils import timezone
 from apps.locations import services
 from apps.locations.models import (
     CategorieVehiculeModel, LieuRemiseModel, LocationModel, ParametresLocationModel, PartenaireLocationModel,
-    VersementPartenaireModel,
+    VersementChauffeurLocationModel, VersementPartenaireModel,
 )
 from apps.paiements import fedapay
 from apps.paiements import services as paiements
-from apps.paiements.models import RemboursementModel
+from apps.paiements.models import PaiementModel, RemboursementModel
+from apps.transferts.models import ChauffeurModel
 
 LOCATIONS = '/api/v1/locations/'
 FEDAPAY_TEST = {'SECRET_KEY': 'sk_sandbox_test', 'ENV': 'sandbox', 'WEBHOOK_SECRET': '', 'EXPIRATION_MINUTES': 30}
@@ -27,7 +28,8 @@ class FauxFedaPay:
 
     def creer_transaction(self, **kwargs):
         self.transaction = kwargs
-        return '888', 'https://sandbox-process.fedapay.com/888'
+        self.numero = getattr(self, 'numero', 887) + 1  # un identifiant par transaction (plusieurs paiements par test)
+        return str(self.numero), f'https://sandbox-process.fedapay.com/{self.numero}'
 
     def lire_transaction(self, identifiant):
         return {'id': identifiant, 'status': self.statut, 'mode': 'momo_test'}
@@ -52,30 +54,39 @@ def faux(settings, monkeypatch):
 
 @pytest.fixture
 def catalogue():
-    """Paramétrage par l'administration : règles, une catégorie avec ses prix, deux lieux."""
+    """Paramétrage par l'administration : règles, le véhicule d'un propriétaire (prix et caution), deux lieux."""
     ParametresLocationModel.objects.create(
         commission_pourcent=Decimal('15'), delai_min_jours=2, duree_max_jours=30, annulation_gratuite_heures=48,
-        conditions='21 ans minimum, permis depuis 2 ans.',
+        conditions='23 ans minimum, permis depuis 2 ans.',
     )
-    berline = CategorieVehiculeModel.objects.get(nom='Berline')  # créée sans prix par la migration
-    berline.prix_jour_sans_chauffeur, berline.prix_jour_avec_chauffeur, berline.caution = 30000, 45000, 100000
-    berline.actif = True
-    berline.save()
     aeroport = LieuRemiseModel.objects.create(nom='Aéroport de Lomé', ville='Lomé', fuseau='Africa/Lome', frais=5000)
     livraison = LieuRemiseModel.objects.create(nom='Livraison à votre adresse, Lomé', ville='Lomé', fuseau='Africa/Lome',
                                                adresse_requise=True, frais=3000)
-    return {'berline': berline, 'aeroport': aeroport, 'livraison': livraison}
+    proprietaire = PartenaireLocationModel.objects.create(
+        nom='Lomé Auto Location', contact='Yao Mensah', telephone='+228 90 44 55 66', email='yao@test.kwaba',
+        pays_versement='TG', operateur_versement='togocel', numero_versement='90445566',
+    )
+    proprietaire.lieux.add(aeroport)
+    berline = CategorieVehiculeModel.objects.get(nom='Berline')  # créée sans prix par la migration
+    berline.proprietaire, berline.prix_jour, berline.caution_jours = proprietaire, 30000, 2
+    berline.exemple_modele, berline.immatriculation = 'Toyota Corolla', 'TG-5678-CD'
+    berline.sans_chauffeur = berline.avec_chauffeur = berline.actif = True
+    berline.save()
+    return {'berline': berline, 'aeroport': aeroport, 'livraison': livraison, 'proprietaire': proprietaire}
 
 
 @pytest.fixture
 def loueur(catalogue):
-    p = PartenaireLocationModel.objects.create(
-        nom='Lomé Auto Location', contact='Yao Mensah', telephone='+228 90 44 55 66', email='yao@test.kwaba',
-        pays_versement='TG', operateur_versement='togocel', numero_versement='90445566',
+    return catalogue['proprietaire']
+
+
+@pytest.fixture
+def chauffeur():
+    return ChauffeurModel.objects.create(
+        prenom='Kodjo', nom='Afi', telephone='+228 91 00 00 00', email='kodjo@test.kwaba', categorie='berline',
+        vehicule='Toyota Corolla', immatriculation='TG-1', pays_versement='TG', operateur_versement='togocel',
+        numero_versement='91000000',
     )
-    p.categories.add(catalogue['berline'])
-    p.lieux.add(catalogue['aeroport'])
-    return p
 
 
 def _date(jours=5, heure='10:00'):
@@ -100,27 +111,48 @@ def _reserver_et_payer(client, faux, catalogue, **champs):
     return LocationModel.objects.get(pk=lid)
 
 
+def _payes(*locations):
+    """Échéances atteintes : les versements partent à la prochaine passe."""
+    for modele in (VersementPartenaireModel, VersementChauffeurLocationModel):
+        modele.objects.filter(location__in=locations).update(date_prevue=timezone.now() - timedelta(minutes=1))
+
+
 class TestCatalogue:
     def test_nothing_offered_until_the_admin_sets_it_up(self, api_client):
-        # Catégories standard créées par la migration, mais sans prix et inactives
+        # Véhicules types créés par la migration, mais sans prix et inactifs
         assert CategorieVehiculeModel.objects.filter(gamme='suv').exists()
         assert api_client.get(f'{LOCATIONS}catalogue/').data == {'active': False}
 
-    def test_only_priced_active_categories_are_offered(self, api_client, catalogue):
+    def test_only_priced_active_vehicles_are_offered(self, api_client, catalogue):
         data = api_client.get(f'{LOCATIONS}catalogue/').data
         assert data['active'] is True
         assert [c['nom'] for c in data['categories']] == ['Berline']
-        assert data['categories'][0]['prix_jour'] == {'sans_chauffeur': 30000, 'avec_chauffeur': 45000}
-        assert {g['code'] for g in data['filtres']['gammes']} >= {'citadine', 'berline', 'suv', '4x4', 'minibus'}
+        berline = data['categories'][0]
+        assert (berline['prix_jour'], berline['caution'], berline['formules']) == (
+            30000, 60000, {'sans_chauffeur': True, 'avec_chauffeur': True})
+        assert 'Lomé Auto Location' not in str(data)  # le propriétaire n'est jamais montré
+        assert data['chauffeur'] == {'prix_jour': 7000, 'prime_hors_lome': 1500, 'prime_hors_pays': 2000, 'heure_sup': 1000}
         assert data['regles']['delai_min_jours'] == 2
+
+    def test_expired_insurance_hides_the_vehicle(self, api_client, catalogue):
+        CategorieVehiculeModel.objects.filter(pk=catalogue['berline'].pk).update(assurance_fin=timezone.localdate() - timedelta(days=1))
+        assert api_client.get(f'{LOCATIONS}catalogue/').data == {'active': False}
 
     def test_quote_counts_started_days_and_place_fees(self, api_client, catalogue):
         q = {'categorie': catalogue['berline'].id, 'formule': 'sans_chauffeur', 'lieu_prise': catalogue['aeroport'].id,
              'lieu_retour': catalogue['livraison'].id, 'debut': _date(5, '10:00'), 'fin': _date(8, '12:00')}
         devis = api_client.get(f'{LOCATIONS}devis/', q).data
-        # 3 jours + 2 h entamées = 4 jours ; frais : 5 000 (aéroport) + 3 000 (livraison)
-        assert devis == {'jours': 4, 'prix_jour': 30000, 'frais_lieux': 8000, 'prix': 128000, 'caution': 100000,
-                         'caution_en_ligne': True, 'a_payer': 228000}  # caution payée avec la location
+        # 3 jours + 2 h entamées = 4 jours ; frais : 5 000 (aéroport) + 3 000 (livraison) ; caution : 2 jours
+        assert devis == {'jours': 4, 'prix_jour': 30000, 'prix_vehicule': 120000, 'frais_lieux': 8000, 'prix_chauffeur': 0,
+                         'primes': 0, 'prix': 128000, 'caution': 60000, 'caution_en_ligne': True, 'a_payer': 188000}
+
+    def test_quote_with_driver_and_travel_allowances(self, api_client, catalogue):
+        q = {'categorie': catalogue['berline'].id, 'formule': 'avec_chauffeur', 'lieu_prise': catalogue['aeroport'].id,
+             'lieu_retour': catalogue['aeroport'].id, 'debut': _date(5, '10:00'), 'fin': _date(8, '12:00'),
+             'jours_hors_lome': 2, 'jours_hors_pays': 1}
+        devis = api_client.get(f'{LOCATIONS}devis/', q).data
+        # Pas de caution avec chauffeur ; 4 × 7 000 de chauffeur ; primes 2 × 1 500 + 2 000
+        assert (devis['prix_chauffeur'], devis['primes'], devis['caution'], devis['prix']) == (28000, 5000, 0, 163000)
 
 
 class TestReservation:
@@ -138,7 +170,7 @@ class TestReservation:
         assert r.status_code == 400 and 'permis' in r.data['detail']
         r = client.post(LOCATIONS, _demande(catalogue, formule='sans_chauffeur', conducteur='Ama Kossi',
                                             permis_numero='TG-123456', permis_pays='Togo'), format='json')
-        assert r.status_code == 201 and r.data['caution'] == 100000
+        assert r.status_code == 201 and r.data['caution'] == 60000
 
     def test_delivery_needs_an_address(self, client_for, make_user, faux, catalogue):
         r = client_for(make_user()).post(LOCATIONS, _demande(catalogue, lieu_prise=catalogue['livraison'].id), format='json')
@@ -148,10 +180,14 @@ class TestReservation:
         r = client_for(make_user()).post(LOCATIONS, _demande(catalogue, passagers=9), format='json')
         assert r.status_code == 400
 
+    def test_too_many_days_away(self, client_for, make_user, faux, catalogue):
+        r = client_for(make_user()).post(LOCATIONS, _demande(catalogue, jours_hors_lome=3, jours_hors_pays=2), format='json')
+        assert r.status_code == 400 and 'hors de Lomé' in r.data['detail']
+
     def test_price_is_computed_by_the_server(self, client_for, make_user, faux, catalogue):
         r = client_for(make_user()).post(LOCATIONS, _demande(catalogue, prix=1, commission=0), format='json')
-        # 4 jours × 45 000 + 2 × 5 000 de frais d'aéroport
-        assert r.data['prix'] == 190000
+        # 4 jours × 30 000 + 2 × 5 000 de frais d'aéroport + 4 × 7 000 de chauffeur
+        assert (r.data['prix'], r.data['prix_chauffeur']) == (158000, 28000)
 
     def test_someone_else_s_rental_is_invisible(self, client_for, make_user, faux, catalogue):
         loc = _reserver_et_payer(client_for(make_user()), faux, catalogue)
@@ -160,80 +196,173 @@ class TestReservation:
         assert autre.delete(f'{LOCATIONS}{loc.id}/').status_code == 404
 
 
-def test_full_cycle_payment_partner_payout(client_for, make_user, faux, catalogue, loueur):
+def test_full_cycle_owner_and_driver_payouts(client_for, make_user, faux, catalogue, loueur, chauffeur):
     make_user(role='admin', email='admin@test.kwaba')
     voyageur = make_user(email='voyageur@test.kwaba')
     client = client_for(voyageur)
     loc = _reserver_et_payer(client, faux, catalogue)
-    assert faux.transaction['montant'] == 190000
+    assert faux.transaction['montant'] == 158000
     assert client.get(f'{LOCATIONS}{loc.id}/').data['vehicule_attribue'] is None
 
     paiements.passe()
     sujets = {m.subject for m in mail.outbox}
-    assert 'Location confirmée : Lomé' in sujets
-    assert any(s.startswith('[Kwa-Ba] Loueur à attribuer') for s in sujets)
+    assert 'Réservation confirmée : Lomé' in sujets
+    assert any(s.startswith('[Kwa-Ba] Location à attribuer') for s in sujets)
 
     assert list(services.partenaires_disponibles(loc)) == [loueur]
-    services.assigner_partenaire(loc, loueur, vehicule='Toyota Corolla blanche', immatriculation='TG-5678-CD',
-                                 chauffeur_nom='Kodjo', chauffeur_telephone='+228 91 00 00 00')
+    with pytest.raises(services.LocationErreur, match='chauffeur'):
+        services.attribuer(loc, partenaire=loueur)
+    services.attribuer(loc, partenaire=loueur, chauffeur=chauffeur)
     detail = client.get(f'{LOCATIONS}{loc.id}/').data
     assert detail['statut'] == 'partenaire_assigne'
-    # Le site montre le véhicule, jamais le loueur ni son chauffeur
-    assert detail['vehicule_attribue'] == {'vehicule': 'Toyota Corolla blanche', 'immatriculation': 'TG-5678-CD'}
+    # Le site montre le véhicule, jamais le propriétaire ni le chauffeur
+    assert detail['vehicule_attribue'] == {'vehicule': 'Toyota Corolla', 'immatriculation': 'TG-5678-CD'}
     assert not any(x in str(detail) for x in ('Lomé Auto Location', 'Yao', '90 44 55 66', 'Kodjo', '91 00 00 00'))
     mail.outbox.clear()
     paiements.passe()
     emails = {m.to[0]: m.body for m in mail.outbox}
-    assert set(emails) == {'voyageur@test.kwaba', 'yao@test.kwaba'}
-    # Coordonnées du loueur et du chauffeur : par email au voyageur, après le paiement
+    assert set(emails) == {'voyageur@test.kwaba', 'yao@test.kwaba', 'kodjo@test.kwaba'}
+    # Coordonnées du propriétaire et du chauffeur : par email au voyageur, après le paiement
     assert '+228 90 44 55 66' in emails['voyageur@test.kwaba'] and '+228 91 00 00 00' in emails['voyageur@test.kwaba']
-    # Le loueur n'a pas le téléphone du voyageur : il passe par Kwa-Ba
-    assert '12 34 56 78' not in emails['yao@test.kwaba'] and 'siège enfant' in emails['yao@test.kwaba']
+    # Ni le propriétaire ni le chauffeur n'ont le téléphone du voyageur : ils passent par Kwa-Ba
+    assert all('12 34 56 78' not in emails[e] for e in ('yao@test.kwaba', 'kodjo@test.kwaba'))
+    assert 'siège enfant' in emails['kodjo@test.kwaba'] and '24 000' in emails['kodjo@test.kwaba']
 
     v = VersementPartenaireModel.objects.get(location=loc)
-    assert (v.montant_brut, v.commission, v.montant) == (190000, 28500, 161500)  # 15 % de commission
-    VersementPartenaireModel.objects.filter(pk=v.pk).update(date_prevue=timezone.now() - timedelta(minutes=1))
+    assert (v.montant_brut, v.commission, v.montant) == (130000, 18000, 112000)  # 15 % du prix du véhicule
+    vc = VersementChauffeurLocationModel.objects.get(location=loc)
+    assert (vc.montant_brut, vc.commission, vc.montant) == (28000, 4000, 24000)  # 6 000 par jour pour le chauffeur
+    _payes(loc)
     paiements.passe()  # envoi
-    paiements.passe()  # FedaPay confirme : versé, location terminée
-    assert faux.payouts[0]['montant'] == 161500
+    paiements.passe()  # FedaPay confirme : versés, location terminée
+    assert sorted(p['montant'] for p in faux.payouts) == [24000, 112000]
     loc.refresh_from_db()
     assert loc.statut == 'terminee'
 
 
-def test_contacts_in_free_text_are_masked_for_the_partner(client_for, make_user, faux, catalogue, loueur):
+def test_driver_only_for_the_customer_s_car(client_for, make_user, faux, catalogue, chauffeur):
     client = client_for(make_user())
+    loc = _reserver_et_payer(client, faux, catalogue, categorie=None, formule='chauffeur_seul',
+                             lieu_prise=catalogue['livraison'].id, lieu_retour=catalogue['livraison'].id,
+                             adresse_prise='Bè Kpota, rue 12', adresse_retour='Bè Kpota, rue 12',
+                             jours_hors_lome=1, jours_hors_pays=1)
+    # 4 × 7 000 + 1 500 + 2 000 ; ni véhicule, ni frais de remise, ni caution
+    assert (loc.categorie_id, loc.prix, loc.frais_lieux, loc.caution) == (None, 31500, 0, 0)
+    assert services.partenaires_disponibles(loc).count() == 0
+    services.attribuer(loc, chauffeur=chauffeur)
+    vc = VersementChauffeurLocationModel.objects.get(location=loc)
+    assert (vc.montant_brut, vc.commission, vc.montant) == (31500, 4000, 27500)  # primes reversées en totalité
+    assert not VersementPartenaireModel.objects.filter(location=loc).exists()
+    assert client.get(f'{LOCATIONS}{loc.id}/').data['libelle'] == 'Chauffeur pour votre véhicule'
+
+
+def test_my_driver_and_excellence_pay_6500_a_day(client_for, make_user, faux, catalogue, loueur, chauffeur):
+    voyageur = make_user()
+    client = client_for(voyageur)
+    ancienne = _reserver_et_payer(client, faux, catalogue)
+    services.attribuer(ancienne, partenaire=loueur, chauffeur=chauffeur)
+    autre = ChauffeurModel.objects.create(prenom='Afi', nom='Dzifa', telephone='+228 92 00 00 00', categorie='berline',
+                                          vehicule='-', immatriculation='-', pays_versement='TG',
+                                          operateur_versement='togocel', numero_versement='92000000')
+    # On ne peut redemander qu'un chauffeur qui nous a déjà conduits
+    assert client.post(LOCATIONS, _demande(catalogue, chauffeur_demande=chauffeur.id), format='json').status_code == 400
+    LocationModel.objects.filter(pk=ancienne.pk).update(statut='terminee')
+    assert client.get(f'{LOCATIONS}mes-chauffeurs/').data == [{'id': chauffeur.id, 'nom': 'Kodjo A.'}]
+
+    loc = _reserver_et_payer(client, faux, catalogue, chauffeur_demande=chauffeur.id)
+    services.attribuer(loc, partenaire=loueur, chauffeur=chauffeur)
+    assert VersementChauffeurLocationModel.objects.get(location=loc).montant == 26000  # 4 × 6 500
+    ChauffeurModel.objects.filter(pk=autre.pk).update(excellence=True)
+    services.attribuer(loc, partenaire=loueur, chauffeur=ChauffeurModel.objects.get(pk=autre.pk))
+    assert VersementChauffeurLocationModel.objects.get(location=loc).montant == 26000  # Excellence
+
+
+def test_founding_owner_and_loyal_customer(client_for, make_user, faux, catalogue, loueur):
+    jour = timezone.localdate()
+    PartenaireLocationModel.objects.filter(pk=loueur.pk).update(fondateur_debut=jour, fondateur_fin=jour + timedelta(days=180))
+    voyageur = make_user()
+    for _ in range(3):  # trois locations terminées sans incident
+        LocationModel.objects.create(
+            voyageur=voyageur, categorie=catalogue['berline'], formule='sans_chauffeur', lieu_prise=catalogue['aeroport'],
+            lieu_retour=catalogue['aeroport'], debut=timezone.now() - timedelta(days=10), fin=timezone.now() - timedelta(days=8),
+            passagers=1, telephone='+22890000000', precisions='-', jours=2, prix_jour=30000, frais_lieux=0, prix=60000,
+            commission=9000, statut='terminee',
+        )
+    r = client_for(voyageur).post(LOCATIONS, _demande(catalogue, formule='sans_chauffeur', conducteur='Ama Kossi',
+                                                      permis_numero='TG-123456', permis_pays='Togo'), format='json')
+    assert r.status_code == 201, r.data
+    loc = LocationModel.objects.get(pk=r.data['id'])
+    assert loc.caution == 30000  # caution divisée par deux
+    assert loc.commission == 12000  # 10 % pendant le Programme Fondateurs
+
+
+def test_stay_pack_lowers_the_accommodation_fee_to_3_percent(client_for, make_user, faux, catalogue, make_hebergement, make_reservation):
+    voyageur = make_user()
+    sejour = make_reservation(make_hebergement(), guest=voyageur, starts_in=6, nights=2)
+    sejour.prix_nuits, sejour.frais_service, sejour.commission_hote, sejour.total_price = 50000, 3000, 4000, 53000
+    sejour.save()
+    PaiementModel.objects.create(reservation=sejour, montant=53000, statut='reussi', transaction_id='T-SEJOUR')
+    _reserver_et_payer(client_for(voyageur), faux, catalogue, reservation=str(sejour.id))
+    sejour.refresh_from_db()
+    assert (sejour.frais_service, sejour.total_price) == (1500, 51500)
+    rb = RemboursementModel.objects.get(reservation=sejour)
+    assert rb.montant == 1500 and 'Pack Séjour' in rb.motif
+
+
+def test_contacts_in_free_text_are_masked_for_the_partner(client_for, make_user, faux, catalogue, loueur, chauffeur):
+    client = client_for(make_user())
+    loueur.lieux.add(catalogue['livraison'])
     loc = _reserver_et_payer(client, faux, catalogue, lieu_prise=catalogue['livraison'].id,
                              adresse_prise='Bè Kpota, appelez le 90 11 22 33',
                              precisions='Siège enfant svp, écrivez-moi sur ama.k@gmail.com ou au 99 88 77 66.')
-    services.assigner_partenaire(loc, loueur)
+    services.attribuer(loc, partenaire=loueur, chauffeur=chauffeur)
     mail.outbox.clear()
     paiements.passe()
-    au_loueur = next(m.body for m in mail.outbox if m.to == ['yao@test.kwaba'])
-    assert 'Bè Kpota' in au_loueur and 'Siège enfant' in au_loueur
-    assert not any(x in au_loueur for x in ('90 11 22 33', '99 88 77 66', 'ama.k@gmail.com'))
+    for destinataire in ('yao@test.kwaba', 'kodjo@test.kwaba'):
+        corps = next(m.body for m in mail.outbox if m.to == [destinataire])
+        assert 'Bè Kpota' in corps and 'Siège enfant' in corps
+        assert not any(x in corps for x in ('90 11 22 33', '99 88 77 66', 'ama.k@gmail.com'))
 
 
-def test_free_cancellation_then_refund_to_the_given_number(client_for, make_user, faux, catalogue, loueur):
+def test_free_cancellation_then_refund_to_the_given_number(client_for, make_user, faux, catalogue, loueur, chauffeur):
     client = client_for(make_user())
     loc = _reserver_et_payer(client, faux, catalogue)
-    services.assigner_partenaire(loc, loueur)
+    services.attribuer(loc, partenaire=loueur, chauffeur=chauffeur)
+    assert client.get(f'{LOCATIONS}{loc.id}/').data['rembourse_si_annulation'] == loc.prix
     r = client.delete(f'{LOCATIONS}{loc.id}/')
     assert r.data['rembourse'] == loc.prix and r.data['numero_requis'] is True
     assert VersementPartenaireModel.objects.get(location=loc).statut == 'annule'
+    assert VersementChauffeurLocationModel.objects.get(location=loc).statut == 'annule'
     url = f'{LOCATIONS}{loc.id}/compte-remboursement/'
     assert client.put(url, {'pays': 'TG', 'operateur': 'moov_tg', 'numero': '96000001'}, format='json').status_code == 200
     paiements.envoyer_remboursements()
     assert faux.payouts[-1]['client']['phone_number'] == {'number': '96000001', 'country': 'tg'}
 
 
-def test_late_cancellation_keeps_the_partner_paid(client_for, make_user, faux, catalogue, loueur):
+def test_cancellation_between_48_and_24_hours_refunds_half(client_for, make_user, faux, catalogue, loueur, chauffeur):
     client = client_for(make_user())
     loc = _reserver_et_payer(client, faux, catalogue)
-    services.assigner_partenaire(loc, loueur)
+    services.attribuer(loc, partenaire=loueur, chauffeur=chauffeur)
+    LocationModel.objects.filter(pk=loc.pk).update(debut=timezone.now() + timedelta(hours=30))
+    assert client.delete(f'{LOCATIONS}{loc.id}/').data['rembourse'] == 79000
+    v = VersementPartenaireModel.objects.get(location=loc)
+    assert (v.statut, v.montant_brut, v.commission, v.montant) == ('planifie', 65000, 9000, 56000)
+    vc = VersementChauffeurLocationModel.objects.get(location=loc)
+    assert (vc.statut, vc.montant) == ('planifie', 12000)  # la moitié de sa part lui reste versée
+    _payes(loc)
+    paiements.passe()
+    assert sorted(p['montant'] for p in faux.payouts) == [12000, 56000]
+
+
+def test_late_cancellation_keeps_the_partners_paid(client_for, make_user, faux, catalogue, loueur, chauffeur):
+    client = client_for(make_user())
+    loc = _reserver_et_payer(client, faux, catalogue)
+    services.attribuer(loc, partenaire=loueur, chauffeur=chauffeur)
     LocationModel.objects.filter(pk=loc.pk).update(debut=timezone.now() + timedelta(hours=20))
     assert client.delete(f'{LOCATIONS}{loc.id}/').data['rembourse'] == 0
     assert not RemboursementModel.objects.filter(location=loc).exists()
     assert VersementPartenaireModel.objects.get(location=loc).statut == 'planifie'
+    assert VersementChauffeurLocationModel.objects.get(location=loc).montant == 24000
 
 
 def test_cancellation_by_kwaba_refunds_everything(client_for, make_user, faux, catalogue):
@@ -267,13 +396,13 @@ def _vehicule_rendu(loc, heures=25):
 def test_deposit_paid_online_then_refunded_minus_damages(client_for, make_user, faux, catalogue, loueur):
     client = client_for(make_user(email='ama@test.kwaba'))
     loc = _reserver_et_payer(client, faux, catalogue, **SANS_CHAUFFEUR)
-    # 4 jours × 30 000 + 2 × 5 000 de frais, plus 100 000 de caution payés avec la location
-    assert (loc.prix, loc.caution, loc.caution_en_ligne) == (130000, 100000, True)
-    assert faux.transaction['montant'] == 230000
+    # 4 jours × 30 000 + 2 × 5 000 de frais, plus 60 000 de caution (deux journées) payés avec la location
+    assert (loc.prix, loc.caution, loc.caution_en_ligne) == (130000, 60000, True)
+    assert faux.transaction['montant'] == 190000
     detail = client.get(f'{LOCATIONS}{loc.id}/').data
-    assert detail['a_payer'] == 230000 and detail['caution_etat']['restituee'] is False
+    assert detail['a_payer'] == 190000 and detail['caution_etat']['restituee'] is False
 
-    services.assigner_partenaire(loc, loueur, vehicule='Toyota Yaris grise')
+    services.attribuer(loc, partenaire=loueur, vehicule='Toyota Yaris grise')
     mail.outbox.clear()
     paiements.passe()
     au_loueur = next(m.body for m in mail.outbox if m.to == ['yao@test.kwaba'])
@@ -282,7 +411,7 @@ def test_deposit_paid_online_then_refunded_minus_damages(client_for, make_user, 
     loc = _vehicule_rendu(loc, heures=2)
     services.retenir_caution(loc, 30000, 'Rétroviseur cassé')
     v = VersementPartenaireModel.objects.get(location=loc)
-    assert (v.montant_brut, v.commission, v.montant) == (160000, 19500, 140500)  # la retenue s'ajoute, sans commission
+    assert (v.montant_brut, v.commission, v.montant) == (160000, 18000, 142000)  # la retenue s'ajoute, sans commission
     paiements.passe()
     loc.refresh_from_db()
     assert loc.caution_restituee_le is None and faux.payouts == []  # délai de signalement pas écoulé : rien ne part
@@ -293,22 +422,22 @@ def test_deposit_paid_online_then_refunded_minus_damages(client_for, make_user, 
     loc.refresh_from_db()
     assert loc.caution_restituee_le is not None
     rb = RemboursementModel.objects.get(location=loc)
-    assert (rb.montant, rb.motif, rb.statut) == (70000, 'Restitution de la caution', 'attente_numero')
+    assert (rb.montant, rb.motif, rb.statut) == (30000, 'Restitution de la caution', 'attente_numero')
     au_voyageur = next(m for m in mail.outbox if m.to == ['ama@test.kwaba'] and 'caution' in m.subject)
-    assert '70 000' in au_voyageur.body and 'Rétroviseur cassé' in au_voyageur.body and 'numéro Mobile Money' in au_voyageur.body
-    assert [p['montant'] for p in faux.payouts] == [140500]  # loueur payé avec la retenue
+    assert '30 000' in au_voyageur.body and 'Rétroviseur cassé' in au_voyageur.body and 'numéro Mobile Money' in au_voyageur.body
+    assert [p['montant'] for p in faux.payouts] == [142000]  # propriétaire payé avec la retenue
     with pytest.raises(services.LocationErreur):
         services.retenir_caution(loc, 10000, 'Trop tard')
 
 
 def test_deposit_retention_rules(client_for, make_user, faux, catalogue, loueur):
     loc = _reserver_et_payer(client_for(make_user()), faux, catalogue, **SANS_CHAUFFEUR)
-    services.assigner_partenaire(loc, loueur)
+    services.attribuer(loc, partenaire=loueur)
     with pytest.raises(services.LocationErreur, match='pas encore été remis'):
         services.retenir_caution(loc, 10000, 'Rayure')
     loc = _vehicule_rendu(loc, heures=2)
     with pytest.raises(services.LocationErreur, match='entre 0 et la caution'):
-        services.retenir_caution(loc, 100001, 'Trop')
+        services.retenir_caution(loc, 60001, 'Trop')
     with pytest.raises(services.LocationErreur, match='motif'):
         services.retenir_caution(loc, 10000, '  ')
     services.retenir_caution(loc, 10000, 'Rayure')
@@ -320,7 +449,7 @@ def test_deposit_retention_rules(client_for, make_user, faux, catalogue, loueur)
 
 def test_back_office_records_a_retention(client_for, make_user, faux, catalogue, loueur):
     loc = _reserver_et_payer(client_for(make_user()), faux, catalogue, **SANS_CHAUFFEUR)
-    services.assigner_partenaire(loc, loueur)
+    services.attribuer(loc, partenaire=loueur)
     loc = _vehicule_rendu(loc, heures=2)
     admin = client_for(make_user(role='admin'))
     url = f'/api/v1/admin/location/locations/{loc.id}/caution/'
@@ -333,10 +462,10 @@ def test_back_office_records_a_retention(client_for, make_user, faux, catalogue,
 def test_cancelled_rental_always_refunds_the_deposit(client_for, make_user, faux, catalogue, loueur):
     client = client_for(make_user())
     loc = _reserver_et_payer(client, faux, catalogue, **SANS_CHAUFFEUR)
-    services.assigner_partenaire(loc, loueur)
+    services.attribuer(loc, partenaire=loueur)
     LocationModel.objects.filter(pk=loc.pk).update(debut=timezone.now() + timedelta(hours=20))
-    # Hors délai d'annulation gratuite : la location n'est pas remboursée, la caution si
-    assert client.delete(f'{LOCATIONS}{loc.id}/').data['rembourse'] == 100000
+    # Moins de 24 h avant : la location n'est pas remboursée, la caution si
+    assert client.delete(f'{LOCATIONS}{loc.id}/').data['rembourse'] == 60000
     assert VersementPartenaireModel.objects.get(location=loc).statut == 'planifie'
 
 
@@ -346,8 +475,8 @@ def test_deposit_paid_to_the_partner_when_online_deposit_is_off(client_for, make
     loc = _reserver_et_payer(client, faux, catalogue, **SANS_CHAUFFEUR)
     assert faux.transaction['montant'] == 130000 and loc.caution_en_ligne is False
     assert client.get(f'{LOCATIONS}{loc.id}/').data['caution_etat'] is None
-    services.assigner_partenaire(loc, loueur)
+    services.attribuer(loc, partenaire=loueur)
     mail.outbox.clear()
     paiements.passe()
     au_loueur = next(m.body for m in mail.outbox if m.to == ['yao@test.kwaba'])
-    assert 'Caution à encaisser à la remise : 100 000' in au_loueur
+    assert 'Caution à encaisser à la remise : 60 000' in au_loueur

@@ -79,7 +79,7 @@ class ObjetPayeMixin:
         if self.transfert_id:
             return f"Transfert depuis l'aéroport {self.transfert.aeroport.ville}"
         if getattr(self, 'location_id', None):
-            return f"Location {self.location.categorie.nom}, {self.location.lieu_prise.ville}"
+            return f"Location {self.location.libelle}, {self.location.lieu_prise.ville}"
         return f"Don à {self.don.organisation.nom}"
 
 
