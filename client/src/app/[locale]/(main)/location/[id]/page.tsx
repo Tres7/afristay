@@ -81,7 +81,8 @@ function LocationDetail() {
 
   const annuler = async () => {
     const tardif = l.paiement === "reussi" && !l.annulation_gratuite;
-    if (!window.confirm(tardif ? td(l.caution_etat ? "annulerTardifCaution" : "annulerTardif") : td("annulerQuestion"))) return;
+    const question = tardif ? td("annulerPartiel", { montant: formatPrice(l.rembourse_si_annulation ?? 0) }) : td("annulerQuestion");
+    if (!window.confirm(question)) return;
     setAnnulation(true);
     try {
       const res = await api.delete<{ rembourse: number; numero_requis: boolean }>(`/v1/locations/${l.id}/`);
@@ -104,8 +105,8 @@ function LocationDetail() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm text-gray-600 font-mono">{l.reference}</p>
-            <h1 className="font-heading font-bold text-dark text-2xl sm:text-3xl">{l.categorie_detail.nom} · {l.lieu_prise_detail.ville}</h1>
-            <p className="text-sm text-gray-500">{t(`formules.${l.formule}`)}{l.categorie_detail.exemple_modele ? ` · ${l.categorie_detail.exemple_modele}` : ""}</p>
+            <h1 className="font-heading font-bold text-dark text-2xl sm:text-3xl">{l.libelle} · {l.lieu_prise_detail.ville}</h1>
+            <p className="text-sm text-gray-500">{t(`formules.${l.formule}`)}{l.categorie_detail?.exemple_modele ? ` · ${l.categorie_detail.exemple_modele}` : ""}</p>
           </div>
           <span className={cn("flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full", statut.className)}>
             <statut.icon size={13} /> {t(`statuts.${l.statut}`)}
@@ -149,7 +150,9 @@ function LocationDetail() {
             <div className="sm:col-span-2 bg-gray-50 rounded-xl px-4 py-3"><dt className="text-gray-600">{t("precisions")}</dt><dd className="text-dark whitespace-pre-line mt-1">{l.precisions}</dd></div>
           </dl>
           <div className="mt-5 pt-4 border-t border-gray-100 space-y-1 text-sm">
-            <div className="flex justify-between"><span className="text-gray-600">{t("devisJours", { nombre: l.jours, prix: formatPrice(l.prix_jour) })}</span><span>{formatPrice(l.prix_jour * l.jours)}</span></div>
+            {l.prix_jour > 0 && <div className="flex justify-between"><span className="text-gray-600">{t("devisJours", { nombre: l.jours, prix: formatPrice(l.prix_jour) })}</span><span>{formatPrice(l.prix_jour * l.jours)}</span></div>}
+            {l.prix_chauffeur > 0 && <div className="flex justify-between"><span className="text-gray-600">{t("devisChauffeur", { nombre: l.jours })}</span><span>{formatPrice(l.prix_chauffeur)}</span></div>}
+            {l.primes > 0 && <div className="flex justify-between"><span className="text-gray-600">{t("devisPrimes")}</span><span>{formatPrice(l.primes)}</span></div>}
             {l.frais_lieux > 0 && <div className="flex justify-between"><span className="text-gray-600">{t("frais")}</span><span>{formatPrice(l.frais_lieux)}</span></div>}
             {l.caution_etat && <div className="flex justify-between"><span className="text-gray-600">{t("cautionLigne")}</span><span>{formatPrice(l.caution)}</span></div>}
             <div className="flex justify-between pt-2"><span className="text-gray-600">{l.paiement === "reussi" ? td("prixPaye") : td("prix")}</span><span className="font-heading font-bold text-xl text-dark">{formatPrice(l.a_payer)}</span></div>
@@ -195,7 +198,11 @@ function LocationDetail() {
 
         {["en_attente_paiement", "confirmee", "partenaire_assigne"].includes(l.statut) && (
           <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
-            <p className="text-gray-600">{l.paiement === "reussi" ? (l.annulation_gratuite ? td("annulationGratuite") : td("plusDeRemboursement")) : ""}</p>
+            <p className="text-gray-600">
+              {l.paiement === "reussi" && l.rembourse_si_annulation !== null
+                ? l.annulation_gratuite ? td("annulationGratuite") : td("rembourseSiAnnulation", { montant: formatPrice(l.rembourse_si_annulation) })
+                : ""}
+            </p>
             <button onClick={annuler} disabled={annulation} className="px-5 py-2 rounded-full bg-red-50 text-red-700 font-semibold hover:bg-red-100 disabled:opacity-50">
               {annulation ? td("annulation") : td("annuler")}
             </button>

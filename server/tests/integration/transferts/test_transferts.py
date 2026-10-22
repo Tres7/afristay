@@ -144,11 +144,11 @@ def test_cycle_complet_paiement_attribution_versement(client_for, make_user, fau
     assert {m.to[0] for m in mail.outbox} == {'voyageur@test.kwaba', 'komi@test.kwaba'}
 
     v = VersementChauffeurModel.objects.get(transfert=t)
-    assert (v.montant, v.commission) == (8000, 2000)
+    assert (v.montant, v.commission) == (8500, 1500)
     VersementChauffeurModel.objects.filter(pk=v.pk).update(date_prevue=timezone.now() - timedelta(minutes=1))
     paiements.passe()  # envoi
     paiements.passe()  # FedaPay confirme : versé, course terminée
-    assert faux.payouts[0]['mode'] == 'togocel' and faux.payouts[0]['montant'] == 8000
+    assert faux.payouts[0]['mode'] == 'togocel' and faux.payouts[0]['montant'] == 8500
     t.refresh_from_db()
     assert t.statut == 'termine'
 
