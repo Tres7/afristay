@@ -4,6 +4,7 @@ from zoneinfo import ZoneInfo
 from django.utils import timezone
 
 from apps.give import montants as montants_dons
+from apps.paiements import tarifs
 from apps.paiements.models import PaiementModel
 
 from .models import FactureModel
@@ -44,8 +45,7 @@ def bon_reservation(r) -> bytes:
     else:
         lignes.append(('Séjour', '1', fcfa(r.total_price), fcfa(r.total_price)))
     doc.montants(lignes, [('Total payé', fcfa(r.total_price))])
-    doc.bloc('Annulation', [('Conditions', "Plus de 7 jours avant l'arrivée : remboursement intégral. Entre 7 jours et 48 heures : "
-                                           "50 % des nuits retenues, frais de service remboursés. Moins de 48 heures : aucun remboursement.")])
+    doc.bloc('Annulation', [('Conditions', tarifs.texte_politique(r))])
     doc.paragraphe("Présentez ce bon (sur votre téléphone ou imprimé) à votre arrivée.", 'petit')
     return doc.en_pdf()
 

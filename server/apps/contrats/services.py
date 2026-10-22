@@ -110,7 +110,12 @@ def partie(type_contrat: str, objet) -> dict:
 
 
 def fondateur(objet) -> str:
-    """Programme Fondateurs de la partie, tel qu'il figure au contrat."""
+    """Programme Fondateurs de l'hôte, tel qu'il figure au contrat (dates réglées par l'équipe)."""
+    from apps.paiements.tarifs import conditions
+
+    c = conditions(objet)
+    if c and c.categorie == 'particulier' and c.fondateur_debut and c.fondateur_fin:
+        return f"applicable du {date(c.fondateur_debut)} au {date(c.fondateur_fin)}"
     return 'non applicable'
 
 
@@ -307,7 +312,10 @@ def par_jeton(jeton: str) -> ContratModel | None:
 
 def type_contrat_hote(hote) -> str:
     """Contrat que l'hôte doit signer : hôte particulier (B1) ou hôtel et résidence hôtelière (B2)."""
-    return 'hote'
+    from apps.paiements.tarifs import conditions
+
+    c = conditions(hote)
+    return 'hotel' if c and c.categorie == 'hotel' else 'hote'
 
 
 def contrat_hote(hote) -> ContratModel:

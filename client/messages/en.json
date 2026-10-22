@@ -457,7 +457,7 @@
     "datesPrises": "These dates are no longer available.",
     "autresDates": "Choose other dates",
     "nuits": "{nombre, plural, one {# night} other {# nights}}",
-    "fraisService": "Service fee (8%)",
+    "fraisService": "Service fee ({taux}%)",
     "total": "Total",
     "votreHebergement": "This is your place",
     "indisponible": "Unavailable",
@@ -471,7 +471,8 @@
     "verifieBadge": "Verified by Kwa-Ba",
     "verifieAide": "A Kwa-Ba agent visited this place and checked the host's identity.",
     "hoteVerifie": "Verified host",
-    "hoteVerifieAide": "Kwa-Ba has checked this host's ID document."
+    "hoteVerifieAide": "Kwa-Ba has checked this host's ID document.",
+    "clientFidele": "Loyal customer rate: you have already stayed with this host"
   },
   "avis": {
     "repondre": "Reply publicly",
@@ -533,8 +534,8 @@
     "traitement": "Processing...",
     "payer": "Pay {montant}",
     "confirmerReservation": "Confirm booking",
-    "accepterPaiement": "By paying, you accept our <cgu>terms of sale</cgu> and <annulation>cancellation policy</annulation>.",
-    "accepterConfirmation": "By confirming, you accept our <cgu>terms of sale</cgu> and <annulation>cancellation policy</annulation>."
+    "accepterPaiement": "I accept the <cgu>terms of sale</cgu>, the listing rules and the <annulation>cancellation policy</annulation>.",
+    "accepterConfirmation": "I accept the <cgu>terms of sale</cgu>, the listing rules and the <annulation>cancellation policy</annulation>."
   },
   "paiement": {
     "paiementNonDemarre": "The payment could not start.",
@@ -1506,7 +1507,9 @@
     "petitDejPrix": "Price per person (FCFA)",
     "arrivee": "Check-in from",
     "depart": "Check-out by",
-    "detailsManquants": "Add the details (floor area, bedrooms, beds, breakfast): they will appear on the listing."
+    "detailsManquants": "Add the details (floor area, bedrooms, beds, breakfast): they will appear on the listing.",
+    "politique": "Cancellation policy",
+    "politiqueAide": "Shown on your listing and accepted by the traveller before payment. In addition, a booking cancelled within 48 hours, at least 7 days before arrival, is always refunded."
   },
   "revenus": {
     "statuts": {
@@ -1772,5 +1775,22 @@
     "annuler": "Cancel",
     "erreur": "Your acceptance could not be saved. Please try again.",
     "chargement": "Loading the terms…"
+  },
+  "politiqueAnnulation": {
+    "titre": "Cancellation policy",
+    "souple": {
+      "nom": "Flexible",
+      "regle": "full refund up to 24 hours before arrival; after that, the first night is kept."
+    },
+    "moderee": {
+      "nom": "Moderate",
+      "regle": "full refund up to 5 days before arrival; 50% of the nights up to 24 hours before; no refund after that."
+    },
+    "ferme": {
+      "nom": "Strict",
+      "regle": "full refund up to 30 days before arrival; 50% of the nights up to 7 days before; no refund after that."
+    },
+    "reflexion": "Cooling-off period: a booking cancelled within 48 hours, at least 7 days before arrival, is fully refunded. The service fee is only returned with a full refund.",
+    "details": "All cancellation rules"
   }
 }

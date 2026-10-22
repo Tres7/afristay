@@ -141,7 +141,7 @@ def rechercher_logements(entree: dict):
     for h in qs.order_by('-rating', 'price_per_night')[:20]:
         if nuits and not est_disponible(h.id, arrivee, depart):
             continue
-        cout = tarifs_sejour.calculer(h.price_per_night, nuits) if nuits else None
+        cout = tarifs_sejour.calculer(h.price_per_night, nuits) if nuits else None  # frais standard de 6 %
         resultats.append({
             'id': str(h.id), 'nom': h.name, 'type': h.type, 'ville': h.city, 'quartier': h.location,
             'prix_nuit_fcfa': int(h.price_per_night), 'note': round(h.rating, 1), 'nb_avis': h.review_count,
@@ -162,7 +162,7 @@ def rechercher_logements(entree: dict):
     if not resultats:
         return {'resultats': [], 'message': "Aucun logement Kwa-Ba ne correspond. Propose d'élargir les critères "
                                              "(budget, dates, quartier) ; ne recommande pas de logement extérieur."}, []
-    return {'resultats': resultats, 'frais_service': '8 % inclus dans cout_total_sejour_fcfa'}, cartes
+    return {'resultats': resultats, 'frais_service': '6 % inclus dans cout_total_sejour_fcfa (3 % pour un voyageur qui revient chez le même hôte)'}, cartes
 
 
 def devis_transfert(entree: dict):

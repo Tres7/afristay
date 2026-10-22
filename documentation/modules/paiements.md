@@ -10,17 +10,23 @@ Kwa-Ba encaisse tout le paiement, le conserve jusqu'au séjour, puis reverse sa 
 ```
 Voyageur ──paie 64 800 FCFA──▶ Kwa-Ba (FedaPay ou PayPal)
                                    │  conservé jusqu'à l'arrivée + 24 h
-                                   ├──▶ Hôte : 57 000 FCFA (Mobile Money, via FedaPay)
-                                   └──▶ Kwa-Ba : 7 800 FCFA (avant frais des prestataires)
+                                   ├──▶ Hôte : 55 200 FCFA (Mobile Money, via FedaPay)
+                                   └──▶ Kwa-Ba : 8 400 FCFA (avant frais des prestataires)
 ```
 
 | Élément | Taux | Exemple : 3 nuits à 20 000 FCFA |
 |---|---|---|
 | Prix des nuits | – | 60 000 |
-| Frais de service voyageur | 8 % | + 4 800 → le voyageur paie **64 800** |
-| Commission hôte | 5 % | − 3 000 → l'hôte reçoit **57 000** |
+| Frais de service voyageur | 6 % (3 % Client fidèle) | + 3 600 → le voyageur paie **63 600** |
+| Commission hôte particulier | 8 % | − 4 800 → l'hôte reçoit **55 200** |
+| Commission hôtel ou résidence hôtelière | 12 % | − 7 200 |
+| Programme Fondateurs (50 premiers hôtes, 6 mois) | 5 % | − 3 000 |
 
-Les taux sont dans `server/apps/paiements/tarifs.py`. Les montants sont **figés sur la réservation** au moment où elle est créée (`prix_nuits`, `frais_service`, `commission_hote`) : changer un taux ne modifie pas les réservations existantes. Tous les montants sont des entiers en FCFA.
+Grille du 18 octobre 2026 (CGV 2.4, art. 6.4). Les taux sont dans `server/apps/paiements/tarifs.py` :
+- **Client fidèle** : 3 % si le voyageur a déjà séjourné (réservation confirmée et terminée) chez le même hôte (`tarifs.taux_frais`). L'annonce renvoie le taux du visiteur (`frais_voyageur`), le site l'affiche.
+- **Commission** selon `ConditionsHoteModel`, réglée par l'équipe dans Back-office → Utilisateurs → Commission : catégorie (particulier, hôtel) et dates du Programme Fondateurs (limité à 50 hôtes). Sans ligne : particulier à 8 %. La catégorie choisit aussi le contrat à signer (hôte B1 ou hôtel B2).
+
+Les montants sont **figés sur la réservation** au moment où elle est créée (`prix_nuits`, `frais_service`, `commission_hote`) : changer un taux ne modifie pas les réservations existantes. Tous les montants sont des entiers en FCFA.
 
 ## Moyens de paiement
 
@@ -51,11 +57,18 @@ Pays ouverts aux versements : Togo, Bénin, Burkina Faso, Niger, Mali (`operateu
 
 `DELETE /api/v1/reservations/<id>/` → `services.annuler(reservation, par='voyageur')`, renvoie `{"rembourse": montant}`.
 
-| Annulation par le voyageur | Voyageur remboursé | Hôte reçoit |
-|---|---|---|
-| Plus de 7 jours avant l'arrivée | tout | rien (versement annulé) |
-| Entre 7 jours et 48 h | tout sauf 50 % des nuits | 50 % des nuits − 5 % |
-| Moins de 48 h | rien | sa part complète |
+Barème de `tarifs.bareme_voyageur` (CGV, art. 10.3 et annexe 1), selon la politique choisie par l'hôte sur l'annonce
+(`HebergementModel.politique_annulation`, Modérée par défaut) :
+
+| Politique | Remboursement intégral | 50 % des nuits retenues | Rien de remboursé |
+|---|---|---|---|
+| Souple | jusqu'à 24 h avant | – (moins de 24 h : 1re nuit retenue) | – |
+| Modérée | jusqu'à 5 jours avant | entre 5 jours et 24 h | moins de 24 h |
+| Ferme | jusqu'à 30 jours avant | entre 30 et 7 jours | moins de 7 jours |
+
+- **Délai de réflexion** : annulée dans les 48 h suivant la réservation et au moins 7 jours avant l'arrivée → tout est remboursé, quelle que soit la politique.
+- **Séjours de 28 nuits ou plus** : intégral jusqu'à 30 jours avant ; ensuite, les 30 premières nuits sont retenues.
+- Les frais de service ne sont rendus qu'avec un remboursement intégral. L'hôte reçoit les nuits retenues moins la commission, au taux de la réservation.
 
 **Remboursement Mobile Money** : FedaPay ne communique pas le numéro débité. Le remboursement est créé au statut « En attente du numéro du voyageur » ; l'API d'annulation renvoie `numero_requis: true` et le site ouvre aussitôt la fenêtre « Où recevoir votre remboursement ? » (pays, opérateur, numéro). Le voyageur peut aussi le faire plus tard depuis Mes réservations. Route : `PUT /api/v1/paiements/reservations/<id>/compte-remboursement/` avec `{pays, operateur, numero}`. Le worker envoie ensuite le remboursement.
 

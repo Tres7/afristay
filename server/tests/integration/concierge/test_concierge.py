@@ -83,8 +83,8 @@ def test_recherche_de_logements_reels_avec_cout_du_sejour(make_hebergement):
         'voyageurs': 2, 'budget_max_nuit': 50000,
     })
     assert [r['nom'] for r in resultat['resultats']] == ['Appart Bè']
-    assert resultat['resultats'][0]['cout_total_sejour_fcfa'] == 162000  # 5 x 30 000 + 8 %
-    assert cartes[0]['type'] == 'logement' and cartes[0]['total'] == 162000
+    assert resultat['resultats'][0]['cout_total_sejour_fcfa'] == 159000  # 5 x 30 000 + 6 %
+    assert cartes[0]['type'] == 'logement' and cartes[0]['total'] == 159000
 
     vide, _ = outils.rechercher_logements({'ville': 'Kigali'})
     assert vide['resultats'] == [] and 'ne recommande pas' in vide['message']

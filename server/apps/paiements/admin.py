@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import PaiementModel, ProfilVersementModel, RemboursementModel, VersementModel
+from .models import ConditionsHoteModel, PaiementModel, ProfilVersementModel, RemboursementModel, VersementModel
 
 
 @admin.register(PaiementModel)
@@ -29,3 +29,10 @@ class RemboursementAdmin(admin.ModelAdmin):
 class ProfilVersementAdmin(admin.ModelAdmin):
     list_display = ['hote', 'pays', 'operateur', 'numero', 'titulaire', 'mis_a_jour_le']
     list_filter = ['pays', 'operateur']
+
+
+@admin.register(ConditionsHoteModel)
+class ConditionsHoteAdmin(admin.ModelAdmin):
+    list_display = ['hote', 'categorie', 'fondateur_debut', 'fondateur_fin', 'mis_a_jour_le']
+    list_filter = ['categorie']
+    search_fields = ['hote__email']

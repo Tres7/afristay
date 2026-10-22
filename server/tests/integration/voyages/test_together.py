@@ -67,8 +67,8 @@ def test_votes_et_budget_par_personne(client_for, make_user, make_hebergement):
     assert doublon.status_code == 409
 
     p_appart = next(p for p in d['propositions'] if p['hebergement']['name'] == 'Appartement Cocody')
-    # 4 nuits x 40 000 + 8 % = 172 800, à 4 : 43 200 chacun
-    assert p_appart['budget'] == {'nuits': 4, 'total': 172800, 'par_personne': 43200, 'personnes': 4}
+    # 4 nuits x 40 000 + 6 % = 169 600, à 4 : 42 400 chacun
+    assert p_appart['budget'] == {'nuits': 4, 'total': 169600, 'par_personne': 42400, 'personnes': 4}
     assert p_appart['disponible'] is True and p_appart['assez_grand'] is True
 
     d = ami.get(f"{VOYAGES}{v['id']}/").data

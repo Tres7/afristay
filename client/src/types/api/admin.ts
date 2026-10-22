@@ -34,6 +34,16 @@ export interface AdminUser {
   last_login: string | null;
   nb_reservations: number;
   nb_annonces: number;
+  /** Hôtes seulement : commission réglée par l'équipe. */
+  conditions: ConditionsHote | null;
+}
+
+export interface ConditionsHote {
+  categorie: "particulier" | "hotel";
+  fondateur_debut: string | null;
+  fondateur_fin: string | null;
+  /** Taux appliqué aujourd'hui : 8, 12 (hôtel) ou 5 (Programme Fondateurs). */
+  commission_pourcent: number;
 }
 
 export interface AdminHebergement {

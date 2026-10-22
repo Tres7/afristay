@@ -34,6 +34,7 @@ class ConfigView(APIView):
             'fcfa_par_euro': float(paypal.FCFA_PAR_EURO),
             'environnement': settings.FEDAPAY['ENV'],
             'frais_voyageur': float(tarifs.FRAIS_VOYAGEUR),
+            'frais_reduits': float(tarifs.FRAIS_REDUITS),
             'commission_hote': float(tarifs.COMMISSION_HOTE),
             'delai_paiement_minutes': settings.FEDAPAY['EXPIRATION_MINUTES'],
             'pays': [
@@ -230,6 +231,8 @@ class RevenusView(APIView):
                 'commission': versements.aggregate(s=Sum('commission'))['s'] or 0,
             },
             'profil_complet': ProfilVersementModel.objects.filter(hote=request.user).exists(),
+            # Taux de commission de cet hôte aujourd'hui (8 %, 12 % pour un hôtel, 5 % pendant le Programme Fondateurs)
+            'commission_pourcent': float(tarifs.taux_commission(request.user) * 100),
             'versements': [
                 {
                     'id': str(v.id),
