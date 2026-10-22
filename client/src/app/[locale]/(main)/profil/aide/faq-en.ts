@@ -24,8 +24,8 @@ export const SECTIONS_EN = [
       { q: "Which payment methods are accepted?", a: "Mobile Money (Moov, T-Money, MTN, Orange, Airtel…) and Visa or Mastercard via FedaPay, or PayPal (charged in euros). You choose when booking." },
       { q: "When am I charged?", a: "When you book, on FedaPay's or PayPal's secure page. The dates are held for 30 minutes while you pay; the booking is confirmed as soon as payment is received." },
       { q: "When is the host paid?", a: "Kwa-Ba holds your payment until you arrive and only pays the host 24 hours after the stay begins. If there's a problem on arrival, report it within that time." },
-      { q: "How am I refunded?", a: "To the payment method you used, according to the cancellation policy: in full more than 7 days before check-in, partially between 7 days and 48 hours." },
-      { q: "What do the service fees cover?", a: "An 8% service fee is added to the nightly price. The breakdown is shown before you confirm." },
+      { q: "How am I refunded?", a: "To the payment method you used, within 7 working days, according to the cancellation policy chosen by the host (Flexible, Moderate or Strict) and shown on the listing. A booking cancelled within 48 hours, at least 7 days before check-in, is always fully refunded." },
+      { q: "What do the service fees cover?", a: "A 6% service fee is added to the nightly price (3% when you come back to a host you have already stayed with through Kwa-Ba). It covers secure booking, support and the Kwa-Ba Guarantee. The breakdown is shown before you pay." },
     ],
   },
   {

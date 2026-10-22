@@ -10,6 +10,7 @@ import api, { apiErrorMessage } from "@/lib/api";
 import { formatDate, initials, ROLE_LABELS } from "@/lib/utils";
 import { PAGE_SIZE, useAdminList, useDebounced } from "@/lib/useAdminList";
 import AdminTable, { ActionButton, Pagination, Pill, SearchInput, type Colonne } from "@/components/backoffice/AdminTable";
+import ConditionsHote from "@/components/backoffice/ConditionsHote";
 import ConfirmDialog, { type Confirmation } from "@/components/backoffice/ConfirmDialog";
 import Select from "@/components/ui/Select";
 import type { AdminUser, Role } from "@/types/api/admin";
@@ -35,6 +36,7 @@ function Utilisateurs() {
   const [role, setRole] = useState<"" | Role>((searchParams.get("role") as Role) ?? "");
   const [actif, setActif] = useState(searchParams.get("actif") ?? "");
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
+  const [conditions, setConditions] = useState<AdminUser | null>(null);
   const recherche = useDebounced(q);
 
   const { data, isLoading, isFetching, isError, refetch, page, setPage } = useAdminList<AdminUser>("users", { q: recherche, role, actif });
@@ -69,6 +71,14 @@ function Utilisateurs() {
     },
     { titre: "Rôle", cellule: (u) => <Pill ton={u.role === "admin" || u.role === "agent" ? "bleu" : u.role === "hote" ? "orange" : "gris"}>{ROLE_LABELS[u.role]}</Pill> },
     { titre: "Statut", cellule: (u) => <Pill ton={u.is_active ? "vert" : "rouge"}>{u.is_active ? "Actif" : "Désactivé"}</Pill> },
+    {
+      titre: "Commission", masquerMobile: true,
+      cellule: (u) => u.conditions ? (
+        <span className="text-xs text-gray-600 whitespace-nowrap">
+          {u.conditions.commission_pourcent} %{u.conditions.categorie === "hotel" ? " · hôtel" : u.conditions.fondateur_fin ? ` · fondateur jusqu'au ${formatDate(u.conditions.fondateur_fin)}` : ""}
+        </span>
+      ) : <span className="text-xs text-muted">-</span>,
+    },
     { titre: "Activité", cellule: (u) => <span className="text-xs text-gray-600 whitespace-nowrap">{u.nb_reservations} rés. · {u.nb_annonces} annonce{u.nb_annonces > 1 ? "s" : ""}</span> },
     { titre: "Inscrit le", cellule: (u) => <span className="text-xs text-gray-600 whitespace-nowrap">{formatDate(u.date_joined)}</span> },
   ];
@@ -91,6 +101,7 @@ function Utilisateurs() {
             });
           }}
         />
+        {u.role === "hote" && <ActionButton onClick={() => setConditions(u)}>Commission</ActionButton>}
         {u.is_active ? (
           <ActionButton danger onClick={() => setConfirmation({
             titre: "Désactiver le compte",
@@ -128,6 +139,7 @@ function Utilisateurs() {
       />
       {data && <Pagination page={page} count={data.count} pageSize={PAGE_SIZE} onChange={setPage} />}
       <ConfirmDialog confirmation={confirmation} onClose={() => setConfirmation(null)} />
+      <ConditionsHote key={conditions?.id ?? "aucun"} hote={conditions} onFermer={() => setConditions(null)} />
     </div>
   );
 }

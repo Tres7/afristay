@@ -5,7 +5,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const SERVICE_FEE_RATE = 0.08;
+/** Frais de service du voyageur (CGV, art. 6.4) ; l'annonce donne le taux exact du visiteur (3 % en Client fidèle). */
+export const SERVICE_FEE_RATE = 0.06;
 
 export const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1542314831-c6a4d27ce6a2?q=80&w=1200&auto=format&fit=crop";

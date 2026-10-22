@@ -30,7 +30,7 @@ class ReservationSerializer(serializers.ModelSerializer):
     def get_montants(self, obj):
         m = tarifs.montants_de(obj)
         return {
-            'prix_nuits': m.prix_nuits, 'frais_service': m.frais_service, 'total': m.total,
+            'prix_nuits': m.prix_nuits, 'frais_service': m.frais_service, 'taux_frais': m.taux_frais, 'total': m.total,
             'commission_hote': m.commission_hote, 'montant_hote': m.montant_hote,
         }
 
@@ -105,7 +105,7 @@ class ReservationCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         hebergement = validated_data['hebergement']
         nights = (validated_data['check_out'] - validated_data['check_in']).days
-        montants = tarifs.calculer(hebergement.price_per_night, nights)
+        montants = tarifs.devis(hebergement, nights, voyageur=validated_data.get('guest'))
         if paiements.paiement_actif():
             # Dates bloquées le temps de payer ; confirmée par le webhook FedaPay
             etat = {'status': 'pending', 'expire_le': timezone.now() + paiements.delai_paiement()}

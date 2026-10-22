@@ -20,6 +20,8 @@ export interface ConfigPaiement {
   fcfa_par_euro: number;
   environnement: "sandbox" | "live";
   frais_voyageur: number;
+  /** Frais réduits : Client fidèle, Pack Séjour + Chauffeur. */
+  frais_reduits: number;
   commission_hote: number;
   delai_paiement_minutes: number;
   pays: PaysPaiement[];
@@ -64,5 +66,7 @@ export interface Versement {
 export interface Revenus {
   totaux: { a_venir: number; en_cours: number; verse: number; commission: number };
   profil_complet: boolean;
+  /** Commission de cet hôte aujourd'hui, en % (8, 12 pour un hôtel, 5 pendant le Programme Fondateurs). */
+  commission_pourcent: number;
   versements: Versement[];
 }

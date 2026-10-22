@@ -7,7 +7,7 @@ from apps.hebergements.models import HebergementModel
 from apps.reservations.models import ReservationModel
 
 # Délai pour laisser un avis après le départ (au-delà, le souvenir n'est plus fiable)
-DELAI_AVIS_JOURS = 60
+DELAI_AVIS_JOURS = 14
 
 
 def motif_refus(reservation: ReservationModel, user) -> str | None:

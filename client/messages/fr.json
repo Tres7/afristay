@@ -457,7 +457,7 @@
     "datesPrises": "Ces dates ne sont plus disponibles.",
     "autresDates": "Choisir d'autres dates",
     "nuits": "{nombre, plural, one {# nuit} other {# nuits}}",
-    "fraisService": "Frais de service (8 %)",
+    "fraisService": "Frais de service ({taux} %)",
     "total": "Total",
     "votreHebergement": "C'est votre hébergement",
     "indisponible": "Indisponible",
@@ -471,7 +471,8 @@
     "verifieBadge": "Vérifié par Kwa-Ba",
     "verifieAide": "Un agent Kwa-Ba a visité ce logement et contrôlé l'identité de l'hôte.",
     "hoteVerifie": "Hôte vérifié",
-    "hoteVerifieAide": "Kwa-Ba a contrôlé la pièce d'identité de cet hôte."
+    "hoteVerifieAide": "Kwa-Ba a contrôlé la pièce d'identité de cet hôte.",
+    "clientFidele": "Tarif Client fidèle : vous avez déjà séjourné chez cet hôte"
   },
   "avis": {
     "repondre": "Répondre publiquement",
@@ -533,8 +534,8 @@
     "traitement": "Traitement...",
     "payer": "Payer {montant}",
     "confirmerReservation": "Confirmer la réservation",
-    "accepterPaiement": "En payant, vous acceptez nos <cgu>conditions générales de vente</cgu> et la <annulation>politique d'annulation</annulation>.",
-    "accepterConfirmation": "En confirmant, vous acceptez nos <cgu>conditions générales de vente</cgu> et la <annulation>politique d'annulation</annulation>."
+    "accepterPaiement": "J'accepte les <cgu>conditions générales de vente</cgu>, les règles de l'annonce et la <annulation>politique d'annulation</annulation>.",
+    "accepterConfirmation": "J'accepte les <cgu>conditions générales de vente</cgu>, les règles de l'annonce et la <annulation>politique d'annulation</annulation>."
   },
   "paiement": {
     "paiementNonDemarre": "Le paiement n'a pas pu démarrer.",
@@ -1506,7 +1507,9 @@
     "petitDejPrix": "Prix par personne (FCFA)",
     "arrivee": "Arrivée à partir de",
     "depart": "Départ avant",
-    "detailsManquants": "Complétez les détails (surface, chambres, lits, petit-déjeuner) : ils s'afficheront sur l'annonce."
+    "detailsManquants": "Complétez les détails (surface, chambres, lits, petit-déjeuner) : ils s'afficheront sur l'annonce.",
+    "politique": "Politique d'annulation",
+    "politiqueAide": "Affichée sur votre annonce et acceptée par le voyageur avant le paiement. En plus, une réservation annulée dans les 48 heures, au moins 7 jours avant l'arrivée, est toujours remboursée."
   },
   "revenus": {
     "statuts": {
@@ -1772,5 +1775,22 @@
     "annuler": "Annuler",
     "erreur": "L'acceptation n'a pas pu être enregistrée. Réessayez.",
     "chargement": "Chargement des conditions…"
+  },
+  "politiqueAnnulation": {
+    "titre": "Conditions d'annulation",
+    "souple": {
+      "nom": "Souple",
+      "regle": "remboursement intégral jusqu'à 24 heures avant l'arrivée ; ensuite, la première nuit est retenue."
+    },
+    "moderee": {
+      "nom": "Modérée",
+      "regle": "remboursement intégral jusqu'à 5 jours avant l'arrivée ; 50 % des nuits jusqu'à 24 heures avant ; aucun remboursement ensuite."
+    },
+    "ferme": {
+      "nom": "Ferme",
+      "regle": "remboursement intégral jusqu'à 30 jours avant l'arrivée ; 50 % des nuits jusqu'à 7 jours avant ; aucun remboursement ensuite."
+    },
+    "reflexion": "Délai de réflexion : une réservation annulée dans les 48 heures, au moins 7 jours avant l'arrivée, est remboursée intégralement. Les frais de service ne sont rendus qu'avec un remboursement intégral.",
+    "details": "Toutes les règles d'annulation"
   }
 }

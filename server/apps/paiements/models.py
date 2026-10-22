@@ -24,6 +24,31 @@ class ProfilVersementModel(models.Model):
         return f"{self.hote.email} · {self.get_operateur_display()} {self.numero}"
 
 
+class ConditionsHoteModel(models.Model):
+    """Commission de l'hôte, réglée par l'équipe : hôte particulier (8 %), hôtel ou résidence hôtelière (12 %), et
+    Programme Fondateurs (5 % entre deux dates, 50 premiers hôtes particuliers). Sans ligne : hôte particulier."""
+    CATEGORIES = [('particulier', 'Hôte particulier'), ('hotel', 'Hôtel ou résidence hôtelière')]
+
+    hote = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='conditions_hote')
+    categorie = models.CharField(max_length=20, choices=CATEGORIES, default='particulier')
+    fondateur_debut = models.DateField(null=True, blank=True, help_text='Programme Fondateurs : premier jour à 5 %')
+    fondateur_fin = models.DateField(null=True, blank=True, help_text='Programme Fondateurs : dernier jour à 5 % (6 mois)')
+    mis_a_jour_le = models.DateTimeField(auto_now=True)
+    mis_a_jour_par = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name='+')
+
+    class Meta:
+        app_label = 'paiements'
+        verbose_name = "Conditions d'un hôte"
+        verbose_name_plural = 'Conditions des hôtes'
+
+    def __str__(self):
+        return f"{self.hote.email} · {self.get_categorie_display()}"
+
+    def fondateur_le(self, jour) -> bool:
+        return bool(self.categorie == 'particulier' and self.fondateur_debut and self.fondateur_fin
+                    and self.fondateur_debut <= jour <= self.fondateur_fin)
+
+
 class ObjetPayeMixin:
     """Ce qui est payé : une réservation de logement, un transfert aéroport, une location de voiture ou un don."""
 

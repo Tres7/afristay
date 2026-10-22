@@ -9,7 +9,7 @@ Votre paiement de {{ montant }} est bien reçu : votre séjour est confirmé.
 Retrouvez votre réservation et échangez avec votre hôte :
 {{ url }}
 
-Annulation : remboursement intégral jusqu'à 7 jours avant l'arrivée, partiel entre 7 jours et 48 heures.
+Annulation. {{ politique }}
 Détails : {{ url_remboursement }}
 
 Bon séjour,
