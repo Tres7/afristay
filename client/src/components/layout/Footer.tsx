@@ -38,6 +38,7 @@ const COLUMNS = [
 const LEGAL = [
   { href: "/mentions-legales", label: "mentions" },
   { href: "/cgu", label: "cgu" },
+  { href: "/cgv", label: "cgv" },
   { href: "/confidentialite", label: "confidentialite" },
   { href: "/cookies", label: "cookies" },
 ];

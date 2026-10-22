@@ -169,7 +169,7 @@ def test_lien_expire_renvoi_et_annulation(admin, client_for, make_user, societe,
 
 def test_modele_modifiable_et_versionne(admin, client_for, make_user, societe):
     modeles = admin.get(f'{A}modeles/').data
-    assert {m['type'] for m in modeles['modeles']} == {'hote', 'loueur', 'chauffeur', 'ong'} and 'partie.nom' in modeles['variables']
+    assert {m['type'] for m in modeles['modeles']} == {'hote', 'hotel', 'loueur', 'chauffeur', 'ong'} and 'partie.nom' in modeles['variables']
     hote = make_user(role='hote')
     corps = ModeleContratModel.objects.get(type='hote').corps
     assert admin.put(f'{A}modeles/hote/', {'titre': 'Contrat Hôte', 'corps': corps + '\n\n{{ inconnue }}'}, format='json').status_code == 400
@@ -178,6 +178,17 @@ def test_modele_modifiable_et_versionne(admin, client_for, make_user, societe):
     apercu = client_for(hote).get(f'{C}hote/').data
     assert apercu['titre'] == 'Contrat Hôte 2026' and apercu['version'] == 2 and apercu['blocs'][-1]['texte'] == 'Texte ajouté.'
 
+
+def test_contrat_hotel_emis_pour_un_compte_hote(admin, make_user, societe, django_capture_on_commit_callbacks):
+    hotel = make_user(role='hote', email='reservations@hotel.tg')
+    assert any(p['email'] == 'reservations@hotel.tg' for p in admin.get(f'{A}parties/', {'type': 'hotel'}).data)
+    with django_capture_on_commit_callbacks(execute=True):
+        reponse = admin.post(A, {'type': 'hotel', 'partie_id': hotel.pk}, format='json')
+    assert reponse.status_code == 201, reponse.data
+    contrat = ContratModel.objects.get(hote=hotel)
+    assert contrat.type == 'hotel' and contrat.titre == 'Contrat hôtel et résidence hôtelière'
+    assert "ci-après « l'Établissement »" in contrat.corps and '12 % du prix' in contrat.corps
+    assert 'Charte du Réseau Kwa-Ba Partenaires' in contrat.corps and '{{' not in contrat.corps
 
 def test_la_visite_attend_la_signature_du_contrat(client_for, make_user, make_hebergement, societe, django_capture_on_commit_callbacks):
     hote = make_user(role='hote')

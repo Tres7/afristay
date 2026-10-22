@@ -13,7 +13,8 @@ from .models import ContratModel
 from .services import blocs
 
 LARGEUR_SIGNATURE, HAUTEUR_SIGNATURE = 60 * mm, 22 * mm
-TITRES_PARTIE = {'hote': "L'Hôte", 'loueur': 'Le Loueur', 'chauffeur': 'Le Chauffeur', 'ong': "L'Association"}
+TITRES_PARTIE = {'hote': "L'Hôte", 'hotel': "L'Établissement", 'loueur': 'Le Propriétaire', 'chauffeur': 'Le Chauffeur',
+                 'ong': "L'Association"}
 
 
 def _image(fichier) -> Image | None:

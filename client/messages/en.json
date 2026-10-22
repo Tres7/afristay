@@ -138,7 +138,8 @@
     "legal": {
       "mentions": "Legal notice",
       "cgu": "Terms of use",
-      "confidentialite": "Privacy (GDPR)",
+      "cgv": "Terms of sale",
+      "confidentialite": "Privacy",
       "cookies": "Cookie policy"
     }
   },
@@ -532,8 +533,8 @@
     "traitement": "Processing...",
     "payer": "Pay {montant}",
     "confirmerReservation": "Confirm booking",
-    "accepterPaiement": "By paying, you accept our <cgu>Terms</cgu> and <annulation>cancellation policy</annulation>.",
-    "accepterConfirmation": "By confirming, you accept our <cgu>Terms</cgu> and <annulation>cancellation policy</annulation>."
+    "accepterPaiement": "By paying, you accept our <cgu>terms of sale</cgu> and <annulation>cancellation policy</annulation>.",
+    "accepterConfirmation": "By confirming, you accept our <cgu>terms of sale</cgu> and <annulation>cancellation policy</annulation>."
   },
   "paiement": {
     "paiementNonDemarre": "The payment could not start.",
@@ -803,6 +804,7 @@
     "titres": {
       "mentions": "Legal notice",
       "cgu": "Terms of use",
+      "cgv": "Terms of sale",
       "confidentialite": "Privacy policy",
       "cookies": "Cookie policy",
       "remboursement": "Cancellation and refunds"
@@ -1166,7 +1168,7 @@
     "seConnecter": "Log in to book",
     "redirection": "Redirecting to payment…",
     "reserver": "Book the transfer",
-    "infoChauffeur": "Your driver's name, number, vehicle and number plate are sent to you by the day before at the latest. By booking, you accept our <cgu>terms</cgu>."
+    "infoChauffeur": "Your driver's name, number, vehicle and number plate are sent to you by the day before at the latest. By booking, you accept our <cgu>terms of sale</cgu>."
   },
   "transfertDetail": {
     "statuts": {
@@ -1303,6 +1305,51 @@
       "photos": "Photos of your place",
       "prix": "A nightly price in FCFA",
       "capacite": "Capacity and amenities"
+    },
+    "tarifs": {
+      "titre": "What it costs",
+      "intro": "Listing is free. Kwa-Ba only takes a commission when you get paid, much lower than international platforms.",
+      "taux": {
+        "particulier": {
+          "valeur": "8%",
+          "titre": "Private host",
+          "texte": "of the price of nights, deducted from your payout"
+        },
+        "hotel": {
+          "valeur": "12%",
+          "titre": "Hotel or serviced residence",
+          "texte": "versus 15 to 18% on Booking.com"
+        },
+        "fondateur": {
+          "valeur": "5%",
+          "titre": "Founding host",
+          "texte": "for 6 months for the first 50 hosts"
+        },
+        "voyageur": {
+          "valeur": "6%",
+          "titre": "Traveller fee",
+          "texte": "paid by the traveller, it does not reduce your income"
+        }
+      },
+      "exemple": "Example: a 2.5-night stay at 25,000 FCFA per night (62,500 FCFA)",
+      "colonnes": {
+        "plateforme": "Platform",
+        "voyageur": "Traveller pays",
+        "hote": "You receive"
+      },
+      "lignes": {
+        "airbnb": "Airbnb (15.5% for the host)",
+        "booking": "Booking.com (15%)",
+        "kwaba": "Kwa-Ba, private host (6% + 8%)",
+        "fondateur": "Kwa-Ba, founding host (6% + 5%)"
+      },
+      "note": "Rates published by Airbnb and Booking.com in 2026. Your share is paid by Mobile Money 24 hours after the traveller arrives.",
+      "mobilite": {
+        "titre": "Do you own a car, or are you a driver?",
+        "texte": "Owners: you set your price and deposit, Kwa-Ba takes 15% (10% for 6 months for the first 20, 12% after 20 rentals without incident). Drivers: 6,000 FCFA per day, 6,500 with Excellence status, travel allowances paid in full.",
+        "cta": "Contact us",
+        "sujet": "Becoming a mobility partner"
+      }
     }
   },
   "photos": {

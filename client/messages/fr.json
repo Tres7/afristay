@@ -138,7 +138,8 @@
     "legal": {
       "mentions": "Mentions légales",
       "cgu": "CGU",
-      "confidentialite": "Confidentialité (RGPD)",
+      "cgv": "CGV",
+      "confidentialite": "Confidentialité",
       "cookies": "Politique cookies"
     }
   },
@@ -532,8 +533,8 @@
     "traitement": "Traitement...",
     "payer": "Payer {montant}",
     "confirmerReservation": "Confirmer la réservation",
-    "accepterPaiement": "En payant, vous acceptez nos <cgu>Conditions</cgu> et la <annulation>politique d'annulation</annulation>.",
-    "accepterConfirmation": "En confirmant, vous acceptez nos <cgu>Conditions</cgu> et la <annulation>politique d'annulation</annulation>."
+    "accepterPaiement": "En payant, vous acceptez nos <cgu>conditions générales de vente</cgu> et la <annulation>politique d'annulation</annulation>.",
+    "accepterConfirmation": "En confirmant, vous acceptez nos <cgu>conditions générales de vente</cgu> et la <annulation>politique d'annulation</annulation>."
   },
   "paiement": {
     "paiementNonDemarre": "Le paiement n'a pas pu démarrer.",
@@ -803,6 +804,7 @@
     "titres": {
       "mentions": "Mentions légales",
       "cgu": "Conditions générales d'utilisation",
+      "cgv": "Conditions générales de vente",
       "confidentialite": "Politique de confidentialité",
       "cookies": "Politique cookies",
       "remboursement": "Annulation et remboursement"
@@ -1166,7 +1168,7 @@
     "seConnecter": "Se connecter pour réserver",
     "redirection": "Redirection vers le paiement…",
     "reserver": "Réserver le transfert",
-    "infoChauffeur": "Nom, numéro, véhicule et plaque de votre chauffeur vous sont envoyés au plus tard la veille. En réservant, vous acceptez nos <cgu>conditions</cgu>."
+    "infoChauffeur": "Nom, numéro, véhicule et plaque de votre chauffeur vous sont envoyés au plus tard la veille. En réservant, vous acceptez nos <cgu>conditions générales de vente</cgu>."
   },
   "transfertDetail": {
     "statuts": {
@@ -1303,6 +1305,51 @@
       "photos": "Des photos de votre logement",
       "prix": "Un prix par nuit en FCFA",
       "capacite": "La capacité d'accueil et les équipements"
+    },
+    "tarifs": {
+      "titre": "Ce que ça coûte",
+      "intro": "Publier est gratuit. Kwa-Ba prélève une commission seulement quand vous êtes payé, nettement plus basse que celle des plateformes internationales.",
+      "taux": {
+        "particulier": {
+          "valeur": "8 %",
+          "titre": "Hôte particulier",
+          "texte": "du prix des nuits, prélevés sur votre versement"
+        },
+        "hotel": {
+          "valeur": "12 %",
+          "titre": "Hôtel ou résidence hôtelière",
+          "texte": "contre 15 à 18 % sur Booking.com"
+        },
+        "fondateur": {
+          "valeur": "5 %",
+          "titre": "Hôte fondateur",
+          "texte": "pendant 6 mois pour les 50 premiers hôtes"
+        },
+        "voyageur": {
+          "valeur": "6 %",
+          "titre": "Frais du voyageur",
+          "texte": "payés par le voyageur, ils ne réduisent pas votre revenu"
+        }
+      },
+      "exemple": "Exemple : un séjour de 2,5 nuits à 25 000 FCFA la nuit (62 500 FCFA)",
+      "colonnes": {
+        "plateforme": "Plateforme",
+        "voyageur": "Le voyageur paie",
+        "hote": "Vous recevez"
+      },
+      "lignes": {
+        "airbnb": "Airbnb (15,5 % pour l'hôte)",
+        "booking": "Booking.com (15 %)",
+        "kwaba": "Kwa-Ba, hôte particulier (6 % + 8 %)",
+        "fondateur": "Kwa-Ba, hôte fondateur (6 % + 5 %)"
+      },
+      "note": "Taux publiés par Airbnb et Booking.com en 2026. Votre part vous est versée par Mobile Money 24 heures après l'arrivée du voyageur.",
+      "mobilite": {
+        "titre": "Vous avez une voiture, ou vous êtes chauffeur ?",
+        "texte": "Propriétaires : vous fixez votre prix et votre caution, Kwa-Ba prélève 15 % (10 % pendant 6 mois pour les 20 premiers, 12 % après 20 locations sans incident). Chauffeurs : 6 000 FCFA par jour, 6 500 au statut Excellence, primes de déplacement reversées en totalité.",
+        "cta": "Nous écrire",
+        "sujet": "Devenir partenaire mobilité"
+      }
     }
   },
   "photos": {

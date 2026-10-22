@@ -6,14 +6,14 @@ import LegalPage, { AC, AValider, VersionFrancaiseFaitFoi } from "@/components/l
 export default function ContenuEn() {
   return (
     <LegalPage
-      titre="Privacy policy (GDPR)"
-      miseAJour="7 October 2026"
+      titre="Privacy policy"
+      miseAJour="22 October 2026"
       intro={
         <>
           <p>
             This policy explains what personal data Kwa-Ba collects, why, how long it is kept and how to exercise your rights, in
-            line with the General Data Protection Regulation (GDPR) and the data protection laws that apply in the countries where
-            Kwa-Ba is available.
+            line with Togolese law no. 2019-014 of 29 October 2019 on the protection of personal data and law no. 2017-07 on
+            electronic transactions.
           </p>
           <p>We only collect the data the service needs. We sell no data and use no advertising tools.</p>
           <VersionFrancaiseFaitFoi />
@@ -25,9 +25,10 @@ export default function ContenuEn() {
           titre: "Data controller",
           contenu: (
             <ul>
-              <li>Controller: <AC>company name and legal form</AC>, <AC>registered office address</AC>.</li>
-              <li>Data protection contact: <LienContact sujet="Data protection" />.</li>
-              <li>Data protection officer (if appointed): <AC>name or “not appointed”</AC>.</li>
+              <li>Controller: <strong>KWA-BA SARL</strong>, a limited liability company with a share capital of 100,000 F CFA, Totsi Gblenkomé district, street 243, Lomé (Togo), RCCM <AC>RCCM</AC>.</li>
+              <li>Declaration to the personal data protection authority (IPDCP): no. <AC>declaration number</AC>.</li>
+              <li>Contact about your data: <LienContact sujet="Data protection" />, or by WhatsApp on <AC>WhatsApp number</AC>.</li>
+              <li>Data officer within KWA-BA: <AC>name or position</AC>.</li>
             </ul>
           ),
         },
@@ -70,7 +71,9 @@ export default function ContenuEn() {
             <ul>
               <li>No card number or Mobile Money PIN: payment details are entered directly on FedaPay&apos;s or PayPal&apos;s secure pages.</li>
               <li>No audience measurement, advertising trackers or profiling.</li>
-              <li>No ID documents, date of birth or sensitive data.</li>
+              <li>No sensitive data (health, opinions, religion, ethnic origin), except supporting evidence you choose to provide for a cancellation due to exceptional circumstances (<Link href="/cgv#annulation">terms of sale, art. 11.4</Link>), used only for that purpose.</li>
+              <li>No travellers&apos; ID documents, unless Kwa-Ba asks for one for a rental without driver or in case of suspected fraud (<Link href="/cgv#compte">terms of sale, art. 4.3</Link>).</li>
+              <li>We never sell your data.</li>
               <li>The adults / children split entered during a search is not saved: only the total number of guests is.</li>
             </ul>
           ),
@@ -97,19 +100,33 @@ export default function ContenuEn() {
           ),
         },
         {
+          id: "transferts",
+          titre: "Transfers outside Togo",
+          contenu: (
+            <p>
+              Some data are hosted or accessed outside Togo: by the website host, by Brevo (European Union) for sending emails, by
+              KWA-BA&apos;s partners based in France for customer service and management, by Google (United States) for the AI Concierge,
+              and by the payment provider FedaPay, based in Benin. These transfers comply with the conditions of law no. 2019-014 and,
+              where required, are authorised by the IPDCP. They are covered by confidentiality and security commitments.
+            </p>
+          ),
+        },
+        {
           id: "durees",
           titre: "Retention periods",
           contenu: (
             <ul>
               <li>Verification codes: 10 minutes. Cookie choices: 6 months. Language choice: 1 year.</li>
-              <li>Account: as long as it is active; <AValider>deleted or anonymised after 3 years without signing in.</AValider></li>
-              <li>Bookings: <AValider>length of the relationship, then 5 years (limitation period).</AValider></li>
-              <li>Payments, payouts, refunds, donations and payouts to NGOs: <AValider>10 years (accounting records).</AValider></li>
+              <li>Inactive account: <AValider>3 years after the last activity, then deleted or anonymised.</AValider></li>
+              <li>Bookings and contracts concluded online (acceptances, signed contracts): <AValider>5 years after their performance</AValider> (<Link href="/cgv#preuve">terms of sale, art. 22.2</Link>).</li>
+              <li>Payments, payouts, refunds, invoices, donations and payouts to NGOs: <AValider>10 years (accounting records).</AValider></li>
+              <li>Partners&apos; supporting documents (vehicle papers, licence, criminal record, contracts): <AValider>for the duration of the relationship, then 5 years.</AValider> The copy of a host&apos;s ID document is deleted as soon as the agent has checked the identity (only the document type and the result of the check are kept).</li>
+              <li>Report and photos of a visit: <AValider>as long as the listing is published, then 3 years.</AValider></li>
               <li>AI Concierge conversations: until you delete them (button in the conversation), <AValider>and at most 12 months after the last message.</AValider></li>
               <li>Messages: <AValider>3 years after the last message in the conversation.</AValider></li>
-              <li>Reviews: as long as the place is published, or until removed by moderation.</li>
-              <li>Technical security logs: <AValider>1 year.</AValider></li>
-              <li>Copy of a host&apos;s ID document: deleted as soon as the agent has checked the identity (only the document type and the result of the check are kept). Visit report and photos: <AValider>as long as the listing is published, then 3 years.</AValider></li>
+              <li>Reviews: as long as the listing exists, <AValider>and 3 years at most.</AValider></li>
+              <li>Marketing data (newsletter, waiting list): <AValider>3 years after the last contact.</AValider></li>
+              <li>Connection and security logs: <AValider>12 months.</AValider></li>
             </ul>
           ),
         },
@@ -118,16 +135,20 @@ export default function ContenuEn() {
           titre: "Your rights",
           contenu: (
             <>
-              <p>You have the right to access, rectify, erase, restrict, object to and port your data, and the right to withdraw your consent at any time.</p>
+              <p>
+                Under law no. 2019-014, you have the right to be informed about the use of your data, to access it and obtain a copy, to
+                have it rectified or completed, to have it erased (unless the law requires it to be kept), to object to its use on
+                legitimate grounds and, without reason and free of charge, to direct marketing, and to withdraw your consent at any time,
+                for the future.
+              </p>
               <ul>
                 <li>Change your details: <Link href="/profil/edit">My profile → My details</Link>.</li>
                 <li>Close your account: from the same page, under “Close my account”.</li>
-                <li>Get a copy of your data or have it permanently erased: write to <LienContact sujet="My personal data" />. We reply within one month at most.</li>
+                <li>Get a copy of your data or have it permanently erased: write to <LienContact sujet="My personal data" />, giving your name and your account email. We reply within one month; we may ask you to prove your identity.</li>
               </ul>
               <p>
-                If you believe your rights are not being respected, you can contact the competent data protection authority: the CNIL in
-                France (<a href="https://www.cnil.fr/fr/plaintes" target="_blank" rel="noopener noreferrer">cnil.fr</a>), or the
-                authority in your country (for example ARTCI in Côte d&apos;Ivoire, CDP in Senegal, IPDCP in Togo).
+                You may also contact the Togolese <strong>personal data protection authority (IPDCP)</strong>, or the authority of your
+                country of residence (for example the CNIL in France).
               </p>
             </>
           ),
@@ -141,8 +162,20 @@ export default function ContenuEn() {
               <li>Your sign-in session is kept in a cookie scripts cannot read; the access token is renewed every hour.</li>
               <li>Limits on attempts at verification codes and on sending messages.</li>
               <li>Photos uploaded by hosts are stripped of their metadata (including GPS location).</li>
+              <li>Encrypted connection (HTTPS), access limited to those who need it, regular backups; payments processed by a licensed provider.</li>
+              <li>In the event of a data breach presenting a risk to you, we inform you and notify the IPDCP as provided by law.</li>
             </ul>
           ),
+        },
+        {
+          id: "mineurs",
+          titre: "Minors",
+          contenu: <p>The Platform is reserved for adults. We do not knowingly collect data about minors, except their name and age when a parent declares them as travellers.</p>,
+        },
+        {
+          id: "modification",
+          titre: "Changes to this policy",
+          contenu: <p>We may change this policy. Any significant change is announced on the Platform and by message to account holders at least 30 days before it takes effect.</p>,
         },
       ]}
     />

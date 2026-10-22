@@ -37,7 +37,10 @@ logger = logging.getLogger('apps.contrats')
 VALIDITE_LIEN = timedelta(days=30)
 TAILLE_MAX_SIGNATURE = 400_000  # octets, image dessinée encodée en base64 comprise
 
-DESIGNATIONS = {'hote': "l'Hôte", 'loueur': 'le Loueur', 'chauffeur': 'le Chauffeur', 'ong': "l'Association"}
+DESIGNATIONS = {'hote': "l'Hôte", 'hotel': "l'Établissement", 'loueur': 'le Propriétaire', 'chauffeur': 'le Chauffeur',
+                'ong': "l'Association"}
+# Contrats signés par un compte hôte : particulier (B1) ou hôtel et résidence hôtelière (B2)
+TYPES_HOTE = ('hote', 'hotel')
 
 # Variables utilisables dans les modèles (affichées dans l'éditeur du back-office)
 VARIABLES = {
@@ -45,7 +48,8 @@ VARIABLES = {
     'societe.adresse': 'Adresse du siège', 'societe.pays': 'Pays', 'societe.rccm': 'RCCM', 'societe.nif': 'NIF',
     'societe.site': 'Site web', 'societe.representant': 'Représentant légal et sa qualité',
     'partie.nom': 'Nom de la partie', 'partie.email': 'Email', 'partie.telephone': 'Téléphone',
-    'partie.coordonnees': "« joignable au … et à l'adresse … »", 'partie.details': 'Précisions (véhicule, enregistrement…)', 'partie.designation': "« l'Hôte », « le Loueur »…",
+    'partie.coordonnees': "« joignable au … et à l'adresse … »", 'partie.details': 'Précisions (véhicule, enregistrement…)', 'partie.designation': "« l'Hôte », « le Propriétaire »…",
+    'partie.fondateur': "Programme Fondateurs : « applicable du … au … » ou « non applicable »",
     'date': "Date d'émission", 'tarifs.frais_voyageur': 'Frais de service voyageur (%)',
     'tarifs.commission_hote': 'Commission hôte (%)', 'tarifs.commission_chauffeur': 'Commission chauffeur (%)',
     'tarifs.commission_loueur': 'Commission loueur (%)', 'tarifs.delai_location': 'Délai minimal de réservation (jours)',
@@ -90,8 +94,9 @@ def _nom(u) -> str:
 
 def partie(type_contrat: str, objet) -> dict:
     """Coordonnées de la partie, copiées dans le contrat, et le lien vers elle."""
-    if type_contrat == 'hote':
-        return {'nom': _nom(objet), 'email': objet.email, 'telephone': objet.phone or '', 'details': '', 'lien': {'hote': objet}}
+    if type_contrat in TYPES_HOTE:
+        return {'nom': _nom(objet), 'email': objet.email, 'telephone': objet.phone or '', 'details': '',
+                'fondateur': fondateur(objet), 'lien': {'hote': objet}}
     if type_contrat == 'chauffeur':
         return {'nom': f"{objet.prenom} {objet.nom}", 'email': objet.email, 'telephone': objet.telephone,
                 'details': f"chauffeur, véhicule {objet.vehicule} immatriculé {objet.immatriculation},", 'lien': {'chauffeur': objet}}
@@ -102,6 +107,11 @@ def partie(type_contrat: str, objet) -> dict:
                   f"représentée par {objet.contact_nom}" if objet.contact_nom else '']
     return {'nom': objet.nom, 'email': objet.contact_email, 'telephone': objet.contact_telephone,
             'details': ''.join(f"{x}, " for x in precisions if x).strip(), 'lien': {'organisation': objet}}
+
+
+def fondateur(objet) -> str:
+    """Programme Fondateurs de la partie, tel qu'il figure au contrat."""
+    return 'non applicable'
 
 
 def _coordonnees(telephone: str, email: str) -> str:
@@ -120,6 +130,7 @@ def contexte(type_contrat: str, infos: dict) -> dict:
         'partie.nom': infos['nom'], 'partie.email': infos['email'], 'partie.telephone': infos['telephone'],
         'partie.coordonnees': _coordonnees(infos['telephone'], infos['email']),
         'partie.details': infos['details'], 'partie.designation': DESIGNATIONS[type_contrat],
+        'partie.fondateur': infos.get('fondateur') or 'non applicable',
         'date': date(timezone.now()), **_tarifs(),
     }
 
@@ -294,10 +305,15 @@ def par_jeton(jeton: str) -> ContratModel | None:
 
 # --- Hôtes ------------------------------------------------------------------------------------------
 
+def type_contrat_hote(hote) -> str:
+    """Contrat que l'hôte doit signer : hôte particulier (B1) ou hôtel et résidence hôtelière (B2)."""
+    return 'hote'
+
+
 def contrat_hote(hote) -> ContratModel:
     """Contrat de l'hôte, émis à la première demande (il le signe depuis son espace, sans email)."""
     contrat = ContratModel.objects.filter(hote=hote).exclude(statut='annule').first()
-    return contrat or emettre('hote', hote, envoyer=False)
+    return contrat or emettre(type_contrat_hote(hote), hote, envoyer=False)
 
 
 def hote_a_signe(hote) -> bool:
@@ -360,7 +376,7 @@ def signer(contrat: ContratModel, *, nom: str, signature: str, accepte: bool, ip
         contrat.pdf.save(f"{contrat.reference}.pdf", ContentFile(pdf), save=False)
         contrat.save()
 
-    if contrat.type == 'hote' and contrat.hote_id:
+    if contrat.type in TYPES_HOTE and contrat.hote_id:
         from apps.verifications.services import contrat_hote_signe
 
         contrat_hote_signe(contrat.hote)
