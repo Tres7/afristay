@@ -96,7 +96,7 @@ export default function Societe() {
         <legend className="float-left w-full text-sm font-semibold text-dark">Signataire des contrats</legend>
         <div className="clear-both grid sm:grid-cols-2 gap-4">
           {texte("representant_nom", "Représentant légal", { placeholder: "Prénom et nom" })}
-          {texte("representant_qualite", "Qualité", { placeholder: "Gérant, directeur général…" })}
+          {texte("representant_qualite", "Qualité", { placeholder: "Cogérant, gérant…" })}
         </div>
         <Champ label="Signature scannée" erreur={erreurs.signature_representant}
           aide="Imprimée sur les contrats, côté Kwa-Ba. Signature à l'encre foncée sur papier blanc : le fond devient transparent.">

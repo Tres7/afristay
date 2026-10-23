@@ -279,6 +279,22 @@ CONCIERGE = {
 # Contact d'assistance donné aux voyageurs (transferts aéroport…)
 ASSISTANCE_CONTACT = os.getenv('ASSISTANCE_CONTACT', 'info@kwa-ba.com')
 
+# Interrupteurs des modules (config/site.py) : masqués au lancement. Pour en rallumer un, passer sa variable
+# MODULE_… à True dans l'environnement de l'API et redémarrer l'API : aucun déploiement de code n'est nécessaire.
+MODULES = {nom: _env_bool(f'MODULE_{nom.upper()}', 'False') for nom in (
+    'experiences', 'together', 'give', 'concierge', 'location_sans_chauffeur', 'paiements_non_ouverts',
+)}
+
+# Mentions légales attendues après l'immatriculation (vides : « à compléter » sur le site). Le RCCM et le NIF
+# saisis dans le back-office (Documents → Informations société) servent tant que ces variables sont vides.
+MENTIONS_LEGALES = {
+    'rccm': os.getenv('SOCIETE_RCCM', ''),
+    'nif': os.getenv('SOCIETE_NIF', ''),
+    'commerce_electronique': os.getenv('SOCIETE_COMMERCE_ELECTRONIQUE', ''),  # décret n° 2018-062/PR
+    'ipdcp': os.getenv('SOCIETE_IPDCP', ''),  # déclaration auprès de l'IPDCP
+    'whatsapp': os.getenv('SOCIETE_WHATSAPP', ''),  # numéro WhatsApp Business, avec l'indicatif (+228 …)
+}
+
 # Adresse de réponse des emails envoyés (les réponses des utilisateurs arrivent dans cette boîte)
 EMAIL_REPLY_TO = os.getenv('EMAIL_REPLY_TO', '')
 

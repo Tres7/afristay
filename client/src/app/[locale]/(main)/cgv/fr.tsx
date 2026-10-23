@@ -1,5 +1,6 @@
 import { Link } from "@/i18n/navigation";
 import LienContact from "@/components/legal/LienContact";
+import MentionSociete from "@/components/legal/MentionSociete";
 import LegalPage, { AC } from "@/components/legal/LegalPage";
 
 /** Paragraphe numéroté d'un article (« 6.1. … »). */
@@ -18,12 +19,12 @@ export default function ContenuFr() {
           <p>
             Le site kwa-ba.com et ses applications (la « Plateforme ») sont exploités par <strong>KWA-BA SARL</strong>, société à
             responsabilité limitée au capital de 100 000 F CFA, dont le siège est situé quartier Totsi Gblenkomé, rue 243, Lomé (Togo),
-            immatriculée au RCCM de Lomé sous le numéro <AC>RCCM</AC>, NIF <AC>NIF</AC>, enregistrée comme prestataire de commerce
-            électronique sous le numéro <AC>numéro d&apos;enregistrement</AC>, représentée par son gérant et directeur général, M. MENDE Fadel.
+            immatriculée au RCCM de Lomé sous le numéro <MentionSociete cle="rccm" libelle="RCCM" />, NIF <MentionSociete cle="nif" libelle="NIF" />, enregistrée comme prestataire de commerce
+            électronique sous le numéro <MentionSociete cle="commerce_electronique" libelle="numéro d&apos;enregistrement" />, représentée par ses cogérants, M. MENDE Fadel et M. KPOGLO Dzidoula Godwin Trésor.
           </p>
           <ul className="list-disc pl-5 space-y-1">
-            <li>Contact : <LienContact sujet="Conditions générales de vente" /> ; WhatsApp <AC>numéro WhatsApp</AC> ; adresse postale <AC>adresse postale</AC>.</li>
-            <li>Directeur de la publication : M. MENDE Fadel, gérant et directeur général.</li>
+            <li>Contact : <LienContact sujet="Conditions générales de vente" /> ; WhatsApp <MentionSociete cle="whatsapp" libelle="numéro WhatsApp" /> ; adresse postale : quartier Totsi Gblenkomé, rue 243, Lomé, Togo.</li>
+            <li>Cogérants : M. MENDE Fadel et M. KPOGLO Dzidoula Godwin Trésor — Directeur de la publication : M. MENDE Fadel.</li>
           </ul>
           <p>
             Les présentes conditions générales de vente (les « CGV ») complètent les <Link href="/cgu">conditions générales d’utilisation</Link> (les
@@ -325,7 +326,7 @@ export default function ContenuFr() {
           titre: "Données personnelles",
           contenu: (
             <>
-              <N n="20.1">KWA-BA traite les données du client conformément à la loi n° 2019-014 du 29 octobre 2019 relative à la protection des données à caractère personnel et à sa <Link href="/confidentialite">politique de confidentialité</Link>. Déclaration auprès de l’IPDCP n° <AC>numéro de déclaration</AC>.</N>
+              <N n="20.1">KWA-BA traite les données du client conformément à la loi n° 2019-014 du 29 octobre 2019 relative à la protection des données à caractère personnel et à sa <Link href="/confidentialite">politique de confidentialité</Link>. Déclaration auprès de l’IPDCP n° <MentionSociete cle="ipdcp" libelle="numéro de déclaration" />.</N>
               <N n="20.2">Seules les données nécessaires à la prestation sont transmises au prestataire.</N>
               <N n="20.3">Le client dispose d’un droit d’accès, de rectification, d’opposition et de suppression, à exercer à l’adresse <LienContact sujet="Mes données personnelles" />. Il peut aussi saisir l’IPDCP.</N>
               <N n="20.4">Il peut s’opposer à tout moment, sans frais, à recevoir des messages commerciaux (loi n° 2017-07, art. 37), par le lien prévu dans chaque message ou depuis son compte.</N>

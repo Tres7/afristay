@@ -1,6 +1,7 @@
 import { Link } from "@/i18n/navigation";
 import LienContact from "@/components/legal/LienContact";
 import LegalPage, { AC } from "@/components/legal/LegalPage";
+import MentionSociete from "@/components/legal/MentionSociete";
 
 /** Version française. */
 export default function ContenuFr() {
@@ -24,9 +25,9 @@ export default function ContenuFr() {
           titre: "Responsable du traitement",
           contenu: (
             <ul>
-              <li>Responsable : <strong>KWA-BA SARL</strong>, société à responsabilité limitée au capital de 100 000 F CFA, quartier Totsi Gblenkomé, rue 243, Lomé (Togo), RCCM <AC>RCCM</AC>.</li>
-              <li>Déclaration auprès de l&apos;Instance de protection des données à caractère personnel (IPDCP) : n° <AC>numéro de déclaration</AC>.</li>
-              <li>Contact pour vos données : <LienContact sujet="Protection des données" />, ou par WhatsApp au <AC>numéro WhatsApp</AC>.</li>
+              <li>Responsable : <strong>KWA-BA SARL</strong>, société à responsabilité limitée au capital de 100 000 F CFA, quartier Totsi Gblenkomé, rue 243, Lomé (Togo), RCCM <MentionSociete cle="rccm" libelle="RCCM" />.</li>
+              <li>Déclaration auprès de l&apos;Instance de protection des données à caractère personnel (IPDCP) : n° <MentionSociete cle="ipdcp" libelle="numéro de déclaration" />.</li>
+              <li>Contact pour vos données : <LienContact sujet="Protection des données" />, ou par WhatsApp au <MentionSociete cle="whatsapp" libelle="numéro WhatsApp" />.</li>
               <li>Référent chargé des données au sein de KWA-BA : <AC>nom ou fonction</AC>.</li>
             </ul>
           ),
@@ -88,7 +89,7 @@ export default function ContenuFr() {
               <li>Le <strong>loueur partenaire</strong> d&apos;une location de voiture reçoit votre nom, votre numéro de téléphone, le véhicule, les lieux et dates, le nombre de personnes, vos précisions et, si vous conduisez, le nom du conducteur et les références de son permis.</li>
               <li>Les <strong>membres d&apos;un voyage de groupe</strong> voient votre prénom et l&apos;initiale de votre nom, vos votes, vos propositions et les réservations que vous partagez avec eux (logement, dates, montant).</li>
               <li>Les <strong>administrateurs</strong> de Kwa-Ba, pour la modération et l&apos;assistance (accès restreint et tracé).</li>
-              <li>Hébergement du site et des données : <AC>nom, adresse et pays de l&apos;hébergeur</AC>.</li>
+              <li>Hébergement du site et des données : IONOS SE, Elgendorfer Straße 57, 56410 Montabaur (Allemagne).</li>
               <li>Envoi des emails (codes, notifications) : <strong>Brevo</strong> (Sendinblue SAS, Paris, France), données hébergées dans l&apos;Union européenne. Reçoit votre adresse email et le contenu des messages envoyés.</li>
               <li><strong>FedaPay</strong> (Bénin) : encaissement Mobile Money et carte, versements aux hôtes et remboursements. Reçoit votre nom, votre email, le montant et, pour les hôtes, le numéro de versement.</li>
               <li><strong>Google</strong> (États-Unis), API Gemini : uniquement si vous utilisez le Concierge IA. Reçoit le contenu de vos messages pour générer les réponses et conserve l&apos;historique de la conversation jusqu&apos;à 55 jours pour pouvoir la poursuivre. Service utilisé en offre payante : selon ses conditions, Google n&apos;utilise alors pas ces données pour améliorer ses produits. N&apos;y indiquez pas de données sensibles.</li>

@@ -1,5 +1,6 @@
 import { Link } from "@/i18n/navigation";
 import LienContact from "@/components/legal/LienContact";
+import MentionSociete from "@/components/legal/MentionSociete";
 import LegalPage, { AC, VersionFrancaiseFaitFoi } from "@/components/legal/LegalPage";
 
 /** Numbered paragraph of an article (“6.1. …”). */
@@ -19,12 +20,12 @@ export default function ContenuEn() {
           <p>
             The kwa-ba.com website and its applications (the “Platform”) are operated by <strong>KWA-BA SARL</strong>, a limited liability
             company (SARL) with a share capital of 100,000 F CFA, whose registered office is in the Totsi Gblenkomé district, street 243,
-            Lomé (Togo), registered with the Lomé RCCM under number <AC>RCCM</AC>, tax number (NIF) <AC>NIF</AC>, registered as an
-            e-commerce provider under number <AC>registration number</AC>, represented by its manager and Chief Executive Officer (gérant et directeur général), Mr MENDE Fadel.
+            Lomé (Togo), registered with the Lomé RCCM under number <MentionSociete cle="rccm" libelle="RCCM" />, tax number (NIF) <MentionSociete cle="nif" libelle="NIF" />, registered as an
+            e-commerce provider under number <MentionSociete cle="commerce_electronique" libelle="registration number" />, represented by its co-managers (cogérants), Mr MENDE Fadel and Mr KPOGLO Dzidoula Godwin Trésor.
           </p>
           <ul className="list-disc pl-5 space-y-1">
-            <li>Contact: <LienContact sujet="Terms of sale" />; WhatsApp <AC>WhatsApp number</AC>; postal address <AC>postal address</AC>.</li>
-            <li>Publication director: Mr MENDE Fadel, manager and Chief Executive Officer.</li>
+            <li>Contact: <LienContact sujet="Terms of sale" />; WhatsApp <MentionSociete cle="whatsapp" libelle="WhatsApp number" />; postal address: Totsi Gblenkomé district, street 243, Lomé, Togo.</li>
+            <li>Co-managers (cogérants): Mr MENDE Fadel and Mr KPOGLO Dzidoula Godwin Trésor — Publication director: Mr MENDE Fadel.</li>
           </ul>
           <p>
             These terms of sale (the “Terms of Sale”) supplement the <Link href="/cgu">terms of use</Link> and the{" "}
@@ -326,7 +327,7 @@ export default function ContenuEn() {
           titre: "Personal data",
           contenu: (
             <>
-              <N n="20.1">KWA-BA processes the customer’s data in accordance with law no. 2019-014 of 29 October 2019 on the protection of personal data and its <Link href="/confidentialite">privacy policy</Link>. Declaration to the IPDCP no. <AC>declaration number</AC>.</N>
+              <N n="20.1">KWA-BA processes the customer’s data in accordance with law no. 2019-014 of 29 October 2019 on the protection of personal data and its <Link href="/confidentialite">privacy policy</Link>. Declaration to the IPDCP no. <MentionSociete cle="ipdcp" libelle="declaration number" />.</N>
               <N n="20.2">Only the data necessary for the service are passed on to the provider.</N>
               <N n="20.3">The customer has a right of access, rectification, objection and erasure, to be exercised at <LienContact sujet="My personal data" />. They may also refer the matter to the IPDCP.</N>
               <N n="20.4">They may object at any time, free of charge, to receiving commercial messages (law no. 2017-07, art. 37), through the link in each message or from their account.</N>

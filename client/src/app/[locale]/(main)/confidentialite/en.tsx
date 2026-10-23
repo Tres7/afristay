@@ -1,6 +1,7 @@
 import { Link } from "@/i18n/navigation";
 import LienContact from "@/components/legal/LienContact";
 import LegalPage, { AC, VersionFrancaiseFaitFoi } from "@/components/legal/LegalPage";
+import MentionSociete from "@/components/legal/MentionSociete";
 
 /** English version (the French version prevails). */
 export default function ContenuEn() {
@@ -25,9 +26,9 @@ export default function ContenuEn() {
           titre: "Data controller",
           contenu: (
             <ul>
-              <li>Controller: <strong>KWA-BA SARL</strong>, a limited liability company with a share capital of 100,000 F CFA, Totsi Gblenkomé district, street 243, Lomé (Togo), RCCM <AC>RCCM</AC>.</li>
-              <li>Declaration to the personal data protection authority (IPDCP): no. <AC>declaration number</AC>.</li>
-              <li>Contact about your data: <LienContact sujet="Data protection" />, or by WhatsApp on <AC>WhatsApp number</AC>.</li>
+              <li>Controller: <strong>KWA-BA SARL</strong>, a limited liability company with a share capital of 100,000 F CFA, Totsi Gblenkomé district, street 243, Lomé (Togo), RCCM <MentionSociete cle="rccm" libelle="RCCM" />.</li>
+              <li>Declaration to the personal data protection authority (IPDCP): no. <MentionSociete cle="ipdcp" libelle="declaration number" />.</li>
+              <li>Contact about your data: <LienContact sujet="Data protection" />, or by WhatsApp on <MentionSociete cle="whatsapp" libelle="WhatsApp number" />.</li>
               <li>Data officer within KWA-BA: <AC>name or position</AC>.</li>
             </ul>
           ),
@@ -89,7 +90,7 @@ export default function ContenuEn() {
               <li>The <strong>partner rental company</strong> for a car hire receives your name, phone number, the vehicle, places and dates, number of people, your details and, if you drive, the driver&apos;s name and licence details.</li>
               <li><strong>Members of a group trip</strong> see your first name and last initial, your votes, your proposals and the bookings you share with them (place, dates, amount).</li>
               <li>Kwa-Ba <strong>administrators</strong>, for moderation and support (restricted and logged access).</li>
-              <li>Website and data hosting: <AC>hosting provider name, address and country</AC>.</li>
+              <li>Website and data hosting: IONOS SE, Elgendorfer Straße 57, 56410 Montabaur (Germany).</li>
               <li>Email delivery (codes, notifications): <strong>Brevo</strong> (Sendinblue SAS, Paris, France), with data hosted in the European Union. Receives your email address and the content of the messages sent.</li>
               <li><strong>FedaPay</strong> (Benin): Mobile Money and card payments, payouts to hosts and refunds. Receives your name, email, the amount and, for hosts, the payout number.</li>
               <li><strong>Google</strong> (United States), Gemini API: only if you use the AI Concierge. Receives the content of your messages to generate replies and keeps the conversation history for up to 55 days so it can be continued. Used on a paid plan: under its terms, Google then does not use this data to improve its products. Do not include sensitive data.</li>
