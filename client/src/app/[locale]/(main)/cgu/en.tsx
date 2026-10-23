@@ -140,7 +140,7 @@ export default function ContenuEn() {
           titre: "User content",
           contenu: (
             <>
-              <N n="9.1">The user remains the owner of the rights to their content. By publishing it, they grant KWA-BA, for the duration of publication and worldwide, a free, non-exclusive licence to reproduce it, adapt it to the Platform’s format and distribute it on the Platform and in Kwa-Ba communications relating to the listing concerned.</N>
+              <N n="9.1">The user remains the owner of the rights to their content. By publishing it, they grant KWA-BA, for the duration of publication and worldwide, a free, non-exclusive licence to reproduce it, adapt it to the Platform’s format and distribute it on the Platform and in KWA-BA communications relating to the listing concerned.</N>
               <N n="9.2">The user guarantees that they hold the rights to their content, in particular the consent of people recognisable in their photos, and that it infringes no third-party rights.</N>
               <N n="9.3">KWA-BA may remove any manifestly illegal content or content contrary to the Terms of Use as soon as it becomes aware of it.</N>
             </>
@@ -229,7 +229,7 @@ export default function ContenuEn() {
           contenu: (
             <ul>
               <li>The Concierge is an artificial intelligence assistant (Gemini, by Google). You are talking to a machine, not a person.</li>
-              <li>Its answers may contain errors. Prices and availability of accommodation and mobility services come from Kwa-Ba and are binding at the time of booking; other information (restaurants, opening hours, procedures) should be checked.</li>
+              <li>Its answers may contain errors. Prices and availability of accommodation and mobility services come from KWA-BA and are binding at the time of booking; other information (restaurants, opening hours, procedures) should be checked.</li>
               <li>The Concierge does not book or pay anything for you. Do not share bank details, Mobile Money codes or sensitive data with it.</li>
               <li>Its use is limited in number of messages per hour and per day.</li>
             </ul>

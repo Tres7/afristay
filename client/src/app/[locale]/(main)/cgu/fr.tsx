@@ -18,7 +18,7 @@ export default function ContenuFr() {
           Les présentes conditions fixent les règles d’utilisation de la plateforme Kwa-Ba par tous ses utilisateurs : visiteurs, clients et
           partenaires. Elles comprennent la charte des avis (article 8). Elles sont complétées par les{" "}
           <Link href="/cgv">conditions générales de vente</Link>, la <Link href="/confidentialite">politique de confidentialité</Link>, la{" "}
-          <Link href="/cookies">politique cookies</Link> et les <Link href="/mentions-legales">mentions légales</Link>.
+          <Link href="/cookies">politique de cookies</Link> et les <Link href="/mentions-legales">mentions légales</Link>.
         </p>
       }
       sections={[
@@ -137,7 +137,7 @@ export default function ContenuFr() {
           titre: "Contenus des utilisateurs",
           contenu: (
             <>
-              <N n="9.1">L’utilisateur reste titulaire des droits sur ses contenus. En les publiant, il accorde à KWA-BA, pour la durée de leur publication et pour le monde entier, une licence gratuite et non exclusive de les reproduire, les adapter au format de la Plateforme et les diffuser sur la Plateforme et dans la communication de Kwa-Ba relative à l’annonce concernée.</N>
+              <N n="9.1">L’utilisateur reste titulaire des droits sur ses contenus. En les publiant, il accorde à KWA-BA, pour la durée de leur publication et pour le monde entier, une licence gratuite et non exclusive de les reproduire, les adapter au format de la Plateforme et les diffuser sur la Plateforme et dans la communication de KWA-BA relative à l’annonce concernée.</N>
               <N n="9.2">L’utilisateur garantit qu’il détient les droits sur ses contenus, notamment l’accord des personnes reconnaissables sur ses photos, et qu’ils ne portent atteinte à aucun droit de tiers.</N>
               <N n="9.3">KWA-BA peut retirer tout contenu manifestement illicite ou contraire aux CGU, dès qu’elle en a connaissance.</N>
             </>
@@ -189,7 +189,7 @@ export default function ContenuFr() {
           contenu: (
             <>
               <N n="13.1">KWA-BA traite les données des utilisateurs conformément à la loi n° 2019-014 du 29 octobre 2019 relative à la protection des données à caractère personnel et à sa <Link href="/confidentialite">politique de confidentialité</Link>, accessible à tout moment sur la Plateforme.</N>
-              <N n="13.2">La Plateforme utilise des cookies et traceurs nécessaires à son fonctionnement et, avec l’accord de l’utilisateur, les cookies des services tiers décrits dans la <Link href="/cookies">politique cookies</Link>. L’utilisateur peut à tout moment modifier ses choix depuis le lien « Gérer les cookies » en bas de page.</N>
+              <N n="13.2">La Plateforme utilise des cookies et traceurs nécessaires à son fonctionnement et, avec l’accord de l’utilisateur, les cookies des services tiers décrits dans la <Link href="/cookies">politique de cookies</Link>. L’utilisateur peut à tout moment modifier ses choix depuis le lien « Gérer les cookies » en bas de page.</N>
               <N n="13.3">L’utilisateur peut s’opposer à tout moment, sans frais, à recevoir des messages commerciaux, par le lien prévu dans chaque message ou depuis son compte (loi n° 2017-07, art. 37).</N>
             </>
           ),
@@ -226,7 +226,7 @@ export default function ContenuFr() {
           contenu: (
             <ul>
               <li>Le Concierge est un assistant fondé sur l’intelligence artificielle (Gemini, de Google). Vous dialoguez avec une machine, pas avec une personne.</li>
-              <li>Ses réponses peuvent contenir des erreurs. Les prix et disponibilités des logements et des services de mobilité proviennent de Kwa-Ba et font foi au moment de la réservation ; les autres informations (restaurants, horaires, démarches) sont à vérifier.</li>
+              <li>Ses réponses peuvent contenir des erreurs. Les prix et disponibilités des logements et des services de mobilité proviennent de KWA-BA et font foi au moment de la réservation ; les autres informations (restaurants, horaires, démarches) sont à vérifier.</li>
               <li>Le Concierge ne réserve et ne paie rien à votre place. N’y communiquez ni coordonnées bancaires, ni code Mobile Money, ni données sensibles.</li>
               <li>Son usage est limité en nombre de messages par heure et par jour.</li>
             </ul>

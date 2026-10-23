@@ -8,7 +8,7 @@ export default function ContenuEn() {
   return (
     <LegalPage
       titre="Privacy policy"
-      miseAJour="22 October 2026"
+      miseAJour="23 October 2026"
       intro={
         <>
           <p>
@@ -93,9 +93,16 @@ export default function ContenuEn() {
               <li>Website and data hosting: IONOS SE, Elgendorfer Straße 57, 56410 Montabaur (Germany).</li>
               <li>Email delivery (codes, notifications): <strong>Brevo</strong> (Sendinblue SAS, Paris, France), with data hosted in the European Union. Receives your email address and the content of the messages sent.</li>
               <li><strong>FedaPay</strong> (Benin): Mobile Money and card payments, payouts to hosts and refunds. Receives your name, email, the amount and, for hosts, the payout number.</li>
-              <li><strong>Google</strong> (United States), Gemini API: only if you use the AI Concierge. Receives the content of your messages to generate replies and keeps the conversation history for up to 55 days so it can be continued. Used on a paid plan: under its terms, Google then does not use this data to improve its products. Do not include sensitive data.</li>
+              <li>
+                <strong>Google</strong> (United States), for three uses, each only if you use it:
+                <ul>
+                  <li>AI Concierge (Gemini API): receives the content of your messages to generate replies and keeps the conversation history for up to 55 days so it can be continued. Used on a paid plan: under its terms, Google then does not use this data to improve its products. Do not include sensitive data.</li>
+                  <li>Google sign-in: when you choose “Continue with Google”.</li>
+                  <li>Map of listings (Google Maps): when you agree to show it (see the <Link href="/cookies">cookie policy</Link>).</li>
+                </ul>
+                Google may process data outside the European Union, under the EU–US Data Privacy Framework.
+              </li>
               <li><strong>PayPal</strong> (Europe): only if you choose this payment method. Receives the amount and the booking reference.</li>
-              <li>Google: only if you use Google sign-in or agree to show the map (see the <Link href="/cookies">cookie policy</Link>). Google may process data outside the European Union, under the EU–US Data Privacy Framework.</li>
               <li>Unsplash: some illustration photos are loaded from its servers, which then receive your IP address.</li>
             </ul>
           ),

@@ -7,7 +7,7 @@ export default function ContenuEn() {
   return (
     <LegalPage
       titre="Cookie policy"
-      miseAJour="7 October 2026"
+      miseAJour="23 October 2026"
       intro={
         <>
           <p>
@@ -37,10 +37,27 @@ export default function ContenuEn() {
                   <tr><td><code>authjs.session-token</code></td><td>Keeps you signed in to your account (encrypted session).</td><td>5 minutes after you leave the site, or until you log out</td></tr>
                   <tr><td><code>authjs.csrf-token</code></td><td>Protects sign-in forms against fraudulent requests.</td><td>Until the browser is closed</td></tr>
                   <tr><td><code>authjs.callback-url</code></td><td>Takes you back to the page you were on after signing in.</td><td>Until the browser is closed</td></tr>
-                  <tr><td><code>NEXT_LOCALE</code></td><td>Remembers the language you chose (French or English).</td><td>1 year</td></tr>
                 </tbody>
               </table>
               <p className="text-sm">In production, these names are prefixed with <code>__Secure-</code> or <code>__Host-</code> (cookies sent over HTTPS only).</p>
+            </>
+          ),
+        },
+        {
+          id: "confort",
+          titre: "Preference cookie",
+          contenu: (
+            <>
+              <p>
+                It remembers a choice you made yourself and is used for nothing else, so it does not require consent. The site
+                reads it to show the right language (so it is not “HttpOnly”).
+              </p>
+              <table>
+                <thead><tr><th>Name</th><th>Purpose</th><th>Duration</th></tr></thead>
+                <tbody>
+                  <tr><td><code>NEXT_LOCALE</code></td><td>Remembers the language you chose (French or English).</td><td>1 year</td></tr>
+                </tbody>
+              </table>
             </>
           ),
         },
@@ -52,11 +69,25 @@ export default function ContenuEn() {
               <thead><tr><th>Name</th><th>Purpose</th><th>Duration</th></tr></thead>
               <tbody>
                 <tr><td><code>kwaba_consentement</code></td><td>Remembers your cookie choices (date and preferences).</td><td>6 months, after which you are asked again</td></tr>
-                <tr><td><code>verify_email</code></td><td>Keeps the address entered at sign-up during code verification.</td><td>Deleted after verification or when the tab is closed</td></tr>
-                <tr><td><code>splash_shown</code></td><td>Avoids showing the animated welcome screen on every page.</td><td>Until the tab is closed</td></tr>
                 <tr><td><code>kwaba_devise</code></td><td>Remembers the currency chosen to display prices (CFA franc or euro).</td><td>Until deleted</td></tr>
               </tbody>
             </table>
+          ),
+        },
+        {
+          id: "session",
+          titre: "Browser session storage",
+          contenu: (
+            <>
+              <p>These items delete themselves when the tab is closed.</p>
+              <table>
+                <thead><tr><th>Name</th><th>Purpose</th><th>Duration</th></tr></thead>
+                <tbody>
+                  <tr><td><code>verify_email</code></td><td>Keeps the address entered at sign-up during code verification.</td><td>Deleted after verification or when the tab is closed</td></tr>
+                  <tr><td><code>splash_shown</code></td><td>Avoids showing the animated welcome screen on every page.</td><td>Until the tab is closed</td></tr>
+                </tbody>
+              </table>
+            </>
           ),
         },
         {

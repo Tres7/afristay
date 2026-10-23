@@ -8,7 +8,7 @@ export default function ContenuFr() {
   return (
     <LegalPage
       titre="Politique de confidentialité"
-      miseAJour="22 octobre 2026"
+      miseAJour="23 octobre 2026"
       intro={
         <>
           <p>
@@ -92,9 +92,16 @@ export default function ContenuFr() {
               <li>Hébergement du site et des données : IONOS SE, Elgendorfer Straße 57, 56410 Montabaur (Allemagne).</li>
               <li>Envoi des emails (codes, notifications) : <strong>Brevo</strong> (Sendinblue SAS, Paris, France), données hébergées dans l&apos;Union européenne. Reçoit votre adresse email et le contenu des messages envoyés.</li>
               <li><strong>FedaPay</strong> (Bénin) : encaissement Mobile Money et carte, versements aux hôtes et remboursements. Reçoit votre nom, votre email, le montant et, pour les hôtes, le numéro de versement.</li>
-              <li><strong>Google</strong> (États-Unis), API Gemini : uniquement si vous utilisez le Concierge IA. Reçoit le contenu de vos messages pour générer les réponses et conserve l&apos;historique de la conversation jusqu&apos;à 55 jours pour pouvoir la poursuivre. Service utilisé en offre payante : selon ses conditions, Google n&apos;utilise alors pas ces données pour améliorer ses produits. N&apos;y indiquez pas de données sensibles.</li>
+              <li>
+                <strong>Google</strong> (États-Unis), pour trois usages, chacun seulement si vous y recourez :
+                <ul>
+                  <li>Concierge IA (API Gemini) : reçoit le contenu de vos messages pour générer les réponses et conserve l&apos;historique de la conversation jusqu&apos;à 55 jours pour pouvoir la poursuivre. Service utilisé en offre payante : selon ses conditions, Google n&apos;utilise alors pas ces données pour améliorer ses produits. N&apos;y indiquez pas de données sensibles.</li>
+                  <li>Connexion avec Google : lorsque vous choisissez « Continuer avec Google ».</li>
+                  <li>Carte des logements (Google Maps) : lorsque vous acceptez son affichage (voir la <Link href="/cookies">politique de cookies</Link>).</li>
+                </ul>
+                Google peut traiter des données hors de l&apos;Union européenne, dans le cadre du Data Privacy Framework UE–États-Unis.
+              </li>
               <li><strong>PayPal</strong> (Europe) : uniquement si vous choisissez ce moyen de paiement. Reçoit le montant et la référence de la réservation.</li>
-              <li>Google : uniquement si vous utilisez la connexion Google ou acceptez l&apos;affichage de la carte (voir la <Link href="/cookies">politique cookies</Link>). Google peut traiter des données hors de l&apos;Union européenne, dans le cadre du Data Privacy Framework UE–États-Unis.</li>
               <li>Unsplash : certaines photos d&apos;illustration sont chargées depuis ses serveurs, qui reçoivent alors votre adresse IP.</li>
             </ul>
           ),
