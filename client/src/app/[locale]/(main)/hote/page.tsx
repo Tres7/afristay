@@ -5,18 +5,11 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { Car, CheckCircle, Home, MessageCircle, Wallet } from "lucide-react";
 import { CONTACT_EMAIL } from "@/lib/contact";
-import { formatFcfa } from "@/lib/utils";
 import { toast } from "sonner";
 import api, { apiErrorMessage } from "@/lib/api";
 import { useTranslations } from "next-intl";
+import EstimateurRevenus from "@/components/hote/EstimateurRevenus";
 
-// Comparaison d'un séjour de 2,5 nuits à 25 000 FCFA (62 500 FCFA), grille tarifaire du 18 octobre 2026
-const COMPARAISON = [
-  { cle: "airbnb", voyageur: 62500, hote: 52813 },
-  { cle: "booking", voyageur: 62500, hote: 53125 },
-  { cle: "kwaba", voyageur: 66250, hote: 57500, kwaba: true },
-  { cle: "fondateur", voyageur: 66250, hote: 59375, kwaba: true },
-];
 const TAUX = ["particulier", "hotel", "fondateur", "voyageur"] as const;
 
 const STEPS = [
@@ -103,27 +96,10 @@ export default function DevenirHotePage() {
             ))}
           </div>
 
-          <div className="mt-6 bg-white rounded-3xl p-5 md:p-6 border border-gray-100 overflow-x-auto">
-            <p className="font-semibold text-dark mb-3">{t("tarifs.exemple")}</p>
-            <table className="w-full text-sm min-w-[28rem]">
-              <thead>
-                <tr className="text-left text-gray-500 border-b border-gray-100">
-                  <th className="py-2 pr-3 font-medium">{t("tarifs.colonnes.plateforme")}</th>
-                  <th className="py-2 pr-3 font-medium text-right">{t("tarifs.colonnes.voyageur")}</th>
-                  <th className="py-2 font-medium text-right">{t("tarifs.colonnes.hote")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {COMPARAISON.map((l) => (
-                  <tr key={l.cle} className={`border-b border-gray-50 ${l.kwaba ? "font-semibold text-dark" : "text-gray-600"}`}>
-                    <td className="py-2 pr-3">{t(`tarifs.lignes.${l.cle}`)}</td>
-                    <td className="py-2 pr-3 text-right whitespace-nowrap">{formatFcfa(l.voyageur)}</td>
-                    <td className={`py-2 text-right whitespace-nowrap ${l.kwaba ? "text-secondary" : ""}`}>{formatFcfa(l.hote)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <p className="text-xs text-gray-400 mt-3">{t("tarifs.note")}</p>
+          <div className="mt-6">
+            <h3 className="font-heading font-bold text-dark text-lg mb-1">{t("tarifs.estimateurTitre")}</h3>
+            <p className="text-sm text-gray-500 mb-4">{t("tarifs.estimateurTexte")}</p>
+            <EstimateurRevenus />
           </div>
 
           <div className="mt-6 bg-primary/5 rounded-3xl p-5 md:p-6 flex flex-col sm:flex-row gap-4 sm:items-center">

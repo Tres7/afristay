@@ -89,3 +89,41 @@ def test_back_office_regle_les_conditions_de_l_hote(client_for, make_user):
 
     voyageur = make_user()
     assert admin.patch(f'{ADMIN_USERS}{voyageur.id}/', {'conditions': {'categorie': 'hotel'}}, format='json').status_code == 400
+
+
+def test_prix_modifie_entre_le_recapitulatif_et_la_reservation(client_for, make_user, make_hebergement):
+    voyageur = client_for(make_user())
+    logement = make_hebergement(price_per_night=100000)
+    debut = timezone.localdate() + timedelta(days=20)
+    demande = {'hebergement': str(logement.id), 'check_in': debut.isoformat(),
+               'check_out': (debut + timedelta(days=1)).isoformat(), 'guests_count': 1, 'total_attendu': 106000}
+    # L'hôte augmente son prix après l'affichage du récapitulatif : refusé, rien n'est créé
+    logement.price_per_night = 120000
+    logement.save(update_fields=['price_per_night'])
+    r = voyageur.post('/api/v1/reservations/', demande, format='json')
+    assert r.status_code == 400 and '127 200' in str(r.data['total_attendu'])
+    assert not ReservationModel.objects.exists()
+    # Avec le total à jour, la réservation passe et les montants enregistrés sont ceux affichés
+    r = voyageur.post('/api/v1/reservations/', {**demande, 'total_attendu': 127200}, format='json')
+    assert r.status_code == 201, r.data
+    resa = ReservationModel.objects.get(pk=r.data['id'])
+    assert (resa.prix_nuits, resa.frais_service, resa.commission_hote, resa.total_price) == (120000, 7200, 9600, 127200)
+    assert r.data['montants'] == {'prix_nuits': 120000, 'frais_service': 7200, 'taux_frais': 6, 'total': 127200,
+                                  'commission_hote': 9600, 'montant_hote': 110400}
+
+
+def test_type_de_partenaire_et_taux_affiches_a_l_hote(client_for, make_user, api_client):
+    config = api_client.get('/api/v1/paiements/config/').data
+    assert config['frais_voyageur'] == 0.06 and config['commissions'] == {'particulier': 0.08, 'hotel': 0.12, 'fondateur': 0.05}
+
+    hote = make_user(role='hote')
+    revenus = client_for(hote).get('/api/v1/paiements/revenus/').data
+    assert (revenus['partenaire'], revenus['commission_pourcent'], revenus['frais_voyageur_pourcent']) == ('particulier', 8.0, 6.0)
+
+    jour = timezone.localdate()
+    conditions = ConditionsHoteModel.objects.create(hote=hote, fondateur_debut=jour, fondateur_fin=jour + timedelta(days=180))
+    assert client_for(hote).get('/api/v1/paiements/revenus/').data['partenaire'] == 'fondateur'
+    conditions.categorie = 'hotel'
+    conditions.save()
+    revenus = client_for(hote).get('/api/v1/paiements/revenus/').data
+    assert (revenus['partenaire'], revenus['commission_pourcent']) == ('hotel', 12.0)

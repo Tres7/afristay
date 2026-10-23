@@ -17,7 +17,7 @@ import AvisSection from "@/components/avis/AvisSection";
 import ProposerAuGroupe from "@/components/voyage/ProposerAuGroupe";
 import MapEmbed from "@/components/hebergement/MapEmbed";
 import api, { apiErrorMessage } from "@/lib/api";
-import { addDays, calculateNights, calculateServiceFee, SERVICE_FEE_RATE, cn, FALLBACK_IMAGE, formatDate, formatPrice, isoDate, TYPE_LABELS } from "@/lib/utils";
+import { addDays, calculateNights, calculateServiceFee, SERVICE_FEE_RATE, cn, FALLBACK_IMAGE, formatDate, formatPrice, isoDate, prixNuitFraisInclus, TYPE_LABELS } from "@/lib/utils";
 import { nuitsIndisponibles, useDisponibilites } from "@/lib/useDisponibilites";
 import DateRangeCalendar from "@/components/calendrier/DateRangeCalendar";
 import Stepper from "@/components/ui/Stepper";
@@ -82,6 +82,8 @@ function HebergementContent() {
   const tauxFrais = hebergement.frais_voyageur ?? SERVICE_FEE_RATE;
   const serviceFee = calculateServiceFee(subtotal, tauxFrais);
   const total = subtotal + serviceFee;
+  // Prix d'appel affiché : la nuit frais de service inclus, détail juste en dessous
+  const nuitTtc = prixNuitFraisInclus(Number(hebergement.price_per_night), tauxFrais);
   const gallery = [hebergement.image_url, ...hebergement.images.filter((i) => i !== hebergement.image_url)].filter(Boolean);
   const photos = gallery.length ? gallery : [FALLBACK_IMAGE];
   const reservationUrl = `/reservation/${hebergement.id}?check_in=${checkIn}&check_out=${checkOut}&guests=${guests}`;
@@ -263,9 +265,14 @@ function HebergementContent() {
 
           <div className="lg:col-span-1" id="reserver">
             <div className="bg-white rounded-3xl shadow-soft border border-gray-100 p-5 sm:p-7 lg:sticky lg:top-28">
-              <div className="flex items-baseline gap-2 mb-5">
-                <span className="text-dark font-heading font-bold text-3xl">{formatPrice(hebergement.price_per_night)}</span>
-                <span className="text-muted text-sm font-medium">{t("parNuitCourt")}</span>
+              <div className="mb-5">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-dark font-heading font-bold text-3xl">{formatPrice(nuitTtc.total)}</span>
+                  <span className="text-muted text-sm font-medium">{t("parNuitFraisInclus")}</span>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {t("detailNuit", { prix: formatPrice(hebergement.price_per_night), frais: formatPrice(nuitTtc.frais), taux: Math.round(tauxFrais * 100) })}
+                </p>
               </div>
 
               <div className="border border-gray-200 rounded-2xl overflow-hidden mb-4">
@@ -334,8 +341,8 @@ function HebergementContent() {
       {/* Barre de réservation mobile */}
       <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-gray-100 px-4 py-3 flex items-center justify-between gap-3 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
         <div className="min-w-0">
-          <p className="font-heading font-bold text-dark truncate">{formatPrice(nights > 0 ? total : hebergement.price_per_night)}</p>
-          <p className="text-xs text-muted">{nights > 0 ? t("nuitsFraisInclus", { nombre: nights }) : t("parNuit")}</p>
+          <p className="font-heading font-bold text-dark truncate">{formatPrice(nights > 0 ? total : nuitTtc.total)}</p>
+          <p className="text-xs text-muted">{nights > 0 ? t("nuitsFraisInclus", { nombre: nights }) : t("parNuitFraisInclus")}</p>
         </div>
         <button
           onClick={() => (canBook ? goBook() : document.getElementById("reserver")?.scrollIntoView({ behavior: "smooth" }))}

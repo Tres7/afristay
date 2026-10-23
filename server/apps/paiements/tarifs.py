@@ -55,12 +55,23 @@ class Montants:
         return self.prix_nuits - self.commission_hote
 
     @property
+    def revenu_kwaba(self) -> int:
+        """Revenu brut de Kwa-Ba : frais du voyageur + commission de l'hôte (avant frais du prestataire de paiement)."""
+        return self.frais_service + self.commission_hote
+
+    @property
     def taux_frais(self) -> int:
         """Taux des frais de service en %, pour l'affichage (« Frais de service (6 %) »)."""
         return round(self.frais_service * 100 / self.prix_nuits) if self.prix_nuits else 0
 
 
 def calculer(prix_par_nuit, nuits: int, frais=FRAIS_VOYAGEUR, commission=COMMISSION_PARTICULIER) -> Montants:
+    """Frais du voyageur et commission de l'hôte : deux prélèvements distincts sur le prix des nuits, arrondis au franc
+    (au plus proche, la moitié vers le haut, comme formatFcfa côté site)."""
+    if Decimal(prix_par_nuit) <= 0:
+        raise ValueError('Le prix par nuit doit être positif.')
+    if int(nuits) != nuits or nuits < 1:
+        raise ValueError('Le nombre de nuits doit être un entier au moins égal à 1.')
     prix_nuits = arrondi(Decimal(prix_par_nuit) * nuits)
     return Montants(
         prix_nuits=prix_nuits,

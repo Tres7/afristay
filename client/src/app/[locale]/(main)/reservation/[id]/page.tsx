@@ -87,6 +87,8 @@ function ReservationContent() {
         guests_count: guestsCount,
         payment_method: moyenChoisi,
         message: message.trim(),
+        // Le serveur recalcule le total et refuse s'il a changé depuis l'affichage de ce récapitulatif
+        total_attendu: total,
       });
       queryClient.invalidateQueries({ queryKey: ["reservations"] });
       if (res.data.status !== "pending") {
@@ -101,6 +103,8 @@ function ReservationContent() {
       }
     } catch (err) {
       setError(apiErrorMessage(err, t("reservationNonEnregistree")));
+      // Prix modifié entre-temps : le récapitulatif se met à jour avec le nouveau total
+      queryClient.invalidateQueries({ queryKey: ["hebergement", params.id, "reservation"] });
       setSubmitting(false);
     }
   };

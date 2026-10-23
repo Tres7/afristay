@@ -1,9 +1,12 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import api, { firstErrorMessage } from "@/lib/api";
 import { AMENITIES } from "@/components/hebergement/AmenityBadge";
 import PhotoUploader from "@/components/hote/PhotoUploader";
+import EstimateurRevenus from "@/components/hote/EstimateurRevenus";
+import type { Revenus } from "@/types/api/paiement";
 import Select from "@/components/ui/Select";
 import Stepper from "@/components/ui/Stepper";
 import { cn, TYPE_LABELS } from "@/lib/utils";
@@ -27,6 +30,11 @@ const labelClass = "block text-xs font-bold text-dark uppercase tracking-wide mb
 export default function HebergementForm({ initial, onSaved, onCancel }: HebergementFormProps) {
   const t = useTranslations("annonce");
   const tp = useTranslations("politiqueAnnulation");
+  // Type de partenaire réglé par l'équipe (particulier, hôtel, fondateur) : la commission de l'aperçu est la sienne
+  const { data: revenus } = useQuery({
+    queryKey: ["paiements", "revenus"],
+    queryFn: async () => (await api.get<Revenus>("/v1/paiements/revenus/")).data,
+  });
   const [form, setForm] = useState({
     name: initial?.name ?? "",
     type: initial?.type ?? "appartement",
@@ -162,6 +170,9 @@ export default function HebergementForm({ initial, onSaved, onCancel }: Hebergem
           <label className={labelClass} htmlFor="h-price">{t("prix")}</label>
           <input id="h-price" type="number" min={1} step={1} inputMode="numeric" className={inputClass} value={form.price_per_night} onChange={set("price_per_night")} placeholder="35000" required />
           {err("price_per_night")}
+          {Number(form.price_per_night) > 0 && (
+            <EstimateurRevenus className="mt-3 bg-gray-50" partenaire={revenus?.partenaire ?? "particulier"} prix={Number(form.price_per_night)} />
+          )}
         </div>
       </div>
 

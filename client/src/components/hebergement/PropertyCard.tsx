@@ -3,7 +3,7 @@ import { BadgeCheck, MapPin } from "lucide-react";
 import type { Hebergement } from "@/types/api/models";
 import FavoriteButton from "@/components/hebergement/FavoriteButton";
 import RatingBadge from "@/components/avis/RatingBadge";
-import { FALLBACK_IMAGE, TYPE_LABELS, formatPrice } from "@/lib/utils";
+import { FALLBACK_IMAGE, TYPE_LABELS, SERVICE_FEE_RATE, formatPrice, prixNuitFraisInclus } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { useResumeDetails } from "@/components/hebergement/DetailsLogement";
 
@@ -16,6 +16,8 @@ interface PropertyCardProps {
 export default function PropertyCard({ property, query = "", onFavoriteChange }: PropertyCardProps) {
   const resume = useResumeDetails();
   const t = useTranslations("logement");
+  const prix = Number(property.price_per_night);
+  const { frais, total } = prixNuitFraisInclus(prix, property.frais_voyageur ?? SERVICE_FEE_RATE);
   return (
     <Link
       href={`/hebergements/${property.id}${query}`}
@@ -52,9 +54,9 @@ export default function PropertyCard({ property, query = "", onFavoriteChange }:
           <span className="text-xs truncate">{property.location ? `${property.location}, ` : ""}{property.city}</span>
         </div>
         {resume(property) && <p className="text-xs text-gray-600 mt-1 truncate">{resume(property)}</p>}
-        <p className="mt-auto pt-3 text-sm">
-          <span className="font-heading font-bold text-primary">{formatPrice(property.price_per_night)}</span>
-          <span className="text-gray-400 text-xs"> / nuit</span>
+        <p className="mt-auto pt-3 text-sm" title={t("detailPrix", { prix: formatPrice(prix), frais: formatPrice(frais) })}>
+          <span className="font-heading font-bold text-primary">{formatPrice(total)}</span>
+          <span className="text-gray-500 text-xs"> {t("parNuitFraisInclus")}</span>
         </p>
       </div>
     </Link>
