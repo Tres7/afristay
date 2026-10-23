@@ -199,6 +199,7 @@ REST_FRAMEWORK = {
         'hebergement_photo_upload': '120/hour',
         'concierge_conversation': '30/hour',
         'verification_piece': '20/hour',
+        'reclamation': '5/hour',
     },
 }
 

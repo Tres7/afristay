@@ -8,6 +8,7 @@ from django.urls import include, path
 
 from apps.securite.admin_site import connexion_admin
 from config.health import health
+from config.reclamation import ReclamationView
 from config.site import site
 
 urlpatterns = [
@@ -16,6 +17,7 @@ urlpatterns = [
     path(settings.ADMIN_URL, admin.site.urls),
     path('api/health/', health, name='health'),
     path('api/v1/site/', site, name='site'),
+    path('api/v1/site/reclamation/', ReclamationView.as_view(), name='reclamation'),
     path('api/v1/', include('apps.users.infrastructure.http.routes.urls')),
     path('api/v1/hebergements/', include('apps.hebergements.urls')),
     path('api/v1/reservations/', include('apps.reservations.urls')),
