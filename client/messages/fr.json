@@ -9,7 +9,7 @@
         "description": "Villas, appartements, hôtels et auberges à Lomé, Cotonou, Ouagadougou et ailleurs. Comparez les prix par nuit et réservez en Mobile Money ou par carte."
       },
       "decouvrir": {
-        "titre": "Activités, restaurants et sites à découvrir",
+        "titre": "Activités, restaurants et sites à découvrir au Togo",
         "description": "Les meilleures activités, tables et visites près de votre logement Kwa-Ba."
       },
       "transfert": {
@@ -46,14 +46,14 @@
       "logementDescription": "{type} à {ville} pour {voyageurs} voyageurs, à partir de {prix} FCFA la nuit. Réservez sur Kwa-Ba en Mobile Money ou par carte.",
       "organisationDescription": "Soutenez {nom} ({ville}) avec Kwa-Ba Give : don de 500 à 5 000 FCFA, reversement publié avec son justificatif.",
       "location": {
-        "titre": "Location de voiture avec ou sans chauffeur",
-        "description": "Louez une citadine, une berline, un SUV, un 4x4 ou un minibus, avec ou sans chauffeur, remis à l'aéroport ou à votre adresse. Prix par jour connu à l'avance, paiement en ligne."
+        "titre": "Location de voiture avec chauffeur, ou votre chauffeur pour votre propre voiture",
+        "description": "Louez une citadine, une berline, un SUV, un 4x4 ou un minibus avec chauffeur, ou un chauffeur pour votre propre voiture, à l'aéroport ou à votre adresse. Prix par jour connu à l'avance, paiement en ligne."
       }
     }
   },
   "commun": {
     "allerAuContenu": "Aller au contenu principal",
-    "chargement": "Chargement...",
+    "chargement": "Chargement…",
     "retour": "Retour",
     "slogan": "Le monde vous accueille."
   },
@@ -140,8 +140,10 @@
       "cgu": "CGU",
       "cgv": "CGV",
       "confidentialite": "Confidentialité",
-      "cookies": "Politique cookies"
-    }
+      "cookies": "Politique de cookies"
+    },
+    "contact": "Nous contacter",
+    "aCompleter": "à compléter"
   },
   "cookies": {
     "gerer": "Gérer les cookies",
@@ -155,7 +157,7 @@
     "tiers": "Contenus de services tiers",
     "tiersTexte": "Carte Google Maps sur la fiche des logements. Google peut alors déposer ses propres cookies et recevoir votre adresse IP.",
     "aucuneMesure": "Kwa-Ba n'utilise aucun outil de mesure d'audience ni de publicité.",
-    "politique": "Politique cookies",
+    "politique": "Politique de cookies",
     "enregistrer": "Enregistrer mes choix",
     "choix": "Choix des cookies",
     "vosChoix": "Vos choix de confidentialité",
@@ -193,7 +195,7 @@
     "atouts": {
       "paiement": {
         "titre": "Paiement flexible",
-        "texte": "Mobile Money : Mixx by Yas (T-Money), Moov Money (Flooz), MTN MoMo, Orange Money, Celtiis, Airtel… Carte Visa ou Mastercard, ou PayPal."
+        "texte": "Mobile Money : Moov Money (Flooz), Mixx by Yas (T-Money). Carte Visa ou Mastercard."
       },
       "instantanee": {
         "titre": "Confirmation immédiate",
@@ -229,7 +231,7 @@
     "masquerMdp": "Masquer le mot de passe",
     "afficherMdp": "Afficher le mot de passe",
     "mdpOublie": "Mot de passe oublié ?",
-    "connexionEnCours": "Connexion en cours...",
+    "connexionEnCours": "Connexion en cours…",
     "seConnecter": "Se connecter",
     "pasDeCompte": "Pas encore de compte ?",
     "creerCompte": "Créer un compte",
@@ -271,7 +273,7 @@
     "nouvelOnglet": "s'ouvre dans un nouvel onglet",
     "rgpd": "Vos données servent uniquement à gérer votre compte et vos réservations. Le téléphone est facultatif. Vous pouvez consulter, modifier ou supprimer vos données à tout moment.",
     "politiqueConfidentialite": "Politique de confidentialité",
-    "creationEnCours": "Création en cours...",
+    "creationEnCours": "Création en cours…",
     "creerMonCompte": "Créer mon compte",
     "dejaUnCompte": "Déjà un compte ?",
     "inscriptionVisuelTitre": "Rejoignez la communauté Kwa-Ba",
@@ -288,10 +290,10 @@
     "saisirCode": "Saisissez le code à 6 chiffres envoyé à",
     "emailAVerifier": "Adresse e-mail du compte à vérifier",
     "chiffre": "Chiffre {numero}",
-    "verificationEnCours": "Vérification...",
+    "verificationEnCours": "Vérification…",
     "verifierMonCompte": "Vérifier mon compte",
     "pasRecuCode": "Vous n'avez pas reçu le code ? Pensez à vérifier vos spams.",
-    "envoiEnCours": "Envoi en cours...",
+    "envoiEnCours": "Envoi en cours…",
     "renvoyerCodeDans": "Renvoyer le code ({secondes} s)",
     "renvoyerCode": "Renvoyer le code",
     "mauvaiseAdresse": "Mauvaise adresse ?",
@@ -307,7 +309,7 @@
     "nouveauMdp": "Nouveau mot de passe",
     "nouveauMdpAide": "8 caractères minimum, évitez les mots de passe courants.",
     "confirmer": "Confirmer",
-    "enregistrementEnCours": "Enregistrement...",
+    "enregistrementEnCours": "Enregistrement…",
     "changerMdp": "Changer mon mot de passe",
     "renvoyerUnCode": "Renvoyer un code",
     "retourConnexion": "Retour à la connexion",
@@ -316,7 +318,9 @@
     "captchaRequis": "Cochez la case « Je suis humain », puis réessayez."
   },
   "logement": {
-    "verifie": "Logement vérifié"
+    "verifie": "Logement vérifié",
+    "parNuitFraisInclus": "/ nuit, frais de service inclus",
+    "detailPrix": "Hébergement {prix} + frais de service {frais}"
   },
   "favoris": {
     "ajoute": "Ajouté à vos favoris",
@@ -368,7 +372,7 @@
     "avis": "{nombre, plural, one {# avis} other {# avis}}"
   },
   "decouvrir": {
-    "titre": "Découvrez l'Afrique autrement",
+    "titre": "Découvrez le Togo autrement",
     "sousTitre": "Nos idées de sorties autour de vos hébergements. Les prix sont indicatifs.",
     "onglets": {
       "tout": "Tout",
@@ -401,7 +405,7 @@
       "prixDecroissant": "Prix décroissant",
       "meilleuresNotes": "Meilleures notes"
     },
-    "prixParNuit": "Prix par nuit (FCFA)",
+    "prixParNuit": "Prix par nuit hors frais de service (FCFA)",
     "min": "Min",
     "max": "Max",
     "appliquer": "Appliquer",
@@ -410,7 +414,7 @@
     "destinationExemple": "Destination (ex : Lomé, Dakar, Abidjan…)",
     "rechercher": "Rechercher",
     "filtres": "Filtres",
-    "rechercheEnCours": "Recherche en cours...",
+    "rechercheEnCours": "Recherche en cours…",
     "hebergements": "{nombre, plural, one {hébergement} other {hébergements}}",
     "aVille": "à {ville}",
     "disponiblesDu": "disponibles du {debut} au {fin}",
@@ -421,7 +425,10 @@
     "voirTous": "Voir tous les hébergements",
     "fermer": "Fermer",
     "listeResultats": "Hébergements trouvés",
-    "petitDejInclus": "Petit-déjeuner inclus"
+    "petitDejInclus": "Petit-déjeuner inclus",
+    "equipements": "Équipements",
+    "afficherCarte": "Carte",
+    "masquerCarte": "Liste"
   },
   "fiche": {
     "introuvable": "Hébergement introuvable",
@@ -437,7 +444,7 @@
     "hote": "Hôte",
     "hoteKwaba": "Hôte Kwa-Ba",
     "gerer": "Gérer",
-    "ouverture": "Ouverture...",
+    "ouverture": "Ouverture…",
     "contacter": "Contacter",
     "description": "Description",
     "aucuneDescription": "Aucune description disponible.",
@@ -472,14 +479,16 @@
     "verifieAide": "Un agent Kwa-Ba a visité ce logement et contrôlé l'identité de l'hôte.",
     "hoteVerifie": "Hôte vérifié",
     "hoteVerifieAide": "Kwa-Ba a contrôlé la pièce d'identité de cet hôte.",
-    "clientFidele": "Tarif Client fidèle : vous avez déjà séjourné chez cet hôte"
+    "clientFidele": "Tarif Client fidèle : vous avez déjà séjourné chez cet hôte",
+    "parNuitFraisInclus": "/ nuit, frais de service inclus",
+    "detailNuit": "Hébergement {prix} + frais de service Kwa-Ba {frais} ({taux} %)"
   },
   "avis": {
     "repondre": "Répondre publiquement",
     "reponsePubliee": "Réponse publiée",
     "reponsePlaceholder": "Remerciez le voyageur ou apportez une précision. Votre réponse sera visible de tous.",
     "annuler": "Annuler",
-    "publication": "Publication...",
+    "publication": "Publication…",
     "publier": "Publier la réponse",
     "sejourVerifie": "Séjour vérifié",
     "voirMoins": "Voir moins",
@@ -497,7 +506,7 @@
       "emplacement": "Emplacement",
       "qualite_prix": "Rapport qualité/prix"
     },
-    "chargement": "Chargement...",
+    "chargement": "Chargement…",
     "voirPlusAvis": "Voir plus d'avis ({nombre})"
   },
   "reservation": {
@@ -530,8 +539,8 @@
     "detailsPrix": "Détails du prix",
     "payerAvec": "Payer avec :",
     "changer": "Changer",
-    "redirection": "Redirection vers le paiement...",
-    "traitement": "Traitement...",
+    "redirection": "Redirection vers le paiement…",
+    "traitement": "Traitement…",
     "payer": "Payer {montant}",
     "confirmerReservation": "Confirmer la réservation",
     "accepterPaiement": "J'accepte les <cgu>conditions générales de vente</cgu>, les règles de l'annonce et la <annulation>politique d'annulation</annulation>.",
@@ -619,7 +628,7 @@
       "devenirHoteTexte": "Publiez votre logement",
       "backofficeTexte": "Administration de la plateforme",
       "paiement": "Moyens de paiement",
-      "paiementTexte": "Mobile Money, carte, PayPal",
+      "paiementTexte": "Mobile Money, carte Visa ou Mastercard",
       "notifications": "Notifications",
       "notificationsTexte": "Alertes et emails",
       "langue": "Langue & région",
@@ -667,7 +676,7 @@
     "moyens": {
       "mobileMoney": {
         "titre": "Mobile Money",
-        "texte": "Moov Money (Flooz), Mixx by Yas (T-Money), MTN, Orange, Airtel… via FedaPay"
+        "texte": "{operateurs}, via FedaPay"
       },
       "carte": {
         "titre": "Carte bancaire",
@@ -678,13 +687,14 @@
         "texte": "Compte PayPal ou carte, débité en euros (1 € = 655,957 FCFA)"
       }
     },
-    "securite": "Vous choisissez votre moyen de paiement à chaque réservation, puis vous payez sur la page sécurisée de FedaPay ou de PayPal. Kwa-Ba ne voit ni n'enregistre vos coordonnées bancaires ou votre code Mobile Money. L'hôte n'est payé qu'après votre arrivée.",
-    "enSavoirPlus": "En savoir plus sur le paiement et le remboursement"
+    "securite": "Vous choisissez votre moyen de paiement à chaque réservation, puis vous payez sur la page sécurisée de FedaPay. Kwa-Ba ne voit ni n'enregistre vos coordonnées bancaires ou votre code Mobile Money. L'hôte n'est payé qu'après votre arrivée.",
+    "enSavoirPlus": "En savoir plus sur le paiement et le remboursement",
+    "securitePaypal": "Vous choisissez votre moyen de paiement à chaque réservation, puis vous payez sur la page sécurisée de FedaPay ou de PayPal. Kwa-Ba ne voit ni n'enregistre vos coordonnées bancaires ou votre code Mobile Money. L'hôte n'est payé qu'après votre arrivée."
   },
   "profilEdition": {
     "erreurChargement": "Impossible de charger vos informations.",
     "erreurMaj": "Erreur lors de la mise à jour. Veuillez réessayer.",
-    "chargement": "Chargement...",
+    "chargement": "Chargement…",
     "retourProfil": "Retour au profil",
     "titre": "Modifier le profil",
     "sousTitre": "Mettez à jour vos informations personnelles",
@@ -694,7 +704,7 @@
     "email": "Adresse e-mail",
     "emailFixe": "L'email ne peut pas être modifié.",
     "telephone": "Numéro de téléphone",
-    "enregistrement": "Enregistrement...",
+    "enregistrement": "Enregistrement…",
     "enregistrer": "Enregistrer",
     "fermerCompte": "Fermer mon compte",
     "fermerTexte": "Votre compte est désactivé immédiatement : vous ne pourrez plus vous connecter et votre profil n'apparaîtra plus. Pour l'effacement définitif de toutes vos données, suivez la procédure de la <lien>politique de confidentialité</lien>.",
@@ -714,7 +724,7 @@
       "annulee": "Annulée"
     },
     "annulerQuestion": "Annuler votre séjour à « {nom} » ?",
-    "annulerBareme": "Le remboursement suit la politique d'annulation : intégral à plus de 7 jours de l'arrivée, partiel entre 7 jours et 48 heures, aucun à moins de 48 heures.",
+    "annulerBareme": "Le remboursement suit la politique d'annulation de l'annonce (Souple, Modérée ou Ferme). Annulée dans les 48 heures suivant la réservation et au moins 7 jours avant l'arrivée, elle est remboursée en entier.",
     "annuleeRembourse": "Réservation annulée. {montant} vous seront remboursés.",
     "annuleeToast": "Réservation annulée",
     "erreurAnnulation": "Impossible d'annuler cette réservation.",
@@ -734,7 +744,7 @@
     "total": "Total",
     "avisPublie": "Avis publié",
     "details": "Détails",
-    "annulation": "Annulation...",
+    "annulation": "Annulation…",
     "annuler": "Annuler",
     "numeroEnregistre": "Numéro enregistré : votre remboursement est en route.",
     "recommande": "Recommandé pour votre prochain voyage"
@@ -770,7 +780,7 @@
     "racontezPlaceholder": "Ce que vous avez aimé, ce qui pourrait être amélioré, conseils pour les futurs voyageurs…",
     "encore": "Encore {nombre} caractères minimum",
     "public": "Votre avis sera public, signé de votre prénom et de l'initiale de votre nom. L'hôte pourra y répondre.",
-    "publication": "Publication...",
+    "publication": "Publication…",
     "publier": "Publier mon avis",
     "noterCriteres": "Notez chaque critère pour publier"
   },
@@ -807,15 +817,14 @@
       "cgu": "Conditions générales d'utilisation",
       "cgv": "Conditions générales de vente",
       "confidentialite": "Politique de confidentialité",
-      "cookies": "Politique cookies",
+      "cookies": "Politique de cookies",
       "remboursement": "Annulation et remboursement"
     },
     "documents": "Documents juridiques",
     "informations": "Informations légales",
     "miseAJour": "Dernière mise à jour : {date}",
     "sommaire": "Sommaire",
-    "aCompleter": "À compléter",
-    "aValider": "proposition à valider"
+    "aCompleter": "À compléter"
   },
   "aide": {
     "titre": "Centre d'aide",
@@ -824,7 +833,12 @@
     "aucunResultat": "Aucun résultat pour « {recherche} ».",
     "questionSejour": "Une question sur un séjour ?",
     "questionSejourTexte": "Votre hôte est le mieux placé pour vous répondre.",
-    "mesMessages": "Mes messages"
+    "mesMessages": "Mes messages",
+    "contactTitre": "Nous contacter",
+    "contactTexte": "L'équipe Kwa-Ba vous répond par WhatsApp ou par email.",
+    "aCompleter": "à compléter",
+    "reclamationTitre": "Faire une réclamation",
+    "reclamationTexte": "Votre demande est envoyée à info@kwa-ba.com. Kwa-Ba en accuse réception sous 72 heures (CGV, art. 21.1)."
   },
   "don": {
     "erreurDemarrage": "Le don n'a pas pu démarrer. Réessayez dans un instant.",
@@ -1131,7 +1145,7 @@
     "bagages": "Bagages",
     "bagagesAide": "Valises en soute",
     "vehicule": "Véhicule",
-    "choisirPourPrix": "Choisissez l'aéroport, la date et l'heure pour voir les véhicules et leur prix.",
+    "choisirPourPrix": "Choisissez l'aéroport, la date et l'heure pour vérifier la disponibilité et le prix exact de chaque véhicule.",
     "tropTard": "Il faut réserver au moins {heures} heures avant l'arrivée, le temps de vous attribuer un chauffeur.",
     "vehicules": {
       "berline": {
@@ -1149,7 +1163,6 @@
     },
     "maxPassagers": "{nombre} passagers maximum",
     "maxBagages": "{nombre} bagages maximum",
-    "tarifNuit": "tarif de nuit",
     "aucunVehicule": "Aucun véhicule ne convient : contactez-nous pour un groupe plus grand.",
     "destinationContact": "Destination et contact",
     "adresseDestination": "Adresse de destination",
@@ -1161,15 +1174,16 @@
     "messagePlaceholder": "Siège enfant, poussette, aide pour les bagages…",
     "recapitulatif": "Récapitulatif",
     "passagersBagages": "Passagers · bagages",
-    "tarifNuitDetail": "Tarif de nuit (22 h – 6 h)",
-    "inclus": "inclus",
     "total": "Total",
     "prixApres": "Le prix s'affiche dès que le vol et le véhicule sont choisis.",
     "payerAvec": "Payer avec",
     "seConnecter": "Se connecter pour réserver",
     "redirection": "Redirection vers le paiement…",
     "reserver": "Réserver le transfert",
-    "infoChauffeur": "Nom, numéro, véhicule et plaque de votre chauffeur vous sont envoyés au plus tard la veille. En réservant, vous acceptez nos <cgu>conditions générales de vente</cgu>."
+    "infoChauffeur": "Nom, numéro, véhicule et plaque de votre chauffeur vous sont envoyés au plus tard 24 heures avant votre arrivée. En réservant, vous acceptez nos <cgu>conditions générales de vente</cgu>.",
+    "aPartirDe": "à partir de",
+    "seConnecterPourPayer": "Se connecter pour payer",
+    "connexionDerniere": "Remplissez toute la demande sans compte : la connexion n'est demandée qu'avant le paiement, et votre saisie est conservée."
   },
   "transfertDetail": {
     "statuts": {
@@ -1189,7 +1203,7 @@
     "erreurAnnulation": "Impossible d'annuler ce transfert.",
     "depuis": "Transfert depuis {ville}",
     "attente": "Nous attendons la confirmation du paiement. Si vous payez par Mobile Money, validez la demande sur votre téléphone.",
-    "recu": "Paiement reçu. Nous vous envoyons par email le nom, le numéro et le véhicule de votre chauffeur au plus tard la veille de votre arrivée.",
+    "recu": "Paiement reçu. Nous vous envoyons par email le nom, le numéro et le véhicule de votre chauffeur au plus tard 24 heures avant votre arrivée.",
     "expire": "Le paiement n'a pas été reçu à temps. Si un montant a été débité, il vous sera remboursé.",
     "nouveau": "Réserver un nouveau transfert",
     "votreChauffeur": "Votre chauffeur",
@@ -1251,7 +1265,7 @@
   },
   "messages": {
     "titre": "Messages",
-    "chargement": "Chargement...",
+    "chargement": "Chargement…",
     "erreurChargement": "Impossible de charger vos conversations.",
     "aucune": "Aucune conversation",
     "aucuneTexte": "Vous n'avez pas encore de messages. Contactez un hôte depuis la fiche d'un hébergement pour poser vos questions.",
@@ -1264,8 +1278,8 @@
     "introuvable": "Conversation introuvable",
     "retour": "Retour aux messages",
     "premierMessage": "Écrivez votre premier message à {nom}.",
-    "envoi": "Envoi...",
-    "placeholder": "Écrivez votre message...",
+    "envoi": "Envoi…",
+    "placeholder": "Écrivez votre message…",
     "votreMessage": "Votre message",
     "envoyer": "Envoyer le message",
     "securite": "Pour votre sécurité, tout passe par la messagerie Kwa-Ba : numéros, emails et liens sont masqués. Ne payez jamais en dehors du site.",
@@ -1291,7 +1305,7 @@
     },
     "active": "Votre compte hôte est activé !",
     "acceder": "Accéder à mon espace hôte",
-    "activation": "Activation...",
+    "activation": "Activation…",
     "activer": "Activer mon compte hôte",
     "creerCompte": "Créer un compte hôte",
     "titre": "Partagez votre logement avec des voyageurs du monde entier",
@@ -1309,7 +1323,7 @@
     },
     "tarifs": {
       "titre": "Ce que ça coûte",
-      "intro": "Publier est gratuit. Kwa-Ba prélève une commission seulement quand vous êtes payé, nettement plus basse que celle des plateformes internationales.",
+      "intro": "Publier est gratuit. Kwa-Ba prélève une commission seulement quand vous êtes payé.",
       "taux": {
         "particulier": {
           "valeur": "8 %",
@@ -1319,7 +1333,7 @@
         "hotel": {
           "valeur": "12 %",
           "titre": "Hôtel ou résidence hôtelière",
-          "texte": "contre 15 à 18 % sur Booking.com"
+          "texte": "du prix des nuits, prélevés sur votre versement"
         },
         "fondateur": {
           "valeur": "5 %",
@@ -1332,25 +1346,14 @@
           "texte": "payés par le voyageur, ils ne réduisent pas votre revenu"
         }
       },
-      "exemple": "Exemple : un séjour de 2,5 nuits à 25 000 FCFA la nuit (62 500 FCFA)",
-      "colonnes": {
-        "plateforme": "Plateforme",
-        "voyageur": "Le voyageur paie",
-        "hote": "Vous recevez"
-      },
-      "lignes": {
-        "airbnb": "Airbnb (15,5 % pour l'hôte)",
-        "booking": "Booking.com (15 %)",
-        "kwaba": "Kwa-Ba, hôte particulier (6 % + 8 %)",
-        "fondateur": "Kwa-Ba, hôte fondateur (6 % + 5 %)"
-      },
-      "note": "Taux publiés par Airbnb et Booking.com en 2026. Votre part vous est versée par Mobile Money 24 heures après l'arrivée du voyageur.",
       "mobilite": {
         "titre": "Vous avez une voiture, ou vous êtes chauffeur ?",
         "texte": "Propriétaires : vous fixez votre prix et votre caution, Kwa-Ba prélève 15 % (10 % pendant 6 mois pour les 20 premiers, 12 % après 20 locations sans incident). Chauffeurs : 6 000 FCFA par jour, 6 500 au statut Excellence, primes de déplacement reversées en totalité.",
         "cta": "Nous écrire",
         "sujet": "Devenir partenaire mobilité"
-      }
+      },
+      "estimateurTitre": "Estimez vos revenus",
+      "estimateurTexte": "Choisissez votre profil, saisissez le prix par nuit que vous souhaitez recevoir avant commission et le nombre de nuits."
     }
   },
   "photos": {
@@ -1409,7 +1412,7 @@
     "masquer": "Masquer",
     "afficher": "Afficher",
     "publier": "Publier",
-    "ouverture": "Ouverture...",
+    "ouverture": "Ouverture…",
     "contacterNom": "Contacter {nom}",
     "verification": {
       "enAttente": "En attente de vérification",
@@ -1478,7 +1481,7 @@
     "voyageursMax": "Voyageurs max.",
     "ville": "Ville",
     "quartier": "Quartier / adresse",
-    "prix": "Prix par nuit (FCFA)",
+    "prix": "Votre prix par nuit (FCFA)",
     "description": "Description",
     "descriptionPlaceholder": "Décrivez le logement, le quartier, ce qui le rend unique…",
     "photos": "Photos",
@@ -1487,8 +1490,8 @@
     "nouvelOnglet": "nouvel onglet",
     "equipements": "Équipements",
     "annuler": "Annuler",
-    "envoiPhotos": "Envoi des photos...",
-    "enregistrement": "Enregistrement...",
+    "envoiPhotos": "Envoi des photos…",
+    "enregistrement": "Enregistrement…",
     "enregistrerModifs": "Enregistrer les modifications",
     "publier": "Publier l'annonce",
     "detailsTitre": "Le logement en détail",
@@ -1569,7 +1572,7 @@
     "photoNumero": "{nom}, photo {numero} sur {total}",
     "photoPrecedente": "Photo précédente",
     "photoSuivante": "Photo suivante",
-    "sousTitre": "Avec ou sans chauffeur, ou un chauffeur pour votre propre voiture : des véhicules et des chauffeurs vérifiés par Kwa-Ba, remis à l'aéroport ou à votre adresse.",
+    "sousTitre": "Avec chauffeur, ou votre chauffeur pour votre propre voiture : des véhicules et des chauffeurs vérifiés par Kwa-Ba, remis à l'aéroport ou à votre adresse.",
     "bientot": "La location de voitures arrive bientôt sur Kwa-Ba.",
     "bientotAide": "En attendant, réservez un transfert depuis l’aéroport.",
     "formule": "Formule",
@@ -1701,13 +1704,16 @@
     "devisChauffeur": "Chauffeur, {nombre, plural, one {# jour} other {# jours}}",
     "devisPrimes": "Primes de déplacement du chauffeur",
     "sansFrais": "Prix fixé par le propriétaire, sans frais de service Kwa-Ba.",
-    "accepter": "J'accepte les <cgv>conditions générales de vente</cgv>, les règles du véhicule et la <annulation>politique d'annulation</annulation>."
+    "accepter": "J'accepte les <cgv>conditions générales de vente</cgv>, les règles du véhicule et la <annulation>politique d'annulation</annulation>.",
+    "sousTitreSansChauffeur": "Avec ou sans chauffeur, ou un chauffeur pour votre propre voiture : des véhicules et des chauffeurs vérifiés par Kwa-Ba, remis à l'aéroport ou à votre adresse."
   },
   "suggestions": {
     "populaires": "Destinations populaires",
     "villes": "Villes",
     "logements": "Logements",
-    "logementsDispo": "{nombre, plural, =1 {1 logement} other {# logements}}"
+    "logementsDispo": "{nombre, plural, =1 {1 logement} other {# logements}}",
+    "quartiers": "Quartiers de Lomé",
+    "quartierLome": "Quartier de Lomé"
   },
   "details": {
     "titre": "Le logement en détail",
@@ -1782,7 +1788,8 @@
     "choisir": "Devise d'affichage des prix",
     "fcfa": "Franc CFA",
     "euro": "Euro",
-    "debite": "Débité en FCFA : {montant}"
+    "debite": "Débité en FCFA : {montant}",
+    "indicatif": "Équivalent indicatif ; le débit est effectué en F CFA."
   },
   "prelancement": {
     "titre": "Kwa-Ba ouvre bientôt !",
@@ -1823,5 +1830,57 @@
     },
     "reflexion": "Délai de réflexion : une réservation annulée dans les 48 heures, au moins 7 jours avant l'arrivée, est remboursée intégralement. Les frais de service ne sont rendus qu'avec un remboursement intégral.",
     "details": "Toutes les règles d'annulation"
+  },
+  "reclamation": {
+    "objet": "Objet",
+    "objets": {
+      "reservation": "Réservation",
+      "paiement": "Paiement ou remboursement",
+      "logement": "Logement",
+      "transfert": "Transfert ou location de voiture",
+      "compte": "Mon compte",
+      "autre": "Autre"
+    },
+    "reservation": "Numéro de réservation (facultatif)",
+    "reservationAide": "Il figure dans votre email de confirmation et dans Mes réservations.",
+    "email": "Votre email",
+    "description": "Description",
+    "descriptionAide": "Décrivez le problème, avec les dates et ce que vous attendez de Kwa-Ba (20 caractères au moins).",
+    "pieceJointe": "Pièce jointe (facultative)",
+    "pieceJointeAide": "Photo (JPEG, PNG, WebP) ou PDF, 5 Mo au plus.",
+    "envoyer": "Envoyer ma réclamation",
+    "envoi": "Envoi…",
+    "accuseTitre": "Réclamation bien reçue",
+    "accuseTexte": "Elle a été transmise à l'équipe Kwa-Ba, qui vous répondra par email. Vous recevrez un accusé de réception sous 72 heures."
+  },
+  "estimateur": {
+    "type": "Vous êtes",
+    "types": {
+      "particulier": {
+        "titre": "Hôte particulier",
+        "texte": "Commission de {taux}"
+      },
+      "fondateur": {
+        "titre": "Hôte fondateur",
+        "texte": "{taux} pendant 6 mois (50 premiers hôtes), puis 8 %"
+      },
+      "hotel": {
+        "titre": "Hôtel ou résidence",
+        "texte": "Commission de {taux}"
+      }
+    },
+    "votreType": "Votre profil : {type}, commission Kwa-Ba de {taux}.",
+    "votrePrix": "Votre prix par nuit (FCFA)",
+    "nuits": "Nombre de nuits",
+    "moins": "Une nuit de moins",
+    "plus": "Une nuit de plus",
+    "prixNuit": "Prix par nuit",
+    "commissionNuit": "Commission Kwa-Ba ({taux}) par nuit",
+    "revenuNuit": "Revenu estimé par nuit",
+    "brut": "Montant brut ({nuits, plural, one {# nuit} other {# nuits}})",
+    "commissionTotale": "Commission totale",
+    "revenuEstime": "Votre revenu estimé",
+    "voyageur": "Le voyageur paie {total}, dont {frais} de frais de service Kwa-Ba ({taux}) : ces frais s'ajoutent à votre prix et ne réduisent pas votre revenu.",
+    "note": "Estimation indicative. Le montant définitif est calculé par Kwa-Ba à la réservation et versé par Mobile Money 24 heures après l'arrivée du voyageur."
   }
 }

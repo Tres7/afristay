@@ -104,6 +104,16 @@ export function calculateServiceFee(subtotal: number, rate = SERVICE_FEE_RATE): 
   return Math.round(subtotal * rate);
 }
 
+/**
+ * Prix d'une nuit pour le voyageur, frais de service inclus (100 000 FCFA à 6 % : 106 000 FCFA). Aperçu calculé à
+ * part, sans toucher au prix de l'hôte ; même arrondi au franc que le serveur (apps/paiements/tarifs.py), qui
+ * recalcule toujours le montant définitif.
+ */
+export function prixNuitFraisInclus(prixParNuit: number, rate = SERVICE_FEE_RATE): { frais: number; total: number } {
+  const frais = calculateServiceFee(prixParNuit, rate);
+  return { frais, total: prixParNuit + frais };
+}
+
 export function formatDate(d: string, opts: Intl.DateTimeFormatOptions = { day: "numeric", month: "short", year: "numeric" }) {
   if (!d) return "-";
   return new Date(d).toLocaleDateString(LOCALES[langueCourante], opts);

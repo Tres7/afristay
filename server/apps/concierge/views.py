@@ -1,14 +1,24 @@
 from django.http import StreamingHttpResponse
 from rest_framework import status
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, BasePermission, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
+
+from config.site import exiger_module
 
 from . import services
 from .models import ConversationModel
 
 LONGUEUR_MAX = 2000
+
+
+class ModuleOuvert(BasePermission):
+    """Concierge masqué (MODULE_CONCIERGE) : ses adresses répondent 404, aucune requête ne part vers Gemini."""
+
+    def has_permission(self, request, view):
+        exiger_module('concierge')
+        return True
 
 
 class StatutView(APIView):
@@ -20,7 +30,7 @@ class StatutView(APIView):
 
 
 class ConversationsView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [ModuleOuvert, IsAuthenticated]
     throttle_scope = 'concierge_conversation'
 
     def get_throttles(self):
@@ -40,7 +50,7 @@ class ConversationsView(APIView):
 
 
 class ConversationView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [ModuleOuvert, IsAuthenticated]
 
     def get(self, request, pk):
         conversation = ConversationModel.objects.filter(pk=pk, utilisateur=request.user).first()
@@ -61,7 +71,7 @@ class ConversationView(APIView):
 
 class MessagesView(APIView):
     """POST {texte} → réponse du Concierge en flux SSE (text/event-stream)."""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [ModuleOuvert, IsAuthenticated]
 
     def post(self, request, pk):
         if not services.actif():

@@ -1,6 +1,7 @@
 import { Link } from "@/i18n/navigation";
 import LienContact from "@/components/legal/LienContact";
-import LegalPage, { AC, AValider } from "@/components/legal/LegalPage";
+import MentionSociete from "@/components/legal/MentionSociete";
+import LegalPage, { AC } from "@/components/legal/LegalPage";
 
 /** Paragraphe numéroté d'un article (« 6.1. … »). */
 function N({ n, children }: { n: string; children: React.ReactNode }) {
@@ -12,18 +13,18 @@ export default function ContenuFr() {
   return (
     <LegalPage
       titre="Conditions générales de vente"
-      miseAJour="22 octobre 2026"
+      miseAJour="23 octobre 2026"
       intro={
         <>
           <p>
             Le site kwa-ba.com et ses applications (la « Plateforme ») sont exploités par <strong>KWA-BA SARL</strong>, société à
             responsabilité limitée au capital de 100 000 F CFA, dont le siège est situé quartier Totsi Gblenkomé, rue 243, Lomé (Togo),
-            immatriculée au RCCM de Lomé sous le numéro <AC>RCCM</AC>, NIF <AC>NIF</AC>, enregistrée comme prestataire de commerce
-            électronique sous le numéro <AC>numéro d&apos;enregistrement</AC>, représentée par son gérant et directeur général, M. MENDE Fadel.
+            immatriculée au RCCM de Lomé sous le numéro <MentionSociete cle="rccm" libelle="RCCM" />, NIF <MentionSociete cle="nif" libelle="NIF" />, enregistrée comme prestataire de commerce
+            électronique sous le numéro <MentionSociete cle="commerce_electronique" libelle="numéro d&apos;enregistrement" />, représentée par ses cogérants, M. MENDE Fadel et M. KPOGLO Dzidoula Godwin Trésor.
           </p>
           <ul className="list-disc pl-5 space-y-1">
-            <li>Contact : <LienContact sujet="Conditions générales de vente" /> ; WhatsApp <AC>numéro WhatsApp</AC> ; adresse postale <AC>adresse postale</AC>.</li>
-            <li>Directeur de la publication : M. MENDE Fadel, gérant et directeur général.</li>
+            <li>Contact : <LienContact sujet="Conditions générales de vente" /> ; WhatsApp <MentionSociete cle="whatsapp" libelle="numéro WhatsApp" /> ; adresse postale : quartier Totsi Gblenkomé, rue 243, Lomé, Togo.</li>
+            <li>Cogérants : M. MENDE Fadel et M. KPOGLO Dzidoula Godwin Trésor — Directeur de la publication : M. MENDE Fadel.</li>
           </ul>
           <p>
             Les présentes conditions générales de vente (les « CGV ») complètent les <Link href="/cgu">conditions générales d’utilisation</Link> (les
@@ -102,7 +103,7 @@ export default function ContenuFr() {
             <>
               <N n="5.1">Avant de payer, le client voit un récapitulatif complet : le service réservé ; les dates et horaires ; le nombre de personnes ; le prix total en F CFA, détaillé ; la politique d’annulation ; l’existence ou non d’un droit de rétractation et ses modalités ; le dépôt de garantie éventuel ; les règles de l’annonce. Il peut corriger ses choix ou abandonner à tout moment.</N>
               <N n="5.2">Le client accepte expressément les CGV, les règles de l’annonce et la politique d’annulation en cochant une case avant de payer. Ces documents sont consultables, téléchargeables et imprimables.</N>
-              <N n="5.3">La réservation est ferme dès la confirmation du paiement. KWA-BA envoie aussitôt, et au plus tard dans les 5 jours, une confirmation par courriel ou par WhatsApp. Elle contient le récapitulatif et le lien vers les CGV. Un reçu électronique est délivré pour chaque paiement.</N>
+              <N n="5.3">La réservation est ferme dès la confirmation du paiement. KWA-BA envoie une confirmation par courriel ou par WhatsApp aussitôt après la confirmation du paiement, et au plus tard sous cinq jours. Elle contient le récapitulatif et le lien vers les CGV. Un reçu électronique est délivré pour chaque paiement.</N>
               <N n="5.4">Les échanges avec le prestataire passent par la messagerie de la Plateforme, avant comme après le paiement. Pour une mission de mobilité, le nom et le numéro du chauffeur sont communiqués au client après l’attribution, au plus tard 24 heures avant la mission.</N>
               <N n="5.5"><strong>Demande de réservation :</strong> lorsque l’annonce le prévoit, le prestataire dispose de 24 heures pour accepter. Sans réponse, la demande est annulée et le montant éventuellement prélevé est remboursé intégralement.</N>
             </>
@@ -134,7 +135,7 @@ export default function ContenuFr() {
                 <thead><tr><th>Élément</th><th>Montant</th></tr></thead>
                 <tbody>
                   <tr><td>Prix du véhicule (par jour)</td><td>Fixé par le propriétaire ; <strong>aucun frais de service</strong> pour le client</td></tr>
-                  <tr><td>Transfert depuis ou vers l’aéroport</td><td>Prix forfaitaire par trajet affiché par la Plateforme selon l’aéroport et la catégorie de véhicule, <strong>chauffeur compris</strong> ; majoration de 25 % pour une arrivée entre 22 h et 6 h</td></tr>
+                  <tr><td>Transfert depuis ou vers l’aéroport</td><td>Prix forfaitaire par trajet affiché par la Plateforme selon l’aéroport et la catégorie de véhicule, <strong>chauffeur compris</strong></td></tr>
                   <tr><td>Chauffeur (voiture avec chauffeur, chauffeur seul)</td><td><strong>7 000 F CFA par jour</strong> de 10 heures au plus</td></tr>
                   <tr><td>Heure supplémentaire du chauffeur</td><td>1 000 F CFA</td></tr>
                   <tr><td>Prime de déplacement du chauffeur</td><td>1 500 F CFA par jour dans le pays hors de Lomé ; 2 000 F CFA par jour hors du pays</td></tr>
@@ -188,8 +189,8 @@ export default function ContenuFr() {
           titre: "Droit de rétractation du consommateur",
           contenu: (
             <>
-              <N n="10.1">Conformément à la loi n° 2017-07 relative aux transactions électroniques (art. 44), le consommateur peut se rétracter sans motif dans un délai de <strong>10 jours ouvrables</strong> à compter de la conclusion du contrat. Il notifie sa rétractation depuis son espace de réservation, par courriel ou par WhatsApp. Les sommes versées lui sont remboursées dans les 10 jours suivant cette notification (art. 46).</N>
-              <N n="10.2">Ce droit ne peut plus être exercé lorsque l’exécution du service a commencé avec l’accord du consommateur avant la fin de ce délai (art. 47). En confirmant une réservation pour des dates déterminées, le consommateur demande expressément que le service de réservation soit exécuté immédiatement : les dates sont bloquées chez le prestataire, qui refuse d’autres clients pour ces dates. Il reconnaît qu’il ne pourra plus alors exercer son droit de rétractation sur ces dates, et que la politique d’annulation de l’annexe 1 s’applique. <AValider>juriste</AValider></N>
+              <N n="10.1">Conformément à la loi n° 2017-07 relative aux transactions électroniques (art. 44), le consommateur peut se rétracter sans motif dans un délai de <strong>dix jours ouvrables</strong> à compter de la conclusion du contrat. Il notifie sa rétractation depuis son espace de réservation, par courriel ou par WhatsApp. Les sommes versées lui sont remboursées dans les 10 jours suivant cette notification (art. 46). Ce délai de rétractation ne se confond pas avec le délai de remboursement après une annulation, qui est de sept jours ouvrés (article 11.5).</N>
+              <N n="10.2">Ce droit ne peut plus être exercé lorsque l’exécution du service a commencé avec l’accord du consommateur avant la fin de ce délai (art. 47). En confirmant une réservation pour des dates déterminées, le consommateur demande expressément que le service de réservation soit exécuté immédiatement : les dates sont bloquées chez le prestataire, qui refuse d’autres clients pour ces dates. Il reconnaît qu’il ne pourra plus alors exercer son droit de rétractation sur ces dates, et que la politique d’annulation de l’annexe 1 s’applique.</N>
               <N n="10.3"><strong>Délai de réflexion offert :</strong> même lorsque le droit de rétractation ne s’applique pas, toute réservation de courte durée ou de mobilité annulée dans les <strong>48 heures</strong> suivant sa confirmation, et au moins <strong>7 jours</strong> avant l’arrivée ou la prise du véhicule, est remboursée intégralement, frais de service compris.</N>
               <N n="10.4">Les clients professionnels ne bénéficient pas du droit de rétractation (art. 43 de la même loi).</N>
             </>
@@ -204,7 +205,7 @@ export default function ContenuFr() {
               <N n="11.2">Le client annule depuis son espace de réservation. L’heure de l’annulation est celle enregistrée par la Plateforme, à l’heure de Lomé (GMT).</N>
               <N n="11.3"><strong>Annulation par le prestataire :</strong> le client est remboursé intégralement, frais de service compris, et KWA-BA l’aide à trouver une solution équivalente (article 12).</N>
               <N n="11.4"><strong>Circonstances exceptionnelles :</strong> le client est remboursé intégralement, frais de service compris, si la prestation devient impossible ou interdite pour l’un des motifs suivants, survenu après la réservation et justifié : catastrophe naturelle ; épidémie déclarée par les autorités avec des restrictions de déplacement ; fermeture des frontières ; interdiction officielle de voyager ; couvre-feu ou troubles graves dans la zone ; décès ou hospitalisation grave du client ou d’un proche parent, sur justificatif. À la place du remboursement, le client peut choisir un avoir. Ne sont pas couverts : les retards ou annulations de vol ordinaires, les difficultés de visa connues à la réservation, les maladies sans hospitalisation, et les événements connus à la date de la réservation.</N>
-              <N n="11.5">Les remboursements sont faits sur le moyen de paiement d’origine, dans un délai de <strong>7 jours ouvrés</strong>. Si ce n’est pas possible, ils sont faits sur un compte Mobile Money au nom du client, avec son accord. En cas d’indisponibilité du prestataire de paiement, KWA-BA informe le client et rembourse dès le rétablissement du service ou par un autre moyen, dans le respect des délais fixés par la loi.</N>
+              <N n="11.5">Les remboursements sont faits sur le moyen de paiement d’origine, dans un délai de <strong>sept jours ouvrés</strong>. Ce délai concerne les remboursements après annulation ; il est distinct du délai de rétractation de dix jours ouvrables (article 10.1). Si ce n’est pas possible, ils sont faits sur un compte Mobile Money au nom du client, avec son accord. En cas d’indisponibilité du prestataire de paiement, KWA-BA informe le client et rembourse dès le rétablissement du service ou par un autre moyen, dans le respect des délais fixés par la loi.</N>
             </>
           ),
         },
@@ -280,7 +281,7 @@ export default function ContenuFr() {
           titre: "Réserver par la Plateforme",
           contenu: (
             <>
-              <N n="16.1">Pour un nouveau séjour ou une nouvelle location auprès d’un prestataire découvert sur la Plateforme, le client réserve à nouveau par la Plateforme. Il bénéficie alors du tarif Client fidèle (3 %) ou de la fonction « Mon chauffeur », et conserve la Garantie Kwa-Ba.</N>
+              <N n="16.1">Pour un nouveau séjour ou une nouvelle location auprès d’un prestataire découvert sur la Plateforme, le client réserve à nouveau par la Plateforme. Il bénéficie alors du tarif Client fidèle (3 %) ou de la fonction « Mon chauffeur », et conserve la Garantie Kwa-Ba. La fonction « Mon chauffeur » permet au client de redemander un chauffeur qu’il a déjà eu par la Plateforme : ce chauffeur reçoit alors 6 500 F CFA par jour au lieu de 6 000, et KWA-BA conserve 500 F CFA au lieu de 1 000. Le prix payé par le client ne change pas.</N>
               <N n="16.2">Le client qui reçoit une proposition de paiement ou de réservation hors de la Plateforme peut la signaler à KWA-BA. Un signalement vérifié est récompensé par 5 000 F CFA.</N>
             </>
           ),
@@ -312,7 +313,7 @@ export default function ContenuFr() {
           titre: "Responsabilité",
           contenu: (
             <>
-              <N n="19.1">KWA-BA répond de la bonne exécution de ses propres services (article 3.3), sous réserve des dispositions légales impératives applicables au commerce électronique. <AValider>juriste</AValider></N>
+              <N n="19.1">KWA-BA répond de la bonne exécution de ses propres services (article 3.3), sous réserve des dispositions légales impératives applicables au commerce électronique.</N>
               <N n="19.2">Le prestataire répond de l’exécution de sa prestation. KWA-BA dispose d’un recours contre lui pour toute somme qu’elle aurait payée à sa place.</N>
               <N n="19.3">Sauf faute lourde ou intentionnelle de KWA-BA, dommage corporel ou disposition légale contraire, sa responsabilité au titre de son propre service est limitée au montant des frais de service perçus pour la réservation concernée. Ce plafond ne s’applique pas à la Garantie Kwa-Ba, qui suit ses propres règles.</N>
               <N n="19.4">Aucune partie n’est responsable d’un manquement dû à la force majeure, c’est-à-dire à un événement imprévisible, irrésistible et extérieur.</N>
@@ -325,7 +326,7 @@ export default function ContenuFr() {
           titre: "Données personnelles",
           contenu: (
             <>
-              <N n="20.1">KWA-BA traite les données du client conformément à la loi n° 2019-014 du 29 octobre 2019 relative à la protection des données à caractère personnel et à sa <Link href="/confidentialite">politique de confidentialité</Link>. Déclaration auprès de l’IPDCP n° <AC>numéro de déclaration</AC>.</N>
+              <N n="20.1">KWA-BA traite les données du client conformément à la loi n° 2019-014 du 29 octobre 2019 relative à la protection des données à caractère personnel et à sa <Link href="/confidentialite">politique de confidentialité</Link>. Déclaration auprès de l’IPDCP n° <MentionSociete cle="ipdcp" libelle="numéro de déclaration" />.</N>
               <N n="20.2">Seules les données nécessaires à la prestation sont transmises au prestataire.</N>
               <N n="20.3">Le client dispose d’un droit d’accès, de rectification, d’opposition et de suppression, à exercer à l’adresse <LienContact sujet="Mes données personnelles" />. Il peut aussi saisir l’IPDCP.</N>
               <N n="20.4">Il peut s’opposer à tout moment, sans frais, à recevoir des messages commerciaux (loi n° 2017-07, art. 37), par le lien prévu dans chaque message ou depuis son compte.</N>
@@ -371,9 +372,8 @@ export default function ContenuFr() {
           titre: "Droit applicable et juridiction",
           contenu: (
             <>
-              <N n="24.1">Les CGV sont soumises au droit togolais et aux actes uniformes de l’OHADA.</N>
+              <N n="24.1">Les présentes conditions sont soumises au droit togolais et aux actes uniformes de l’OHADA, sans priver le consommateur des dispositions impératives du pays où il réside.</N>
               <N n="24.2">À défaut de solution amiable, tout litige relève des juridictions compétentes de Lomé, notamment du tribunal de commerce de Lomé pour les clients professionnels.</N>
-              <N n="24.3">Le consommateur conserve les protections impératives plus favorables de la loi de son pays de résidence lorsque celle-ci s’applique, notamment pour les clients résidant dans l’Union européenne. <AValider>juriste</AValider></N>
             </>
           ),
         },
@@ -408,7 +408,7 @@ export default function ContenuFr() {
               <tbody>
                 <tr><td>Séjour de courte durée</td><td>Prix des nuits + 6 % (3 % en Pack Séjour ou en Client fidèle, 4 % pour les entreprises sous contrat cadre)</td></tr>
                 <tr><td>Voiture</td><td>Prix fixé par le propriétaire, sans frais de service</td></tr>
-                <tr><td>Transfert aéroport</td><td>Prix forfaitaire du trajet, chauffeur compris (+ 25 % entre 22 h et 6 h)</td></tr>
+                <tr><td>Transfert aéroport</td><td>Prix forfaitaire du trajet, chauffeur compris</td></tr>
                 <tr><td>Chauffeur</td><td>7 000 F CFA par jour + primes éventuelles (1 500 ou 2 000 F CFA par jour) + heures supplémentaires (1 000 F CFA)</td></tr>
               </tbody>
             </table>

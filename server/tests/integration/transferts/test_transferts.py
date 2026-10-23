@@ -82,15 +82,19 @@ def _reserver_et_payer(client, faux, **champs):
 def test_aeroports_de_lancement_et_devis():
     from rest_framework.test import APIClient
     api = APIClient()
-    codes = {a['code'] for a in api.get(f'{TRANSFERTS}aeroports/').data}
+    aeroports = api.get(f'{TRANSFERTS}aeroports/').data
+    codes = {a['code'] for a in aeroports}
+    # Prix « à partir de » de chaque véhicule, affiché avant que le voyageur ne choisisse
+    assert next(a for a in aeroports if a['code'] == 'LFW')['prix'] == {'berline': 10000, 'confort': 15000, 'van': 25000}
     assert {'LFW', 'COO', 'OUA', 'NIM', 'BKO'} <= codes
 
     jour = api.get(f'{TRANSFERTS}devis/', {'aeroport': 'LFW', 'arrivee': _arrivee(), 'passagers': 4, 'bagages': 2}).data
     prix = {o['categorie']: (o['prix'], o['disponible']) for o in jour['options']}
     assert prix == {'berline': (10000, False), 'confort': (15000, True), 'van': (25000, True)}
 
+    # Même prix de nuit (majoration supprimée)
     nuit = api.get(f'{TRANSFERTS}devis/', {'aeroport': 'LFW', 'arrivee': _arrivee(heure='23:40')}).data
-    assert nuit['options'][0]['prix'] == 12500 and nuit['options'][0]['nuit'] is True
+    assert nuit['options'][0]['prix'] == 10000 and 'nuit' not in nuit['options'][0]
 
 
 def test_heure_saisie_dans_le_fuseau_de_l_aeroport(client_for, make_user, faux):
@@ -180,7 +184,7 @@ def test_annulation_moins_de_24h_pas_de_remboursement(client_for, make_user, fau
 def test_annulation_par_kwaba_rembourse_tout(client_for, make_user, faux):
     client = client_for(make_user())
     t = _reserver_et_payer(client, faux, arrivee=_arrivee(dans_heures=12, heure=(timezone.localtime() + timedelta(hours=12)).strftime('%H:%M')))
-    assert services.annuler(t, par='plateforme') == t.prix  # remboursement intégral, majoration de nuit comprise
+    assert services.annuler(t, par='plateforme') == t.prix  # remboursement intégral
 
 
 def test_expiration_sans_paiement(client_for, make_user, faux):

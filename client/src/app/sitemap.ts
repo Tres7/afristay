@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { cheminLocalise, lireApi, PAGES_PUBLIQUES, SITE_URL, versionsLinguistiques } from "@/lib/seo";
 import type { Hebergement } from "@/types/api/models";
 import type { Organisation } from "@/types/api/give";
+import { filtrerLiens, type ReglagesSite } from "@/lib/modules";
 
 // Calculé à la demande (jamais au build, où l'API n'est pas joignable) ; les lectures de l'API sont mises en
 // cache une heure (lireApi)
@@ -24,15 +25,20 @@ function entrees(chemin: string, extra: Partial<Entree> = {}): MetadataRoute.Sit
   }));
 }
 
-/** sitemap.xml : pages publiques, logements disponibles et associations Give, en français et en anglais. */
+/**
+ * sitemap.xml : pages publiques, logements disponibles et associations Give, en français et en anglais. Les pages
+ * des modules masqués n'y figurent pas (réglages relus toutes les 5 minutes ; API injoignable : modules masqués).
+ */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [logements, organisations] = await Promise.all([
+  const [logements, reglages] = await Promise.all([
     lireApi<{ results: Hebergement[] }>("/v1/hebergements/", 3600),
-    lireApi<{ results: Organisation[] }>("/v1/give/organisations/", 3600),
+    lireApi<ReglagesSite>("/v1/site/", 300),
   ]);
+  const organisations = reglages?.modules.give ? await lireApi<{ results: Organisation[] }>("/v1/give/organisations/", 3600) : null;
+  const pages = filtrerLiens(PAGES_PUBLIQUES.map((href) => ({ href })), reglages?.modules).map((p) => p.href);
 
   return [
-    ...PAGES_PUBLIQUES.flatMap((chemin) => entrees(chemin, { priority: PRIORITES[chemin] ?? 0.5 })),
+    ...pages.flatMap((chemin) => entrees(chemin, { priority: PRIORITES[chemin] ?? 0.5 })),
     ...(logements?.results ?? []).flatMap((h) =>
       entrees(`/hebergements/${h.id}`, { priority: 0.8, changeFrequency: "weekly" })),
     ...(organisations?.results ?? []).flatMap((o) => entrees(`/give/${o.slug}`, { priority: 0.6 })),

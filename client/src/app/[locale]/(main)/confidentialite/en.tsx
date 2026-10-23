@@ -1,13 +1,14 @@
 import { Link } from "@/i18n/navigation";
 import LienContact from "@/components/legal/LienContact";
-import LegalPage, { AC, AValider, VersionFrancaiseFaitFoi } from "@/components/legal/LegalPage";
+import LegalPage, { AC, VersionFrancaiseFaitFoi } from "@/components/legal/LegalPage";
+import MentionSociete from "@/components/legal/MentionSociete";
 
 /** English version (the French version prevails). */
 export default function ContenuEn() {
   return (
     <LegalPage
       titre="Privacy policy"
-      miseAJour="22 October 2026"
+      miseAJour="23 October 2026"
       intro={
         <>
           <p>
@@ -25,9 +26,9 @@ export default function ContenuEn() {
           titre: "Data controller",
           contenu: (
             <ul>
-              <li>Controller: <strong>KWA-BA SARL</strong>, a limited liability company with a share capital of 100,000 F CFA, Totsi Gblenkomé district, street 243, Lomé (Togo), RCCM <AC>RCCM</AC>.</li>
-              <li>Declaration to the personal data protection authority (IPDCP): no. <AC>declaration number</AC>.</li>
-              <li>Contact about your data: <LienContact sujet="Data protection" />, or by WhatsApp on <AC>WhatsApp number</AC>.</li>
+              <li>Controller: <strong>KWA-BA SARL</strong>, a limited liability company with a share capital of 100,000 F CFA, Totsi Gblenkomé district, street 243, Lomé (Togo), RCCM <MentionSociete cle="rccm" libelle="RCCM" />.</li>
+              <li>Declaration to the personal data protection authority (IPDCP): no. <MentionSociete cle="ipdcp" libelle="declaration number" />.</li>
+              <li>Contact about your data: <LienContact sujet="Data protection" />, or by WhatsApp on <MentionSociete cle="whatsapp" libelle="WhatsApp number" />.</li>
               <li>Data officer within KWA-BA: <AC>name or position</AC>.</li>
             </ul>
           ),
@@ -89,12 +90,19 @@ export default function ContenuEn() {
               <li>The <strong>partner rental company</strong> for a car hire receives your name, phone number, the vehicle, places and dates, number of people, your details and, if you drive, the driver&apos;s name and licence details.</li>
               <li><strong>Members of a group trip</strong> see your first name and last initial, your votes, your proposals and the bookings you share with them (place, dates, amount).</li>
               <li>Kwa-Ba <strong>administrators</strong>, for moderation and support (restricted and logged access).</li>
-              <li>Website and data hosting: <AC>hosting provider name, address and country</AC>.</li>
+              <li>Website and data hosting: IONOS SE, Elgendorfer Straße 57, 56410 Montabaur (Germany).</li>
               <li>Email delivery (codes, notifications): <strong>Brevo</strong> (Sendinblue SAS, Paris, France), with data hosted in the European Union. Receives your email address and the content of the messages sent.</li>
               <li><strong>FedaPay</strong> (Benin): Mobile Money and card payments, payouts to hosts and refunds. Receives your name, email, the amount and, for hosts, the payout number.</li>
-              <li><strong>Google</strong> (United States), Gemini API: only if you use the AI Concierge. Receives the content of your messages to generate replies and keeps the conversation history for up to 55 days so it can be continued. <AValider>Used on a paid plan: under its terms, Google then does not use this data to improve its products.</AValider> Do not include sensitive data.</li>
+              <li>
+                <strong>Google</strong> (United States), for three uses, each only if you use it:
+                <ul>
+                  <li>AI Concierge (Gemini API): receives the content of your messages to generate replies and keeps the conversation history for up to 55 days so it can be continued. Used on a paid plan: under its terms, Google then does not use this data to improve its products. Do not include sensitive data.</li>
+                  <li>Google sign-in: when you choose “Continue with Google”.</li>
+                  <li>Map of listings (Google Maps): when you agree to show it (see the <Link href="/cookies">cookie policy</Link>).</li>
+                </ul>
+                Google may process data outside the European Union, under the EU–US Data Privacy Framework.
+              </li>
               <li><strong>PayPal</strong> (Europe): only if you choose this payment method. Receives the amount and the booking reference.</li>
-              <li>Google: only if you use Google sign-in or agree to show the map (see the <Link href="/cookies">cookie policy</Link>). Google may process data outside the European Union, under the EU–US Data Privacy Framework.</li>
               <li>Unsplash: some illustration photos are loaded from its servers, which then receive your IP address.</li>
             </ul>
           ),
@@ -117,16 +125,16 @@ export default function ContenuEn() {
           contenu: (
             <ul>
               <li>Verification codes: 10 minutes. Cookie choices: 6 months. Language choice: 1 year.</li>
-              <li>Inactive account: <AValider>3 years after the last activity, then deleted or anonymised.</AValider></li>
-              <li>Bookings and contracts concluded online (acceptances, signed contracts): <AValider>5 years after their performance</AValider> (<Link href="/cgv#preuve">terms of sale, art. 22.2</Link>).</li>
-              <li>Payments, payouts, refunds, invoices, donations and payouts to NGOs: <AValider>10 years (accounting records).</AValider></li>
-              <li>Partners&apos; supporting documents (vehicle papers, licence, criminal record, contracts): <AValider>for the duration of the relationship, then 5 years.</AValider> The copy of a host&apos;s ID document is deleted as soon as the agent has checked the identity (only the document type and the result of the check are kept).</li>
-              <li>Report and photos of a visit: <AValider>as long as the listing is published, then 3 years.</AValider></li>
-              <li>AI Concierge conversations: until you delete them (button in the conversation), <AValider>and at most 12 months after the last message.</AValider></li>
-              <li>Messages: <AValider>3 years after the last message in the conversation.</AValider></li>
-              <li>Reviews: as long as the listing exists, <AValider>and 3 years at most.</AValider></li>
-              <li>Marketing data (newsletter, waiting list): <AValider>3 years after the last contact.</AValider></li>
-              <li>Connection and security logs: <AValider>12 months.</AValider></li>
+              <li>Inactive account: 3 years after the last activity, then deleted or anonymised.</li>
+              <li>Bookings and contracts concluded online (acceptances, signed contracts): 5 years after their performance (<Link href="/cgv#preuve">terms of sale, art. 22.2</Link>).</li>
+              <li>Payments, payouts, refunds, invoices, donations and payouts to NGOs: 10 years (accounting records).</li>
+              <li>Partners&apos; supporting documents (vehicle papers, licence, criminal record, contracts): for the duration of the relationship, then 5 years. The copy of a host&apos;s ID document is deleted as soon as the agent has checked the identity (only the document type and the result of the check are kept).</li>
+              <li>Report and photos of a visit: as long as the listing is published, then 3 years.</li>
+              <li>AI Concierge conversations: until you delete them (button in the conversation), and at most 12 months after the last message.</li>
+              <li>Messages: 3 years after the last message in the conversation.</li>
+              <li>Reviews: as long as the listing exists, and 3 years at most.</li>
+              <li>Marketing data (newsletter, waiting list): 3 years after the last contact.</li>
+              <li>Connection and security logs: 12 months.</li>
             </ul>
           ),
         },

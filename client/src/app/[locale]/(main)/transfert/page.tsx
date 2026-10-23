@@ -5,7 +5,7 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useQuery } from "@tanstack/react-query";
-import { Car, Clock, CreditCard, Lock, Luggage, Moon, Plane, ShieldCheck, Smartphone, Users, Wallet } from "lucide-react";
+import { Car, Clock, CreditCard, Lock, Luggage, Plane, ShieldCheck, Smartphone, Users, Wallet } from "lucide-react";
 import api, { apiErrorMessage } from "@/lib/api";
 import { enEuros, payerTransfert, useConfigPaiement } from "@/lib/paiement";
 import { cn, formatFcfa, formatPrice, isoDate } from "@/lib/utils";
@@ -23,6 +23,10 @@ const MOYENS: { id: MoyenPaiement; label: string; icon: typeof Smartphone }[] = 
   { id: "carte", label: "carte", icon: CreditCard },
   { id: "paypal", label: "paypal", icon: Wallet },
 ];
+
+const CATEGORIES: CategorieVehicule[] = ["berline", "confort", "van"];
+// Saisie gardée le temps de se connecter (stockage de session, effacé à la fermeture de l'onglet)
+const BROUILLON = "kwaba_transfert_brouillon";
 
 const champ = "w-full py-3 px-4 bg-white border border-gray-200 rounded-xl text-base sm:text-sm text-dark focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary";
 
@@ -52,6 +56,19 @@ function TransfertContent() {
   const [moyen, setMoyen] = useState<MoyenPaiement | null>(null);
   const [erreurs, setErreurs] = useState<Record<string, string>>({});
   const [envoi, setEnvoi] = useState(false);
+
+  // Retour de la page de connexion : on reprend la demande là où le voyageur l'avait laissée
+  useEffect(() => {
+    try {
+      const brouillon = sessionStorage.getItem(BROUILLON);
+      if (!brouillon) return;
+      sessionStorage.removeItem(BROUILLON);
+      const b = JSON.parse(brouillon);
+      setAeroport(b.aeroport ?? ""); setDate(b.date ?? ""); setHeure(b.heure ?? ""); setVol(b.vol ?? "");
+      setPassagers(b.passagers ?? 1); setBagages(b.bagages ?? 1); setCategorie(b.categorie ?? null);
+      setDestination(b.destination ?? ""); setTelephone(b.telephone ?? ""); setMessage(b.message ?? "");
+    } catch { /* stockage indisponible ou brouillon illisible : formulaire vide */ }
+  }, []);
 
   const { data: aeroports = [] } = useQuery({
     queryKey: ["transferts", "aeroports"],
@@ -92,10 +109,20 @@ function TransfertContent() {
   const moyensDispo = MOYENS.filter((m) => config?.moyens.includes(m.id));
   const moyenChoisi = moyen && moyensDispo.some((m) => m.id === moyen) ? moyen : moyensDispo[0]?.id;
   const enLigne = !!config?.actif;
+  // Prix « à partir de » de chaque véhicule, affichés avant tout choix : ceux de l'aéroport choisi, sinon les plus bas
+  const prixAPartir = (c: CategorieVehicule) => {
+    const liste = (aeroport ? aeroports.filter((a) => a.code === aeroport) : aeroports).map((a) => a.prix?.[c]).filter((p): p is number => !!p);
+    return liste.length ? Math.min(...liste) : null;
+  };
+  const complet = !!choix && !!vol && !!destination && !!telephone && !devis?.trop_tard;
 
   const reserver = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!connecte) {
+      // Toute la demande se remplit sans compte ; la connexion n'est demandée qu'ici, juste avant le paiement
+      try {
+        sessionStorage.setItem(BROUILLON, JSON.stringify({ aeroport, date, heure, vol, passagers, bagages, categorie: choix?.categorie ?? categorie, destination, telephone, message }));
+      } catch { /* sans stockage, le voyageur ressaisit après la connexion */ }
       router.push(`/login?callbackUrl=${encodeURIComponent(`${pathname}?${searchParams.toString()}`)}`);
       return;
     }
@@ -184,7 +211,24 @@ function TransfertContent() {
           <section className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 sm:p-8">
             <h2 className="font-heading font-bold text-dark text-xl">{t("vehicule")}</h2>
             {!aeroport || !arrivee ? (
-              <p className="text-sm text-gray-600 mt-3">{t("choisirPourPrix")}</p>
+              <>
+                <ul className="space-y-3 mt-4">
+                  {CATEGORIES.filter((c) => prixAPartir(c) !== null).map((c) => (
+                    <li key={c} className="flex items-center gap-4 rounded-2xl p-4 border border-gray-100">
+                      <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-gray-100 text-gray-600"><Car size={22} /></div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-sm text-dark">{t(`vehicules.${c}.nom`)}</p>
+                        <p className="text-xs text-gray-600">{t(`vehicules.${c}.description`)}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[11px] text-gray-500">{t("aPartirDe")}</p>
+                        <p className="font-heading font-bold text-dark whitespace-nowrap">{formatPrice(prixAPartir(c)!)}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-sm text-gray-600 mt-3">{t("choisirPourPrix")}</p>
+              </>
             ) : devis?.trop_tard ? (
               <p role="alert" className="text-sm text-red-700 bg-red-50 rounded-xl p-3 mt-3">
                 {t("tropTard", { heures: devis.delai_min_heures })}
@@ -214,7 +258,6 @@ function TransfertContent() {
                       </div>
                       <div className="text-right">
                         <p className="font-heading font-bold text-dark whitespace-nowrap">{formatPrice(o.prix)}</p>
-                        {o.nuit && <p className="flex items-center justify-end gap-1 text-[11px] text-gray-600"><Moon size={11} /> {t("tarifNuit")}</p>}
                       </div>
                     </button>
                   );
@@ -246,7 +289,6 @@ function TransfertContent() {
               <dl className="text-sm space-y-2">
                 <div className="flex justify-between gap-3"><dt className="text-gray-600">{t("vehicule")}</dt><dd className="font-medium text-dark">{t(`vehicules.${choix.categorie}.nom`)}</dd></div>
                 <div className="flex justify-between gap-3"><dt className="text-gray-600">{t("passagersBagages")}</dt><dd className="font-medium text-dark">{passagers} · {bagages}</dd></div>
-                {choix.nuit && <div className="flex justify-between gap-3"><dt className="text-gray-600">{t("tarifNuitDetail")}</dt><dd className="font-medium text-dark">{t("inclus")}</dd></div>}
                 <div className="flex justify-between items-center gap-3 pt-3 border-t border-gray-100">
                   <dt className="font-heading font-bold text-dark text-base">{t("total")}</dt>
                   <dd className="text-right"><span className="block font-heading font-bold text-primary text-2xl">{formatPrice(choix.prix)}</span><MontantDebite montant={choix.prix} /></dd>
@@ -273,16 +315,17 @@ function TransfertContent() {
 
             {erreurs.general && <p role="alert" className="text-sm text-red-700 bg-red-50 rounded-xl p-3">{erreurs.general}</p>}
 
-            <button type="submit" disabled={envoi || (connecte && (!choix || !vol || !destination || !telephone || devis?.trop_tard))}
+            <button type="submit" disabled={envoi || !complet}
               className="w-full bg-secondary hover:bg-secondary-600 text-white font-bold py-4 rounded-2xl shadow-md disabled:opacity-60">
               {!connecte
-                ? t("seConnecter")
+                ? t("seConnecterPourPayer")
                 : envoi
                   ? t("redirection")
                   : choix
                     ? enLigne ? tRes("payer", { montant: moyenChoisi === "paypal" && config ? enEuros(choix.prix, config.fcfa_par_euro) : formatFcfa(choix.prix) }) : t("reserver")
                     : t("reserver")}
             </button>
+            {!connecte && <p className="text-xs text-gray-600 text-center leading-relaxed">{t("connexionDerniere")}</p>}
             <p className="text-xs text-gray-600 text-center leading-relaxed">
               {t.rich("infoChauffeur", { cgu: (x) => <Link href="/cgv" className="text-primary font-medium">{x}</Link> })}
             </p>

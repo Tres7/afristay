@@ -34,6 +34,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from apps.paiements import services as paiements
+from config.site import module_actif
 
 from .models import (
     CategorieVehiculeModel, LieuRemiseModel, LocationModel, ParametresLocationModel, PartenaireLocationModel,
@@ -148,6 +149,9 @@ def chiffrer(params: ParametresLocationModel, categorie: CategorieVehiculeModel 
     jours = nombre_de_jours(debut, fin)
     if formule not in dict(LocationModel.FORMULES):
         raise LocationErreur("Formule inconnue.")
+    if formule == 'sans_chauffeur' and not module_actif('location_sans_chauffeur'):
+        # Hors de l'offre de lancement (interrupteur MODULE_LOCATION_SANS_CHAUFFEUR)
+        raise LocationErreur("La location sans chauffeur n'est pas encore proposée.")
     avec_chauffeur = formule in ('avec_chauffeur', 'chauffeur_seul')
     if formule == 'chauffeur_seul':
         prix_jour, frais, caution, commission = 0, 0, 0, 0

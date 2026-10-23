@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { useSession } from "next-auth/react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import { List, Map as IconeCarte, Search, SlidersHorizontal, X } from "lucide-react";
 import api from "@/lib/api";
 import { cn, formatDate } from "@/lib/utils";
 import Chargement from "@/components/ui/Chargement";
@@ -17,6 +17,9 @@ import Select from "@/components/ui/Select";
 import type { Hebergement, Paginated } from "@/types/api/models";
 import { useTranslations } from "next-intl";
 import ChampDestination from "@/components/hebergement/ChampDestination";
+import { AMENITIES } from "@/components/hebergement/AmenityBadge";
+import MapEmbed from "@/components/hebergement/MapEmbed";
+import { QUARTIERS_LOME } from "@/lib/quartiers";
 
 const SORTS = [
   { id: "", label: "pertinence" },
@@ -33,7 +36,7 @@ const TYPES = [
   { id: "auberge", label: "auberges" },
 ];
 
-const FILTER_KEYS = ["city", "check_in", "check_out", "guests", "type", "sort", "price_min", "price_max", "petit_dejeuner"] as const;
+const FILTER_KEYS = ["city", "check_in", "check_out", "guests", "type", "sort", "price_min", "price_max", "petit_dejeuner", "equipements"] as const;
 
 function RechercheContent() {
   const t = useTranslations("recherche");
@@ -53,6 +56,7 @@ function RechercheContent() {
   const [priceMin, setPriceMin] = useState(params.price_min);
   const [priceMax, setPriceMax] = useState(params.price_max);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [carte, setCarte] = useState(false);
 
   // Resynchronise le formulaire quand l'URL change (recherche depuis la navbar, bouton retour…)
   useEffect(() => {
@@ -101,20 +105,49 @@ function RechercheContent() {
   const stayQuery = params.check_in && params.check_out
     ? `?check_in=${params.check_in}&check_out=${params.check_out}&guests=${params.guests || 1}`
     : "";
-  const activeCount = [params.type, params.sort, params.price_min, params.price_max, params.petit_dejeuner].filter(Boolean).length;
+  const equipements = params.equipements ? params.equipements.split(",") : [];
+  const basculerEquipement = (id: string) => {
+    const suivants = equipements.includes(id) ? equipements.filter((e) => e !== id) : [...equipements, id];
+    pushParams({ equipements: suivants.join(",") });
+  };
+  const activeCount = [params.type, params.sort, params.price_min, params.price_max, params.petit_dejeuner].filter(Boolean).length + equipements.length;
+  // Carte de la zone cherchée (les annonces n'ont pas encore de coordonnées : pas d'épingle par logement)
+  const lieuCarte = params.city || "Lomé";
+  const villeCarte = !params.city || QUARTIERS_LOME.includes(params.city) ? "Lomé, Togo" : "Togo";
+
+  const typesChips = (
+    <div className="flex flex-wrap gap-2">
+      {TYPES.map((o) => (
+        <button
+          key={o.id}
+          onClick={() => pushParams({ type: o.id })}
+          aria-pressed={params.type === o.id}
+          className={cn("px-3 py-2 rounded-full text-sm border transition-colors", params.type === o.id ? "bg-primary text-white border-primary" : "bg-white text-dark border-gray-200 hover:border-primary/40")}
+        >
+          {t(`types.${o.label}`)}
+        </button>
+      ))}
+    </div>
+  );
 
   const filtersPanel = (
     <div className="space-y-6">
       <div>
         <p className="text-xs text-muted font-bold uppercase tracking-wider mb-2">{t("typeLogement")}</p>
+        {typesChips}
+      </div>
+
+      <div>
+        <p className="text-xs text-muted font-bold uppercase tracking-wider mb-2">{t("equipements")}</p>
         <div className="flex flex-wrap gap-2">
-          {TYPES.map((o) => (
+          {Object.entries(AMENITIES).map(([id, { label }]) => (
             <button
-              key={o.id}
-              onClick={() => pushParams({ type: o.id })}
-              className={cn("px-3 py-2 rounded-full text-sm border transition-colors", params.type === o.id ? "bg-primary text-white border-primary" : "bg-white text-dark border-gray-200 hover:border-primary/40")}
+              key={id}
+              onClick={() => basculerEquipement(id)}
+              aria-pressed={equipements.includes(id)}
+              className={cn("px-3 py-1.5 rounded-full text-sm border transition-colors", equipements.includes(id) ? "bg-primary text-white border-primary" : "bg-white text-dark border-gray-200 hover:border-primary/40")}
             >
-              {t(`types.${o.label}`)}
+              {label}
             </button>
           ))}
         </div>
@@ -149,7 +182,7 @@ function RechercheContent() {
 
       {activeCount > 0 && (
         <button
-          onClick={() => { setPriceMin(""); setPriceMax(""); pushParams({ type: "", sort: "", price_min: "", price_max: "", petit_dejeuner: "" }); }}
+          onClick={() => { setPriceMin(""); setPriceMax(""); pushParams({ type: "", sort: "", price_min: "", price_max: "", petit_dejeuner: "", equipements: "" }); }}
           className="w-full text-sm font-semibold text-gray-500 hover:text-primary"
         >
           {t("effacerFiltres")}
@@ -212,10 +245,24 @@ function RechercheContent() {
                   {params.check_in && params.check_out && <span className="text-muted font-normal text-sm"> · {t("disponiblesDu", { debut: formatDate(params.check_in, { day: "numeric", month: "numeric", year: "numeric" }), fin: formatDate(params.check_out, { day: "numeric", month: "numeric", year: "numeric" }) })}</span>}
                 </h1>
               )}
-              <button onClick={() => setFiltersOpen(true)} className="lg:hidden flex items-center gap-2 border border-gray-200 bg-white rounded-full px-4 py-2 text-sm font-semibold text-dark flex-shrink-0">
-                <SlidersHorizontal size={15} /> {t("filtres")}{activeCount > 0 && <span className="bg-primary text-white text-[10px] rounded-full w-5 h-5 flex items-center justify-center">{activeCount}</span>}
-              </button>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button onClick={() => setCarte((c) => !c)} aria-pressed={carte} className="flex items-center gap-2 border border-gray-200 bg-white rounded-full px-4 py-2 text-sm font-semibold text-dark">
+                  {carte ? <List size={15} /> : <IconeCarte size={15} />} {carte ? t("masquerCarte") : t("afficherCarte")}
+                </button>
+                <button onClick={() => setFiltersOpen(true)} className="lg:hidden flex items-center gap-2 border border-gray-200 bg-white rounded-full px-4 py-2 text-sm font-semibold text-dark">
+                  <SlidersHorizontal size={15} /> {t("filtres")}{activeCount > 0 && <span className="bg-primary text-white text-[10px] rounded-full w-5 h-5 flex items-center justify-center">{activeCount}</span>}
+                </button>
+              </div>
             </div>
+
+            {/* Types toujours visibles sur mobile (les autres filtres sont dans le panneau « Filtres ») */}
+            <div className="lg:hidden -mt-2 mb-5 overflow-x-auto">{typesChips}</div>
+
+            {carte && (
+              <div className="mb-6 h-72 sm:h-96 rounded-2xl overflow-hidden shadow-card bg-white">
+                <MapEmbed lieu={lieuCarte} ville={villeCarte} />
+              </div>
+            )}
 
             {isError ? (
               <div className="bg-white rounded-2xl shadow-card p-12 text-center">

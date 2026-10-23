@@ -182,8 +182,8 @@ def devis_transfert(entree: dict):
     trop_tard = arrivee - timezone.now() < transferts.tarifs.DELAI_MIN_RESERVATION
     resultat = {
         'aeroport': f"{aeroport.nom} ({aeroport.code})",
-        'options': [{k: o[k] for k in ('nom', 'passagers', 'bagages', 'prix', 'nuit', 'disponible', 'motif')} for o in options],
-        'regles': 'Prix fixe payé en ligne, majoration de 25 % entre 22 h et 6 h, 60 min d\'attente incluses, '
+        'options': [{k: o[k] for k in ('nom', 'passagers', 'bagages', 'prix', 'disponible', 'motif')} for o in options],
+        'regles': 'Prix fixe payé en ligne, le même de jour comme de nuit, 60 min d\'attente incluses, '
                   'annulation gratuite jusqu\'à 24 h avant.',
         **({'attention': 'Arrivée dans moins de 6 h : trop tard pour réserver un transfert.'} if trop_tard else {}),
     }

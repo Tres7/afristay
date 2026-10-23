@@ -2,74 +2,88 @@
 
 import { Link } from "@/i18n/navigation";
 import { useMemo, useState } from "react";
-import { Search, ChevronDown, MessageCircle } from "lucide-react";
+import { Search, ChevronDown, Mail, MessageCircle } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import SubPageHeader from "@/components/layout/SubPageHeader";
+import FormulaireReclamation from "@/components/aide/FormulaireReclamation";
+import { CONTACT_EMAIL } from "@/lib/contact";
+import { lienWhatsapp, useReglagesSite } from "@/lib/site";
 import { SECTIONS_EN } from "./faq-en";
 
+// Réponses rédigées à partir des CGV et des CGU (audit n° 3) : chacune renvoie à son article. Les réponses marquées
+// « hors CGV/CGU » décrivent le fonctionnement du site et ne figurent dans aucun des deux textes.
 const SECTIONS = [
   {
     id: "reservations",
     title: "Réservations",
     items: [
-      { q: "Comment réserver un hébergement ?", a: "Choisissez vos dates et le nombre de voyageurs sur la fiche de l'hébergement, puis cliquez sur « Réserver ». Sélectionnez un mode de paiement et confirmez : la réservation est immédiatement confirmée et apparaît dans « Mes réservations »." },
-      { q: "Puis-je réserver si le logement est déjà pris ?", a: "Non. Les dates déjà réservées sont bloquées et la recherche avec dates n'affiche que les logements disponibles sur la période." },
-      { q: "Comment contacter mon hôte ?", a: "Depuis la fiche de l'hébergement, cliquez sur « Contacter ». La conversation est ensuite accessible dans « Messages »." },
+      { q: "Comment réserver un hébergement ?", a: "Choisissez vos dates et le nombre de voyageurs sur la fiche, puis « Réserver ». Avant de payer, vous voyez un récapitulatif complet : prix détaillé en F CFA, politique d'annulation, règles de l'annonce (CGV, art. 5.1). Vous acceptez les CGV en cochant une case, puis vous payez. La réservation est ferme dès la confirmation du paiement (art. 5.2 et 5.3)." },
+      { q: "Puis-je réserver si le logement est déjà pris ?", a: "Non. Une fois une réservation confirmée, ses dates sont bloquées chez le prestataire, qui refuse d'autres clients pour ces dates (CGV, art. 10.2). La recherche avec dates n'affiche donc que les logements libres sur la période." },
+      { q: "Comment contacter mon hôte ?", a: "Par la messagerie de Kwa-Ba, avant comme après le paiement (CGV, art. 5.4) : bouton « Contacter » sur la fiche, puis « Messages ». Les échanges restent courtois et liés au séjour (CGU, art. 6.1). Ne réglez jamais l'hôte hors de la Plateforme : vous perdriez la Garantie Kwa-Ba (CGU, art. 6.2)." },
     ],
   },
   {
     id: "annulation",
     title: "Annulation",
     items: [
-      { q: "Comment annuler une réservation ?", a: "Dans Profil → Mes réservations, cliquez sur « Annuler » sur le séjour concerné. L'annulation est possible jusqu'à la veille de la date d'arrivée." },
-      { q: "Puis-je annuler un séjour commencé ?", a: "Non, un séjour commencé ou terminé ne peut plus être annulé en ligne. Contactez votre hôte via la messagerie." },
+      { q: "Comment annuler une réservation ?", a: "Depuis Profil → Mes réservations, bouton « Annuler ». L'heure retenue est celle enregistrée par la Plateforme, à l'heure de Lomé (CGV, art. 11.2). Le remboursement suit la politique choisie par l'hôte (Souple, Modérée ou Ferme), affichée sur l'annonce (annexe 1). Annulée dans les 48 heures suivant la confirmation et au moins 7 jours avant l'arrivée, elle est remboursée en entier, frais de service compris (art. 10.3)." },
+      { q: "Puis-je annuler un séjour commencé ?", a: "Un départ anticipé ne donne droit à aucun remboursement, sauf accord de l'hôte ou application de la Garantie Kwa-Ba (CGV, art. 9.3). Si le logement est très différent de l'annonce, insalubre, dangereux ou inaccessible, signalez-le dans les 24 heures suivant l'arrivée, photos à l'appui : Kwa-Ba vous reloge ou rembourse les nuits non consommées (art. 12)." },
     ],
   },
   {
     id: "paiement",
     title: "Paiement",
     items: [
-      { q: "Quels moyens de paiement sont acceptés ?", a: "Mobile Money (Moov, T-Money, MTN, Orange, Airtel…) et carte Visa ou Mastercard via FedaPay, ou PayPal (débité en euros). Vous choisissez au moment de la réservation." },
-      { q: "Quand suis-je débité ?", a: "Au moment de la réservation, sur la page sécurisée de FedaPay ou de PayPal. Les dates sont bloquées 30 minutes le temps de payer ; la réservation est confirmée dès le paiement reçu." },
-      { q: "Quand l'hôte est-il payé ?", a: "Kwa-Ba conserve votre paiement jusqu'à votre arrivée et ne le verse à l'hôte que 24 heures après le début du séjour. En cas de problème à l'arrivée, signalez-le dans ce délai." },
-      { q: "Comment suis-je remboursé ?", a: "Sur le moyen de paiement utilisé, sous 7 jours ouvrés, selon la politique d'annulation choisie par l'hôte (Souple, Modérée ou Ferme) et affichée sur l'annonce. Une réservation annulée dans les 48 heures, au moins 7 jours avant l'arrivée, est toujours remboursée intégralement." },
-      { q: "Que comprennent les frais de service ?", a: "Des frais de service de 6 % s'ajoutent au prix des nuits (3 % si vous revenez chez un hôte où vous avez déjà séjourné par Kwa-Ba). Ils couvrent la réservation sécurisée, l'assistance et la Garantie Kwa-Ba. Le détail est affiché avant le paiement." },
+      { q: "Quels moyens de paiement sont acceptés ?", a: "Le paiement passe par FedaPay, établissement agréé par la BCEAO : Mobile Money (Moov Money/Flooz, Mixx by Yas/T-Money) ou carte Visa ou Mastercard (CGV, art. 7.1). Le prix est toujours payé en F CFA (art. 7.3) ; un affichage en euros n'est qu'un équivalent indicatif. Ne payez jamais un prestataire en espèces, sauf le dépôt de garantie d'un logement remis contre reçu (art. 7.5)." },
+      { q: "Quand suis-je débité ?", a: "Au moment où vous réservez, sur la page sécurisée de FedaPay ; Kwa-Ba ne conserve pas les données complètes de votre carte (CGV, art. 7.1). La réservation est ferme dès la confirmation du paiement ; la confirmation vous est envoyée aussitôt, et au plus tard sous cinq jours (art. 5.3). Le prix ne peut plus augmenter ensuite (art. 6.2)." },
+      { q: "Quand l'hôte est-il payé ?", a: "Kwa-Ba conserve le prix jusqu'à 24 heures après votre arrivée, puis le verse à l'hôte (CGV, art. 8.1). Ce délai vous permet de signaler un problème avant que l'hôte ne soit payé (art. 8.3)." },
+      { q: "Comment suis-je remboursé ?", a: "Sur le moyen de paiement d'origine, dans un délai de sept jours ouvrés ; à défaut, sur un compte Mobile Money à votre nom, avec votre accord (CGV, art. 11.5). Le montant dépend de la politique d'annulation de l'annonce (annexe 1). Si le prestataire annule, vous êtes remboursé intégralement, frais de service compris (art. 11.3)." },
+      { q: "Que comprennent les frais de service ?", a: "Ils rémunèrent le service de réservation et l'assistance de Kwa-Ba (CGV, art. 2 et 3.3). Ils s'élèvent à 6 % du prix des nuits ; 3 % pour un client fidèle qui revient chez le même hôte ou pour un Pack Séjour + Chauffeur (art. 6.4). Les réductions ne se cumulent pas, et le détail est affiché avant le paiement (art. 5.1)." },
     ],
   },
   {
     id: "transferts",
     title: "Transfert aéroport",
     items: [
-      { q: "Comment réserver un chauffeur à l'aéroport ?", a: "Depuis « Transfert aéroport » (ou depuis la confirmation de votre séjour) : indiquez votre vol, choisissez le véhicule et payez. Réservez au plus tard 6 heures avant l'atterrissage." },
-      { q: "Quand vais-je connaître mon chauffeur ?", a: "Son nom, son numéro et son véhicule vous sont envoyés par email au plus tard la veille de votre arrivée, et apparaissent dans Profil → Mes transferts." },
-      { q: "Mon vol a du retard", a: "Le chauffeur attend jusqu'à 60 minutes après l'heure prévue. Au-delà, prévenez-le par appel ou WhatsApp : son numéro figure dans votre transfert." },
-      { q: "Puis-je annuler ?", a: "Oui, gratuitement jusqu'à 24 heures avant l'arrivée. Ensuite, le transfert n'est plus remboursé." },
+      { q: "Comment réserver un chauffeur à l'aéroport ?", a: "Depuis « Transfert aéroport » : indiquez votre vol, le nombre de passagers et de bagages, choisissez le véhicule, puis payez. Le prix est forfaitaire par trajet, selon l'aéroport et la catégorie de véhicule, chauffeur compris, le même de jour comme de nuit (CGV, art. 6.5)." },
+      { q: "Quand vais-je connaître mon chauffeur ?", a: "Le nom et le numéro du chauffeur vous sont communiqués après son attribution, au plus tard 24 heures avant la prise en charge (CGV, art. 5.4). Si le chauffeur est absent ou a plus d'une heure de retard, Kwa-Ba cherche un remplaçant ou rembourse le trajet (art. 12)." },
+      { q: "Mon vol a du retard : que faire ?", a: "Prévenez le chauffeur dès que possible, au numéro communiqué avec votre transfert (CGV, art. 5.4). L'attente au-delà d'une heure peut être facturée en heures supplémentaires, 1 000 F CFA l'heure (annexe 1 et art. 6.5). Un simple retard de vol ne donne pas droit au remboursement pour circonstances exceptionnelles (art. 11.4)." },
+      { q: "Puis-je annuler ?", a: "Oui : un transfert annulé jusqu'à 24 heures avant est remboursé en entier ; moins de 24 heures avant, il ne l'est plus (CGV, annexe 1). Le délai de réflexion s'applique aussi : annulation dans les 48 heures suivant la réservation et au moins 7 jours avant le trajet, remboursement intégral (art. 10.3)." },
     ],
   },
   {
     id: "compte",
     title: "Mon compte",
     items: [
+      // Hors CGV/CGU : fonctionnement du site
       { q: "Je n'ai pas reçu mon code de vérification", a: "Vérifiez vos spams, puis utilisez « Renvoyer le code » sur la page de vérification (un nouveau code toutes les 60 secondes). Le code est valable 10 minutes." },
-      { q: "J'ai oublié mon mot de passe", a: "Cliquez sur « Mot de passe oublié ? » sur la page de connexion : un code vous est envoyé par e-mail pour choisir un nouveau mot de passe." },
-      { q: "Comment devenir hôte ?", a: "Depuis Profil → Devenir hôte, activez votre compte hôte, puis publiez votre logement depuis l'Espace hôte." },
-      { q: "Comment changer de langue ?", a: "Utilisez le sélecteur FR / EN en haut de la page ou dans le pied de page, ou allez dans Profil → Langue & région. Votre choix est mémorisé sur cet appareil." },
+      { q: "J'ai oublié mon mot de passe", a: "Cliquez sur « Mot de passe oublié ? » sur la page de connexion : un code vous est envoyé par email pour choisir un nouveau mot de passe. Gardez vos identifiants confidentiels et prévenez Kwa-Ba en cas d'usage frauduleux (CGU, art. 4.3)." },
+      { q: "Comment devenir hôte ?", a: "Depuis « Devenir hôte », activez votre compte hôte puis préparez votre annonce dans l'Espace hôte. Seul un partenaire inscrit, qui a accepté les conditions qui le concernent, peut publier (CGU, art. 5.1). Avant publication, Kwa-Ba vérifie votre identité et vos documents, et visite le logement (art. 5.2). L'annonce doit être exacte et ne contenir aucune coordonnée personnelle (art. 5.3 et 5.4)." },
+      { q: "Comment changer de langue ?", a: "Utilisez le sélecteur FR / EN en haut de la page ou dans le pied de page, ou Profil → Langue & région ; votre choix est mémorisé sur cet appareil. Les CGV sont rédigées en français, qui fait foi en cas de traduction (CGV, art. 1.4)." },
     ],
   },
   {
     id: "conditions",
     title: "Conditions d'utilisation",
     items: [
-      { q: "Engagements des voyageurs", a: "Fournir des informations exactes, respecter le logement, le nombre de voyageurs annoncé et le règlement de l'hôte." },
-      { q: "Engagements des hôtes", a: "Publier des annonces fidèles (photos, prix, équipements), honorer les réservations confirmées et répondre aux voyageurs." },
+      { q: "Engagements des voyageurs", a: "Réserver avec un compte exact, à votre nom, en étant majeur (CGU, art. 4.2 ; CGV, art. 4.1). Respecter les règles de l'annonce : horaires, nombre de personnes, bruit, fêtes, visiteurs (CGV, art. 13.1), et présenter une pièce d'identité si l'hôte la demande (art. 13.2). Tout paiement passe par la Plateforme (art. 7.5)." },
+      { q: "Engagements des hôtes", a: "Décrire l'offre de façon exacte et complète : photos récentes, équipements, règles, prix en F CFA, conditions d'annulation (CGU, art. 5.3). Ne mettre aucune coordonnée permettant de traiter hors de la Plateforme (art. 5.4). L'hôte reste responsable de sa prestation et de sa conformité à l'annonce (CGV, art. 3.2)." },
     ],
   },
   {
     id: "confidentialite",
     title: "Confidentialité",
     items: [
-      { q: "Quelles données sont collectées ?", a: "Nom, e-mail, téléphone (facultatif), vos réservations, favoris et messages. Ces données servent uniquement au fonctionnement du service." },
+      { q: "Quelles données sont collectées ?", a: "Celles de votre compte (nom, prénom, email, téléphone, pays de résidence : CGU, art. 4.2), vos réservations, paiements et messages, traités selon la loi n° 2019-014 et la politique de confidentialité (CGU, art. 13.1). Seules les données nécessaires à la prestation sont transmises au prestataire (CGV, art. 20.2). Vous pouvez y accéder, les rectifier ou les faire supprimer (art. 20.3)." },
+      // Hors CGV/CGU : fonctionnement du site
       { q: "Mon mot de passe est-il protégé ?", a: "Oui : il est stocké sous forme chiffrée (hachée) et n'est jamais visible, y compris par l'équipe Kwa-Ba." },
+    ],
+  },
+  {
+    id: "reclamations",
+    title: "Réclamations",
+    items: [
+      { q: "Comment faire une réclamation ?", a: "Par le formulaire en bas de cette page, par WhatsApp ou par email : Kwa-Ba en accuse réception sous 72 heures (CGV, art. 21.1). En cas de désaccord avec un prestataire, Kwa-Ba propose une médiation gratuite et rend un avis écrit sous 10 jours (art. 21.2). Une solution amiable est recherchée pendant 30 jours avant toute action en justice (art. 21.3)." },
     ],
   },
 ];
@@ -79,6 +93,7 @@ export default function HelpPage() {
   const sections = useLocale() === "en" ? SECTIONS_EN : SECTIONS;
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState<string | null>(null);
+  const whatsapp = useReglagesSite().data?.mentions.whatsapp;
 
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -131,6 +146,26 @@ export default function HelpPage() {
         </div>
         <Link href="/messages" className="bg-dark text-white font-medium px-5 py-3 rounded-xl hover:bg-black">{t("mesMessages")}</Link>
       </div>
+
+      <section id="contact" className="mt-10 scroll-mt-28 bg-white rounded-2xl border border-gray-100 p-6">
+        <h2 className="font-heading font-bold text-lg text-dark">{t("contactTitre")}</h2>
+        <p className="text-sm text-muted mt-1">{t("contactTexte")}</p>
+        <ul className="mt-4 grid sm:grid-cols-2 gap-3 text-sm">
+          <li className="flex items-center gap-3 rounded-xl bg-gray-50 px-4 py-3">
+            <MessageCircle size={18} className="text-primary flex-shrink-0" />
+            {whatsapp
+              ? <a href={lienWhatsapp(whatsapp)} target="_blank" rel="noopener noreferrer" className="font-semibold text-dark hover:text-primary">WhatsApp Business : {whatsapp}</a>
+              : <span className="text-dark">WhatsApp Business : <span className="text-gray-500">{t("aCompleter")}</span></span>}
+          </li>
+          <li className="flex items-center gap-3 rounded-xl bg-gray-50 px-4 py-3">
+            <Mail size={18} className="text-primary flex-shrink-0" />
+            <a href={`mailto:${CONTACT_EMAIL}`} className="font-semibold text-dark hover:text-primary">{CONTACT_EMAIL}</a>
+          </li>
+        </ul>
+        <h3 className="font-heading font-bold text-dark mt-8 mb-1">{t("reclamationTitre")}</h3>
+        <p className="text-sm text-muted mb-4">{t("reclamationTexte")}</p>
+        <FormulaireReclamation />
+      </section>
     </div>
   );
 }

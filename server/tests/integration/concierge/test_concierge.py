@@ -100,7 +100,9 @@ def test_entrees_invalides_renvoyees_en_erreur_au_modele():
 def test_devis_transfert_et_aeroport_non_desservi():
     jour = (timezone.localdate() + timedelta(days=10)).isoformat()
     resultat, cartes = outils.devis_transfert({'aeroport': 'lfw', 'arrivee': f'{jour}T23:30', 'passagers': 2, 'bagages': 2})
-    assert resultat['options'][0]['prix'] == 12500 and resultat['options'][0]['nuit'] is True
+    # Arrivée à 23 h 30 : même prix que de jour (majoration de nuit supprimée)
+    assert resultat['options'][0]['prix'] == 10000 and 'nuit' not in resultat['options'][0]
+    assert 'nuit' in resultat['regles'] and '25' not in resultat['regles']
     assert cartes[0]['type'] == 'transfert' and cartes[0]['arrivee'] == f'{jour}T23:30'
     inconnu, _ = outils.devis_transfert({'aeroport': 'CDG', 'arrivee': f'{jour}T10:00', 'passagers': 1, 'bagages': 1})
     assert 'non desservi' in inconnu['erreur'] and 'Lomé (LFW)' in inconnu['erreur']

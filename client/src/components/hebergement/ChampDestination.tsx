@@ -8,6 +8,7 @@ import { useRouter } from "@/i18n/navigation";
 import api from "@/lib/api";
 import { useDebounced } from "@/lib/useAdminList";
 import { cn } from "@/lib/utils";
+import { QUARTIERS_LOME, quartiersCorrespondants } from "@/lib/quartiers";
 import type { City } from "@/types/api/models";
 
 interface Suggestions {
@@ -17,6 +18,7 @@ interface Suggestions {
 
 type Option =
   | { type: "ville"; city: string; count: number }
+  | { type: "quartier"; nom: string }
   | { type: "logement"; id: string; name: string; city: string; image_url: string };
 
 interface ChampDestinationProps {
@@ -36,7 +38,7 @@ interface ChampDestinationProps {
   listeClassName?: string;
 }
 
-/** Champ « destination » avec propositions au fil de la saisie : villes (« lome » trouve « Lomé ») puis logements. */
+/** Champ « destination » avec propositions au fil de la saisie : villes (« lome » trouve « Lomé »), quartiers de Lomé, puis logements. */
 export default function ChampDestination({
   value, onChange, onVille, onLogement, placeholder, ariaLabel, type = "text", inputRef, className, inputClassName, listeClassName,
 }: ChampDestinationProps) {
@@ -64,17 +66,22 @@ export default function ChampDestination({
   const options: Option[] = value.trim()
     ? [
         ...(trouvees?.villes ?? []).map((v) => ({ type: "ville" as const, ...v })),
+        ...quartiersCorrespondants(value).slice(0, 6).map((nom) => ({ type: "quartier" as const, nom })),
         ...(trouvees?.logements ?? []).map((l) => ({ type: "logement" as const, ...l })),
       ]
-    : populaires.slice(0, 6).map((v) => ({ type: "ville" as const, city: v.city, count: v.count }));
+    : [
+        ...populaires.slice(0, 6).map((v) => ({ type: "ville" as const, city: v.city, count: v.count })),
+        ...QUARTIERS_LOME.slice(0, 8).map((nom) => ({ type: "quartier" as const, nom })),
+      ];
   const visible = ouvert && options.length > 0;
 
   const choisir = (option: Option) => {
     setOuvert(false);
     setActif(-1);
-    if (option.type === "ville") {
-      onChange(option.city);
-      onVille(option.city);
+    if (option.type === "ville" || option.type === "quartier") {
+      const lieu = option.type === "ville" ? option.city : option.nom;
+      onChange(lieu);
+      onVille(lieu);
     } else {
       router.push(`/hebergements/${option.id}`);
       onLogement?.();
@@ -102,7 +109,7 @@ export default function ChampDestination({
     }
   };
 
-  const villes = options.filter((o) => o.type === "ville");
+  const titres = { ville: value.trim() ? t("villes") : t("populaires"), quartier: t("quartiers"), logement: t("logements") };
   const titre = (texte: string) => <li role="presentation" className="px-4 pt-3 pb-1 text-[11px] font-bold uppercase tracking-wide text-gray-400">{texte}</li>;
 
   return (
@@ -134,10 +141,9 @@ export default function ChampDestination({
           onMouseDown={(e) => e.preventDefault()}
           className={cn("absolute top-full z-50 mt-3 max-h-[70vh] overflow-y-auto rounded-2xl border border-gray-100 bg-white pb-2 text-left shadow-card", listeClassName ?? "left-0 w-full min-w-[18rem]")}
         >
-          {villes.length > 0 && titre(value.trim() ? t("villes") : t("populaires"))}
           {options.map((option, index) => (
-            <Fragment key={option.type === "ville" ? `v-${option.city}` : `l-${option.id}`}>
-              {option.type === "logement" && index === villes.length && titre(t("logements"))}
+            <Fragment key={option.type === "ville" ? `v-${option.city}` : option.type === "quartier" ? `q-${option.nom}` : `l-${option.id}`}>
+              {options[index - 1]?.type !== option.type && titre(titres[option.type])}
               <li
                 id={`${id}-${index}`}
                 role="option"
@@ -152,6 +158,14 @@ export default function ChampDestination({
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-semibold text-dark">{option.city}</span>
                       <span className="block text-xs text-gray-500">{t("logementsDispo", { nombre: option.count })}</span>
+                    </span>
+                  </>
+                ) : option.type === "quartier" ? (
+                  <>
+                    <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100 text-primary"><MapPin size={16} /></span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-semibold text-dark">{option.nom}</span>
+                      <span className="block text-xs text-gray-500">{t("quartierLome")}</span>
                     </span>
                   </>
                 ) : (

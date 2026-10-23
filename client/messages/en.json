@@ -9,7 +9,7 @@
         "description": "Villas, apartments, hotels and guesthouses in Lomé, Cotonou, Ouagadougou and beyond. Compare nightly prices and book with Mobile Money or card."
       },
       "decouvrir": {
-        "titre": "Things to do, restaurants and sights",
+        "titre": "Activities, restaurants and sights to discover in Togo",
         "description": "The best experiences, places to eat and visits near your Kwa-Ba stay."
       },
       "transfert": {
@@ -46,14 +46,14 @@
       "logementDescription": "{type} in {ville} for {voyageurs} guests, from {prix} FCFA per night. Book on Kwa-Ba with Mobile Money or card.",
       "organisationDescription": "Support {nom} ({ville}) with Kwa-Ba Give: donate from 500 to 5,000 FCFA, payout published with its proof.",
       "location": {
-        "titre": "Car hire with or without a driver",
-        "description": "Hire a small car, saloon, SUV, 4x4 or minibus, with or without a driver, handed over at the airport or at your address. Daily price known in advance, paid online."
+        "titre": "Car hire with a driver, or your driver for your own car",
+        "description": "Hire a small car, saloon, SUV, 4x4 or minibus with a driver, or a driver for your own car, at the airport or at your address. Daily price known in advance, paid online."
       }
     }
   },
   "commun": {
     "allerAuContenu": "Skip to main content",
-    "chargement": "Loading...",
+    "chargement": "Loading…",
     "retour": "Back",
     "slogan": "The world welcomes you."
   },
@@ -141,7 +141,9 @@
       "cgv": "Terms of sale",
       "confidentialite": "Privacy",
       "cookies": "Cookie policy"
-    }
+    },
+    "contact": "Contact us",
+    "aCompleter": "to be completed"
   },
   "cookies": {
     "gerer": "Manage cookies",
@@ -193,7 +195,7 @@
     "atouts": {
       "paiement": {
         "titre": "Flexible payment",
-        "texte": "Mobile Money: Mixx by Yas (T-Money), Moov Money (Flooz), MTN MoMo, Orange Money, Celtiis, Airtel… Visa or Mastercard, or PayPal."
+        "texte": "Mobile Money: Moov Money (Flooz), Mixx by Yas (T-Money). Visa or Mastercard card."
       },
       "instantanee": {
         "titre": "Instant confirmation",
@@ -229,7 +231,7 @@
     "masquerMdp": "Hide password",
     "afficherMdp": "Show password",
     "mdpOublie": "Forgot your password?",
-    "connexionEnCours": "Logging in...",
+    "connexionEnCours": "Logging in…",
     "seConnecter": "Log in",
     "pasDeCompte": "Don't have an account?",
     "creerCompte": "Create an account",
@@ -271,7 +273,7 @@
     "nouvelOnglet": "opens in a new tab",
     "rgpd": "Your data is only used to manage your account and bookings. Your phone number is optional. You can view, change or delete your data at any time.",
     "politiqueConfidentialite": "Privacy policy",
-    "creationEnCours": "Creating your account...",
+    "creationEnCours": "Creating your account…",
     "creerMonCompte": "Create my account",
     "dejaUnCompte": "Already have an account?",
     "inscriptionVisuelTitre": "Join the Kwa-Ba community",
@@ -288,10 +290,10 @@
     "saisirCode": "Enter the 6-digit code sent to",
     "emailAVerifier": "Email address of the account to verify",
     "chiffre": "Digit {numero}",
-    "verificationEnCours": "Verifying...",
+    "verificationEnCours": "Verifying…",
     "verifierMonCompte": "Verify my account",
     "pasRecuCode": "Didn't get the code? Check your spam folder.",
-    "envoiEnCours": "Sending...",
+    "envoiEnCours": "Sending…",
     "renvoyerCodeDans": "Resend code ({secondes} s)",
     "renvoyerCode": "Resend code",
     "mauvaiseAdresse": "Wrong address?",
@@ -307,7 +309,7 @@
     "nouveauMdp": "New password",
     "nouveauMdpAide": "At least 8 characters; avoid common passwords.",
     "confirmer": "Confirm",
-    "enregistrementEnCours": "Saving...",
+    "enregistrementEnCours": "Saving…",
     "changerMdp": "Change my password",
     "renvoyerUnCode": "Resend a code",
     "retourConnexion": "Back to log in",
@@ -316,7 +318,9 @@
     "captchaRequis": "Tick the “I am human” box, then try again."
   },
   "logement": {
-    "verifie": "Verified place"
+    "verifie": "Verified place",
+    "parNuitFraisInclus": "/ night, service fee included",
+    "detailPrix": "Accommodation {prix} + service fee {frais}"
   },
   "favoris": {
     "ajoute": "Added to your favourites",
@@ -368,7 +372,7 @@
     "avis": "{nombre, plural, one {# review} other {# reviews}}"
   },
   "decouvrir": {
-    "titre": "Discover Africa differently",
+    "titre": "Discover Togo differently",
     "sousTitre": "Ideas for things to do near your stay. Prices are indicative.",
     "onglets": {
       "tout": "All",
@@ -401,7 +405,7 @@
       "prixDecroissant": "Price: high to low",
       "meilleuresNotes": "Top rated"
     },
-    "prixParNuit": "Price per night (FCFA)",
+    "prixParNuit": "Price per night before service fee (FCFA)",
     "min": "Min",
     "max": "Max",
     "appliquer": "Apply",
@@ -410,7 +414,7 @@
     "destinationExemple": "Destination (e.g. Lomé, Dakar, Abidjan…)",
     "rechercher": "Search",
     "filtres": "Filters",
-    "rechercheEnCours": "Searching...",
+    "rechercheEnCours": "Searching…",
     "hebergements": "{nombre, plural, one {stay} other {stays}}",
     "aVille": "in {ville}",
     "disponiblesDu": "available from {debut} to {fin}",
@@ -421,7 +425,10 @@
     "voirTous": "See all stays",
     "fermer": "Close",
     "listeResultats": "Stays found",
-    "petitDejInclus": "Breakfast included"
+    "petitDejInclus": "Breakfast included",
+    "equipements": "Amenities",
+    "afficherCarte": "Map",
+    "masquerCarte": "List"
   },
   "fiche": {
     "introuvable": "Place not found",
@@ -437,7 +444,7 @@
     "hote": "Host",
     "hoteKwaba": "Kwa-Ba host",
     "gerer": "Manage",
-    "ouverture": "Opening...",
+    "ouverture": "Opening…",
     "contacter": "Contact",
     "description": "Description",
     "aucuneDescription": "No description available.",
@@ -472,14 +479,16 @@
     "verifieAide": "A Kwa-Ba agent visited this place and checked the host's identity.",
     "hoteVerifie": "Verified host",
     "hoteVerifieAide": "Kwa-Ba has checked this host's ID document.",
-    "clientFidele": "Loyal customer rate: you have already stayed with this host"
+    "clientFidele": "Loyal customer rate: you have already stayed with this host",
+    "parNuitFraisInclus": "/ night, service fee included",
+    "detailNuit": "Accommodation {prix} + Kwa-Ba service fee {frais} ({taux}%)"
   },
   "avis": {
     "repondre": "Reply publicly",
     "reponsePubliee": "Reply published",
     "reponsePlaceholder": "Thank the guest or add some context. Everyone will see your reply.",
     "annuler": "Cancel",
-    "publication": "Publishing...",
+    "publication": "Publishing…",
     "publier": "Publish reply",
     "sejourVerifie": "Verified stay",
     "voirMoins": "Show less",
@@ -497,7 +506,7 @@
       "emplacement": "Location",
       "qualite_prix": "Value for money"
     },
-    "chargement": "Loading...",
+    "chargement": "Loading…",
     "voirPlusAvis": "Show more reviews ({nombre})"
   },
   "reservation": {
@@ -530,8 +539,8 @@
     "detailsPrix": "Price details",
     "payerAvec": "Pay with:",
     "changer": "Change",
-    "redirection": "Redirecting to payment...",
-    "traitement": "Processing...",
+    "redirection": "Redirecting to payment…",
+    "traitement": "Processing…",
     "payer": "Pay {montant}",
     "confirmerReservation": "Confirm booking",
     "accepterPaiement": "I accept the <cgu>terms of sale</cgu>, the listing rules and the <annulation>cancellation policy</annulation>.",
@@ -619,7 +628,7 @@
       "devenirHoteTexte": "List your place",
       "backofficeTexte": "Platform administration",
       "paiement": "Payment methods",
-      "paiementTexte": "Mobile Money, card, PayPal",
+      "paiementTexte": "Mobile Money, Visa or Mastercard card",
       "notifications": "Notifications",
       "notificationsTexte": "Alerts and emails",
       "langue": "Language & region",
@@ -667,7 +676,7 @@
     "moyens": {
       "mobileMoney": {
         "titre": "Mobile Money",
-        "texte": "Moov Money (Flooz), Mixx by Yas (T-Money), MTN, Orange, Airtel… via FedaPay"
+        "texte": "{operateurs}, via FedaPay"
       },
       "carte": {
         "titre": "Bank card",
@@ -678,13 +687,14 @@
         "texte": "PayPal account or card, charged in euros (€1 = 655.957 FCFA)"
       }
     },
-    "securite": "You choose how to pay for each booking, then pay on FedaPay's or PayPal's secure page. Kwa-Ba never sees or stores your bank details or Mobile Money PIN. The host is only paid after you arrive.",
-    "enSavoirPlus": "Learn more about payment and refunds"
+    "securite": "You choose how to pay for each booking, then pay on FedaPay's secure page. Kwa-Ba never sees or stores your bank details or Mobile Money PIN. The host is only paid after you arrive.",
+    "enSavoirPlus": "Learn more about payment and refunds",
+    "securitePaypal": "You choose how to pay for each booking, then pay on FedaPay's or PayPal's secure page. Kwa-Ba never sees or stores your bank details or Mobile Money PIN. The host is only paid after you arrive."
   },
   "profilEdition": {
     "erreurChargement": "Could not load your details.",
     "erreurMaj": "Update failed. Please try again.",
-    "chargement": "Loading...",
+    "chargement": "Loading…",
     "retourProfil": "Back to profile",
     "titre": "Edit profile",
     "sousTitre": "Update your personal details",
@@ -694,7 +704,7 @@
     "email": "Email address",
     "emailFixe": "Your email address can't be changed.",
     "telephone": "Phone number",
-    "enregistrement": "Saving...",
+    "enregistrement": "Saving…",
     "enregistrer": "Save",
     "fermerCompte": "Close my account",
     "fermerTexte": "Your account is deactivated straight away: you won't be able to log in and your profile will no longer appear. To have all your data permanently erased, follow the steps in the <lien>privacy policy</lien>.",
@@ -714,7 +724,7 @@
       "annulee": "Cancelled"
     },
     "annulerQuestion": "Cancel your stay at “{nom}”?",
-    "annulerBareme": "Refunds follow the cancellation policy: full refund more than 7 days before check-in, partial between 7 days and 48 hours, none within 48 hours.",
+    "annulerBareme": "Refunds follow the listing's cancellation policy (Flexible, Moderate or Firm). Cancelled within 48 hours of booking and at least 7 days before check-in, it is refunded in full.",
     "annuleeRembourse": "Booking cancelled. {montant} will be refunded to you.",
     "annuleeToast": "Booking cancelled",
     "erreurAnnulation": "Could not cancel this booking.",
@@ -734,7 +744,7 @@
     "total": "Total",
     "avisPublie": "Review published",
     "details": "Details",
-    "annulation": "Cancelling...",
+    "annulation": "Cancelling…",
     "annuler": "Cancel",
     "numeroEnregistre": "Number saved: your refund is on its way.",
     "recommande": "Recommended for your next trip"
@@ -770,7 +780,7 @@
     "racontezPlaceholder": "What you liked, what could be better, tips for future guests…",
     "encore": "{nombre} more characters needed",
     "public": "Your review will be public, signed with your first name and last initial. The host can reply.",
-    "publication": "Publishing...",
+    "publication": "Publishing…",
     "publier": "Publish my review",
     "noterCriteres": "Rate each category to publish"
   },
@@ -814,8 +824,7 @@
     "informations": "Legal information",
     "miseAJour": "Last updated: {date}",
     "sommaire": "Contents",
-    "aCompleter": "To be completed",
-    "aValider": "proposal, to be confirmed"
+    "aCompleter": "To be completed"
   },
   "aide": {
     "titre": "Help centre",
@@ -824,7 +833,12 @@
     "aucunResultat": "No results for “{recherche}”.",
     "questionSejour": "A question about a stay?",
     "questionSejourTexte": "Your host is best placed to answer.",
-    "mesMessages": "My messages"
+    "mesMessages": "My messages",
+    "contactTitre": "Contact us",
+    "contactTexte": "The Kwa-Ba team answers by WhatsApp or by email.",
+    "aCompleter": "to be completed",
+    "reclamationTitre": "Make a complaint",
+    "reclamationTexte": "Your request is sent to info@kwa-ba.com. Kwa-Ba acknowledges receipt within 72 hours (terms of sale, art. 21.1)."
   },
   "don": {
     "erreurDemarrage": "The donation could not start. Please try again in a moment.",
@@ -1131,7 +1145,7 @@
     "bagages": "Bags",
     "bagagesAide": "Checked bags",
     "vehicule": "Vehicle",
-    "choisirPourPrix": "Choose the airport, date and time to see vehicles and prices.",
+    "choisirPourPrix": "Choose the airport, date and time to check availability and the exact price of each vehicle.",
     "tropTard": "You need to book at least {heures} hours before arrival so we can assign a driver.",
     "vehicules": {
       "berline": {
@@ -1149,7 +1163,6 @@
     },
     "maxPassagers": "{nombre} passengers max",
     "maxBagages": "{nombre} bags max",
-    "tarifNuit": "night rate",
     "aucunVehicule": "No vehicle fits: contact us for a larger group.",
     "destinationContact": "Destination and contact",
     "adresseDestination": "Destination address",
@@ -1161,15 +1174,16 @@
     "messagePlaceholder": "Child seat, pushchair, help with bags…",
     "recapitulatif": "Summary",
     "passagersBagages": "Passengers · bags",
-    "tarifNuitDetail": "Night rate (10 pm – 6 am)",
-    "inclus": "included",
     "total": "Total",
     "prixApres": "The price appears as soon as the flight and vehicle are chosen.",
     "payerAvec": "Pay with",
     "seConnecter": "Log in to book",
     "redirection": "Redirecting to payment…",
     "reserver": "Book the transfer",
-    "infoChauffeur": "Your driver's name, number, vehicle and number plate are sent to you by the day before at the latest. By booking, you accept our <cgu>terms of sale</cgu>."
+    "infoChauffeur": "Your driver's name, number, vehicle and number plate are sent to you at the latest 24 hours before you arrive. By booking, you accept our <cgu>terms of sale</cgu>.",
+    "aPartirDe": "from",
+    "seConnecterPourPayer": "Sign in to pay",
+    "connexionDerniere": "Fill in the whole request without an account: you only sign in before paying, and what you entered is kept."
   },
   "transfertDetail": {
     "statuts": {
@@ -1189,7 +1203,7 @@
     "erreurAnnulation": "Could not cancel this transfer.",
     "depuis": "Transfer from {ville}",
     "attente": "We're waiting for payment confirmation. If you pay by Mobile Money, approve the request on your phone.",
-    "recu": "Payment received. We'll email you your driver's name, number and vehicle by the day before you arrive at the latest.",
+    "recu": "Payment received. We'll email you your driver's name, number and vehicle at the latest 24 hours before you arrive.",
     "expire": "Payment wasn't received in time. If you were charged, you will be refunded.",
     "nouveau": "Book a new transfer",
     "votreChauffeur": "Your driver",
@@ -1251,7 +1265,7 @@
   },
   "messages": {
     "titre": "Messages",
-    "chargement": "Loading...",
+    "chargement": "Loading…",
     "erreurChargement": "Could not load your conversations.",
     "aucune": "No conversations",
     "aucuneTexte": "You don't have any messages yet. Contact a host from a listing page to ask your questions.",
@@ -1264,8 +1278,8 @@
     "introuvable": "Conversation not found",
     "retour": "Back to messages",
     "premierMessage": "Write your first message to {nom}.",
-    "envoi": "Sending...",
-    "placeholder": "Write your message...",
+    "envoi": "Sending…",
+    "placeholder": "Write your message…",
     "votreMessage": "Your message",
     "envoyer": "Send message",
     "securite": "For your safety, everything goes through Kwa-Ba messaging: phone numbers, emails and links are hidden. Never pay outside the site.",
@@ -1291,7 +1305,7 @@
     },
     "active": "Your host account is active!",
     "acceder": "Go to my host space",
-    "activation": "Activating...",
+    "activation": "Activating…",
     "activer": "Activate my host account",
     "creerCompte": "Create a host account",
     "titre": "Share your place with travellers from around the world",
@@ -1309,7 +1323,7 @@
     },
     "tarifs": {
       "titre": "What it costs",
-      "intro": "Listing is free. Kwa-Ba only takes a commission when you get paid, much lower than international platforms.",
+      "intro": "Listing is free. Kwa-Ba only takes a commission when you get paid.",
       "taux": {
         "particulier": {
           "valeur": "8%",
@@ -1319,7 +1333,7 @@
         "hotel": {
           "valeur": "12%",
           "titre": "Hotel or serviced residence",
-          "texte": "versus 15 to 18% on Booking.com"
+          "texte": "of the price of the nights, deducted from your payout"
         },
         "fondateur": {
           "valeur": "5%",
@@ -1332,25 +1346,14 @@
           "texte": "paid by the traveller, it does not reduce your income"
         }
       },
-      "exemple": "Example: a 2.5-night stay at 25,000 FCFA per night (62,500 FCFA)",
-      "colonnes": {
-        "plateforme": "Platform",
-        "voyageur": "Traveller pays",
-        "hote": "You receive"
-      },
-      "lignes": {
-        "airbnb": "Airbnb (15.5% for the host)",
-        "booking": "Booking.com (15%)",
-        "kwaba": "Kwa-Ba, private host (6% + 8%)",
-        "fondateur": "Kwa-Ba, founding host (6% + 5%)"
-      },
-      "note": "Rates published by Airbnb and Booking.com in 2026. Your share is paid by Mobile Money 24 hours after the traveller arrives.",
       "mobilite": {
         "titre": "Do you own a car, or are you a driver?",
         "texte": "Owners: you set your price and deposit, Kwa-Ba takes 15% (10% for 6 months for the first 20, 12% after 20 rentals without incident). Drivers: 6,000 FCFA per day, 6,500 with Excellence status, travel allowances paid in full.",
         "cta": "Contact us",
         "sujet": "Becoming a mobility partner"
-      }
+      },
+      "estimateurTitre": "Estimate your earnings",
+      "estimateurTexte": "Choose your profile, enter the nightly price you want to receive before commission and the number of nights."
     }
   },
   "photos": {
@@ -1409,7 +1412,7 @@
     "masquer": "Hide",
     "afficher": "Show",
     "publier": "Publish",
-    "ouverture": "Opening...",
+    "ouverture": "Opening…",
     "contacterNom": "Contact {nom}",
     "verification": {
       "enAttente": "Awaiting verification",
@@ -1478,7 +1481,7 @@
     "voyageursMax": "Max guests",
     "ville": "City",
     "quartier": "Area / address",
-    "prix": "Price per night (FCFA)",
+    "prix": "Your price per night (FCFA)",
     "description": "Description",
     "descriptionPlaceholder": "Describe the place, the area and what makes it special…",
     "photos": "Photos",
@@ -1487,8 +1490,8 @@
     "nouvelOnglet": "new tab",
     "equipements": "Amenities",
     "annuler": "Cancel",
-    "envoiPhotos": "Uploading photos...",
-    "enregistrement": "Saving...",
+    "envoiPhotos": "Uploading photos…",
+    "enregistrement": "Saving…",
     "enregistrerModifs": "Save changes",
     "publier": "Publish listing",
     "detailsTitre": "The place in detail",
@@ -1569,7 +1572,7 @@
     "photoNumero": "{nom}, photo {numero} of {total}",
     "photoPrecedente": "Previous photo",
     "photoSuivante": "Next photo",
-    "sousTitre": "With or without a driver, or a driver for your own car: vehicles and drivers checked by Kwa-Ba, handed over at the airport or at your address.",
+    "sousTitre": "With a driver, or your driver for your own car: vehicles and drivers checked by Kwa-Ba, handed over at the airport or at your address.",
     "bientot": "Car hire is coming soon to Kwa-Ba.",
     "bientotAide": "In the meantime, book an airport transfer.",
     "formule": "Option",
@@ -1701,13 +1704,16 @@
     "devisChauffeur": "Driver, {nombre, plural, one {# day} other {# days}}",
     "devisPrimes": "Driver travel allowances",
     "sansFrais": "Price set by the owner, no Kwa-Ba service fee.",
-    "accepter": "I accept the <cgv>terms of sale</cgv>, the vehicle rules and the <annulation>cancellation policy</annulation>."
+    "accepter": "I accept the <cgv>terms of sale</cgv>, the vehicle rules and the <annulation>cancellation policy</annulation>.",
+    "sousTitreSansChauffeur": "With or without a driver, or a driver for your own car: vehicles and drivers checked by Kwa-Ba, handed over at the airport or at your address."
   },
   "suggestions": {
     "populaires": "Popular destinations",
     "villes": "Cities",
     "logements": "Stays",
-    "logementsDispo": "{nombre, plural, =1 {1 stay} other {# stays}}"
+    "logementsDispo": "{nombre, plural, =1 {1 stay} other {# stays}}",
+    "quartiers": "Lomé neighbourhoods",
+    "quartierLome": "Lomé neighbourhood"
   },
   "details": {
     "titre": "The place in detail",
@@ -1782,7 +1788,8 @@
     "choisir": "Currency for prices",
     "fcfa": "CFA franc",
     "euro": "Euro",
-    "debite": "Charged in CFA francs: {montant}"
+    "debite": "Charged in CFA francs: {montant}",
+    "indicatif": "Indicative equivalent; you are charged in CFA francs."
   },
   "prelancement": {
     "titre": "Kwa-Ba opens soon!",
@@ -1823,5 +1830,57 @@
     },
     "reflexion": "Cooling-off period: a booking cancelled within 48 hours, at least 7 days before arrival, is fully refunded. The service fee is only returned with a full refund.",
     "details": "All cancellation rules"
+  },
+  "reclamation": {
+    "objet": "Subject",
+    "objets": {
+      "reservation": "Booking",
+      "paiement": "Payment or refund",
+      "logement": "Accommodation",
+      "transfert": "Transfer or car hire",
+      "compte": "My account",
+      "autre": "Other"
+    },
+    "reservation": "Booking number (optional)",
+    "reservationAide": "You will find it in your confirmation email and in My bookings.",
+    "email": "Your email",
+    "description": "Description",
+    "descriptionAide": "Describe the problem, with the dates and what you expect from Kwa-Ba (at least 20 characters).",
+    "pieceJointe": "Attachment (optional)",
+    "pieceJointeAide": "Photo (JPEG, PNG, WebP) or PDF, 5 MB at most.",
+    "envoyer": "Send my complaint",
+    "envoi": "Sending…",
+    "accuseTitre": "Complaint received",
+    "accuseTexte": "It has been passed on to the Kwa-Ba team, who will reply by email. You will get an acknowledgement within 72 hours."
+  },
+  "estimateur": {
+    "type": "You are",
+    "types": {
+      "particulier": {
+        "titre": "Private host",
+        "texte": "{taux} commission"
+      },
+      "fondateur": {
+        "titre": "Founding host",
+        "texte": "{taux} for 6 months (first 50 hosts), then 8%"
+      },
+      "hotel": {
+        "titre": "Hotel or residence",
+        "texte": "{taux} commission"
+      }
+    },
+    "votreType": "Your profile: {type}, Kwa-Ba commission of {taux}.",
+    "votrePrix": "Your price per night (FCFA)",
+    "nuits": "Number of nights",
+    "moins": "One night less",
+    "plus": "One night more",
+    "prixNuit": "Price per night",
+    "commissionNuit": "Kwa-Ba commission ({taux}) per night",
+    "revenuNuit": "Estimated earnings per night",
+    "brut": "Gross amount ({nuits, plural, one {# night} other {# nights}})",
+    "commissionTotale": "Total commission",
+    "revenuEstime": "Your estimated earnings",
+    "voyageur": "The guest pays {total}, including {frais} of Kwa-Ba service fee ({taux}): this fee is added to your price and does not reduce your earnings.",
+    "note": "Indicative estimate. The final amount is calculated by Kwa-Ba at booking and paid by Mobile Money 24 hours after the guest arrives."
   }
 }

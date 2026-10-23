@@ -4,7 +4,7 @@ Les prix de base par aéroport et par catégorie sont dans TarifTransfertModel (
 dans l'admin Django) ; ce module applique les règles communes.
 """
 from dataclasses import dataclass
-from datetime import datetime, time, timedelta
+from datetime import timedelta
 from decimal import ROUND_HALF_UP, Decimal
 
 CATEGORIES = {
@@ -13,10 +13,6 @@ CATEGORIES = {
     'van': {'nom': 'Minibus', 'description': 'Toyota Hiace ou similaire, pour les groupes', 'passagers': 7, 'bagages': 8},
 }
 CATEGORIE_CHOICES = [(code, c['nom']) for code, c in CATEGORIES.items()]
-
-# Arrivée entre 22 h et 6 h (heure locale de l'aéroport) : majoration de nuit
-DEBUT_NUIT, FIN_NUIT = time(22, 0), time(6, 0)
-MAJORATION_NUIT = Decimal('0.25')
 
 # Part du prix conservée par Kwa-Ba, le reste revient au chauffeur partenaire (grille du 18 octobre 2026)
 COMMISSION_CHAUFFEUR = Decimal('0.15')
@@ -31,32 +27,21 @@ DELAI_VERSEMENT = timedelta(hours=24)
 ATTENTE_INCLUSE_MINUTES = 60
 
 
-def arrondi_500(montant) -> int:
-    """Prix arrondis aux 500 FCFA supérieurs : plus simples à lire et à rendre en espèces."""
-    return int((Decimal(montant) / 500).quantize(Decimal('1'), rounding=ROUND_HALF_UP) * 500)
-
-
-def est_de_nuit(arrivee_locale: datetime) -> bool:
-    heure = arrivee_locale.time()
-    return heure >= DEBUT_NUIT or heure < FIN_NUIT
-
-
 @dataclass(frozen=True)
 class Prix:
     prix: int
     commission: int
-    nuit: bool
 
     @property
     def montant_chauffeur(self) -> int:
         return self.prix - self.commission
 
 
-def calculer(prix_base: int, arrivee_locale: datetime) -> Prix:
-    nuit = est_de_nuit(arrivee_locale)
-    prix = arrondi_500(Decimal(prix_base) * (1 + MAJORATION_NUIT)) if nuit else int(prix_base)
+def calculer(prix_base: int) -> Prix:
+    """Même prix de jour comme de nuit (la majoration de nuit a été supprimée le 23 octobre 2026)."""
+    prix = int(prix_base)
     commission = int((Decimal(prix) * COMMISSION_CHAUFFEUR).quantize(Decimal('1'), rounding=ROUND_HALF_UP))
-    return Prix(prix=prix, commission=commission, nuit=nuit)
+    return Prix(prix=prix, commission=commission)
 
 
 def capacite_suffisante(categorie: str, passagers: int, bagages: int) -> str | None:

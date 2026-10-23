@@ -65,11 +65,15 @@ class ReservationSerializer(serializers.ModelSerializer):
 
 
 class ReservationCreateSerializer(serializers.ModelSerializer):
+    # Total affiché au voyageur dans le récapitulatif : s'il ne correspond plus au calcul du serveur (prix modifié
+    # par l'hôte entre-temps, taux différent), la réservation est refusée pour qu'il voie le nouveau total avant de payer
+    total_attendu = serializers.IntegerField(required=False, write_only=True, min_value=0)
+
     class Meta:
         model = ReservationModel
         fields = [
             'hebergement', 'check_in', 'check_out',
-            'guests_count', 'payment_method', 'message',
+            'guests_count', 'payment_method', 'message', 'total_attendu',
         ]
 
     def validate(self, data):
@@ -100,6 +104,15 @@ class ReservationCreateSerializer(serializers.ModelSerializer):
         motif = conflit(hebergement.id, check_in, check_out)
         if motif:
             raise serializers.ValidationError({'check_in': motif})
+
+        total_attendu = data.pop('total_attendu', None)
+        if total_attendu is not None:
+            voyageur = request.user if request else None
+            total = tarifs.devis(hebergement, (check_out - check_in).days, voyageur=voyageur).total
+            if total != total_attendu:
+                raise serializers.ValidationError({'total_attendu': [
+                    f"Le prix a changé : le total est maintenant de {total:,} FCFA. Vérifiez le récapitulatif avant de payer."
+                    .replace(',', ' ')]})
         return data
 
     def create(self, validated_data):

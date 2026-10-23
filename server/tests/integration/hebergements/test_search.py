@@ -126,3 +126,18 @@ def test_negative_price_rejected(api_client, listings):
     response = api_client.get(HEBERGEMENTS, {'price_min': -1})
     assert response.status_code == 400
     assert 'price_min' in response.data
+
+
+def test_filtre_par_equipements_et_quartier(api_client, make_hebergement):
+    piscine_wifi = make_hebergement(name='Villa piscine', location='Bè Kpota', amenities=['piscine', 'wifi', 'clim'])
+    make_hebergement(name='Studio wifi', location='Tokoin', amenities=['wifi'])
+    make_hebergement(name='Sans rien', location='Tokoin', amenities=[])
+
+    def noms(params):
+        return _names(api_client.get(HEBERGEMENTS, params))
+
+    assert noms({'equipements': 'wifi'}) == {'Villa piscine', 'Studio wifi'}
+    assert noms({'equipements': 'piscine,wifi'}) == {piscine_wifi.name}
+    assert noms({'equipements': 'spa'}) == set()
+    # Un quartier de Lomé choisi dans le champ destination cherche aussi dans l'adresse
+    assert noms({'city': 'Tokoin'}) == {'Studio wifi', 'Sans rien'}

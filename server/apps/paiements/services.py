@@ -63,7 +63,9 @@ def fedapay_actif() -> bool:
 
 
 def paypal_actif() -> bool:
-    return bool(settings.PAYPAL['CLIENT_ID'] and settings.PAYPAL['CLIENT_SECRET'])
+    # PayPal n'est pas ouvert au lancement : proposé seulement avec l'interrupteur des moyens non ouverts
+    return bool(settings.PAYPAL['CLIENT_ID'] and settings.PAYPAL['CLIENT_SECRET']
+                and settings.MODULES['paiements_non_ouverts'])
 
 
 def moyens_actifs() -> list[str]:

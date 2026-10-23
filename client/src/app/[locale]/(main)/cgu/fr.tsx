@@ -1,6 +1,6 @@
 import { Link } from "@/i18n/navigation";
 import LienContact from "@/components/legal/LienContact";
-import LegalPage, { AValider } from "@/components/legal/LegalPage";
+import LegalPage from "@/components/legal/LegalPage";
 
 /** Paragraphe numéroté d'un article (« 4.1. … »). */
 function N({ n, children }: { n: string; children: React.ReactNode }) {
@@ -12,13 +12,13 @@ export default function ContenuFr() {
   return (
     <LegalPage
       titre="Conditions générales d'utilisation"
-      miseAJour="22 octobre 2026"
+      miseAJour="23 octobre 2026"
       intro={
         <p>
           Les présentes conditions fixent les règles d’utilisation de la plateforme Kwa-Ba par tous ses utilisateurs : visiteurs, clients et
           partenaires. Elles comprennent la charte des avis (article 8). Elles sont complétées par les{" "}
           <Link href="/cgv">conditions générales de vente</Link>, la <Link href="/confidentialite">politique de confidentialité</Link>, la{" "}
-          <Link href="/cookies">politique cookies</Link> et les <Link href="/mentions-legales">mentions légales</Link>.
+          <Link href="/cookies">politique de cookies</Link> et les <Link href="/mentions-legales">mentions légales</Link>.
         </p>
       }
       sections={[
@@ -80,10 +80,10 @@ export default function ContenuFr() {
           contenu: (
             <>
               <N n="5.1">Seul un partenaire inscrit, qui a accepté les conditions qui le concernent, peut publier une annonce. Il garantit qu’il a le droit d’offrir la prestation (propriété, mandat, autorisation d’exploiter) et qu’il détient les autorisations et assurances exigées par la loi.</N>
-              <N n="5.2">Avant publication, KWA-BA vérifie l’offre : identité du partenaire, documents, visite sur place par un relais ou un associé. Elle peut refuser, suspendre ou retirer une annonce inexacte, non conforme ou présentant un risque.</N>
+              <N n="5.2">Avant publication, KWA-BA vérifie l’offre : identité du partenaire, documents, visite sur place par un relais ou un associé. Elle peut refuser, suspendre ou retirer une annonce inexacte, non conforme ou présentant un risque. La vérification porte sur la conformité de l’annonce ; elle n’emporte ni reprise ni garantie de la prestation du partenaire.</N>
               <N n="5.3">L’annonce décrit l’offre de façon exacte et complète : photos récentes et non trompeuses, dont le partenaire détient les droits, équipements, règles, prix toutes taxes comprises en F CFA, conditions d’annulation choisies, dépôt de garantie éventuel dans les limites des CGV.</N>
               <N n="5.4">Sont interdits dans une annonce : les coordonnées permettant de traiter hors de la Plateforme (téléphone, courriel, lien vers un autre site), les offres illicites ou discriminatoires, les prix différents de ceux pratiqués pour la même prestation hors de la Plateforme.</N>
-              <N n="5.5">Le classement des annonces dépend de critères affichés sur la Plateforme : pertinence par rapport à la recherche, disponibilité, note moyenne, ancienneté et taux d’annulation du partenaire, et, le cas échéant, mise en avant payante, toujours signalée comme telle. <AValider>règle nouvelle</AValider></N>
+              <N n="5.5">Le classement des annonces dépend de critères affichés sur la Plateforme : pertinence par rapport à la recherche, disponibilité, note moyenne, ancienneté et taux d’annulation du partenaire, et, le cas échéant, mise en avant payante, toujours signalée comme telle.</N>
             </>
           ),
         },
@@ -113,7 +113,7 @@ export default function ContenuFr() {
           titre: "Charte des avis",
           contenu: (
             <>
-              <N n="8.1"><strong>Qui peut publier.</strong> Seul un client qui a effectivement bénéficié d’une prestation réservée et payée sur la Plateforme peut publier un avis sur celle-ci, dans les <strong>14 jours</strong> suivant sa fin. Le partenaire peut publier une évaluation du client dans le même délai. <AValider>règle nouvelle</AValider></N>
+              <N n="8.1"><strong>Qui peut publier.</strong> Seul un client qui a effectivement bénéficié d’une prestation réservée et payée sur la Plateforme peut publier un avis sur celle-ci, dans les <strong>14 jours</strong> suivant sa fin. Le partenaire peut publier une évaluation du client dans le même délai.</N>
               <N n="8.2"><strong>Ce que contient un avis.</strong> Une note de 1 à 5 et un commentaire facultatif. L’avis porte sur une expérience personnelle et vécue. Il est honnête, précis et respectueux.</N>
               <N n="8.3"><strong>Ce qui est interdit :</strong></N>
               <ul>
@@ -123,11 +123,11 @@ export default function ContenuFr() {
                 <li>les avis sans lien avec la prestation, ou publicitaires ;</li>
                 <li>les avis destinés à nuire à un concurrent.</li>
               </ul>
-              <N n="8.4"><strong>Modération.</strong> KWA-BA vérifie chaque avis avant publication, dans un délai de 72 heures, au regard des seules règles ci-dessus. Elle ne supprime pas un avis parce qu’il est négatif. Un avis refusé l’est pour un motif communiqué à son auteur, qui peut le modifier. <AValider>règle nouvelle</AValider></N>
+              <N n="8.4"><strong>Modération.</strong> KWA-BA vérifie chaque avis avant publication, dans un délai de 72 heures, au regard des seules règles ci-dessus. Elle ne supprime pas un avis parce qu’il est négatif. Un avis refusé l’est pour un motif communiqué à son auteur, qui peut le modifier.</N>
               <N n="8.5"><strong>Droit de réponse.</strong> Le partenaire peut répondre publiquement à un avis, une fois, dans les 14 jours, dans les mêmes conditions de courtoisie.</N>
               <N n="8.6"><strong>Signalement.</strong> Tout utilisateur peut signaler un avis qu’il estime contraire à la charte. KWA-BA réexamine l’avis et informe l’auteur du signalement de sa décision.</N>
-              <N n="8.7"><strong>Affichage.</strong> Les avis sont affichés du plus récent au plus ancien, avec leur date et la date de la prestation. La note moyenne d’une annonce est calculée sur tous les avis publiés. Aucun avis n’est acheté, et aucune note n’est modifiée par KWA-BA.</N>
-              <N n="8.8"><strong>Conservation.</strong> Les avis restent publiés tant que l’annonce existe, et au plus 3 ans. L’auteur peut demander la suppression de son avis à tout moment. <AValider>règle nouvelle</AValider></N>
+              <N n="8.7"><strong>Affichage.</strong> Les avis sont affichés du plus récent au plus ancien, avec leur date et la date de la prestation. La note moyenne d’une annonce est calculée sur tous les avis publiés. Aucun avis n’est acheté. KWA-BA ne modifie aucune note. Elle peut retirer un avis dans les seuls cas prévus aux articles 8.8 et 8.9.</N>
+              <N n="8.8"><strong>Conservation.</strong> Les avis restent publiés tant que l’annonce existe, et au plus 3 ans. L’auteur peut demander la suppression de son avis à tout moment.</N>
               <N n="8.9"><strong>Faux avis.</strong> La publication d’un faux avis entraîne son retrait et peut entraîner la suspension du compte (article 11).</N>
             </>
           ),
@@ -137,7 +137,7 @@ export default function ContenuFr() {
           titre: "Contenus des utilisateurs",
           contenu: (
             <>
-              <N n="9.1">L’utilisateur reste titulaire des droits sur ses contenus. En les publiant, il accorde à KWA-BA, pour la durée de leur publication et pour le monde entier, une licence gratuite et non exclusive de les reproduire, les adapter au format de la Plateforme et les diffuser sur la Plateforme et dans la communication de Kwa-Ba relative à l’annonce concernée.</N>
+              <N n="9.1">L’utilisateur reste titulaire des droits sur ses contenus. En les publiant, il accorde à KWA-BA, pour la durée de leur publication et pour le monde entier, une licence gratuite et non exclusive de les reproduire, les adapter au format de la Plateforme et les diffuser sur la Plateforme et dans la communication de KWA-BA relative à l’annonce concernée.</N>
               <N n="9.2">L’utilisateur garantit qu’il détient les droits sur ses contenus, notamment l’accord des personnes reconnaissables sur ses photos, et qu’ils ne portent atteinte à aucun droit de tiers.</N>
               <N n="9.3">KWA-BA peut retirer tout contenu manifestement illicite ou contraire aux CGU, dès qu’elle en a connaissance.</N>
             </>
@@ -177,7 +177,7 @@ export default function ContenuFr() {
           contenu: (
             <>
               <N n="12.1">KWA-BA met en œuvre des moyens raisonnables pour assurer l’accès et la sécurité de la Plateforme, sans garantir une disponibilité permanente. Elle peut l’interrompre pour maintenance, en prévenant les utilisateurs lorsque c’est possible.</N>
-              <N n="12.2">KWA-BA vérifie les annonces avant publication, mais le partenaire reste seul responsable de leur exactitude et de sa prestation. La responsabilité de KWA-BA envers les clients est fixée par les CGV (art. 19) et la Garantie Kwa-Ba (art. 12 des CGV).</N>
+              <N n="12.2">KWA-BA vérifie les annonces avant publication, mais le partenaire reste seul responsable de leur exactitude et de sa prestation. La responsabilité de KWA-BA envers les clients est fixée par les CGV (art. 19) et la Garantie Kwa-Ba (art. 12 des CGV). La Garantie Kwa-Ba est un engagement commercial de KWA-BA envers le client. Elle ne fait pas de KWA-BA l’exécutant de la prestation, qui reste due par le partenaire.</N>
               <N n="12.3">KWA-BA n’est pas responsable des sites tiers vers lesquels la Plateforme renvoie, ni des pannes des réseaux de télécommunication ou du prestataire de paiement, sous réserve du plan de continuité prévu par les CGV (art. 11.5).</N>
               <N n="12.4">Aucune partie n’est responsable d’un manquement dû à la force majeure.</N>
             </>
@@ -189,7 +189,7 @@ export default function ContenuFr() {
           contenu: (
             <>
               <N n="13.1">KWA-BA traite les données des utilisateurs conformément à la loi n° 2019-014 du 29 octobre 2019 relative à la protection des données à caractère personnel et à sa <Link href="/confidentialite">politique de confidentialité</Link>, accessible à tout moment sur la Plateforme.</N>
-              <N n="13.2">La Plateforme utilise des cookies et traceurs nécessaires à son fonctionnement et, avec l’accord de l’utilisateur, les cookies des services tiers décrits dans la <Link href="/cookies">politique cookies</Link>. L’utilisateur peut à tout moment modifier ses choix depuis le lien « Gérer les cookies » en bas de page.</N>
+              <N n="13.2">La Plateforme utilise des cookies et traceurs nécessaires à son fonctionnement et, avec l’accord de l’utilisateur, les cookies des services tiers décrits dans la <Link href="/cookies">politique de cookies</Link>. L’utilisateur peut à tout moment modifier ses choix depuis le lien « Gérer les cookies » en bas de page.</N>
               <N n="13.3">L’utilisateur peut s’opposer à tout moment, sans frais, à recevoir des messages commerciaux, par le lien prévu dans chaque message ou depuis son compte (loi n° 2017-07, art. 37).</N>
             </>
           ),
@@ -214,9 +214,9 @@ export default function ContenuFr() {
           titre: "Droit applicable et litiges",
           contenu: (
             <>
-              <N n="16.1">Les CGU sont soumises au droit togolais et aux actes uniformes de l’OHADA.</N>
+              <N n="16.1">Les présentes conditions sont soumises au droit togolais et aux actes uniformes de l’OHADA, sans priver le consommateur des dispositions impératives du pays où il réside.</N>
               <N n="16.2">Toute réclamation est adressée à KWA-BA par la Plateforme, par WhatsApp ou à <LienContact sujet="Réclamation" /> ; KWA-BA en accuse réception sous 72 heures. Les parties recherchent une solution amiable pendant 30 jours.</N>
-              <N n="16.3">À défaut, le litige relève des juridictions compétentes de Lomé, notamment du tribunal de commerce de Lomé pour les professionnels. Le consommateur conserve les protections impératives plus favorables de la loi de son pays de résidence lorsque celle-ci s’applique. <AValider>juriste</AValider></N>
+              <N n="16.3">À défaut, le litige relève des juridictions compétentes de Lomé, notamment du tribunal de commerce de Lomé pour les professionnels.</N>
             </>
           ),
         },
@@ -226,7 +226,7 @@ export default function ContenuFr() {
           contenu: (
             <ul>
               <li>Le Concierge est un assistant fondé sur l’intelligence artificielle (Gemini, de Google). Vous dialoguez avec une machine, pas avec une personne.</li>
-              <li>Ses réponses peuvent contenir des erreurs. Les prix et disponibilités des logements et des services de mobilité proviennent de Kwa-Ba et font foi au moment de la réservation ; les autres informations (restaurants, horaires, démarches) sont à vérifier.</li>
+              <li>Ses réponses peuvent contenir des erreurs. Les prix et disponibilités des logements et des services de mobilité proviennent de KWA-BA et font foi au moment de la réservation ; les autres informations (restaurants, horaires, démarches) sont à vérifier.</li>
               <li>Le Concierge ne réserve et ne paie rien à votre place. N’y communiquez ni coordonnées bancaires, ni code Mobile Money, ni données sensibles.</li>
               <li>Son usage est limité en nombre de messages par heure et par jour.</li>
             </ul>

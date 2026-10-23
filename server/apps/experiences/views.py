@@ -4,6 +4,10 @@ from rest_framework.views import APIView
 
 from .models import ExperienceModel
 
+# Les expériences proposées sont au Togo (audit n° 3) : les fiches d'autres pays (Marrakech, Dakar…) restent dans le
+# back-office mais ne sont plus affichées sur le site
+PAYS_PROPOSE = 'Togo'
+
 
 def experience_json(request, e: ExperienceModel) -> dict:
     return {
@@ -20,4 +24,5 @@ class ExperiencesView(APIView):
     authentication_classes = []
 
     def get(self, request):
-        return Response([experience_json(request, e) for e in ExperienceModel.objects.filter(actif=True)])
+        experiences = ExperienceModel.objects.filter(actif=True, pays__iexact=PAYS_PROPOSE)
+        return Response([experience_json(request, e) for e in experiences])

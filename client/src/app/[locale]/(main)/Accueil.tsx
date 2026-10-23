@@ -183,6 +183,8 @@ export default function HomePage() {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-16 space-y-16 md:space-y-20 -mt-16 md:-mt-20 relative z-20">
+        {/* Masquée tant qu'aucune annonce n'est publiée (pas de bloc vide) ; réapparaît dès la première */}
+        {(citiesLoading || cities.length > 0) && (
         <section>
           <div className="flex items-end justify-between mb-6 md:mb-8 gap-4">
             <div>
@@ -216,6 +218,7 @@ export default function HomePage() {
             </motion.div>
           )}
         </section>
+        )}
 
         <section className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-3 md:gap-4" aria-label={t("typesHebergement")}>
           {CATEGORIES.map(({ type, label, icon: Icon }) => (
@@ -230,6 +233,7 @@ export default function HomePage() {
           ))}
         </section>
 
+        {(recoLoading || recommended.length > 0) && (
         <section>
           <div className="flex items-end justify-between mb-6 md:mb-8 gap-4">
             <h2 className="font-heading font-bold text-dark text-2xl md:text-3xl">{t("mieuxNotes")}</h2>
@@ -241,14 +245,13 @@ export default function HomePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {[0, 1, 2, 3].map((i) => <div key={i} className="h-72 rounded-2xl skeleton" />)}
             </div>
-          ) : recommended.length === 0 ? (
-            <p className="text-gray-500 bg-light-muted rounded-2xl p-8 text-center">{t("aucunHebergement")}</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {recommended.map((prop) => <PropertyCard key={prop.id} property={prop} />)}
             </div>
           )}
         </section>
+        )}
 
         <section className="py-12 bg-orange-50/60 rounded-[2rem] md:rounded-[3rem] px-6 md:px-8 text-center">
           <h2 className="font-heading font-bold text-dark text-2xl md:text-3xl mb-3">{t("pourquoi")}</h2>

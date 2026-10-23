@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { signOut, useSession } from "next-auth/react";
 import { ChevronRight, User, CalendarCheck, Heart, CreditCard, Bell, Globe, HelpCircle, LogOut, Home, MessageCircle, BadgeCheck, Star, ShieldCheck, Plane, Users, Sparkles, HandHeart } from "lucide-react";
 import api from "@/lib/api";
+import { useReglagesSite, filtrerLiens } from "@/lib/site";
 import { FALLBACK_IMAGE, formatDate, initials, ROLE_LABELS } from "@/lib/utils";
 import { useLocale, useTranslations } from "next-intl";
 import type { Favori, Me, Paginated, Reservation, SejourAEvaluer } from "@/types/api/models";
@@ -37,6 +38,7 @@ export default function ProfilPage() {
   const upcoming = reservations?.filter((r) => r.status !== "cancelled" && new Date(r.check_out) >= new Date()).length;
   const stays = reservations?.filter((r) => r.status !== "cancelled").length;
 
+  const modules = useReglagesSite().data?.modules;
   const menuSections = [
     {
       title: t("sections.compte"),
@@ -53,7 +55,7 @@ export default function ProfilPage() {
           ? { icon: Home, label: t("menu.espaceHote"), href: "/hote/espace", desc: t("menu.espaceHoteTexte") }
           : { icon: Home, label: t("menu.devenirHote"), href: "/hote", desc: t("menu.devenirHoteTexte") },
         ...(role === "admin" ? [{ icon: ShieldCheck, label: "Back-office", href: "/backoffice", desc: t("menu.backofficeTexte") }] : []),
-      ],
+      ].filter((item) => filtrerLiens([item], modules).length > 0 && (item.href !== "/profil/dons" || modules?.give)),
     },
     {
       title: t("sections.preferences"),

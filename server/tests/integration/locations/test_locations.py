@@ -146,6 +146,15 @@ class TestCatalogue:
         assert devis == {'jours': 4, 'prix_jour': 30000, 'prix_vehicule': 120000, 'frais_lieux': 8000, 'prix_chauffeur': 0,
                          'primes': 0, 'prix': 128000, 'caution': 60000, 'caution_en_ligne': True, 'a_payer': 188000}
 
+    def test_self_drive_refused_while_hidden(self, api_client, catalogue, settings):
+        # Hors de l'offre de lancement : refusé par l'API tant que l'interrupteur est éteint
+        settings.MODULES = {**settings.MODULES, 'location_sans_chauffeur': False}
+        q = {'categorie': catalogue['berline'].id, 'formule': 'sans_chauffeur', 'lieu_prise': catalogue['aeroport'].id,
+             'lieu_retour': catalogue['aeroport'].id, 'debut': _date(5, '10:00'), 'fin': _date(8, '12:00')}
+        r = api_client.get(f'{LOCATIONS}devis/', q)
+        assert r.status_code == 400 and 'sans chauffeur' in str(r.data)
+        assert api_client.get(f'{LOCATIONS}devis/', {**q, 'formule': 'avec_chauffeur'}).status_code == 200
+
     def test_quote_with_driver_and_travel_allowances(self, api_client, catalogue):
         q = {'categorie': catalogue['berline'].id, 'formule': 'avec_chauffeur', 'lieu_prise': catalogue['aeroport'].id,
              'lieu_retour': catalogue['aeroport'].id, 'debut': _date(5, '10:00'), 'fin': _date(8, '12:00'),
