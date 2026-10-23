@@ -16,7 +16,7 @@ from apps.securite.audit import journaliser
 
 from . import fedapay, paypal, services, tarifs
 from .models import ProfilVersementModel, VersementModel
-from .operateurs import PAYS, operateurs_du_pays
+from .operateurs import PAYS, operateurs_ouverts, pays_ouverts
 
 logger = logging.getLogger('apps.paiements')
 
@@ -40,7 +40,7 @@ class ConfigView(APIView):
             'pays': [
                 {'code': code, 'nom': p['nom'], 'indicatif': p['indicatif'], 'chiffres': p['chiffres'],
                  'operateurs': [{'code': c, 'nom': n} for c, n in p['operateurs']]}
-                for code, p in PAYS.items()
+                for code, p in pays_ouverts().items()
             ],
         })
 
@@ -127,7 +127,7 @@ class EstHote(IsAuthenticated):
 def _valider_compte(data):
     """Opérateur disponible dans le pays, numéro au bon nombre de chiffres."""
     pays = data['pays']
-    if data['operateur'] not in operateurs_du_pays(pays):
+    if data['operateur'] not in operateurs_ouverts(pays):
         raise serializers.ValidationError({'operateur': "Cet opérateur n'est pas disponible dans le pays choisi."})
     attendu = PAYS[pays]['chiffres']
     if len(data['numero']) != attendu:

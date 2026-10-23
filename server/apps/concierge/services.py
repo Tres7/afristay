@@ -15,6 +15,7 @@ from google.genai import types
 from google.genai._gaos.lib import compat_errors as erreurs_gemini
 
 from apps.securite.limites import incrementer
+from config.site import module_actif
 
 from . import outils
 from .models import ConversationModel, MessageModel
@@ -72,7 +73,8 @@ class ConciergeErreur(Exception):
 
 
 def actif() -> bool:
-    return bool(settings.CONCIERGE['API_KEY'])
+    """Clé Gemini configurée et module affiché (interrupteur MODULE_CONCIERGE) : sinon aucun appel à Gemini."""
+    return bool(settings.CONCIERGE['API_KEY']) and module_actif('concierge')
 
 
 def _client() -> genai.Client:

@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import createIntlMiddleware from "next-intl/middleware";
 import { routing } from "@/i18n/routing";
+import { moduleDuChemin, type ReglagesSite } from "@/lib/modules";
 
 // Pages réservées aux utilisateurs connectés (le centre d'aide reste public)
 const PROTECTED = ["/profil", "/favoris", "/messages", "/reservation", "/hote/espace", "/backoffice", "/agent", "/give/don"];
@@ -29,6 +30,25 @@ function sansLangue(pathname: string) {
 // fait par les routes Auth.js et les composants serveur.
 const secureCookie = (process.env.AUTH_URL ?? "").startsWith("https://");
 
+// Modules affichés, relus dans l'API au plus toutes les minutes. API injoignable : tout module est considéré
+// comme masqué (état du lancement), pour ne jamais montrer une page qui devait l'être.
+const DUREE_MODULES_MS = 60_000;
+let modulesEnCache: { valeur: ReglagesSite["modules"] | null; lu: number } = { valeur: null, lu: 0 };
+
+async function modulesAffiches(): Promise<ReglagesSite["modules"] | null> {
+  if (Date.now() - modulesEnCache.lu < DUREE_MODULES_MS) return modulesEnCache.valeur;
+  const base = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+  let valeur: ReglagesSite["modules"] | null = null;
+  try {
+    const res = await fetch(`${base}/v1/site/`, { cache: "no-store", signal: AbortSignal.timeout(3000) });
+    if (res.ok) valeur = ((await res.json()) as ReglagesSite).modules;
+  } catch {
+    valeur = null;
+  }
+  modulesEnCache = { valeur, lu: Date.now() };
+  return valeur;
+}
+
 export default async function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
   const token = await getToken({ req, secret: process.env.AUTH_SECRET, secureCookie });
@@ -39,6 +59,12 @@ export default async function middleware(req: NextRequest) {
   // sur le site anglais, par ex.) n'a pas de page et ferait échouer le rendu. On renvoie vers /agent.
   if (prefixe && SANS_LANGUE.some((p) => chemin === p || chemin.startsWith(`${p}/`))) {
     return NextResponse.redirect(new URL(chemin + search, req.nextUrl.origin));
+  }
+
+  // Module masqué (Expériences, Voyager à plusieurs, Give, Concierge) : son adresse renvoie vers l'accueil
+  const module = moduleDuChemin(chemin);
+  if (module && !(await modulesAffiches())?.[module]) {
+    return NextResponse.redirect(new URL(prefixe || "/", req.nextUrl.origin));
   }
 
   const isProtected =

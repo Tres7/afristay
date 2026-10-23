@@ -4,7 +4,11 @@
 FedaPay (Paramètres → Moyens de paiement / Payouts) avant la mise en production : un mode
 non activé sur le compte est refusé par l'API, et le versement passe alors en échec avec le
 message de FedaPay (visible dans l'admin Django).
+
+Au lancement, seuls Moov Money (Flooz) et Mixx by Yas (T-Money) sont ouverts : les autres opérateurs restent
+définis ici mais ne sont proposés que si l'interrupteur MODULE_PAIEMENTS_NON_OUVERTS est actif (config/site.py).
 """
+from django.conf import settings
 
 PAYS = {
     'TG': {'nom': 'Togo', 'indicatif': '228', 'chiffres': 8, 'operateurs': [
@@ -33,8 +37,25 @@ PAYS_CHOICES = [(code, p['nom']) for code, p in PAYS.items()]
 OPERATEUR_CHOICES = [op for p in PAYS.values() for op in p['operateurs']]
 
 
+OUVERTS = {'moov_tg', 'togocel'}
+
+
+def pays_ouverts() -> dict:
+    """Pays et opérateurs proposés aux utilisateurs (remboursement, versement de l'hôte)."""
+    if settings.MODULES['paiements_non_ouverts']:
+        return PAYS
+    ouverts = {code: {**p, 'operateurs': [op for op in p['operateurs'] if op[0] in OUVERTS]} for code, p in PAYS.items()}
+    return {code: p for code, p in ouverts.items() if p['operateurs']}
+
+
 def operateurs_du_pays(pays: str) -> dict[str, str]:
+    """Tous les opérateurs du pays (versements aux partenaires saisis par l'équipe dans le back-office)."""
     return dict(PAYS.get(pays, {}).get('operateurs', []))
+
+
+def operateurs_ouverts(pays: str) -> dict[str, str]:
+    """Opérateurs proposés aux utilisateurs (numéro de remboursement, compte de versement de l'hôte)."""
+    return dict(pays_ouverts().get(pays, {}).get('operateurs', []))
 
 
 def nom_operateur(mode: str) -> str:

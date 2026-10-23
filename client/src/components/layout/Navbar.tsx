@@ -13,6 +13,7 @@ import MobileDrawer, { DrawerItem } from "@/components/layout/MobileDrawer";
 import SelecteurLangue from "@/components/layout/SelecteurLangue";
 import { SelecteurDevise } from "@/components/layout/Devise";
 import ChampDestination from "@/components/hebergement/ChampDestination";
+import { filtrerLiens, useReglagesSite } from "@/lib/site";
 
 const UNREAD_POLL_INTERVAL_MS = 10_000;
 
@@ -110,6 +111,9 @@ export default function Navbar() {
   const roleLabel = tRoles(session?.user?.role ?? "voyageur");
   const isHost = session?.user?.role === "hote" || session?.user?.role === "admin";
   const isAdmin = session?.user?.role === "admin";
+  const modules = useReglagesSite().data?.modules;
+  const liensBarre = filtrerLiens(NAV_LINKS, modules);
+  const liensMobile = <T extends { href: string }>(liens: T[]) => filtrerLiens(liens, modules);
 
   const Avatar = ({ size }: { size: string }) => (
     <div className={cn("rounded-full bg-primary/10 overflow-hidden border border-primary/20 flex items-center justify-center flex-shrink-0", size)}>
@@ -142,7 +146,7 @@ export default function Navbar() {
           </button>
 
           <nav className="flex items-center gap-4 lg:gap-5" aria-label={t("navigationPrincipale")}>
-            {NAV_LINKS.map(({ href, label, large }) => (
+            {liensBarre.map(({ href, label, large }) => (
               <Link
                 key={href}
                 href={isHost && href === "/hote" ? "/hote/espace" : href}
@@ -238,7 +242,7 @@ export default function Navbar() {
         )}
 
         <nav className="mt-4 space-y-1" aria-label={t("navigationMobile")}>
-          {[
+          {liensMobile([
             { href: "/", label: t("accueil"), icon: Home },
             { href: "/recherche", label: t("hebergements"), icon: Search },
             { href: "/decouvrir", label: t("experiences"), icon: ArrowRight },
@@ -257,7 +261,7 @@ export default function Navbar() {
               : []),
             { href: isHost ? "/hote/espace" : "/hote", label: isHost ? t("espaceHote") : t("devenirHote"), icon: Home },
             ...(isAdmin ? [{ href: "/backoffice", label: "Back-office", icon: ShieldCheck }] : []),
-          ].map(({ href, label, icon: Icon }) => (
+          ]).map(({ href, label, icon: Icon }) => (
             <DrawerItem key={href + label}>
               <Link
                 href={href}

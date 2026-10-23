@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import api, { apiErrorMessage } from "@/lib/api";
 import Floating from "@/components/ui/Floating";
 import { usePopover } from "@/lib/usePopover";
+import { useModule } from "@/lib/site";
 import type { VoyageResume } from "@/types/api/voyage";
 import { useTranslations } from "next-intl";
 
@@ -19,14 +20,15 @@ export default function ProposerAuGroupe({ hebergementId }: { hebergementId: str
   const { status } = useSession();
   const { open, setOpen, ref, panelRef } = usePopover();
   const [envoi, setEnvoi] = useState<string | null>(null);
+  const together = useModule("together");
 
   const { data: voyages = [] } = useQuery({
     queryKey: ["voyages"],
     queryFn: async () => (await api.get<{ results: VoyageResume[] }>("/v1/voyages/")).data.results,
-    enabled: status === "authenticated",
+    enabled: status === "authenticated" && together,
   });
 
-  if (status !== "authenticated") return null;
+  if (status !== "authenticated" || !together) return null;
 
   const proposer = async (v: VoyageResume) => {
     setEnvoi(v.id);
