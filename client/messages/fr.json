@@ -405,7 +405,7 @@
       "prixDecroissant": "Prix décroissant",
       "meilleuresNotes": "Meilleures notes"
     },
-    "prixParNuit": "Prix par nuit (FCFA)",
+    "prixParNuit": "Prix par nuit hors frais de service (FCFA)",
     "min": "Min",
     "max": "Max",
     "appliquer": "Appliquer",
@@ -425,7 +425,10 @@
     "voirTous": "Voir tous les hébergements",
     "fermer": "Fermer",
     "listeResultats": "Hébergements trouvés",
-    "petitDejInclus": "Petit-déjeuner inclus"
+    "petitDejInclus": "Petit-déjeuner inclus",
+    "equipements": "Équipements",
+    "afficherCarte": "Carte",
+    "masquerCarte": "Liste"
   },
   "fiche": {
     "introuvable": "Hébergement introuvable",
@@ -1142,7 +1145,7 @@
     "bagages": "Bagages",
     "bagagesAide": "Valises en soute",
     "vehicule": "Véhicule",
-    "choisirPourPrix": "Choisissez l'aéroport, la date et l'heure pour voir les véhicules et leur prix.",
+    "choisirPourPrix": "Choisissez l'aéroport, la date et l'heure pour vérifier la disponibilité et le prix exact de chaque véhicule.",
     "tropTard": "Il faut réserver au moins {heures} heures avant l'arrivée, le temps de vous attribuer un chauffeur.",
     "vehicules": {
       "berline": {
@@ -1177,7 +1180,10 @@
     "seConnecter": "Se connecter pour réserver",
     "redirection": "Redirection vers le paiement…",
     "reserver": "Réserver le transfert",
-    "infoChauffeur": "Nom, numéro, véhicule et plaque de votre chauffeur vous sont envoyés au plus tard 24 heures avant votre arrivée. En réservant, vous acceptez nos <cgu>conditions générales de vente</cgu>."
+    "infoChauffeur": "Nom, numéro, véhicule et plaque de votre chauffeur vous sont envoyés au plus tard 24 heures avant votre arrivée. En réservant, vous acceptez nos <cgu>conditions générales de vente</cgu>.",
+    "aPartirDe": "à partir de",
+    "seConnecterPourPayer": "Se connecter pour payer",
+    "connexionDerniere": "Remplissez toute la demande sans compte : la connexion n'est demandée qu'avant le paiement, et votre saisie est conservée."
   },
   "transfertDetail": {
     "statuts": {
@@ -1705,7 +1711,9 @@
     "populaires": "Destinations populaires",
     "villes": "Villes",
     "logements": "Logements",
-    "logementsDispo": "{nombre, plural, =1 {1 logement} other {# logements}}"
+    "logementsDispo": "{nombre, plural, =1 {1 logement} other {# logements}}",
+    "quartiers": "Quartiers de Lomé",
+    "quartierLome": "Quartier de Lomé"
   },
   "details": {
     "titre": "Le logement en détail",

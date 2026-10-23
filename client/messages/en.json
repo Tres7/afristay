@@ -405,7 +405,7 @@
       "prixDecroissant": "Price: high to low",
       "meilleuresNotes": "Top rated"
     },
-    "prixParNuit": "Price per night (FCFA)",
+    "prixParNuit": "Price per night before service fee (FCFA)",
     "min": "Min",
     "max": "Max",
     "appliquer": "Apply",
@@ -425,7 +425,10 @@
     "voirTous": "See all stays",
     "fermer": "Close",
     "listeResultats": "Stays found",
-    "petitDejInclus": "Breakfast included"
+    "petitDejInclus": "Breakfast included",
+    "equipements": "Amenities",
+    "afficherCarte": "Map",
+    "masquerCarte": "List"
   },
   "fiche": {
     "introuvable": "Place not found",
@@ -1142,7 +1145,7 @@
     "bagages": "Bags",
     "bagagesAide": "Checked bags",
     "vehicule": "Vehicle",
-    "choisirPourPrix": "Choose the airport, date and time to see vehicles and prices.",
+    "choisirPourPrix": "Choose the airport, date and time to check availability and the exact price of each vehicle.",
     "tropTard": "You need to book at least {heures} hours before arrival so we can assign a driver.",
     "vehicules": {
       "berline": {
@@ -1177,7 +1180,10 @@
     "seConnecter": "Log in to book",
     "redirection": "Redirecting to payment…",
     "reserver": "Book the transfer",
-    "infoChauffeur": "Your driver's name, number, vehicle and number plate are sent to you at the latest 24 hours before you arrive. By booking, you accept our <cgu>terms of sale</cgu>."
+    "infoChauffeur": "Your driver's name, number, vehicle and number plate are sent to you at the latest 24 hours before you arrive. By booking, you accept our <cgu>terms of sale</cgu>.",
+    "aPartirDe": "from",
+    "seConnecterPourPayer": "Sign in to pay",
+    "connexionDerniere": "Fill in the whole request without an account: you only sign in before paying, and what you entered is kept."
   },
   "transfertDetail": {
     "statuts": {
@@ -1705,7 +1711,9 @@
     "populaires": "Popular destinations",
     "villes": "Cities",
     "logements": "Stays",
-    "logementsDispo": "{nombre, plural, =1 {1 stay} other {# stays}}"
+    "logementsDispo": "{nombre, plural, =1 {1 stay} other {# stays}}",
+    "quartiers": "Lomé neighbourhoods",
+    "quartierLome": "Lomé neighbourhood"
   },
   "details": {
     "titre": "The place in detail",

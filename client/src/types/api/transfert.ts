@@ -6,6 +6,8 @@ export interface Aeroport {
   ville: string;
   pays: string;
   fuseau: string;
+  /** Prix de chaque véhicule depuis cet aéroport (même prix de jour comme de nuit). */
+  prix: Partial<Record<CategorieVehicule, number>>;
 }
 
 export type CategorieVehicule = "berline" | "confort" | "van";

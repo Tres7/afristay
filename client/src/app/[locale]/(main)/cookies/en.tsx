@@ -85,6 +85,7 @@ export default function ContenuEn() {
                 <tbody>
                   <tr><td><code>verify_email</code></td><td>Keeps the address entered at sign-up during code verification.</td><td>Deleted after verification or when the tab is closed</td></tr>
                   <tr><td><code>splash_shown</code></td><td>Avoids showing the animated welcome screen on every page.</td><td>Until the tab is closed</td></tr>
+                  <tr><td><code>kwaba_transfert_brouillon</code></td><td>Keeps your transfer request while you sign in to pay.</td><td>Deleted when you return to the page or close the tab</td></tr>
                 </tbody>
               </table>
             </>

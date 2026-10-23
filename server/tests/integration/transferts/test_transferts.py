@@ -82,7 +82,10 @@ def _reserver_et_payer(client, faux, **champs):
 def test_aeroports_de_lancement_et_devis():
     from rest_framework.test import APIClient
     api = APIClient()
-    codes = {a['code'] for a in api.get(f'{TRANSFERTS}aeroports/').data}
+    aeroports = api.get(f'{TRANSFERTS}aeroports/').data
+    codes = {a['code'] for a in aeroports}
+    # Prix « à partir de » de chaque véhicule, affiché avant que le voyageur ne choisisse
+    assert next(a for a in aeroports if a['code'] == 'LFW')['prix'] == {'berline': 10000, 'confort': 15000, 'van': 25000}
     assert {'LFW', 'COO', 'OUA', 'NIM', 'BKO'} <= codes
 
     jour = api.get(f'{TRANSFERTS}devis/', {'aeroport': 'LFW', 'arrivee': _arrivee(), 'passagers': 4, 'bagages': 2}).data

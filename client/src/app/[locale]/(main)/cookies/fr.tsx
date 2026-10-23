@@ -84,6 +84,7 @@ export default function ContenuFr() {
                 <tbody>
                   <tr><td><code>verify_email</code></td><td>Retient l&apos;adresse saisie à l&apos;inscription le temps de la vérification par code.</td><td>Effacé après la vérification ou à la fermeture de l&apos;onglet</td></tr>
                   <tr><td><code>splash_shown</code></td><td>Évite de réafficher l&apos;écran d&apos;accueil animé à chaque page.</td><td>Fermeture de l&apos;onglet</td></tr>
+                  <tr><td><code>kwaba_transfert_brouillon</code></td><td>Garde votre demande de transfert le temps de vous connecter pour payer.</td><td>Effacé au retour sur la page ou à la fermeture de l&apos;onglet</td></tr>
                 </tbody>
               </table>
             </>

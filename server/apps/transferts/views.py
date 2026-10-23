@@ -17,9 +17,15 @@ from .models import AeroportModel, TransfertModel
 
 
 class AeroportSerializer(serializers.ModelSerializer):
+    # Prix de chaque véhicule depuis cet aéroport (le même de jour comme de nuit) : affiché avant tout choix
+    prix = serializers.SerializerMethodField()
+
     class Meta:
         model = AeroportModel
-        fields = ['code', 'nom', 'ville', 'pays', 'fuseau']
+        fields = ['code', 'nom', 'ville', 'pays', 'fuseau', 'prix']
+
+    def get_prix(self, obj):
+        return {t.categorie: t.prix for t in obj.tarifs.all() if t.actif}
 
 
 class TransfertSerializer(serializers.ModelSerializer):
@@ -118,7 +124,7 @@ class AeroportsView(APIView):
     authentication_classes = []
 
     def get(self, request):
-        aeroports = AeroportModel.objects.filter(actif=True, tarifs__actif=True).distinct()
+        aeroports = AeroportModel.objects.filter(actif=True, tarifs__actif=True).distinct().prefetch_related('tarifs')
         return Response(AeroportSerializer(aeroports, many=True).data)
 
 
