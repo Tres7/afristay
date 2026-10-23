@@ -9,7 +9,7 @@
         "description": "Villas, appartements, hôtels et auberges à Lomé, Cotonou, Ouagadougou et ailleurs. Comparez les prix par nuit et réservez en Mobile Money ou par carte."
       },
       "decouvrir": {
-        "titre": "Activités, restaurants et sites à découvrir",
+        "titre": "Activités, restaurants et sites à découvrir au Togo",
         "description": "Les meilleures activités, tables et visites près de votre logement Kwa-Ba."
       },
       "transfert": {
@@ -46,8 +46,8 @@
       "logementDescription": "{type} à {ville} pour {voyageurs} voyageurs, à partir de {prix} FCFA la nuit. Réservez sur Kwa-Ba en Mobile Money ou par carte.",
       "organisationDescription": "Soutenez {nom} ({ville}) avec Kwa-Ba Give : don de 500 à 5 000 FCFA, reversement publié avec son justificatif.",
       "location": {
-        "titre": "Location de voiture avec ou sans chauffeur",
-        "description": "Louez une citadine, une berline, un SUV, un 4x4 ou un minibus, avec ou sans chauffeur, remis à l'aéroport ou à votre adresse. Prix par jour connu à l'avance, paiement en ligne."
+        "titre": "Location de voiture avec chauffeur, ou votre chauffeur pour votre propre voiture",
+        "description": "Louez une citadine, une berline, un SUV, un 4x4 ou un minibus avec chauffeur, ou un chauffeur pour votre propre voiture, à l'aéroport ou à votre adresse. Prix par jour connu à l'avance, paiement en ligne."
       }
     }
   },
@@ -195,7 +195,7 @@
     "atouts": {
       "paiement": {
         "titre": "Paiement flexible",
-        "texte": "Mobile Money : Mixx by Yas (T-Money), Moov Money (Flooz), MTN MoMo, Orange Money, Celtiis, Airtel… Carte Visa ou Mastercard, ou PayPal."
+        "texte": "Mobile Money : Moov Money (Flooz), Mixx by Yas (T-Money). Carte Visa ou Mastercard."
       },
       "instantanee": {
         "titre": "Confirmation immédiate",
@@ -370,7 +370,7 @@
     "avis": "{nombre, plural, one {# avis} other {# avis}}"
   },
   "decouvrir": {
-    "titre": "Découvrez l'Afrique autrement",
+    "titre": "Découvrez le Togo autrement",
     "sousTitre": "Nos idées de sorties autour de vos hébergements. Les prix sont indicatifs.",
     "onglets": {
       "tout": "Tout",
@@ -621,7 +621,7 @@
       "devenirHoteTexte": "Publiez votre logement",
       "backofficeTexte": "Administration de la plateforme",
       "paiement": "Moyens de paiement",
-      "paiementTexte": "Mobile Money, carte, PayPal",
+      "paiementTexte": "Mobile Money, carte Visa ou Mastercard",
       "notifications": "Notifications",
       "notificationsTexte": "Alertes et emails",
       "langue": "Langue & région",
@@ -669,7 +669,7 @@
     "moyens": {
       "mobileMoney": {
         "titre": "Mobile Money",
-        "texte": "Moov Money (Flooz), Mixx by Yas (T-Money), MTN, Orange, Airtel… via FedaPay"
+        "texte": "{operateurs}, via FedaPay"
       },
       "carte": {
         "titre": "Carte bancaire",
@@ -680,8 +680,9 @@
         "texte": "Compte PayPal ou carte, débité en euros (1 € = 655,957 FCFA)"
       }
     },
-    "securite": "Vous choisissez votre moyen de paiement à chaque réservation, puis vous payez sur la page sécurisée de FedaPay ou de PayPal. Kwa-Ba ne voit ni n'enregistre vos coordonnées bancaires ou votre code Mobile Money. L'hôte n'est payé qu'après votre arrivée.",
-    "enSavoirPlus": "En savoir plus sur le paiement et le remboursement"
+    "securite": "Vous choisissez votre moyen de paiement à chaque réservation, puis vous payez sur la page sécurisée de FedaPay. Kwa-Ba ne voit ni n'enregistre vos coordonnées bancaires ou votre code Mobile Money. L'hôte n'est payé qu'après votre arrivée.",
+    "enSavoirPlus": "En savoir plus sur le paiement et le remboursement",
+    "securitePaypal": "Vous choisissez votre moyen de paiement à chaque réservation, puis vous payez sur la page sécurisée de FedaPay ou de PayPal. Kwa-Ba ne voit ni n'enregistre vos coordonnées bancaires ou votre code Mobile Money. L'hôte n'est payé qu'après votre arrivée."
   },
   "profilEdition": {
     "erreurChargement": "Impossible de charger vos informations.",
@@ -1567,7 +1568,7 @@
     "photoNumero": "{nom}, photo {numero} sur {total}",
     "photoPrecedente": "Photo précédente",
     "photoSuivante": "Photo suivante",
-    "sousTitre": "Avec ou sans chauffeur, ou un chauffeur pour votre propre voiture : des véhicules et des chauffeurs vérifiés par Kwa-Ba, remis à l'aéroport ou à votre adresse.",
+    "sousTitre": "Avec chauffeur, ou votre chauffeur pour votre propre voiture : des véhicules et des chauffeurs vérifiés par Kwa-Ba, remis à l'aéroport ou à votre adresse.",
     "bientot": "La location de voitures arrive bientôt sur Kwa-Ba.",
     "bientotAide": "En attendant, réservez un transfert depuis l’aéroport.",
     "formule": "Formule",
@@ -1699,7 +1700,8 @@
     "devisChauffeur": "Chauffeur, {nombre, plural, one {# jour} other {# jours}}",
     "devisPrimes": "Primes de déplacement du chauffeur",
     "sansFrais": "Prix fixé par le propriétaire, sans frais de service Kwa-Ba.",
-    "accepter": "J'accepte les <cgv>conditions générales de vente</cgv>, les règles du véhicule et la <annulation>politique d'annulation</annulation>."
+    "accepter": "J'accepte les <cgv>conditions générales de vente</cgv>, les règles du véhicule et la <annulation>politique d'annulation</annulation>.",
+    "sousTitreSansChauffeur": "Avec ou sans chauffeur, ou un chauffeur pour votre propre voiture : des véhicules et des chauffeurs vérifiés par Kwa-Ba, remis à l'aéroport ou à votre adresse."
   },
   "suggestions": {
     "populaires": "Destinations populaires",
@@ -1780,7 +1782,8 @@
     "choisir": "Devise d'affichage des prix",
     "fcfa": "Franc CFA",
     "euro": "Euro",
-    "debite": "Débité en FCFA : {montant}"
+    "debite": "Débité en FCFA : {montant}",
+    "indicatif": "Équivalent indicatif ; le débit est effectué en F CFA."
   },
   "prelancement": {
     "titre": "Kwa-Ba ouvre bientôt !",

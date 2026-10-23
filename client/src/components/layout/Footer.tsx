@@ -5,7 +5,7 @@ import { Mail, MessageCircle } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import Logo from "@/components/layout/Logo";
 import SelecteurLangue from "@/components/layout/SelecteurLangue";
-import { SelecteurDevise } from "@/components/layout/Devise";
+import { MentionDevise, SelecteurDevise } from "@/components/layout/Devise";
 import GererCookiesBouton from "@/components/legal/GererCookiesBouton";
 import { CONTACT_EMAIL } from "@/lib/contact";
 import { filtrerLiens, lienWhatsapp, useReglagesSite } from "@/lib/site";
@@ -63,6 +63,7 @@ export default function Footer() {
               <SelecteurLangue complet />
               <SelecteurDevise complet />
             </div>
+            <MentionDevise className="mt-2" />
             <ul className="mt-4 space-y-1.5 text-sm text-gray-600" aria-label={t("contact")}>
               <li className="flex items-center gap-2">
                 <MessageCircle size={15} className="text-primary flex-shrink-0" />

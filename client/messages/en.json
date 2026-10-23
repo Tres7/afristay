@@ -9,7 +9,7 @@
         "description": "Villas, apartments, hotels and guesthouses in Lomé, Cotonou, Ouagadougou and beyond. Compare nightly prices and book with Mobile Money or card."
       },
       "decouvrir": {
-        "titre": "Things to do, restaurants and sights",
+        "titre": "Activities, restaurants and sights to discover in Togo",
         "description": "The best experiences, places to eat and visits near your Kwa-Ba stay."
       },
       "transfert": {
@@ -46,8 +46,8 @@
       "logementDescription": "{type} in {ville} for {voyageurs} guests, from {prix} FCFA per night. Book on Kwa-Ba with Mobile Money or card.",
       "organisationDescription": "Support {nom} ({ville}) with Kwa-Ba Give: donate from 500 to 5,000 FCFA, payout published with its proof.",
       "location": {
-        "titre": "Car hire with or without a driver",
-        "description": "Hire a small car, saloon, SUV, 4x4 or minibus, with or without a driver, handed over at the airport or at your address. Daily price known in advance, paid online."
+        "titre": "Car hire with a driver, or your driver for your own car",
+        "description": "Hire a small car, saloon, SUV, 4x4 or minibus with a driver, or a driver for your own car, at the airport or at your address. Daily price known in advance, paid online."
       }
     }
   },
@@ -195,7 +195,7 @@
     "atouts": {
       "paiement": {
         "titre": "Flexible payment",
-        "texte": "Mobile Money: Mixx by Yas (T-Money), Moov Money (Flooz), MTN MoMo, Orange Money, Celtiis, Airtel… Visa or Mastercard, or PayPal."
+        "texte": "Mobile Money: Moov Money (Flooz), Mixx by Yas (T-Money). Visa or Mastercard card."
       },
       "instantanee": {
         "titre": "Instant confirmation",
@@ -370,7 +370,7 @@
     "avis": "{nombre, plural, one {# review} other {# reviews}}"
   },
   "decouvrir": {
-    "titre": "Discover Africa differently",
+    "titre": "Discover Togo differently",
     "sousTitre": "Ideas for things to do near your stay. Prices are indicative.",
     "onglets": {
       "tout": "All",
@@ -621,7 +621,7 @@
       "devenirHoteTexte": "List your place",
       "backofficeTexte": "Platform administration",
       "paiement": "Payment methods",
-      "paiementTexte": "Mobile Money, card, PayPal",
+      "paiementTexte": "Mobile Money, Visa or Mastercard card",
       "notifications": "Notifications",
       "notificationsTexte": "Alerts and emails",
       "langue": "Language & region",
@@ -669,7 +669,7 @@
     "moyens": {
       "mobileMoney": {
         "titre": "Mobile Money",
-        "texte": "Moov Money (Flooz), Mixx by Yas (T-Money), MTN, Orange, Airtel… via FedaPay"
+        "texte": "{operateurs}, via FedaPay"
       },
       "carte": {
         "titre": "Bank card",
@@ -680,8 +680,9 @@
         "texte": "PayPal account or card, charged in euros (€1 = 655.957 FCFA)"
       }
     },
-    "securite": "You choose how to pay for each booking, then pay on FedaPay's or PayPal's secure page. Kwa-Ba never sees or stores your bank details or Mobile Money PIN. The host is only paid after you arrive.",
-    "enSavoirPlus": "Learn more about payment and refunds"
+    "securite": "You choose how to pay for each booking, then pay on FedaPay's secure page. Kwa-Ba never sees or stores your bank details or Mobile Money PIN. The host is only paid after you arrive.",
+    "enSavoirPlus": "Learn more about payment and refunds",
+    "securitePaypal": "You choose how to pay for each booking, then pay on FedaPay's or PayPal's secure page. Kwa-Ba never sees or stores your bank details or Mobile Money PIN. The host is only paid after you arrive."
   },
   "profilEdition": {
     "erreurChargement": "Could not load your details.",
@@ -1567,7 +1568,7 @@
     "photoNumero": "{nom}, photo {numero} of {total}",
     "photoPrecedente": "Previous photo",
     "photoSuivante": "Next photo",
-    "sousTitre": "With or without a driver, or a driver for your own car: vehicles and drivers checked by Kwa-Ba, handed over at the airport or at your address.",
+    "sousTitre": "With a driver, or your driver for your own car: vehicles and drivers checked by Kwa-Ba, handed over at the airport or at your address.",
     "bientot": "Car hire is coming soon to Kwa-Ba.",
     "bientotAide": "In the meantime, book an airport transfer.",
     "formule": "Option",
@@ -1699,7 +1700,8 @@
     "devisChauffeur": "Driver, {nombre, plural, one {# day} other {# days}}",
     "devisPrimes": "Driver travel allowances",
     "sansFrais": "Price set by the owner, no Kwa-Ba service fee.",
-    "accepter": "I accept the <cgv>terms of sale</cgv>, the vehicle rules and the <annulation>cancellation policy</annulation>."
+    "accepter": "I accept the <cgv>terms of sale</cgv>, the vehicle rules and the <annulation>cancellation policy</annulation>.",
+    "sousTitreSansChauffeur": "With or without a driver, or a driver for your own car: vehicles and drivers checked by Kwa-Ba, handed over at the airport or at your address."
   },
   "suggestions": {
     "populaires": "Popular destinations",
@@ -1780,7 +1782,8 @@
     "choisir": "Currency for prices",
     "fcfa": "CFA franc",
     "euro": "Euro",
-    "debite": "Charged in CFA francs: {montant}"
+    "debite": "Charged in CFA francs: {montant}",
+    "indicatif": "Indicative equivalent; you are charged in CFA francs."
   },
   "prelancement": {
     "titre": "Kwa-Ba opens soon!",

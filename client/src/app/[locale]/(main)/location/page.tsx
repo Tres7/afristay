@@ -11,11 +11,13 @@ import api, { apiErrorMessage } from "@/lib/api";
 import Select from "@/components/ui/Select";
 import Stepper from "@/components/ui/Stepper";
 import { cn, formatDate, formatPrice, isoDate } from "@/lib/utils";
+import { useModule } from "@/lib/site";
 import type { Reservation } from "@/types/api/models";
 import type { CatalogueLocation, CategorieVehicule, DevisLocation, Formule, Location, MonChauffeur } from "@/types/api/location";
 
 const inputClass = "w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-base sm:text-sm text-dark placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary";
 const labelClass = "block text-xs font-bold text-dark uppercase tracking-wide mb-2";
+// « Je conduis » (sans chauffeur) n'est pas dans l'offre de lancement : proposé seulement si son interrupteur est allumé
 const FORMULES: Formule[] = ["avec_chauffeur", "sans_chauffeur", "chauffeur_seul"];
 
 /** Date et heure locales au format des champs datetime-local, `jours` jours après maintenant. */
@@ -375,6 +377,8 @@ export default function LocationPage() {
   const [boite, setBoite] = useState<string | null>(null);
   const [placesMin, setPlacesMin] = useState<number | null>(null);
   const [choix, setChoix] = useState<CategorieVehicule | null>(null);
+  const sansChauffeur = useModule("location_sans_chauffeur");
+  const formules = FORMULES.filter((f) => f !== "sans_chauffeur" || sansChauffeur);
 
   const { data: catalogue, isLoading } = useQuery({
     queryKey: ["location", "catalogue"],
@@ -391,7 +395,7 @@ export default function LocationPage() {
     <div className="bg-light min-h-[70vh]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 md:py-12">
         <h1 className="font-heading font-bold text-dark text-3xl sm:text-4xl">{t("titre")}</h1>
-        <p className="text-gray-600 mt-2 max-w-2xl">{t("sousTitre")}</p>
+        <p className="text-gray-600 mt-2 max-w-2xl">{t(sansChauffeur ? "sousTitreSansChauffeur" : "sousTitre")}</p>
 
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-8">{[0, 1, 2].map((i) => <div key={i} className="h-80 skeleton rounded-3xl" />)}</div>
@@ -410,7 +414,7 @@ export default function LocationPage() {
           <>
             <div className="mt-8 space-y-4">
               <div className="inline-flex flex-wrap bg-white border border-gray-200 rounded-3xl sm:rounded-full p-1" role="group" aria-label={t("formule")}>
-                {FORMULES.map((f) => (
+                {formules.map((f) => (
                   <button key={f} type="button" aria-pressed={formule === f} onClick={() => setFormule(f)}
                     className={cn("relative zone-tactile px-5 py-2 rounded-full text-sm font-bold transition-colors", formule === f ? "bg-primary text-white" : "text-dark")}>
                     {t(`formules.${f}`)}

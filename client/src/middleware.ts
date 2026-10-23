@@ -62,8 +62,8 @@ export default async function middleware(req: NextRequest) {
   }
 
   // Module masqué (Expériences, Voyager à plusieurs, Give, Concierge) : son adresse renvoie vers l'accueil
-  const module = moduleDuChemin(chemin);
-  if (module && !(await modulesAffiches())?.[module]) {
+  const moduleDeLaPage = moduleDuChemin(chemin);
+  if (moduleDeLaPage && !(await modulesAffiches())?.[moduleDeLaPage]) {
     return NextResponse.redirect(new URL(prefixe || "/", req.nextUrl.origin));
   }
 

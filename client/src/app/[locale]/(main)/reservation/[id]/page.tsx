@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Check, Info, Smartphone, CreditCard, Wallet, MapPin, Lock } from "lucide-react";
 import api, { apiErrorMessage } from "@/lib/api";
-import { allerPayer, enEuros, useConfigPaiement } from "@/lib/paiement";
+import { allerPayer, enEuros, useConfigPaiement, useOperateursMobileMoney } from "@/lib/paiement";
 import RatingBadge from "@/components/avis/RatingBadge";
 import { MontantDebite } from "@/components/layout/Devise";
 import PolitiqueAnnulation from "@/components/hebergement/PolitiqueAnnulation";
@@ -16,7 +16,7 @@ import type { Hebergement, Reservation } from "@/types/api/models";
 import { useTranslations } from "next-intl";
 
 const PAYMENT_METHODS = [
-  { id: "mobile_money", label: "mobileMoney", sublabel: "Moov (Flooz), T-Money, MTN, Orange, Airtel", icon: Smartphone },
+  { id: "mobile_money", label: "mobileMoney", sublabel: "operateurs", icon: Smartphone },
   { id: "carte", label: "carte", sublabel: "Visa, Mastercard", icon: CreditCard },
   { id: "paypal", label: "paypal", sublabel: "paypalDetail", icon: Wallet },
 ] as const;
@@ -42,6 +42,7 @@ function ReservationContent() {
   const [accepte, setAccepte] = useState(false);
 
   const { data: config } = useConfigPaiement();
+  const operateurs = useOperateursMobileMoney();
   const enLigne = !!config?.actif;
   const moyens = PAYMENT_METHODS.filter((m) => !enLigne || config?.moyens.includes(m.id));
   const moyenChoisi = moyens.some((m) => m.id === paymentMethod) ? paymentMethod : moyens[0]?.id ?? "mobile_money";
@@ -178,7 +179,7 @@ function ReservationContent() {
                       <div className="text-left flex-1 min-w-0">
                         <p className={cn("font-bold text-sm", isActive ? "text-primary" : "text-dark")}>{t(`moyens.${method.label}`)}</p>
                         <p className="text-gray-500 text-xs mt-0.5">
-                          {method.sublabel === "paypalDetail" ? t("moyens.paypalDetail") : method.sublabel}
+                          {method.sublabel === "paypalDetail" ? t("moyens.paypalDetail") : method.sublabel === "operateurs" ? operateurs : method.sublabel}
                           {method.id === "paypal" && config && !datesInvalid && <> · <strong className="text-dark">{enEuros(total, config.fcfa_par_euro)}</strong></>}
                         </p>
                       </div>

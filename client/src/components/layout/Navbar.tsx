@@ -11,7 +11,7 @@ import { cn, initials } from "@/lib/utils";
 import Logo from "@/components/layout/Logo";
 import MobileDrawer, { DrawerItem } from "@/components/layout/MobileDrawer";
 import SelecteurLangue from "@/components/layout/SelecteurLangue";
-import { SelecteurDevise } from "@/components/layout/Devise";
+import { MentionDevise, SelecteurDevise } from "@/components/layout/Devise";
 import ChampDestination from "@/components/hebergement/ChampDestination";
 import { filtrerLiens, useReglagesSite } from "@/lib/site";
 
@@ -278,6 +278,7 @@ export default function Navbar() {
         <DrawerItem className="mt-4 flex flex-wrap gap-2">
           <SelecteurLangue complet />
           <SelecteurDevise complet />
+          <MentionDevise className="w-full" />
         </DrawerItem>
 
         <DrawerItem className="mt-4 pt-4 border-t border-gray-100">

@@ -27,7 +27,7 @@ export function moduleDuChemin(chemin: string): Module | null {
 /** Liens dont la page n'appartient pas à un module masqué (modules inconnus : tous masqués). */
 export function filtrerLiens<T extends { href: string }>(liens: T[], modules: ReglagesSite["modules"] | undefined): T[] {
   return liens.filter((l) => {
-    const module = moduleDuChemin(l.href.split("?")[0]);
-    return !module || modules?.[module] === true;
+    const nom = moduleDuChemin(l.href.split("?")[0]);
+    return !nom || modules?.[nom] === true;
   });
 }
