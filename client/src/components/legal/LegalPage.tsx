@@ -85,13 +85,3 @@ export function AC({ children }: { children: React.ReactNode }) {
   const t = useTranslations("legal");
   return <mark className="bg-amber-100 text-amber-900 px-1 rounded font-semibold">[{t("aCompleter")} : {children}]</mark>;
 }
-
-/** Règle proposée, à valider par le responsable (durées, montants, délais). */
-export function AValider({ children }: { children: React.ReactNode }) {
-  const t = useTranslations("legal");
-  return (
-    <span className="inline">
-      {children} <mark className="bg-blue-100 text-blue-900 px-1 rounded text-xs font-semibold whitespace-nowrap">{t("aValider")}</mark>
-    </span>
-  );
-}

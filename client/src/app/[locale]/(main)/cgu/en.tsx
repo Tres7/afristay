@@ -1,6 +1,6 @@
 import { Link } from "@/i18n/navigation";
 import LienContact from "@/components/legal/LienContact";
-import LegalPage, { AValider, VersionFrancaiseFaitFoi } from "@/components/legal/LegalPage";
+import LegalPage, { VersionFrancaiseFaitFoi } from "@/components/legal/LegalPage";
 
 /** Numbered paragraph of an article (“4.1. …”). */
 function N({ n, children }: { n: string; children: React.ReactNode }) {
@@ -12,7 +12,7 @@ export default function ContenuEn() {
   return (
     <LegalPage
       titre="Terms of use"
-      miseAJour="22 October 2026"
+      miseAJour="23 October 2026"
       intro={
         <>
           <VersionFrancaiseFaitFoi />
@@ -83,10 +83,10 @@ export default function ContenuEn() {
           contenu: (
             <>
               <N n="5.1">Only a registered partner who has accepted the conditions concerning them may publish a listing. They guarantee that they are entitled to offer the service (ownership, mandate, operating licence) and hold the authorisations and insurance required by law.</N>
-              <N n="5.2">Before publication, KWA-BA checks the offer: partner identity, documents, on-site visit by a field agent or partner of KWA-BA. It may refuse, suspend or remove an inaccurate, non-compliant or risky listing.</N>
+              <N n="5.2">Before publication, KWA-BA checks the offer: partner identity, documents, on-site visit by a field agent or partner of KWA-BA. It may refuse, suspend or remove an inaccurate, non-compliant or risky listing. The check concerns the listing’s compliance; it neither takes over nor guarantees the partner’s service.</N>
               <N n="5.3">The listing describes the offer accurately and completely: recent, non-misleading photos for which the partner holds the rights, equipment, rules, prices including all taxes in F CFA, chosen cancellation conditions, any security deposit within the limits of the terms of sale.</N>
               <N n="5.4">The following are forbidden in a listing: contact details allowing business outside the Platform (phone, email, link to another site), illegal or discriminatory offers, prices different from those charged for the same service outside the Platform.</N>
-              <N n="5.5">Listings are ranked according to criteria shown on the Platform: relevance to the search, availability, average rating, seniority and cancellation rate of the partner, and, where applicable, paid promotion, always labelled as such. <AValider>new rule</AValider></N>
+              <N n="5.5">Listings are ranked according to criteria shown on the Platform: relevance to the search, availability, average rating, seniority and cancellation rate of the partner, and, where applicable, paid promotion, always labelled as such.</N>
             </>
           ),
         },
@@ -116,7 +116,7 @@ export default function ContenuEn() {
           titre: "Review charter",
           contenu: (
             <>
-              <N n="8.1"><strong>Who may publish.</strong> Only a customer who actually received a service booked and paid on the Platform may publish a review of it, within <strong>14 days</strong> of its end. The partner may publish a rating of the customer within the same period. <AValider>new rule</AValider></N>
+              <N n="8.1"><strong>Who may publish.</strong> Only a customer who actually received a service booked and paid on the Platform may publish a review of it, within <strong>14 days</strong> of its end. The partner may publish a rating of the customer within the same period.</N>
               <N n="8.2"><strong>What a review contains.</strong> A score from 1 to 5 and an optional comment. The review concerns a personal, lived experience. It is honest, precise and respectful.</N>
               <N n="8.3"><strong>What is forbidden:</strong></N>
               <ul>
@@ -126,11 +126,11 @@ export default function ContenuEn() {
                 <li>reviews unrelated to the service, or advertising;</li>
                 <li>reviews intended to harm a competitor.</li>
               </ul>
-              <N n="8.4"><strong>Moderation.</strong> KWA-BA checks each review before publication, within 72 hours, against the above rules only. It does not remove a review because it is negative. A rejected review is rejected for a reason given to its author, who may edit it. <AValider>new rule</AValider></N>
+              <N n="8.4"><strong>Moderation.</strong> KWA-BA checks each review before publication, within 72 hours, against the above rules only. It does not remove a review because it is negative. A rejected review is rejected for a reason given to its author, who may edit it.</N>
               <N n="8.5"><strong>Right of reply.</strong> The partner may reply publicly to a review once, within 14 days, under the same rules of courtesy.</N>
               <N n="8.6"><strong>Reporting.</strong> Any user may report a review they consider contrary to the charter. KWA-BA re-examines it and informs the reporter of its decision.</N>
-              <N n="8.7"><strong>Display.</strong> Reviews are displayed from newest to oldest, with their date and the date of the service. A listing’s average rating is calculated on all published reviews. No review is bought, and no rating is changed by KWA-BA.</N>
-              <N n="8.8"><strong>Retention.</strong> Reviews remain published as long as the listing exists, and for 3 years at most. The author may request deletion of their review at any time. <AValider>new rule</AValider></N>
+              <N n="8.7"><strong>Display.</strong> Reviews are displayed from newest to oldest, with their date and the date of the service. A listing’s average rating is calculated on all published reviews. No review is bought. KWA-BA does not change any rating. It may remove a review only in the cases provided for in articles 8.8 and 8.9.</N>
+              <N n="8.8"><strong>Retention.</strong> Reviews remain published as long as the listing exists, and for 3 years at most. The author may request deletion of their review at any time.</N>
               <N n="8.9"><strong>Fake reviews.</strong> Publishing a fake review leads to its removal and may lead to suspension of the account (article 11).</N>
             </>
           ),
@@ -180,7 +180,7 @@ export default function ContenuEn() {
           contenu: (
             <>
               <N n="12.1">KWA-BA uses reasonable means to ensure access to and security of the Platform, without guaranteeing permanent availability. It may interrupt it for maintenance, informing users where possible.</N>
-              <N n="12.2">KWA-BA checks listings before publication, but the partner remains solely responsible for their accuracy and for its service. KWA-BA’s liability towards customers is set by the terms of sale (art. 19) and the Kwa-Ba Guarantee (art. 12 of the terms of sale).</N>
+              <N n="12.2">KWA-BA checks listings before publication, but the partner remains solely responsible for their accuracy and for its service. KWA-BA’s liability towards customers is set by the terms of sale (art. 19) and the Kwa-Ba Guarantee (art. 12 of the terms of sale). The Kwa-Ba Guarantee is a commercial commitment of KWA-BA to the customer. It does not make KWA-BA the performer of the service, which remains owed by the partner.</N>
               <N n="12.3">KWA-BA is not liable for third-party sites linked from the Platform, nor for outages of telecommunications networks or of the payment provider, subject to the continuity plan provided in the terms of sale (art. 11.5).</N>
               <N n="12.4">Neither party is liable for a failure due to force majeure.</N>
             </>
@@ -217,9 +217,9 @@ export default function ContenuEn() {
           titre: "Governing law and disputes",
           contenu: (
             <>
-              <N n="16.1">The Terms of Use are governed by Togolese law and the OHADA uniform acts.</N>
+              <N n="16.1">These terms are governed by Togolese law and the OHADA uniform acts, without depriving the consumer of the mandatory provisions of the country where they reside.</N>
               <N n="16.2">Any complaint is sent to KWA-BA through the Platform, by WhatsApp or to <LienContact sujet="Complaint" />; KWA-BA acknowledges receipt within 72 hours. The parties seek an amicable solution for 30 days.</N>
-              <N n="16.3">Failing that, the dispute falls within the jurisdiction of the competent courts of Lomé, in particular the Lomé commercial court for professionals. The consumer retains the more favourable mandatory protections of the law of their country of residence where it applies. <AValider>lawyer</AValider></N>
+              <N n="16.3">Failing that, the dispute falls within the jurisdiction of the competent courts of Lomé, in particular the Lomé commercial court for professionals.</N>
             </>
           ),
         },

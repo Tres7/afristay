@@ -1,6 +1,6 @@
 import { Link } from "@/i18n/navigation";
 import LienContact from "@/components/legal/LienContact";
-import LegalPage, { AC, AValider, VersionFrancaiseFaitFoi } from "@/components/legal/LegalPage";
+import LegalPage, { AC, VersionFrancaiseFaitFoi } from "@/components/legal/LegalPage";
 
 /** Numbered paragraph of an article (“6.1. …”). */
 function N({ n, children }: { n: string; children: React.ReactNode }) {
@@ -12,7 +12,7 @@ export default function ContenuEn() {
   return (
     <LegalPage
       titre="Terms of sale"
-      miseAJour="22 October 2026"
+      miseAJour="23 October 2026"
       intro={
         <>
           <VersionFrancaiseFaitFoi />
@@ -103,7 +103,7 @@ export default function ContenuEn() {
             <>
               <N n="5.1">Before paying, the customer sees a full summary: the booked service; dates and times; number of people; the itemised total price in F CFA; the cancellation policy; whether a right of withdrawal exists and how; any security deposit; the listing rules. They may correct their choices or abandon at any time.</N>
               <N n="5.2">The customer expressly accepts the Terms of Sale, the listing rules and the cancellation policy by ticking a box before paying. These documents can be viewed, downloaded and printed.</N>
-              <N n="5.3">The booking is firm once payment is confirmed. KWA-BA immediately sends, and at the latest within 5 days, a confirmation by email or WhatsApp containing the summary and the link to the Terms of Sale. An electronic receipt is issued for each payment.</N>
+              <N n="5.3">The booking is firm once payment is confirmed. KWA-BA sends a confirmation by email or WhatsApp immediately after payment is confirmed, and within five days at the latest, containing the summary and the link to the Terms of Sale. An electronic receipt is issued for each payment.</N>
               <N n="5.4">Exchanges with the provider go through the Platform’s messaging, before and after payment. For a mobility mission, the driver’s name and number are given to the customer after assignment, at the latest 24 hours before the mission.</N>
               <N n="5.5"><strong>Booking request:</strong> where the listing provides for it, the provider has 24 hours to accept. Without an answer, the request is cancelled and any amount charged is fully refunded.</N>
             </>
@@ -135,7 +135,7 @@ export default function ContenuEn() {
                 <thead><tr><th>Item</th><th>Amount</th></tr></thead>
                 <tbody>
                   <tr><td>Vehicle price (per day)</td><td>Set by the owner; <strong>no service fee</strong> for the customer</td></tr>
-                  <tr><td>Airport transfer</td><td>Flat price per trip displayed by the Platform according to the airport and vehicle category, <strong>driver included</strong>; 25% surcharge for an arrival between 10 pm and 6 am</td></tr>
+                  <tr><td>Airport transfer</td><td>Flat price per trip displayed by the Platform according to the airport and vehicle category, <strong>driver included</strong></td></tr>
                   <tr><td>Driver (car with driver, driver only)</td><td><strong>7,000 F CFA per day</strong> of up to 10 hours</td></tr>
                   <tr><td>Driver overtime hour</td><td>1,000 F CFA</td></tr>
                   <tr><td>Driver travel allowance</td><td>1,500 F CFA per day in the country outside Lomé; 2,000 F CFA per day outside the country</td></tr>
@@ -189,8 +189,8 @@ export default function ContenuEn() {
           titre: "Consumer right of withdrawal",
           contenu: (
             <>
-              <N n="10.1">In accordance with law no. 2017-07 on electronic transactions (art. 44), the consumer may withdraw without giving reasons within <strong>10 working days</strong> of the conclusion of the contract. They give notice from their booking area, by email or WhatsApp. The sums paid are refunded within 10 days of this notice (art. 46).</N>
-              <N n="10.2">This right can no longer be exercised once performance of the service has begun with the consumer’s agreement before the end of this period (art. 47). By confirming a booking for specific dates, the consumer expressly requests that the booking service be performed immediately: the dates are blocked with the provider, who turns away other customers for those dates. The consumer acknowledges that they can then no longer exercise their right of withdrawal on those dates, and that the cancellation policy in annex 1 applies. <AValider>lawyer</AValider></N>
+              <N n="10.1">In accordance with law no. 2017-07 on electronic transactions (art. 44), the consumer may withdraw without giving reasons within <strong>ten working days</strong> of the conclusion of the contract. They give notice from their booking area, by email or WhatsApp. The sums paid are refunded within 10 days of this notice (art. 46). This withdrawal period is not the same as the refund period after a cancellation, which is seven business days (article 11.5).</N>
+              <N n="10.2">This right can no longer be exercised once performance of the service has begun with the consumer’s agreement before the end of this period (art. 47). By confirming a booking for specific dates, the consumer expressly requests that the booking service be performed immediately: the dates are blocked with the provider, who turns away other customers for those dates. The consumer acknowledges that they can then no longer exercise their right of withdrawal on those dates, and that the cancellation policy in annex 1 applies.</N>
               <N n="10.3"><strong>Free cooling-off period:</strong> even where the right of withdrawal does not apply, any short-term accommodation or mobility booking cancelled within <strong>48 hours</strong> of its confirmation, and at least <strong>7 days</strong> before arrival or vehicle pick-up, is fully refunded, service fee included.</N>
               <N n="10.4">Professional customers do not benefit from the right of withdrawal (art. 43 of the same law).</N>
             </>
@@ -205,7 +205,7 @@ export default function ContenuEn() {
               <N n="11.2">The customer cancels from their booking area. The time of cancellation is the one recorded by the Platform, in Lomé time (GMT).</N>
               <N n="11.3"><strong>Cancellation by the provider:</strong> the customer is fully refunded, service fee included, and KWA-BA helps them find an equivalent solution (article 12).</N>
               <N n="11.4"><strong>Exceptional circumstances:</strong> the customer is fully refunded, service fee included, if the service becomes impossible or prohibited for one of the following reasons, occurring after booking and substantiated: natural disaster; epidemic declared by the authorities with travel restrictions; border closure; official travel ban; curfew or serious unrest in the area; death or serious hospitalisation of the customer or a close relative, with proof. Instead of a refund, the customer may choose a credit. Not covered: ordinary flight delays or cancellations, visa difficulties known at booking, illnesses without hospitalisation, and events known at the booking date.</N>
-              <N n="11.5">Refunds are made to the original payment method within <strong>7 working days</strong>. If this is not possible, they are made to a Mobile Money account in the customer’s name, with their agreement. If the payment provider is unavailable, KWA-BA informs the customer and refunds as soon as the service is restored or by another means, within the time limits set by law.</N>
+              <N n="11.5">Refunds are made to the original payment method within <strong>seven business days</strong>. This period applies to refunds after a cancellation; it is distinct from the ten-working-day withdrawal period (article 10.1). If this is not possible, they are made to a Mobile Money account in the customer’s name, with their agreement. If the payment provider is unavailable, KWA-BA informs the customer and refunds as soon as the service is restored or by another means, within the time limits set by law.</N>
             </>
           ),
         },
@@ -281,7 +281,7 @@ export default function ContenuEn() {
           titre: "Booking through the Platform",
           contenu: (
             <>
-              <N n="16.1">For a new stay or rental with a provider discovered on the Platform, the customer books again through the Platform. They then benefit from the Loyal customer rate (3%) or the “My driver” feature, and keep the Kwa-Ba Guarantee.</N>
+              <N n="16.1">For a new stay or rental with a provider discovered on the Platform, the customer books again through the Platform. They then benefit from the Loyal customer rate (3%) or the “My driver” feature, and keep the Kwa-Ba Guarantee. The “My driver” feature lets the customer ask again for a driver they have already had through the Platform: that driver then receives 6,500 CFA francs per day instead of 6,000, and KWA-BA keeps 500 CFA francs instead of 1,000. The price paid by the customer does not change.</N>
               <N n="16.2">A customer who receives an offer to pay or book outside the Platform may report it to KWA-BA. A verified report is rewarded with 5,000 F CFA.</N>
             </>
           ),
@@ -313,7 +313,7 @@ export default function ContenuEn() {
           titre: "Liability",
           contenu: (
             <>
-              <N n="19.1">KWA-BA is liable for the proper performance of its own services (article 3.3), subject to the mandatory legal provisions applicable to e-commerce. <AValider>lawyer</AValider></N>
+              <N n="19.1">KWA-BA is liable for the proper performance of its own services (article 3.3), subject to the mandatory legal provisions applicable to e-commerce.</N>
               <N n="19.2">The provider is liable for the performance of its service. KWA-BA has recourse against it for any sum it has paid in its place.</N>
               <N n="19.3">Except in the event of gross or intentional misconduct by KWA-BA, bodily injury or contrary legal provision, its liability for its own service is limited to the service fees received for the booking concerned. This cap does not apply to the Kwa-Ba Guarantee, which follows its own rules.</N>
               <N n="19.4">Neither party is liable for a failure due to force majeure, i.e. an unforeseeable, irresistible and external event.</N>
@@ -372,9 +372,8 @@ export default function ContenuEn() {
           titre: "Governing law and jurisdiction",
           contenu: (
             <>
-              <N n="24.1">The Terms of Sale are governed by Togolese law and the OHADA uniform acts.</N>
+              <N n="24.1">These terms are governed by Togolese law and the OHADA uniform acts, without depriving the consumer of the mandatory provisions of the country where they reside.</N>
               <N n="24.2">Failing an amicable solution, any dispute falls within the jurisdiction of the competent courts of Lomé, in particular the Lomé commercial court for professional customers.</N>
-              <N n="24.3">The consumer retains the more favourable mandatory protections of the law of their country of residence where it applies, in particular for customers residing in the European Union. <AValider>lawyer</AValider></N>
             </>
           ),
         },
@@ -409,7 +408,7 @@ export default function ContenuEn() {
               <tbody>
                 <tr><td>Short stay</td><td>Price of nights + 6% (3% with the Stay Pack or as a Loyal customer, 4% for companies under a framework agreement)</td></tr>
                 <tr><td>Car</td><td>Price set by the owner, no service fee</td></tr>
-                <tr><td>Airport transfer</td><td>Flat price per trip, driver included (+25% between 10 pm and 6 am)</td></tr>
+                <tr><td>Airport transfer</td><td>Flat price per trip, driver included</td></tr>
                 <tr><td>Driver</td><td>7,000 F CFA per day + any allowances (1,500 or 2,000 F CFA per day) + overtime (1,000 F CFA)</td></tr>
               </tbody>
             </table>

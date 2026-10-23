@@ -20,7 +20,6 @@ export interface Vehicule {
 export interface OptionDevis extends Vehicule {
   categorie: CategorieVehicule;
   prix: number;
-  nuit: boolean;
   disponible: boolean;
   motif: string;
 }

@@ -1,6 +1,6 @@
 import { Link } from "@/i18n/navigation";
 import LienContact from "@/components/legal/LienContact";
-import LegalPage, { AC, AValider } from "@/components/legal/LegalPage";
+import LegalPage, { AC } from "@/components/legal/LegalPage";
 
 /** Version française. */
 export default function ContenuFr() {
@@ -91,7 +91,7 @@ export default function ContenuFr() {
               <li>Hébergement du site et des données : <AC>nom, adresse et pays de l&apos;hébergeur</AC>.</li>
               <li>Envoi des emails (codes, notifications) : <strong>Brevo</strong> (Sendinblue SAS, Paris, France), données hébergées dans l&apos;Union européenne. Reçoit votre adresse email et le contenu des messages envoyés.</li>
               <li><strong>FedaPay</strong> (Bénin) : encaissement Mobile Money et carte, versements aux hôtes et remboursements. Reçoit votre nom, votre email, le montant et, pour les hôtes, le numéro de versement.</li>
-              <li><strong>Google</strong> (États-Unis), API Gemini : uniquement si vous utilisez le Concierge IA. Reçoit le contenu de vos messages pour générer les réponses et conserve l&apos;historique de la conversation jusqu&apos;à 55 jours pour pouvoir la poursuivre. <AValider>Service utilisé en offre payante : selon ses conditions, Google n&apos;utilise alors pas ces données pour améliorer ses produits.</AValider> N&apos;y indiquez pas de données sensibles.</li>
+              <li><strong>Google</strong> (États-Unis), API Gemini : uniquement si vous utilisez le Concierge IA. Reçoit le contenu de vos messages pour générer les réponses et conserve l&apos;historique de la conversation jusqu&apos;à 55 jours pour pouvoir la poursuivre. Service utilisé en offre payante : selon ses conditions, Google n&apos;utilise alors pas ces données pour améliorer ses produits. N&apos;y indiquez pas de données sensibles.</li>
               <li><strong>PayPal</strong> (Europe) : uniquement si vous choisissez ce moyen de paiement. Reçoit le montant et la référence de la réservation.</li>
               <li>Google : uniquement si vous utilisez la connexion Google ou acceptez l&apos;affichage de la carte (voir la <Link href="/cookies">politique cookies</Link>). Google peut traiter des données hors de l&apos;Union européenne, dans le cadre du Data Privacy Framework UE–États-Unis.</li>
               <li>Unsplash : certaines photos d&apos;illustration sont chargées depuis ses serveurs, qui reçoivent alors votre adresse IP.</li>
@@ -117,16 +117,16 @@ export default function ContenuFr() {
           contenu: (
             <ul>
               <li>Codes de vérification : 10 minutes. Choix de cookies : 6 mois. Choix de la langue : 1 an.</li>
-              <li>Compte inactif : <AValider>3 ans après la dernière activité, puis suppression ou anonymisation.</AValider></li>
-              <li>Réservations et contrats conclus en ligne (acceptations, contrats signés) : <AValider>5 ans après leur exécution</AValider> (<Link href="/cgv#preuve">CGV, art. 22.2</Link>).</li>
-              <li>Paiements, versements, remboursements, factures, dons et reversements aux ONG : <AValider>10 ans (pièces comptables).</AValider></li>
-              <li>Justificatifs des partenaires (papiers du véhicule, permis, casier judiciaire, contrats) : <AValider>pendant la relation, puis 5 ans.</AValider> La copie de la pièce d&apos;identité d&apos;un hôte est supprimée dès que l&apos;agent a vérifié l&apos;identité (seuls le type de pièce et le résultat du contrôle sont conservés).</li>
-              <li>Compte rendu et photos de la visite d&apos;un logement : <AValider>tant que l&apos;annonce est publiée, puis 3 ans.</AValider></li>
-              <li>Conversations avec le Concierge IA : jusqu&apos;à ce que vous les supprimiez (bouton dans la conversation), <AValider>et au plus 12 mois après le dernier message.</AValider></li>
-              <li>Messages : <AValider>3 ans après le dernier message de la conversation.</AValider></li>
-              <li>Avis : tant que l&apos;annonce existe, <AValider>et au plus 3 ans.</AValider></li>
-              <li>Données de prospection (newsletter, liste d&apos;attente) : <AValider>3 ans après le dernier contact.</AValider></li>
-              <li>Journaux de connexion et de sécurité : <AValider>12 mois.</AValider></li>
+              <li>Compte inactif : 3 ans après la dernière activité, puis suppression ou anonymisation.</li>
+              <li>Réservations et contrats conclus en ligne (acceptations, contrats signés) : 5 ans après leur exécution (<Link href="/cgv#preuve">CGV, art. 22.2</Link>).</li>
+              <li>Paiements, versements, remboursements, factures, dons et reversements aux ONG : 10 ans (pièces comptables).</li>
+              <li>Justificatifs des partenaires (papiers du véhicule, permis, casier judiciaire, contrats) : pendant la relation, puis 5 ans. La copie de la pièce d&apos;identité d&apos;un hôte est supprimée dès que l&apos;agent a vérifié l&apos;identité (seuls le type de pièce et le résultat du contrôle sont conservés).</li>
+              <li>Compte rendu et photos de la visite d&apos;un logement : tant que l&apos;annonce est publiée, puis 3 ans.</li>
+              <li>Conversations avec le Concierge IA : jusqu&apos;à ce que vous les supprimiez (bouton dans la conversation), et au plus 12 mois après le dernier message.</li>
+              <li>Messages : 3 ans après le dernier message de la conversation.</li>
+              <li>Avis : tant que l&apos;annonce existe, et au plus 3 ans.</li>
+              <li>Données de prospection (newsletter, liste d&apos;attente) : 3 ans après le dernier contact.</li>
+              <li>Journaux de connexion et de sécurité : 12 mois.</li>
             </ul>
           ),
         },

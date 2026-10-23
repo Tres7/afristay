@@ -814,8 +814,7 @@
     "informations": "Legal information",
     "miseAJour": "Last updated: {date}",
     "sommaire": "Contents",
-    "aCompleter": "To be completed",
-    "aValider": "proposal, to be confirmed"
+    "aCompleter": "To be completed"
   },
   "aide": {
     "titre": "Help centre",
@@ -1149,7 +1148,6 @@
     },
     "maxPassagers": "{nombre} passengers max",
     "maxBagages": "{nombre} bags max",
-    "tarifNuit": "night rate",
     "aucunVehicule": "No vehicle fits: contact us for a larger group.",
     "destinationContact": "Destination and contact",
     "adresseDestination": "Destination address",
@@ -1161,8 +1159,6 @@
     "messagePlaceholder": "Child seat, pushchair, help with bags…",
     "recapitulatif": "Summary",
     "passagersBagages": "Passengers · bags",
-    "tarifNuitDetail": "Night rate (10 pm – 6 am)",
-    "inclus": "included",
     "total": "Total",
     "prixApres": "The price appears as soon as the flight and vehicle are chosen.",
     "payerAvec": "Pay with",

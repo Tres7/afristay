@@ -814,8 +814,7 @@
     "informations": "Informations légales",
     "miseAJour": "Dernière mise à jour : {date}",
     "sommaire": "Sommaire",
-    "aCompleter": "À compléter",
-    "aValider": "proposition à valider"
+    "aCompleter": "À compléter"
   },
   "aide": {
     "titre": "Centre d'aide",
@@ -1149,7 +1148,6 @@
     },
     "maxPassagers": "{nombre} passagers maximum",
     "maxBagages": "{nombre} bagages maximum",
-    "tarifNuit": "tarif de nuit",
     "aucunVehicule": "Aucun véhicule ne convient : contactez-nous pour un groupe plus grand.",
     "destinationContact": "Destination et contact",
     "adresseDestination": "Adresse de destination",
@@ -1161,8 +1159,6 @@
     "messagePlaceholder": "Siège enfant, poussette, aide pour les bagages…",
     "recapitulatif": "Récapitulatif",
     "passagersBagages": "Passagers · bagages",
-    "tarifNuitDetail": "Tarif de nuit (22 h – 6 h)",
-    "inclus": "inclus",
     "total": "Total",
     "prixApres": "Le prix s'affiche dès que le vol et le véhicule sont choisis.",
     "payerAvec": "Payer avec",

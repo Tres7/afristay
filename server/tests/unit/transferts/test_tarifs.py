@@ -1,19 +1,16 @@
-from datetime import datetime
-
 from apps.transferts import tarifs
 
 
-def test_prix_de_jour_sans_majoration():
-    p = tarifs.calculer(10000, datetime(2026, 11, 2, 14, 30))
-    assert (p.prix, p.nuit) == (10000, False)
+def test_prix_et_commission():
+    p = tarifs.calculer(10000)
+    assert p.prix == 10000
     assert (p.commission, p.montant_chauffeur) == (1500, 8500)  # 15 % (grille du 18 octobre 2026)
 
 
-def test_majoration_de_nuit_arrondie_a_500():
-    assert tarifs.calculer(10000, datetime(2026, 11, 2, 23, 15)).prix == 12500
-    assert tarifs.calculer(15000, datetime(2026, 11, 2, 5, 59)).prix == 19000  # 18 750 → 19 000
-    assert tarifs.calculer(15000, datetime(2026, 11, 2, 6, 0)).nuit is False
-    assert tarifs.calculer(15000, datetime(2026, 11, 2, 22, 0)).nuit is True
+def test_aucune_majoration_de_nuit():
+    # Supprimée par décision des fondateurs (audit n° 3) : plus de variable ni de calcul de nuit
+    assert not any('nuit' in nom.lower() for nom in vars(tarifs))
+    assert tarifs.calculer(15000).prix == 15000
 
 
 def test_capacite_des_vehicules():

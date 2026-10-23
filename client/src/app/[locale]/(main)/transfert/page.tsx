@@ -5,7 +5,7 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useQuery } from "@tanstack/react-query";
-import { Car, Clock, CreditCard, Lock, Luggage, Moon, Plane, ShieldCheck, Smartphone, Users, Wallet } from "lucide-react";
+import { Car, Clock, CreditCard, Lock, Luggage, Plane, ShieldCheck, Smartphone, Users, Wallet } from "lucide-react";
 import api, { apiErrorMessage } from "@/lib/api";
 import { enEuros, payerTransfert, useConfigPaiement } from "@/lib/paiement";
 import { cn, formatFcfa, formatPrice, isoDate } from "@/lib/utils";
@@ -214,7 +214,6 @@ function TransfertContent() {
                       </div>
                       <div className="text-right">
                         <p className="font-heading font-bold text-dark whitespace-nowrap">{formatPrice(o.prix)}</p>
-                        {o.nuit && <p className="flex items-center justify-end gap-1 text-[11px] text-gray-600"><Moon size={11} /> {t("tarifNuit")}</p>}
                       </div>
                     </button>
                   );
@@ -246,7 +245,6 @@ function TransfertContent() {
               <dl className="text-sm space-y-2">
                 <div className="flex justify-between gap-3"><dt className="text-gray-600">{t("vehicule")}</dt><dd className="font-medium text-dark">{t(`vehicules.${choix.categorie}.nom`)}</dd></div>
                 <div className="flex justify-between gap-3"><dt className="text-gray-600">{t("passagersBagages")}</dt><dd className="font-medium text-dark">{passagers} · {bagages}</dd></div>
-                {choix.nuit && <div className="flex justify-between gap-3"><dt className="text-gray-600">{t("tarifNuitDetail")}</dt><dd className="font-medium text-dark">{t("inclus")}</dd></div>}
                 <div className="flex justify-between items-center gap-3 pt-3 border-t border-gray-100">
                   <dt className="font-heading font-bold text-dark text-base">{t("total")}</dt>
                   <dd className="text-right"><span className="block font-heading font-bold text-primary text-2xl">{formatPrice(choix.prix)}</span><MontantDebite montant={choix.prix} /></dd>
