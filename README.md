@@ -1,6 +1,6 @@
 # Kwa-Ba
 
-**Le monde vous accueille.**
+**L'Afrique vous accueille.**
 
 Plateforme de reservation d'hebergements en Afrique avec support des paiements Mobile Money.
 

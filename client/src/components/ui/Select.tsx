@@ -2,6 +2,7 @@
 
 import { useId, useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Floating from "@/components/ui/Floating";
 import { usePopover } from "@/lib/usePopover";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,7 @@ interface SelectProps<T extends string> {
 
 /** Liste déroulante personnalisée : souris, toucher et clavier (flèches, Entrée, Échap). */
 export default function Select<T extends string>({ value, onChange, options, label, id, icon, className, buttonClassName }: SelectProps<T>) {
+  const t = useTranslations("commun");
   const { open, setOpen, ref, panelRef } = usePopover();
   const listId = useId();
   const [actif, setActif] = useState(0);
@@ -67,7 +69,7 @@ export default function Select<T extends string>({ value, onChange, options, lab
         )}
       >
         {icon}
-        <span className="flex-1 min-w-0 truncate text-base sm:text-sm font-medium text-dark">{courant?.label ?? "Choisir"}</span>
+        <span className="flex-1 min-w-0 truncate text-base sm:text-sm font-medium text-dark">{courant?.label ?? t("choisir")}</span>
         <ChevronDown size={16} className={cn("text-gray-400 transition-transform flex-shrink-0", open && "rotate-180")} />
       </button>
 

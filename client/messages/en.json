@@ -1,8 +1,8 @@
 {
   "meta": {
-    "titre": "Kwa-Ba | The world welcomes you",
+    "titre": "Kwa-Ba | Africa welcomes you",
     "description": "Book places to stay in Africa. Discover the best homes, experiences and restaurants.",
-    "slogan": "Kwa-Ba. The world welcomes you.",
+    "slogan": "Kwa-Ba. Africa welcomes you.",
     "pages": {
       "recherche": {
         "titre": "Places to stay in West Africa",
@@ -55,7 +55,8 @@
     "allerAuContenu": "Skip to main content",
     "chargement": "Loading…",
     "retour": "Back",
-    "slogan": "The world welcomes you."
+    "slogan": "Africa welcomes you.",
+    "choisir": "Choose"
   },
   "langue": {
     "choisir": "Choose language",

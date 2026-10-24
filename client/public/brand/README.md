@@ -1,6 +1,6 @@
 # Identité visuelle Kwa-Ba
 
-« Le monde vous accueille. »
+« L'Afrique vous accueille. »
 
 ## Couleurs
 | Couleur | Code | Usage |

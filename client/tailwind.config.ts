@@ -10,7 +10,7 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
-        // Palette Kwa-Ba (charte « Le monde vous accueille »)
+        // Palette Kwa-Ba (charte « L'Afrique vous accueille »)
         primary: {
           // Vert profond « Confiance » : boutons, liens, en-têtes (9,8:1 avec du blanc)
           DEFAULT: '#0E4D47',

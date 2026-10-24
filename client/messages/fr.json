@@ -1,8 +1,8 @@
 {
   "meta": {
-    "titre": "Kwa-Ba | Le monde vous accueille",
+    "titre": "Kwa-Ba | L'Afrique vous accueille",
     "description": "Plateforme de réservation d'hébergements en Afrique. Découvrez les meilleurs logements, activités et restaurants.",
-    "slogan": "Kwa-Ba. Le monde vous accueille.",
+    "slogan": "Kwa-Ba. L'Afrique vous accueille.",
     "pages": {
       "recherche": {
         "titre": "Hébergements en Afrique de l'Ouest",
@@ -55,7 +55,8 @@
     "allerAuContenu": "Aller au contenu principal",
     "chargement": "Chargement…",
     "retour": "Retour",
-    "slogan": "Le monde vous accueille."
+    "slogan": "L'Afrique vous accueille.",
+    "choisir": "Choisir"
   },
   "langue": {
     "choisir": "Choisir la langue",
