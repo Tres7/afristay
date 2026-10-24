@@ -65,13 +65,17 @@ export default function ContenuEn() {
           contenu: (
             <ul>
               <li>Illustration photos for demo listings and sign-in pages: <a href="https://unsplash.com" target="_blank" rel="noopener noreferrer">Unsplash</a>, under the <a href="https://unsplash.com/license" target="_blank" rel="noopener noreferrer">Unsplash licence</a>.</li>
-              <li>Home page photos, under the <a href="https://unsplash.com/license" target="_blank" rel="noopener noreferrer">Unsplash licence</a> (free use, including commercial):
+              <li>Home page photos: <a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer">Pexels</a>, under the <a href="https://www.pexels.com/license/" target="_blank" rel="noopener noreferrer">Pexels licence</a> (free use, including commercial, attribution not required):
                 <ul>
-                  <li>Euphorbia tree at sunset: <a href="https://unsplash.com/photos/tall-cactus-trees-in-savanna-at-sunset-ZgzN3Zz6qNk" target="_blank" rel="noopener noreferrer">Wietse Jongsma</a></li>
-                  <li>Zebras in the savanna (Mala Mala reserve, South Africa): <a href="https://unsplash.com/photos/zebras-walking-across-a-grassy-field-at-sunset-gloMjPyIzWo" target="_blank" rel="noopener noreferrer">Edmund Loh</a></li>
-                  <li>Elephants at sunset: <a href="https://unsplash.com/photos/elephants-silhouetted-against-a-vibrant-african-savanna-sunset-DHx9_Sa8jpU" target="_blank" rel="noopener noreferrer">Edyta Michalska</a></li>
-                  <li>Safari vehicles in the savanna: <a href="https://unsplash.com/photos/a-safari-vehicle-driving-through-a-dry-grass-field-rlr0oaz2nZQ" target="_blank" rel="noopener noreferrer">Denice Alex</a></li>
-                  <li>4x4 under an acacia tree: <a href="https://unsplash.com/photos/grey-vehicle-parked-beside-tree-during-daytime-Wa1zZ70As9o" target="_blank" rel="noopener noreferrer">David Clode</a></li>
+                  <li>Waterfall and green cliff</li>
+                  <li>Safari vehicle in the savanna</li>
+                  <li>Elephant in golden grass</li>
+                  <li>Elephant family in the savanna</li>
+                  <li>Elephant under acacia trees</li>
+                  <li>Giraffes in the savanna</li>
+                  <li>Aerial view of a jetty and a coastal city</li>
+                  <li>Elephant in front of Kilimanjaro</li>
+                  <li>Elephants in front of Kilimanjaro</li>
                 </ul>
               </li>
               <li>Montserrat and Inter fonts: SIL Open Font License.</li>
