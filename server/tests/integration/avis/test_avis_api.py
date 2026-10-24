@@ -134,7 +134,7 @@ def test_rating_recomputed_when_review_deleted(listing, make_reservation):
 
 def test_stays_to_review(client_for, make_user, listing, make_reservation):
     guest = make_user()
-    older = make_reservation(listing, guest=guest, starts_in=-20, nights=2)
+    older = make_reservation(listing, guest=guest, starts_in=-12, nights=2)  # 14 jours pour évaluer (charte des avis)
     recent = make_reservation(listing, guest=guest, starts_in=-5, nights=2)
     make_reservation(listing, guest=guest, starts_in=-100, nights=2)   # hors délai
     make_reservation(listing, guest=guest, starts_in=5, nights=2)      # à venir

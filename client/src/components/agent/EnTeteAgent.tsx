@@ -4,9 +4,13 @@ import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { LogOut } from "lucide-react";
 import Logo from "@/components/layout/Logo";
+import AlerteVerifications from "@/components/verifications/AlerteVerifications";
+import { useCompteursVerification } from "@/lib/useCompteursVerification";
 
 export default function EnTeteAgent() {
   const { data: session } = useSession();
+  // Field agents never see the back-office: new documents and visits are announced here
+  const { data: compteurs } = useCompteursVerification(session?.user?.role === "agent" || session?.user?.role === "admin");
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
       <div className="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
@@ -21,6 +25,7 @@ export default function EnTeteAgent() {
           </button>
         </div>
       </div>
+      <AlerteVerifications compteurs={compteurs} />
     </header>
   );
 }

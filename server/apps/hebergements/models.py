@@ -77,6 +77,9 @@ class HebergementModel(models.Model):
     petit_dejeuner_prix = models.PositiveIntegerField(null=True, blank=True, help_text='FCFA par personne et par jour (option)')
     arrivee_a_partir = models.TimeField(null=True, blank=True, help_text="Heure d'arrivée à partir de")
     depart_avant = models.TimeField(null=True, blank=True, help_text='Heure de départ au plus tard')
+    # Politique d'annulation choisie par l'hôte (CGV, annexe 1) : voir apps/paiements/tarifs.py
+    POLITIQUES_ANNULATION = [('souple', 'Souple'), ('moderee', 'Modérée'), ('ferme', 'Ferme')]
+    politique_annulation = models.CharField(max_length=10, choices=POLITIQUES_ANNULATION, default='moderee', db_default='moderee')
     amenities = models.JSONField(default=list)
     is_available = models.BooleanField(default=True)
     # Publiée seulement après la visite d'un agent de terrain (apps.verifications)

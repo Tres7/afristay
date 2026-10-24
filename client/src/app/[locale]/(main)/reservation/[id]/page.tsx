@@ -7,15 +7,16 @@ import { useSession } from "next-auth/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Check, Info, Smartphone, CreditCard, Wallet, MapPin, Lock } from "lucide-react";
 import api, { apiErrorMessage } from "@/lib/api";
-import { allerPayer, enEuros, useConfigPaiement } from "@/lib/paiement";
+import { allerPayer, enEuros, useConfigPaiement, useOperateursMobileMoney } from "@/lib/paiement";
 import RatingBadge from "@/components/avis/RatingBadge";
 import { MontantDebite } from "@/components/layout/Devise";
-import { calculateNights, calculateServiceFee, cn, FALLBACK_IMAGE, formatDate, formatFcfa, formatPrice, isoDate } from "@/lib/utils";
+import PolitiqueAnnulation from "@/components/hebergement/PolitiqueAnnulation";
+import { calculateNights, calculateServiceFee, cn, FALLBACK_IMAGE, formatDate, formatFcfa, formatPrice, isoDate, SERVICE_FEE_RATE } from "@/lib/utils";
 import type { Hebergement, Reservation } from "@/types/api/models";
 import { useTranslations } from "next-intl";
 
 const PAYMENT_METHODS = [
-  { id: "mobile_money", label: "mobileMoney", sublabel: "Moov (Flooz), T-Money, MTN, Orange, Airtel", icon: Smartphone },
+  { id: "mobile_money", label: "mobileMoney", sublabel: "operateurs", icon: Smartphone },
   { id: "carte", label: "carte", sublabel: "Visa, Mastercard", icon: CreditCard },
   { id: "paypal", label: "paypal", sublabel: "paypalDetail", icon: Wallet },
 ] as const;
@@ -38,8 +39,10 @@ function ReservationContent() {
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [accepte, setAccepte] = useState(false);
 
   const { data: config } = useConfigPaiement();
+  const operateurs = useOperateursMobileMoney();
   const enLigne = !!config?.actif;
   const moyens = PAYMENT_METHODS.filter((m) => !enLigne || config?.moyens.includes(m.id));
   const moyenChoisi = moyens.some((m) => m.id === paymentMethod) ? paymentMethod : moyens[0]?.id ?? "mobile_money";
@@ -66,7 +69,9 @@ function ReservationContent() {
   const nights = calculateNights(checkIn, checkOut);
   const datesInvalid = !checkIn || !checkOut || nights <= 0 || checkIn < isoDate();
   const subtotal = hebergement.price_per_night * nights;
-  const serviceFee = calculateServiceFee(subtotal);
+  // Taux du visiteur : 6 %, ou 3 % s'il a déjà séjourné chez cet hôte (le serveur applique le même calcul)
+  const tauxFrais = hebergement.frais_voyageur ?? SERVICE_FEE_RATE;
+  const serviceFee = calculateServiceFee(subtotal, tauxFrais);
   const total = subtotal + serviceFee;
   const backToListing = `/hebergements/${hebergement.id}?check_in=${checkIn}&check_out=${checkOut}&guests=${guestsCount}`;
 
@@ -82,6 +87,8 @@ function ReservationContent() {
         guests_count: guestsCount,
         payment_method: moyenChoisi,
         message: message.trim(),
+        // Le serveur recalcule le total et refuse s'il a changé depuis l'affichage de ce récapitulatif
+        total_attendu: total,
       });
       queryClient.invalidateQueries({ queryKey: ["reservations"] });
       if (res.data.status !== "pending") {
@@ -96,6 +103,8 @@ function ReservationContent() {
       }
     } catch (err) {
       setError(apiErrorMessage(err, t("reservationNonEnregistree")));
+      // Prix modifié entre-temps : le récapitulatif se met à jour avec le nouveau total
+      queryClient.invalidateQueries({ queryKey: ["hebergement", params.id, "reservation"] });
       setSubmitting(false);
     }
   };
@@ -174,7 +183,7 @@ function ReservationContent() {
                       <div className="text-left flex-1 min-w-0">
                         <p className={cn("font-bold text-sm", isActive ? "text-primary" : "text-dark")}>{t(`moyens.${method.label}`)}</p>
                         <p className="text-gray-500 text-xs mt-0.5">
-                          {method.sublabel === "paypalDetail" ? t("moyens.paypalDetail") : method.sublabel}
+                          {method.sublabel === "paypalDetail" ? t("moyens.paypalDetail") : method.sublabel === "operateurs" ? operateurs : method.sublabel}
                           {method.id === "paypal" && config && !datesInvalid && <> · <strong className="text-dark">{enEuros(total, config.fcfa_par_euro)}</strong></>}
                         </p>
                       </div>
@@ -219,7 +228,10 @@ function ReservationContent() {
                   <span className="font-medium text-dark">{formatPrice(subtotal)}</span>
                 </div>
                 <div className="flex justify-between gap-2">
-                  <span className="text-gray-600">{tFiche("fraisService")}</span>
+                  <span className="text-gray-600">
+                    {tFiche("fraisService", { taux: Math.round(tauxFrais * 100) })}
+                    {tauxFrais < SERVICE_FEE_RATE && <span className="block text-xs text-secondary font-semibold">{tFiche("clientFidele")}</span>}
+                  </span>
                   <span className="font-medium text-dark">{formatPrice(serviceFee)}</span>
                 </div>
               </div>
@@ -237,18 +249,27 @@ function ReservationContent() {
                   <a href="#mode-paiement" className="text-primary font-semibold hover:underline">{t("changer")}</a>
                 </p>
               )}
-              <button onClick={handleConfirm} disabled={submitting || datesInvalid} className="w-full bg-secondary hover:bg-secondary-600 text-white font-bold py-4 rounded-2xl shadow-md transition-all text-base disabled:opacity-60">
+              <div className="mb-4">
+                <PolitiqueAnnulation politique={hebergement.politique_annulation ?? "moderee"} compact />
+              </div>
+
+              {/* Acceptation expresse des CGV, des règles de l'annonce et de la politique d'annulation (CGV, art. 5.2) */}
+              <label className="flex items-start gap-2.5 text-xs text-gray-600 leading-relaxed mb-4 cursor-pointer">
+                <input type="checkbox" checked={accepte} onChange={(e) => setAccepte(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-gray-300 text-primary focus:ring-primary" />
+                <span>
+                  {t.rich(enLigne ? "accepterPaiement" : "accepterConfirmation", {
+                    cgu: (x) => <Link href="/cgv" className="text-primary font-medium">{x}</Link>,
+                    annulation: (x) => <Link href="/remboursement" className="text-primary font-medium">{x}</Link>,
+                  })}
+                </span>
+              </label>
+
+              <button onClick={handleConfirm} disabled={submitting || datesInvalid || !accepte} className="w-full bg-secondary hover:bg-secondary-600 text-white font-bold py-4 rounded-2xl shadow-md transition-all text-base disabled:opacity-60">
                 {submitting
                   ? enLigne ? t("redirection") : t("traitement")
                   : enLigne ? t("payer", { montant: moyenChoisi === "paypal" && config ? enEuros(total, config.fcfa_par_euro) : formatFcfa(total) }) : t("confirmerReservation")}
               </button>
-
-              <p className="text-center text-gray-400 text-xs mt-4 leading-relaxed">
-                {t.rich(enLigne ? "accepterPaiement" : "accepterConfirmation", {
-                  cgu: (x) => <Link href="/cgu" className="text-primary font-medium">{x}</Link>,
-                  annulation: (x) => <Link href="/remboursement" className="text-primary font-medium">{x}</Link>,
-                })}
-              </p>
             </div>
           </div>
         </div>

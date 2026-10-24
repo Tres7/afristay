@@ -11,7 +11,8 @@ export interface AdminPage<T> {
 
 export interface AdminStats {
   utilisateurs: { total: number; nouveaux_30j: number; hotes: number; desactives: number };
-  annonces: { total: number; visibles: number; verifiees: number };
+  /** en_attente: waiting for an agent's visit (refused listings wait for their host). */
+  annonces: { total: number; visibles: number; verifiees: number; en_attente: number };
   reservations: { confirmees_30j: number; annulees_30j: number; volume_30j: number };
   avis: { total: number; moyenne: number | null };
   reservations_par_jour: { date: string; nombre: number; volume: number }[];
@@ -33,6 +34,16 @@ export interface AdminUser {
   last_login: string | null;
   nb_reservations: number;
   nb_annonces: number;
+  /** Hôtes seulement : commission réglée par l'équipe. */
+  conditions: ConditionsHote | null;
+}
+
+export interface ConditionsHote {
+  categorie: "particulier" | "hotel";
+  fondateur_debut: string | null;
+  fondateur_fin: string | null;
+  /** Taux appliqué aujourd'hui : 8, 12 (hôtel) ou 5 (Programme Fondateurs). */
+  commission_pourcent: number;
 }
 
 export interface AdminHebergement {
@@ -120,6 +131,7 @@ export interface PhotoVehicule {
   url: string;
 }
 
+/** Véhicule d'un propriétaire partenaire (nom technique historique : catégorie). */
 export interface CategorieVehicule {
   id: number;
   nom: string;
@@ -133,9 +145,19 @@ export interface CategorieVehicule {
   climatisation: boolean;
   /** La première est la photo principale. */
   photos: PhotoVehicule[];
-  prix_jour_sans_chauffeur: number | null;
-  prix_jour_avec_chauffeur: number | null;
+  proprietaire: number | null;
+  /** Prix du véhicule par jour, fixé par le propriétaire (sans le chauffeur). */
+  prix_jour: number | null;
+  sans_chauffeur: boolean;
+  avec_chauffeur: boolean;
+  /** Caution choisie par le propriétaire : 0, une ou deux journées. */
+  caution_jours: 0 | 1 | 2;
+  /** Calculée : journées × prix par jour, 100 000 FCFA au plus. */
   caution: number;
+  immatriculation: string;
+  annee: number | null;
+  assurance_fin: string | null;
+  visite_technique_fin: string | null;
   actif: boolean;
   ordre: number;
 }
@@ -160,10 +182,15 @@ export interface Loueur {
   categories: number[];
   lieux: number[];
   actif: boolean;
+  fondateur_debut: string | null;
+  fondateur_fin: string | null;
   pays_versement: string;
   operateur_versement: string;
   numero_versement: string;
   nb_locations: number;
+  nb_vehicules: number;
+  /** Taux appliqué aujourd'hui : 15, 10 (fondateur) ou 12 (Propriétaire Fidèle). */
+  commission_pourcent: number | null;
 }
 
 export interface AdminLocation {
@@ -174,8 +201,18 @@ export interface AdminLocation {
   voyageur: { nom: string; email: string };
   telephone: string;
   categorie: string;
-  formule: "sans_chauffeur" | "avec_chauffeur";
+  formule: "sans_chauffeur" | "avec_chauffeur" | "chauffeur_seul";
   formule_libelle: string;
+  proprietaire_vehicule: number | null;
+  jours_hors_lome: number;
+  jours_hors_pays: number;
+  prix_vehicule: number;
+  prix_chauffeur: number;
+  primes: number;
+  commission: number;
+  part_kwaba_chauffeur: number;
+  chauffeur_demande: { id: number; nom: string } | null;
+  chauffeur_partenaire: { id: number; nom: string } | null;
   lieu_prise: string;
   adresse_prise: string;
   lieu_retour: string;
@@ -227,10 +264,18 @@ export interface ChauffeurAdmin {
   vehicule: string;
   immatriculation: string;
   actif: boolean;
+  /** Statut « Chauffeur Excellence » : 6 500 FCFA par jour au lieu de 6 000. */
+  excellence: boolean;
   pays_versement: string;
   operateur_versement: string;
   numero_versement: string;
   nb_transferts: number;
+}
+
+/** Choix d'attribution d'une location : propriétaires du véhicule et chauffeurs partenaires. */
+export interface ChoixAttribution {
+  partenaires: { id: number; nom: string; telephone: string }[];
+  chauffeurs: { id: number; nom: string; telephone: string; excellence: boolean; demande: boolean }[];
 }
 
 export interface AdminTransfert {

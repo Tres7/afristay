@@ -39,3 +39,13 @@ export function minutesRestantes(expireLe: string | null): number | null {
 export function enEuros(montantFcfa: number, fcfaParEuro: number): string {
   return (Math.round((montantFcfa / fcfaParEuro) * 100) / 100).toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
 }
+
+/**
+ * Opérateurs Mobile Money proposés, tels que l'API les renvoie : au lancement Moov Money (Flooz) et Mixx by Yas
+ * (T-Money) ; les autres s'ajoutent quand l'interrupteur des moyens non ouverts est allumé.
+ */
+export function useOperateursMobileMoney(): string {
+  const { data } = useConfigPaiement();
+  const noms = data?.pays.flatMap((p) => p.operateurs.map((o) => o.nom)) ?? ["Moov Money (Flooz)", "Mixx by Yas (T-Money)"];
+  return Array.from(new Set(noms)).join(", ");
+}

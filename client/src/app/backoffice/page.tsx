@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { BadgeCheck, CalendarCheck, Home, Star, Users } from "lucide-react";
+import { BadgeCheck, CalendarCheck, ChevronRight, Home, IdCard, Star, Users } from "lucide-react";
 import api from "@/lib/api";
+import { useCompteursVerification } from "@/lib/useCompteursVerification";
 import { formatPrice } from "@/lib/utils";
 import CarteLancement from "@/components/backoffice/CarteLancement";
 import ReservationsChart from "@/components/backoffice/ReservationsChart";
@@ -27,6 +28,9 @@ export default function TableauDeBord() {
     queryKey: ["admin", "stats"],
     queryFn: async () => (await api.get<AdminStats>("/v1/admin/stats/")).data,
   });
+  // Same query as the menu badge (shared cache): refreshed every minute
+  const { data: compteurs } = useCompteursVerification(true);
+  const pieces = compteurs?.pieces ?? 0;
 
   return (
     <div className="space-y-6">
@@ -70,9 +74,23 @@ export default function TableauDeBord() {
                 <p className="text-sm font-semibold text-dark mb-3">À traiter</p>
                 <ul className="space-y-2 text-sm">
                   <li>
-                    <Link href="/backoffice/annonces?verifie=false" className="flex items-center justify-between hover:text-primary">
+                    <Link href="/agent"
+                      className={pieces > 0
+                        ? "flex items-center justify-between gap-2 -mx-2 px-2 py-2 rounded-xl bg-orange-50 text-orange-900 font-semibold hover:bg-orange-100"
+                        : "flex items-center justify-between gap-2 hover:text-primary"}>
+                      <span className="flex items-center gap-2"><IdCard size={15} className={pieces > 0 ? "text-orange-700" : "text-gray-400"} /> Pièces d&apos;identité à contrôler</span>
+                      {pieces > 0 ? (
+                        <span className="flex items-center gap-1">
+                          <span className="min-w-[22px] h-[22px] px-1.5 rounded-full bg-orange-700 text-white text-xs font-bold tabular-nums flex items-center justify-center">{pieces}</span>
+                          <ChevronRight size={16} className="text-orange-700" aria-hidden />
+                        </span>
+                      ) : <span className="font-bold tabular-nums">0</span>}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/backoffice/annonces?statut=en_attente" className="flex items-center justify-between hover:text-primary">
                       <span className="flex items-center gap-2"><BadgeCheck size={15} className="text-gray-400" /> Annonces à vérifier</span>
-                      <span className="font-bold tabular-nums">{s.annonces.total - s.annonces.verifiees}</span>
+                      <span className="font-bold tabular-nums">{s.annonces.en_attente}</span>
                     </Link>
                   </li>
                   <li>

@@ -15,6 +15,7 @@ from google.genai import types
 from google.genai._gaos.lib import compat_errors as erreurs_gemini
 
 from apps.securite.limites import incrementer
+from config.site import module_actif
 
 from . import outils
 from .models import ConversationModel, MessageModel
@@ -49,7 +50,7 @@ Règles sur les offres :
 Budget :
 - Montants en francs CFA (FCFA). Si le voyageur parle en euros, convertis à la parité fixe 1 € = 655,957 FCFA et donne les deux.
 - Pour un budget total, sépare ce qui est exact (logement et transfert Kwa-Ba, frais compris) de ce qui est estimé (repas, activités, déplacements sur place), et présente les estimations comme des fourchettes.
-- Sans dates, le coût d'un logement est une estimation : prix par nuit × nombre de nuits, plus 8 % de frais de service. Dès que les dates sont connues, relance rechercher_logements avec ces dates pour obtenir le coût exact et la disponibilité.
+- Sans dates, le coût d'un logement est une estimation : prix par nuit × nombre de nuits, plus 6 % de frais de service. Dès que les dates sont connues, relance rechercher_logements avec ces dates pour obtenir le coût exact et la disponibilité.
 - Sans heure d'arrivée, n'invente pas de prix de transfert : demande l'heure d'atterrissage, puis utilise devis_transfert.
 
 Restaurants, visites et activités :
@@ -72,7 +73,8 @@ class ConciergeErreur(Exception):
 
 
 def actif() -> bool:
-    return bool(settings.CONCIERGE['API_KEY'])
+    """Clé Gemini configurée et module affiché (interrupteur MODULE_CONCIERGE) : sinon aucun appel à Gemini."""
+    return bool(settings.CONCIERGE['API_KEY']) and module_actif('concierge')
 
 
 def _client() -> genai.Client:

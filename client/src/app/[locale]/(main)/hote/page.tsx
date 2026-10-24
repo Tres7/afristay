@@ -3,10 +3,14 @@
 import { Link, useRouter } from "@/i18n/navigation";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
-import { CheckCircle, Home, MessageCircle, Wallet } from "lucide-react";
+import { Car, CheckCircle, Home, MessageCircle, Wallet } from "lucide-react";
+import { CONTACT_EMAIL } from "@/lib/contact";
 import { toast } from "sonner";
 import api, { apiErrorMessage } from "@/lib/api";
 import { useTranslations } from "next-intl";
+import EstimateurRevenus from "@/components/hote/EstimateurRevenus";
+
+const TAUX = ["particulier", "hotel", "fondateur", "voyageur"] as const;
 
 const STEPS = [
   { icon: Home, id: "publier" },
@@ -77,6 +81,35 @@ export default function DevenirHotePage() {
               <p className="text-gray-500 text-sm leading-relaxed">{t(`etapes.${id}.texte`)}</p>
             </div>
           ))}
+        </div>
+
+        <div className="mt-12">
+          <h2 className="font-heading font-bold text-dark text-2xl md:text-3xl text-center mb-3">{t("tarifs.titre")}</h2>
+          <p className="text-gray-500 text-center max-w-2xl mx-auto mb-8">{t("tarifs.intro")}</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {TAUX.map((cle) => (
+              <div key={cle} className="bg-white rounded-3xl p-5 border border-gray-100 text-center">
+                <p className="font-heading font-bold text-primary text-3xl">{t(`tarifs.taux.${cle}.valeur`)}</p>
+                <p className="font-semibold text-dark text-sm mt-1">{t(`tarifs.taux.${cle}.titre`)}</p>
+                <p className="text-gray-500 text-xs mt-1 leading-relaxed">{t(`tarifs.taux.${cle}.texte`)}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-6">
+            <h3 className="font-heading font-bold text-dark text-lg mb-1">{t("tarifs.estimateurTitre")}</h3>
+            <p className="text-sm text-gray-500 mb-4">{t("tarifs.estimateurTexte")}</p>
+            <EstimateurRevenus />
+          </div>
+
+          <div className="mt-6 bg-primary/5 rounded-3xl p-5 md:p-6 flex flex-col sm:flex-row gap-4 sm:items-center">
+            <span className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0"><Car size={22} /></span>
+            <div className="flex-1">
+              <p className="font-heading font-bold text-dark">{t("tarifs.mobilite.titre")}</p>
+              <p className="text-sm text-gray-600 mt-1 leading-relaxed">{t("tarifs.mobilite.texte")}</p>
+            </div>
+            <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(t("tarifs.mobilite.sujet"))}`} className="text-sm font-bold text-primary hover:underline whitespace-nowrap">{t("tarifs.mobilite.cta")}</a>
+          </div>
         </div>
 
         <div className="mt-12 bg-white rounded-3xl p-6 md:p-8 border border-gray-100">

@@ -5,7 +5,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const SERVICE_FEE_RATE = 0.08;
+/** Frais de service du voyageur (CGV, art. 6.4) ; l'annonce donne le taux exact du visiteur (3 % en Client fidèle). */
+export const SERVICE_FEE_RATE = 0.06;
 
 export const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1542314831-c6a4d27ce6a2?q=80&w=1200&auto=format&fit=crop";
@@ -101,6 +102,16 @@ export function calculateNights(checkIn: string, checkOut: string): number {
 
 export function calculateServiceFee(subtotal: number, rate = SERVICE_FEE_RATE): number {
   return Math.round(subtotal * rate);
+}
+
+/**
+ * Prix d'une nuit pour le voyageur, frais de service inclus (100 000 FCFA à 6 % : 106 000 FCFA). Aperçu calculé à
+ * part, sans toucher au prix de l'hôte ; même arrondi au franc que le serveur (apps/paiements/tarifs.py), qui
+ * recalcule toujours le montant définitif.
+ */
+export function prixNuitFraisInclus(prixParNuit: number, rate = SERVICE_FEE_RATE): { frais: number; total: number } {
+  const frais = calculateServiceFee(prixParNuit, rate);
+  return { frais, total: prixParNuit + frais };
 }
 
 export function formatDate(d: string, opts: Intl.DateTimeFormatOptions = { day: "numeric", month: "short", year: "numeric" }) {

@@ -1,4 +1,5 @@
 export type HebergementType = "hotel" | "villa" | "appartement" | "auberge";
+export type PolitiqueAnnulation = "souple" | "moderee" | "ferme";
 
 export interface Hebergement {
   id: string;
@@ -26,6 +27,10 @@ export interface Hebergement {
   petit_dejeuner_prix: number | null;
   arrivee_a_partir: string | null;
   depart_avant: string | null;
+  /** Politique d'annulation choisie par l'hôte (CGV, annexe 1). */
+  politique_annulation: PolitiqueAnnulation;
+  /** Taux des frais de service pour ce visiteur : 0,06, ou 0,03 s'il revient chez cet hôte (Client fidèle). */
+  frais_voyageur: number;
   /** Vérification par un agent de terrain : seules les annonces « verifiee » sont publiques */
   statut_verification: "en_attente" | "verifiee" | "refusee";
   verifiee_le: string | null;
@@ -72,6 +77,8 @@ export interface Reservation {
   montants: {
     prix_nuits: number;
     frais_service: number;
+    /** Taux des frais de service en % (6, ou 3 en Client fidèle). */
+    taux_frais: number;
     total: number;
     commission_hote: number;
     montant_hote: number;

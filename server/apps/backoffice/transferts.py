@@ -83,7 +83,7 @@ class ChauffeurSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChauffeurModel
         fields = ['id', 'prenom', 'nom', 'telephone', 'email', 'aeroports', 'categorie', 'vehicule', 'immatriculation',
-                  'actif', 'pays_versement', 'operateur_versement', 'numero_versement', 'nb_transferts']
+                  'actif', 'excellence', 'pays_versement', 'operateur_versement', 'numero_versement', 'nb_transferts']
 
     def validate(self, data):
         pays = data.get('pays_versement', getattr(self.instance, 'pays_versement', ''))

@@ -73,6 +73,10 @@ class HebergementListView(APIView):
             qs = qs.filter(max_guests__gte=int(guests))
         if request.query_params.get('petit_dejeuner') == 'inclus':
             qs = qs.filter(petit_dejeuner='inclus')
+        # Équipements demandés (?equipements=piscine,wifi) : l'annonce doit les avoir tous
+        equipements = [e.strip() for e in request.query_params.get('equipements', '').split(',') if e.strip()]
+        for equipement in equipements[:10]:
+            qs = qs.filter(amenities__contains=[equipement])
 
         search = request.query_params.get('q')
         if search:

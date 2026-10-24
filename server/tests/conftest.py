@@ -45,3 +45,9 @@ def django_db_modify_db_settings(django_db_modify_db_settings_parallel_suffix):
 def _http_test_client(settings):
     # Le client de test parle en HTTP : sans ceci, la redirection HTTPS de production renverrait des 301
     settings.SECURE_SSL_REDIRECT = False
+
+
+@pytest.fixture(autouse=True)
+def _modules_affiches(settings):
+    # Les tests d'un module le supposent affiché ; l'état masqué du lancement a ses propres tests (tests/integration/site)
+    settings.MODULES = {nom: True for nom in settings.MODULES}

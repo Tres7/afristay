@@ -17,7 +17,8 @@ from rest_framework.views import APIView
 
 from apps.avis.models import AvisModel
 from apps.hebergements.models import HebergementModel
-from apps.paiements import services as paiements
+from apps.paiements import services as paiements, tarifs
+from apps.paiements.models import ConditionsHoteModel
 from apps.reservations.models import ReservationModel
 from apps.securite.audit import journaliser
 from apps.securite.permissions import EstAdministrateur
@@ -102,6 +103,8 @@ class StatsView(VueAdmin):
             total=Count('id'),
             visibles=Count('id', filter=Q(is_available=True, statut_verification='verifiee')),
             verifiees=Count('id', filter=Q(statut_verification='verifiee')),
+            # Waiting for an agent's visit (refused listings wait for the host, not for an agent)
+            en_attente=Count('id', filter=Q(statut_verification='en_attente')),
         )
         recentes = ReservationModel.objects.filter(created_at__gte=il_y_a_30j)
         reservations = recentes.aggregate(
@@ -139,6 +142,19 @@ class StatsView(VueAdmin):
 
 # --- 2. Utilisateurs --------------------------------------------------------------------------------
 
+def _conditions(u) -> dict | None:
+    """Commission de l'hôte : catégorie, Programme Fondateurs et taux appliqué aujourd'hui."""
+    if u.role != 'hote':
+        return None
+    c = getattr(u, 'conditions_hote', None)
+    return {
+        'categorie': c.categorie if c else 'particulier',
+        'fondateur_debut': c.fondateur_debut if c else None,
+        'fondateur_fin': c.fondateur_fin if c else None,
+        'commission_pourcent': float(tarifs.taux_commission(u) * 100),
+    }
+
+
 def _utilisateur(u) -> dict:
     return {
         'id': str(u.id), 'email': u.email, 'first_name': u.first_name, 'last_name': u.last_name,
@@ -146,11 +162,12 @@ def _utilisateur(u) -> dict:
         'is_verified': u.is_verified, 'is_active': u.is_active,
         'date_joined': u.date_joined, 'last_login': u.last_login,
         'nb_reservations': u.nb_reservations, 'nb_annonces': u.nb_annonces,
+        'conditions': _conditions(u),
     }
 
 
 def _utilisateurs():
-    return User.objects.annotate(
+    return User.objects.select_related('conditions_hote').annotate(
         nb_reservations=Count('reservations', distinct=True),
         nb_annonces=Count('hebergements', distinct=True),
     ).order_by('-date_joined')
@@ -192,11 +209,42 @@ class UtilisateurDetailView(VueAdmin):
         if 'is_active' in donnees and actif != cible.is_active:
             cible.is_active = actif
             journaliser('compte_desactive' if not actif else 'compte_reactive', request, utilisateur=request.user, **trace)
+        if 'conditions' in donnees:
+            erreur = _modifier_conditions(cible, donnees.get('conditions'), request)
+            if erreur:
+                return Response({'conditions': [erreur]}, status=status.HTTP_400_BAD_REQUEST)
         cible.save(update_fields=['role', 'is_active'])
         if not cible.is_active:
             # Ferme ses sessions : sans refresh token valide, il est déconnecté au plus tard à l'expiration du jeton d'accès
             revoquer_jetons(cible.pk)
         return Response(_utilisateur(_utilisateurs().get(pk=cible.pk)))
+
+
+def _modifier_conditions(cible, valeurs, request) -> str | None:
+    """Catégorie (particulier, hôtel) et dates du Programme Fondateurs d'un hôte. Renvoie un message d'erreur."""
+    if cible.role != 'hote' or not isinstance(valeurs, dict):
+        return "Seul un hôte a des conditions de commission."
+    categorie = valeurs.get('categorie', 'particulier')
+    if categorie not in dict(ConditionsHoteModel.CATEGORIES):
+        return "Catégorie inconnue."
+    debut, fin = (parse_date(str(valeurs.get(c) or '')) or None for c in ('fondateur_debut', 'fondateur_fin'))
+    if bool(debut) != bool(fin):
+        return "Indiquez le début et la fin du Programme Fondateurs, ou aucun des deux."
+    if debut and fin <= debut:
+        return "La fin du Programme Fondateurs doit être après son début."
+    if debut and categorie == 'hotel':
+        return "Le Programme Fondateurs concerne les hôtes particuliers."
+    if debut and not ConditionsHoteModel.objects.filter(hote=cible, fondateur_debut__isnull=False).exists() \
+            and ConditionsHoteModel.objects.filter(fondateur_debut__isnull=False).count() >= FONDATEURS_MAX:
+        return f"Le Programme Fondateurs est limité aux {FONDATEURS_MAX} premiers hôtes."
+    ConditionsHoteModel.objects.update_or_create(hote=cible, defaults={
+        'categorie': categorie, 'fondateur_debut': debut, 'fondateur_fin': fin, 'mis_a_jour_par': request.user})
+    journaliser('backoffice_modification', request, utilisateur=request.user, objet='conditions_hote', id=str(cible.pk),
+                champs=['categorie', 'fondateur_debut', 'fondateur_fin'])
+    return None
+
+
+FONDATEURS_MAX = 50
 
 
 # --- 3. Annonces ------------------------------------------------------------------------------------
@@ -229,6 +277,8 @@ class HebergementListView(VueAdmin):
             qs = qs.filter(is_available=visible)
         if (verifie := _booleen(params.get('verifie'))) is not None:
             qs = qs.filter(statut_verification='verifiee') if verifie else qs.exclude(statut_verification='verifiee')
+        if (statut := params.get('statut', '')) in dict(HebergementModel.STATUTS_VERIFICATION):
+            qs = qs.filter(statut_verification=statut)
         return _paginer(request, qs, _hebergement)
 
 

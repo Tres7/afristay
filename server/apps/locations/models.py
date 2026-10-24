@@ -1,7 +1,10 @@
-"""Location de voitures, avec ou sans chauffeur, auprès de loueurs partenaires.
+"""Location de voitures, avec ou sans chauffeur, et chauffeur pour le véhicule du client (offre mobilité du
+18 octobre 2026, CGV art. 6.5 et 14).
 
-Tout le catalogue est administré (prix, lieux, commission, conditions) : rien n'est proposé au voyageur tant que
-l'administration n'a pas renseigné les paramètres, au moins une catégorie avec un prix et un lieu de remise.
+Chaque véhicule est l'annonce d'un propriétaire partenaire, saisie par l'équipe : le propriétaire fixe son prix par
+jour et sa caution (aucune, une ou deux journées, 100 000 FCFA au plus) ; il reste invisible du voyageur. Le chauffeur
+(chauffeur partenaire de Kwa-Ba) est facturé à part : 7 000 FCFA par jour, primes de déplacement en plus. Rien n'est
+proposé tant que l'administration n'a pas renseigné les paramètres, au moins un véhicule avec un prix et un lieu.
 """
 import uuid
 
@@ -15,21 +18,24 @@ FUSEAUX = [
     ('Africa/Lome', 'Togo, Ghana, Burkina Faso, Mali, Côte d\'Ivoire, Sénégal (UTC)'),
     ('Africa/Porto-Novo', 'Bénin, Niger, Nigeria (UTC+1)'),
 ]
+CAUTION_MAX = 100_000  # FCFA, plafond du dépôt de garantie (CGV, art. 14.3)
 
 
 class ParametresLocationModel(models.Model):
     """Règles de la location (une seule ligne) : sans elle, la location n'est pas proposée."""
     commission_pourcent = models.DecimalField(
         max_digits=5, decimal_places=2, validators=[MinValueValidator(0), MaxValueValidator(100)],
-        help_text='Part du prix gardée par Kwa-Ba, en % (le reste est versé au loueur)',
+        help_text='Commission de Kwa-Ba sur le prix du véhicule, en % (15 % ; 10 % pour un propriétaire fondateur, '
+                  '12 % pour un Propriétaire Fidèle)',
     )
     delai_min_jours = models.PositiveSmallIntegerField(
         default=2, validators=[MinValueValidator(1)],
-        help_text='Réservation au plus tard N jours avant la prise du véhicule (temps de préparation du loueur)',
+        help_text='Réservation au plus tard N jours avant la prise du véhicule (temps de préparation du propriétaire)',
     )
     duree_max_jours = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)], help_text='Durée maximale d\'une location')
     annulation_gratuite_heures = models.PositiveSmallIntegerField(
-        help_text='Remboursement intégral si le voyageur annule au moins N heures avant la prise ; rien ensuite',
+        help_text='Remboursement intégral si le voyageur annule au moins N heures avant la prise (48) ; 50 % ensuite '
+                  "jusqu'à 24 heures avant, rien après",
     )
     conditions = models.TextField(
         blank=True, help_text='Affiché au voyageur avant de réserver : âge minimum, permis, carburant, kilométrage…',
@@ -37,11 +43,11 @@ class ParametresLocationModel(models.Model):
     caution_en_ligne = models.BooleanField(
         default=True, db_default=True,
         help_text="La caution est payée en ligne avec la location et gardée par Kwa-Ba jusqu'au retour du véhicule "
-                  "(sinon, le voyageur la règle au loueur à la remise)",
+                  "(sinon, le voyageur la règle au propriétaire à la remise)",
     )
     restitution_caution_heures = models.PositiveSmallIntegerField(
         default=24, db_default=24, validators=[MinValueValidator(1)],
-        help_text='Après le retour, délai laissé au loueur pour signaler un dommage ; la caution, moins la retenue, '
+        help_text='Après le retour, délai laissé au propriétaire pour signaler un dommage ; la caution, moins la retenue, '
                   'est ensuite remboursée au voyageur',
     )
     mis_a_jour_le = models.DateTimeField(auto_now=True)
@@ -63,7 +69,10 @@ class ParametresLocationModel(models.Model):
 
 
 class CategorieVehiculeModel(models.Model):
-    """Catégorie proposée au voyageur. Une formule sans prix n'est pas proposée."""
+    """Véhicule proposé au voyageur : l'annonce d'un propriétaire partenaire (son prix, sa caution, ses formules).
+
+    Nom technique historique (« catégorie ») : jusqu'au 22 octobre 2026, c'était une catégorie à prix fixe Kwa-Ba.
+    """
     GAMMES = [
         ('citadine', 'Citadine'),
         ('berline', 'Berline'),
@@ -74,43 +83,57 @@ class CategorieVehiculeModel(models.Model):
     ]
     BOITES = [('manuelle', 'Manuelle'), ('automatique', 'Automatique')]
     CARBURANTS = [('essence', 'Essence'), ('diesel', 'Diesel'), ('hybride', 'Hybride'), ('electrique', 'Électrique')]
+    CAUTIONS = [(0, 'Sans caution'), (1, 'Une journée de location'), (2, 'Deux journées de location')]
 
-    nom = models.CharField(max_length=80, help_text='Par ex. « Berline confort »')
+    nom = models.CharField(max_length=80, help_text='Par ex. « Toyota RAV4 2019 »')
     gamme = models.CharField(max_length=20, choices=GAMMES, db_index=True)
-    exemple_modele = models.CharField(max_length=120, blank=True, help_text='Par ex. « Toyota Corolla ou similaire »')
+    exemple_modele = models.CharField(max_length=120, blank=True, help_text='Marque et modèle, par ex. « Toyota RAV4 »')
     description = models.TextField(blank=True)
     places = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)])
     bagages = models.PositiveSmallIntegerField(help_text='Grandes valises')
     boite = models.CharField(max_length=20, choices=BOITES)
     carburant = models.CharField(max_length=20, choices=CARBURANTS, default='essence')
     climatisation = models.BooleanField(default=True)
-    prix_jour_sans_chauffeur = models.PositiveIntegerField(
-        null=True, blank=True, help_text='FCFA par jour, le voyageur conduit. Vide : formule non proposée',
+    proprietaire = models.ForeignKey(
+        'PartenaireLocationModel', on_delete=models.PROTECT, null=True, blank=True, related_name='vehicules',
+        help_text='Propriétaire partenaire (jamais montré au voyageur)',
     )
-    prix_jour_avec_chauffeur = models.PositiveIntegerField(
-        null=True, blank=True, help_text='FCFA par jour, chauffeur du loueur compris. Vide : formule non proposée',
+    prix_jour = models.PositiveIntegerField(null=True, blank=True, help_text='FCFA par jour, fixé par le propriétaire (sans le chauffeur)')
+    sans_chauffeur = models.BooleanField(default=True, db_default=True, help_text='Proposé sans chauffeur (le voyageur conduit)')
+    avec_chauffeur = models.BooleanField(default=True, db_default=True, help_text='Proposé avec un chauffeur partenaire (7 000 FCFA par jour en plus)')
+    caution_jours = models.PositiveSmallIntegerField(
+        choices=CAUTIONS, default=0, db_default=0,
+        help_text='Choisie par le propriétaire (sans chauffeur seulement) ; plafonnée à 100 000 FCFA',
     )
     caution = models.PositiveIntegerField(
-        default=0, help_text="FCFA, voiture sans chauffeur seulement (0 : aucune). Payée en ligne et gardée par Kwa-Ba "
-                             "jusqu'au retour, selon les paramètres de la location",
+        default=0, help_text="FCFA, calculée : journées de caution × prix par jour, 100 000 au plus. Payée en ligne et "
+                             "gardée par Kwa-Ba jusqu'au retour",
     )
-    actif = models.BooleanField(default=False, help_text='Proposée aux voyageurs (avec au moins un prix)')
+    immatriculation = models.CharField(max_length=20, blank=True, default='', db_default='')
+    annee = models.PositiveSmallIntegerField(null=True, blank=True)
+    assurance_fin = models.DateField(null=True, blank=True, help_text="Fin de validité de l'assurance : véhicule retiré après")
+    visite_technique_fin = models.DateField(null=True, blank=True, help_text='Fin de validité de la visite technique : véhicule retiré après')
+    actif = models.BooleanField(default=False, help_text='Proposé aux voyageurs (avec un prix)')
     ordre = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
         ordering = ['ordre', 'places', 'nom']
-        verbose_name = 'Catégorie de véhicule'
-        verbose_name_plural = 'Catégories de véhicules'
+        verbose_name = 'Véhicule'
+        verbose_name_plural = 'Véhicules'
 
     def __str__(self):
         return f"{self.nom} ({self.get_gamme_display()}, {self.places} places)"
 
-    def prix_jour(self, formule: str) -> int | None:
-        return self.prix_jour_avec_chauffeur if formule == 'avec_chauffeur' else self.prix_jour_sans_chauffeur
+    def save(self, *args, **kwargs):
+        self.caution = min(self.caution_jours * (self.prix_jour or 0), CAUTION_MAX)
+        super().save(*args, **kwargs)
+
+    def propose(self, formule: str) -> bool:
+        return bool(self.prix_jour) and (self.avec_chauffeur if formule == 'avec_chauffeur' else self.sans_chauffeur)
 
 
 class PhotoVehiculeModel(models.Model):
-    """Photos d'une catégorie de véhicule ; la première (ordre le plus bas) est la photo principale."""
+    """Photos d'un véhicule ; la première (ordre le plus bas) est la photo principale."""
     MAX_PAR_CATEGORIE = 10
 
     categorie = models.ForeignKey(CategorieVehiculeModel, on_delete=models.CASCADE, related_name='photos')
@@ -128,7 +151,7 @@ class PhotoVehiculeModel(models.Model):
 
 
 class LieuRemiseModel(models.Model):
-    """Où le véhicule est remis et rendu : aéroport, agence, ou livraison à l'adresse du voyageur."""
+    """Où le véhicule (ou le chauffeur) est remis et rendu : aéroport, agence, ou livraison à l'adresse du voyageur."""
     nom = models.CharField(max_length=120, help_text='Par ex. « Aéroport de Lomé » ou « Livraison à votre adresse, Lomé »')
     ville = models.CharField(max_length=100)
     fuseau = models.CharField(max_length=40, choices=FUSEAUX, help_text='Heure locale des réservations')
@@ -147,14 +170,18 @@ class LieuRemiseModel(models.Model):
 
 
 class PartenaireLocationModel(models.Model):
-    """Loueur partenaire, payé par Mobile Money après chaque location (moins la commission)."""
-    nom = models.CharField(max_length=120, help_text="Nom de l'agence")
+    """Propriétaire de véhicules partenaire (particulier ou agence), payé par Mobile Money après chaque location, moins
+    la commission : 15 %, 10 % pendant le Programme Fondateurs, 12 % au statut Propriétaire Fidèle."""
+    nom = models.CharField(max_length=120, help_text="Nom du propriétaire ou de l'agence")
     contact = models.CharField(max_length=120, help_text='Personne à contacter')
     telephone = models.CharField(max_length=20, help_text="Avec l'indicatif, par ex. +228 90 00 00 00")
     email = models.EmailField(blank=True, help_text='Facultatif : reçoit le détail des locations attribuées')
-    categories = models.ManyToManyField(CategorieVehiculeModel, related_name='partenaires')
+    categories = models.ManyToManyField(CategorieVehiculeModel, related_name='partenaires', blank=True,
+                                        help_text='Ancien catalogue : véhicules sans propriétaire que ce partenaire peut fournir')
     lieux = models.ManyToManyField(LieuRemiseModel, related_name='partenaires', help_text='Lieux où il remet ses véhicules')
     actif = models.BooleanField(default=True)
+    fondateur_debut = models.DateField(null=True, blank=True, help_text='Programme Fondateurs (20 premiers) : premier jour à 10 %')
+    fondateur_fin = models.DateField(null=True, blank=True, help_text='Programme Fondateurs : dernier jour à 10 % (6 mois)')
     pays_versement = models.CharField(max_length=2, choices=PAYS_CHOICES)
     operateur_versement = models.CharField(max_length=30, choices=OPERATEUR_CHOICES)
     numero_versement = models.CharField(max_length=15, help_text="Sans l'indicatif")
@@ -162,8 +189,8 @@ class PartenaireLocationModel(models.Model):
 
     class Meta:
         ordering = ['nom']
-        verbose_name = 'Loueur partenaire'
-        verbose_name_plural = 'Loueurs partenaires'
+        verbose_name = 'Propriétaire de véhicules'
+        verbose_name_plural = 'Propriétaires de véhicules'
 
     def __str__(self):
         return self.nom
@@ -172,12 +199,13 @@ class PartenaireLocationModel(models.Model):
 class LocationModel(models.Model):
     STATUTS = [
         ('en_attente_paiement', 'En attente de paiement'),
-        ('confirmee', 'Payée, loueur à attribuer'),
-        ('partenaire_assigne', 'Loueur attribué'),
+        ('confirmee', 'Payée, à attribuer'),
+        ('partenaire_assigne', 'Attribuée'),
         ('terminee', 'Terminée'),
         ('annulee', 'Annulée'),
     ]
-    FORMULES = [('sans_chauffeur', 'Voiture seule'), ('avec_chauffeur', 'Avec chauffeur')]
+    FORMULES = [('sans_chauffeur', 'Voiture seule'), ('avec_chauffeur', 'Avec chauffeur'),
+                ('chauffeur_seul', 'Chauffeur pour votre véhicule')]
     ANNULEE_PAR = [('voyageur', 'Voyageur'), ('plateforme', 'Kwa-Ba'), ('expiration', 'Paiement non effectué à temps')]
     MOYENS = [('mobile_money', 'Mobile Money'), ('carte', 'Carte bancaire'), ('paypal', 'PayPal')]
 
@@ -185,16 +213,17 @@ class LocationModel(models.Model):
     voyageur = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='locations')
     reservation = models.ForeignKey(
         'reservations.ReservationModel', on_delete=models.SET_NULL, null=True, blank=True, related_name='locations',
-        help_text='Séjour Kwa-Ba associé (facultatif)',
+        help_text='Séjour Kwa-Ba associé (facultatif) : avec un chauffeur, Pack Séjour (frais du logement à 3 %)',
     )
-    categorie = models.ForeignKey(CategorieVehiculeModel, on_delete=models.PROTECT, related_name='locations')
+    categorie = models.ForeignKey(CategorieVehiculeModel, on_delete=models.PROTECT, null=True, blank=True,
+                                  related_name='locations', help_text='Véhicule ; vide pour un chauffeur seul')
     formule = models.CharField(max_length=20, choices=FORMULES)
     lieu_prise = models.ForeignKey(LieuRemiseModel, on_delete=models.PROTECT, related_name='+')
     adresse_prise = models.CharField(max_length=255, blank=True)
     lieu_retour = models.ForeignKey(LieuRemiseModel, on_delete=models.PROTECT, related_name='+')
     adresse_retour = models.CharField(max_length=255, blank=True)
-    debut = models.DateTimeField(help_text='Prise du véhicule')
-    fin = models.DateTimeField(help_text='Retour du véhicule')
+    debut = models.DateTimeField(help_text='Prise du véhicule (ou début de la mission)')
+    fin = models.DateTimeField(help_text='Retour du véhicule (ou fin de la mission)')
     passagers = models.PositiveSmallIntegerField()
     telephone = models.CharField(max_length=20, help_text='Numéro du voyageur (WhatsApp)')
     precisions = models.TextField(help_text='Ce que le voyageur veut : trajets prévus, siège enfant, horaires…')
@@ -202,19 +231,29 @@ class LocationModel(models.Model):
     conducteur = models.CharField(max_length=120, blank=True)
     permis_numero = models.CharField(max_length=40, blank=True)
     permis_pays = models.CharField(max_length=60, blank=True)
+    # Avec chauffeur : jours hors de Lomé (primes de déplacement) et chauffeur redemandé (« Mon chauffeur »)
+    jours_hors_lome = models.PositiveSmallIntegerField(default=0, db_default=0, help_text='Jours dans le pays hors de Lomé')
+    jours_hors_pays = models.PositiveSmallIntegerField(default=0, db_default=0)
+    chauffeur_demande = models.ForeignKey(
+        'transferts.ChauffeurModel', on_delete=models.SET_NULL, null=True, blank=True, related_name='+',
+        help_text='« Mon chauffeur » : chauffeur que le voyageur redemande',
+    )
 
-    # Prix figés à la réservation (les tarifs peuvent changer ensuite)
+    # Prix figés à la réservation (les tarifs peuvent changer ensuite). prix = véhicule + lieux + chauffeur + primes
     jours = models.PositiveSmallIntegerField()
-    prix_jour = models.PositiveIntegerField()
+    prix_jour = models.PositiveIntegerField(help_text='Prix du véhicule par jour (0 pour un chauffeur seul)')
     frais_lieux = models.PositiveIntegerField()
-    prix = models.PositiveIntegerField(help_text='Total payé par le voyageur')
-    commission = models.PositiveIntegerField()
+    prix_chauffeur = models.PositiveIntegerField(default=0, db_default=0, help_text='7 000 FCFA par jour')
+    primes = models.PositiveIntegerField(default=0, db_default=0, help_text='Primes de déplacement, reversées au chauffeur')
+    prix = models.PositiveIntegerField(help_text='Total payé par le voyageur (hors caution)')
+    commission = models.PositiveIntegerField(help_text='Commission de Kwa-Ba sur le prix du véhicule (payée par le propriétaire)')
+    part_kwaba_chauffeur = models.PositiveIntegerField(default=0, db_default=0, help_text='1 000 FCFA par jour, 500 en Excellence ou en « Mon chauffeur »')
     caution = models.PositiveIntegerField(default=0)
     # Caution payée en ligne avec la location (figé à la réservation) : Kwa-Ba la garde jusqu'au retour, puis la
-    # rembourse au voyageur moins la retenue (dommages signalés par le loueur, versée à celui-ci). Sinon, réglée au
-    # loueur à la remise du véhicule (locations réservées avant la caution en ligne).
+    # rembourse au voyageur moins la retenue (dommages signalés par le propriétaire, versée à celui-ci). Sinon, réglée
+    # au propriétaire à la remise du véhicule (locations réservées avant la caution en ligne).
     caution_en_ligne = models.BooleanField(default=False, db_default=False)
-    caution_retenue = models.PositiveIntegerField(default=0, db_default=0, help_text='Gardée sur la caution et versée au loueur')
+    caution_retenue = models.PositiveIntegerField(default=0, db_default=0, help_text='Gardée sur la caution et versée au propriétaire')
     caution_motif = models.CharField(max_length=255, blank=True, default='', db_default='', help_text='Motif de la retenue')
     caution_restituee_le = models.DateTimeField(null=True, blank=True, help_text='Remboursement de la caution prévu')
     moyen = models.CharField(max_length=20, choices=MOYENS, default='mobile_money')
@@ -227,6 +266,10 @@ class LocationModel(models.Model):
     annulee_le = models.DateTimeField(null=True, blank=True)
     # Attribués par l'équipe
     partenaire = models.ForeignKey(PartenaireLocationModel, on_delete=models.PROTECT, null=True, blank=True, related_name='locations')
+    chauffeur_partenaire = models.ForeignKey(
+        'transferts.ChauffeurModel', on_delete=models.PROTECT, null=True, blank=True, related_name='locations',
+        help_text='Chauffeur partenaire de Kwa-Ba (formules avec chauffeur)',
+    )
     vehicule = models.CharField(max_length=120, blank=True, help_text='Marque, modèle et couleur du véhicule remis')
     immatriculation = models.CharField(max_length=20, blank=True)
     chauffeur_nom = models.CharField(max_length=120, blank=True, help_text='Formule avec chauffeur')
@@ -235,8 +278,9 @@ class LocationModel(models.Model):
     confirmation_notifiee = models.BooleanField(default=False)
     admins_notifies = models.BooleanField(default=False)
     alerte_sans_partenaire = models.BooleanField(default=False)
-    partenaire_notifie = models.BooleanField(default=False, help_text='Coordonnées du loueur envoyées au voyageur')
+    partenaire_notifie = models.BooleanField(default=False, help_text='Coordonnées du propriétaire et du chauffeur envoyées au voyageur')
     location_envoyee_partenaire = models.BooleanField(default=False)
+    mission_envoyee_chauffeur = models.BooleanField(default=False, db_default=False, help_text='Détail de la mission envoyé au chauffeur')
     caution_notifiee = models.BooleanField(default=False, db_default=False, help_text='Restitution de la caution annoncée au voyageur')
     cree_le = models.DateTimeField(auto_now_add=True)
 
@@ -246,15 +290,23 @@ class LocationModel(models.Model):
         verbose_name_plural = 'Locations de voitures'
 
     def __str__(self):
-        return f"{self.reference} · {self.categorie.nom}, {self.lieu_prise.ville}"
+        return f"{self.reference} · {self.libelle}, {self.lieu_prise.ville}"
 
     @property
     def reference(self):
         return f"LOC-{str(self.id)[:6].upper()}"
 
     @property
+    def libelle(self) -> str:
+        return self.categorie.nom if self.categorie_id else 'Chauffeur pour votre véhicule'
+
+    @property
+    def avec_chauffeur(self) -> bool:
+        return self.formule in ('avec_chauffeur', 'chauffeur_seul')
+
+    @property
     def caution_gardee(self) -> int:
-        """Caution que Kwa-Ba encaisse avec la location (0 si elle est réglée au loueur)."""
+        """Caution que Kwa-Ba encaisse avec la location (0 si elle est réglée au propriétaire)."""
         return self.caution if self.caution_en_ligne else 0
 
     @property
@@ -263,17 +315,24 @@ class LocationModel(models.Model):
         return self.prix + self.caution_gardee
 
     @property
+    def part_proprietaire(self) -> int:
+        """Ce qui revient au propriétaire avant commission : véhicule et frais de remise."""
+        return self.prix - self.prix_chauffeur - self.primes
+
+    @property
     def montant_partenaire(self):
-        return self.prix - self.commission
+        return self.part_proprietaire - self.commission
+
+    @property
+    def montant_chauffeur(self) -> int:
+        return self.prix_chauffeur + self.primes - self.part_kwaba_chauffeur
 
 
-class VersementPartenaireModel(models.Model):
-    """Paiement du loueur après la location (mêmes règles que les versements aux chauffeurs)."""
+class _VersementMixin(models.Model):
+    """Paiement d'un partenaire après la location (mêmes règles que les versements aux chauffeurs des transferts)."""
     STATUTS = [('planifie', 'Planifié'), ('en_cours', 'En cours'), ('envoye', 'Envoyé'), ('echoue', 'Échoué'), ('annule', 'Annulé')]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    location = models.OneToOneField(LocationModel, on_delete=models.PROTECT, related_name='versement')
-    partenaire = models.ForeignKey(PartenaireLocationModel, on_delete=models.PROTECT, related_name='versements')
     montant_brut = models.PositiveIntegerField()
     commission = models.PositiveIntegerField()
     montant = models.PositiveIntegerField()
@@ -290,9 +349,31 @@ class VersementPartenaireModel(models.Model):
     mis_a_jour_le = models.DateTimeField(auto_now=True)
 
     class Meta:
+        abstract = True
         ordering = ['date_prevue']
-        verbose_name = 'Versement à un loueur'
-        verbose_name_plural = 'Versements aux loueurs'
+
+
+class VersementPartenaireModel(_VersementMixin):
+    """Paiement du propriétaire : prix du véhicule et frais de remise (plus la retenue sur caution), moins la commission."""
+    location = models.OneToOneField(LocationModel, on_delete=models.PROTECT, related_name='versement')
+    partenaire = models.ForeignKey(PartenaireLocationModel, on_delete=models.PROTECT, related_name='versements')
+
+    class Meta(_VersementMixin.Meta):
+        verbose_name = 'Versement à un propriétaire'
+        verbose_name_plural = 'Versements aux propriétaires'
 
     def __str__(self):
         return f"{self.montant} FCFA → {self.partenaire} ({self.get_statut_display()})"
+
+
+class VersementChauffeurLocationModel(_VersementMixin):
+    """Paiement du chauffeur partenaire : 6 000 FCFA par jour (6 500 en Excellence ou « Mon chauffeur ») et primes."""
+    location = models.OneToOneField(LocationModel, on_delete=models.PROTECT, related_name='versement_chauffeur')
+    chauffeur = models.ForeignKey('transferts.ChauffeurModel', on_delete=models.PROTECT, related_name='versements_locations')
+
+    class Meta(_VersementMixin.Meta):
+        verbose_name = "Versement à un chauffeur (location)"
+        verbose_name_plural = 'Versements aux chauffeurs (locations)'
+
+    def __str__(self):
+        return f"{self.montant} FCFA → {self.chauffeur} ({self.get_statut_display()})"

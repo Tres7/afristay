@@ -12,6 +12,8 @@ interface MobileDrawerProps {
   label: string;
   /** Contenu de l'en-tête (logo par exemple). */
   header?: React.ReactNode;
+  /** Side the panel slides from: right for the site menu, left for the back-office. */
+  side?: "left" | "right";
   children: React.ReactNode;
 }
 
@@ -19,7 +21,8 @@ interface MobileDrawerProps {
  * Panneau latéral mobile, rendu dans <body> : il couvre toute la hauteur de l'écran quel que soit
  * le parent (un parent avec backdrop-filter ou transform « emprisonne » sinon les éléments en position fixe).
  */
-export default function MobileDrawer({ open, onClose, label, header, children }: MobileDrawerProps) {
+export default function MobileDrawer({ open, onClose, label, header, side = "right", children }: MobileDrawerProps) {
+  const horsEcran = side === "right" ? "100%" : "-100%";
   const t = useTranslations("nav");
   const [monte, setMonte] = useState(false);
   const panneau = useRef<HTMLDivElement>(null);
@@ -55,8 +58,8 @@ export default function MobileDrawer({ open, onClose, label, header, children }:
           />
           <motion.div
             ref={panneau}
-            className="absolute inset-y-0 right-0 w-[min(22rem,88vw)] bg-white shadow-2xl flex flex-col"
-            initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
+            className={`absolute inset-y-0 ${side === "right" ? "right-0" : "left-0"} w-[min(22rem,88vw)] bg-white shadow-2xl flex flex-col`}
+            initial={{ x: horsEcran }} animate={{ x: 0 }} exit={{ x: horsEcran }}
             transition={{ type: "spring", stiffness: 380, damping: 36 }}
           >
             <div className="flex items-center justify-between gap-3 px-5 h-16 border-b border-gray-100 flex-shrink-0">

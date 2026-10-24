@@ -49,16 +49,16 @@ export default function Regles() {
       {!regles && <p className="text-sm bg-amber-50 text-amber-900 rounded-xl p-3">La location n&apos;est pas encore proposée sur le site : enregistrez ces règles pour l&apos;ouvrir.</p>}
       {erreurs.detail && <p role="alert" className="text-sm text-red-700 bg-red-50 rounded-xl p-3">{erreurs.detail}</p>}
       <div className="grid sm:grid-cols-2 gap-4">
-        <Champ label="Commission Kwa-Ba (%)" aide="Part gardée sur le prix ; le reste va au loueur" erreur={erreurs.commission_pourcent}>
+        <Champ label="Commission sur le véhicule (%)" aide="Payée par le propriétaire (15 %) ; 10 % pour un fondateur, 12 % après 20 locations sans incident" erreur={erreurs.commission_pourcent}>
           <Saisie type="number" min={0} max={100} step="0.5" value={form.commission_pourcent} onChange={(e) => setForm({ ...form, commission_pourcent: e.target.value })} required />
         </Champ>
-        <Champ label="Réservation au plus tard (jours avant)" aide="Temps de préparation du loueur" erreur={erreurs.delai_min_jours}>
+        <Champ label="Réservation au plus tard (jours avant)" aide="Temps de préparation du propriétaire et du chauffeur" erreur={erreurs.delai_min_jours}>
           <Saisie type="number" min={1} value={form.delai_min_jours} onChange={(e) => setForm({ ...form, delai_min_jours: e.target.value })} required />
         </Champ>
         <Champ label="Durée maximale (jours)" erreur={erreurs.duree_max_jours}>
           <Saisie type="number" min={1} value={form.duree_max_jours} onChange={(e) => setForm({ ...form, duree_max_jours: e.target.value })} required />
         </Champ>
-        <Champ label="Annulation gratuite (heures avant)" aide="Remboursement intégral au-delà ; rien ensuite" erreur={erreurs.annulation_gratuite_heures}>
+        <Champ label="Annulation gratuite (heures avant)" aide="Intégral au-delà (48) ; 50 % jusqu'à 24 h avant ; rien ensuite" erreur={erreurs.annulation_gratuite_heures}>
           <Saisie type="number" min={0} value={form.annulation_gratuite_heures} onChange={(e) => setForm({ ...form, annulation_gratuite_heures: e.target.value })} required />
         </Champ>
       </div>
@@ -67,11 +67,11 @@ export default function Regles() {
           onChange={(v) => setForm({ ...form, caution_en_ligne: v })} />
         <p className="text-xs text-muted">
           {form.caution_en_ligne
-            ? "Le voyageur paie la caution avec la location et ne règle rien au loueur. Après le retour, le loueur signale les dommages à Kwa-Ba ; la retenue (Suivi des locations) lui est versée, le reste est remboursé au voyageur."
-            : "Le voyageur règle la caution au loueur à la remise du véhicule : Kwa-Ba n'en a pas le contrôle."}
+            ? "Le voyageur paie la caution avec la location et ne règle rien au propriétaire. Après le retour, le propriétaire signale les dommages à Kwa-Ba ; la retenue (Suivi des locations) lui est versée, le reste est remboursé au voyageur."
+            : "Le voyageur règle la caution au propriétaire à la remise du véhicule : Kwa-Ba n'en a pas le contrôle."}
         </p>
         {form.caution_en_ligne && (
-          <Champ label="Signalement des dommages (heures après le retour)" aide="Ensuite, la caution moins la retenue est remboursée au voyageur et le loueur payé"
+          <Champ label="Signalement des dommages (heures après le retour)" aide="Ensuite, la caution moins la retenue est remboursée au voyageur et le propriétaire payé"
             erreur={erreurs.restitution_caution_heures}>
             <Saisie type="number" min={1} value={form.restitution_caution_heures} onChange={(e) => setForm({ ...form, restitution_caution_heures: e.target.value })} required />
           </Champ>

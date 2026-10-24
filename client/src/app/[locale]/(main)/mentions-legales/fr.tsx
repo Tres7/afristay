@@ -1,4 +1,6 @@
+import { Link } from "@/i18n/navigation";
 import LienContact from "@/components/legal/LienContact";
+import MentionSociete from "@/components/legal/MentionSociete";
 import LegalPage, { AC } from "@/components/legal/LegalPage";
 
 /** Version française. */
@@ -6,7 +8,7 @@ export default function ContenuFr() {
   return (
     <LegalPage
       titre="Mentions légales"
-      miseAJour="7 octobre 2026"
+      miseAJour="23 octobre 2026"
       intro={<p>Informations relatives à l&apos;éditeur du site Kwa-Ba, à son hébergeur et aux contenus publiés.</p>}
       sections={[
         {
@@ -14,12 +16,13 @@ export default function ContenuFr() {
           titre: "Éditeur du site",
           contenu: (
             <ul>
-              <li>Dénomination : <AC>raison sociale</AC>, <AC>forme juridique et capital social</AC></li>
-              <li>Siège social : <AC>adresse complète</AC></li>
-              <li>Immatriculation : <AC>numéro RCS / RCCM et ville d&apos;immatriculation</AC></li>
-              <li>Numéro de TVA intracommunautaire : <AC>si applicable</AC></li>
-              <li>Contact : <LienContact />, <AC>téléphone</AC></li>
-              <li>Directeur ou directrice de la publication : <AC>nom et fonction</AC></li>
+              <li>Dénomination : <strong>KWA-BA SARL</strong>, société à responsabilité limitée au capital de 100 000 F CFA</li>
+              <li>Siège social : quartier Totsi Gblenkomé, rue 243, Lomé (Togo)</li>
+              <li>Immatriculation : RCCM de Lomé n° <MentionSociete cle="rccm" libelle="RCCM" /> ; NIF <MentionSociete cle="nif" libelle="NIF" /></li>
+              <li>Commerce électronique : enregistrée comme prestataire de commerce électronique sous le n° <MentionSociete cle="commerce_electronique" libelle="numéro" /> (décret n° 2018-062/PR)</li>
+              <li>Données personnelles : déclaration auprès de l&apos;Instance de protection des données à caractère personnel (IPDCP) n° <MentionSociete cle="ipdcp" libelle="numéro" /></li>
+              <li>Contact : <LienContact /> ; WhatsApp <MentionSociete cle="whatsapp" libelle="numéro" /> ; adresse postale : quartier Totsi Gblenkomé, rue 243, Lomé, Togo</li>
+              <li>Cogérants : M. MENDE Fadel et M. KPOGLO Dzidoula Godwin Trésor — Directeur de la publication : M. MENDE Fadel.</li>
             </ul>
           ),
         },
@@ -28,19 +31,25 @@ export default function ContenuFr() {
           titre: "Hébergeur",
           contenu: (
             <ul>
-              <li>Nom : <AC>nom de l&apos;hébergeur</AC></li>
-              <li>Adresse : <AC>adresse de l&apos;hébergeur</AC></li>
-              <li>Téléphone : <AC>téléphone de l&apos;hébergeur</AC></li>
+              <li>Nom : <strong>IONOS SE</strong> (serveur privé virtuel du site et de ses données)</li>
+              <li>Adresse : Elgendorfer Straße 57, 56410 Montabaur, Allemagne</li>
+              <li>Téléphone : +49 721 170 5522</li>
+              <li>Le nom de domaine kwa-ba.com et la messagerie info@kwa-ba.com sont gérés chez Hostinger.</li>
             </ul>
           ),
+        },
+        {
+          id: "paiement",
+          titre: "Prestataire de paiement",
+          contenu: <p>FedaPay, établissement de paiement agréé par la BCEAO ; en cas de besoin, un autre prestataire agréé (<Link href="/cgv#paiement">CGV, art. 7</Link>).</p>,
         },
         {
           id: "propriete",
           titre: "Propriété intellectuelle",
           contenu: (
             <p>
-              Le nom Kwa-Ba, son logo et l&apos;ensemble des éléments graphiques et textuels du site sont la propriété de l&apos;éditeur,
-              sauf mention contraire. Toute reproduction sans autorisation est interdite. Les annonces, photos et avis publiés par les
+              Le nom Kwa-Ba, le logo, la charte graphique, les textes et le code de la Plateforme appartiennent à KWA-BA SARL, sauf
+              mention contraire <AC>marque déposée à l&apos;OAPI sous le n° …, si le dépôt est décidé</AC>. Toute reproduction sans autorisation est interdite. Les annonces, photos et avis publiés par les
               utilisateurs restent la propriété de leurs auteurs.
             </p>
           ),
@@ -51,9 +60,21 @@ export default function ContenuFr() {
           contenu: (
             <ul>
               <li>Photos d&apos;illustration des logements de démonstration et des pages de connexion : <a href="https://unsplash.com" target="_blank" rel="noopener noreferrer">Unsplash</a>, sous la <a href="https://unsplash.com/license" target="_blank" rel="noopener noreferrer">licence Unsplash</a>.</li>
-              <li>Photos de la page d&apos;accueil : <AC>source et licence de chaque image</AC></li>
-              <li>Polices Poppins et Inter : licence SIL Open Font License.</li>
-              <li>Icônes : Lucide, licence ISC.</li>
+              <li>Photos de la page d&apos;accueil : <a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer">Pexels</a>, sous la <a href="https://www.pexels.com/license/" target="_blank" rel="noopener noreferrer">licence Pexels</a> (usage libre, y compris commercial, sans attribution obligatoire) :
+                <ul>
+                  <li>Cascade et falaise verdoyante</li>
+                  <li>Véhicule de safari dans la savane</li>
+                  <li>Éléphant dans les herbes dorées</li>
+                  <li>Famille d&apos;éléphants dans la savane</li>
+                  <li>Éléphant sous les acacias</li>
+                  <li>Girafes dans la savane</li>
+                  <li>Vue aérienne d&apos;une jetée et d&apos;une ville côtière</li>
+                  <li>Éléphant devant le Kilimandjaro</li>
+                  <li>Éléphants devant le Kilimandjaro</li>
+                </ul>
+              </li>
+              <li>Polices Montserrat et Inter : licence SIL Open Font License.</li>
+              <li>Icônes : Lucide (licence ISC) et Phosphor (licence MIT).</li>
               <li>Photos des annonces : publiées par les hôtes, qui garantissent en détenir les droits.</li>
             </ul>
           ),

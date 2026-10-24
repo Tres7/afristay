@@ -1,19 +1,23 @@
 import { Link } from "@/i18n/navigation";
 import LienContact from "@/components/legal/LienContact";
-import LegalPage, { AValider, VersionFrancaiseFaitFoi } from "@/components/legal/LegalPage";
+import LegalPage, { VersionFrancaiseFaitFoi } from "@/components/legal/LegalPage";
+import { AccommodationTable, MobilityTable } from "../cgv/en";
 
-/** English version (the French version prevails). */
+/** English version (the French version prevails). Mirrors annex 1 and articles 10 to 12 of the terms of sale. */
 export default function ContenuEn() {
   return (
     <LegalPage
       titre="Cancellation and refund policy"
-      miseAJour="7 October 2026"
+      miseAJour="22 October 2026"
       intro={
         <>
-          <p>This page explains how to cancel a booking and when you get a refund.</p>
           <p>
-            Kwa-Ba holds your payment until you arrive: the host is only paid 24 hours after the stay begins. That is what lets us
-            refund you quickly if you cancel or something goes wrong.
+            This page explains how to cancel a booking and when you get a refund. It mirrors annex 1 of the{" "}
+            <Link href="/cgv">terms of sale</Link>, which prevail.
+          </p>
+          <p>
+            Kwa-Ba holds your payment: the host is only paid 24 hours after your arrival, the vehicle owner after the rental starts.
+            That is what lets us refund you quickly if you cancel or something goes wrong.
           </p>
           <VersionFrancaiseFaitFoi />
         </>
@@ -24,70 +28,84 @@ export default function ContenuEn() {
           titre: "Cancelling a booking",
           contenu: (
             <ul>
-              <li>From <Link href="/profil/reservations">My profile → My bookings</Link>, use the “Cancel” button on the stay.</li>
-              <li>You can cancel online until the day before check-in.</li>
-              <li>A stay that has started or ended can no longer be cancelled online: contact the host through messaging, or support.</li>
+              <li>From <Link href="/profil/reservations">My profile → My bookings</Link>, “Cancel” button on the booking concerned.</li>
+              <li>The time of cancellation is the one recorded by Kwa-Ba, in Lomé time (GMT).</li>
+              <li>The refund amount is shown before you confirm the cancellation.</li>
             </ul>
           ),
         },
         {
-          id: "bareme",
-          titre: "Refund schedule",
+          id: "reflexion",
+          titre: "48-hour cooling-off period",
+          contenu: (
+            <p>
+              Any accommodation or mobility booking cancelled within <strong>48 hours</strong> of its confirmation, and at least{" "}
+              <strong>7 days</strong> before arrival or vehicle pick-up, is fully refunded, service fee included, whatever the listing’s policy.
+            </p>
+          ),
+        },
+        {
+          id: "logement",
+          titre: "Accommodation: the policy chosen by the host",
           contenu: (
             <>
-              <table>
-                <thead><tr><th>Cancellation by the traveller</th><th>Refund</th></tr></thead>
-                <tbody>
-                  <tr><td>More than 7 days before check-in</td><td><AValider>100% of the nightly price and service fees</AValider></td></tr>
-                  <tr><td>Between 7 days and 48 hours before check-in</td><td><AValider>50% of the nightly price; service fees refunded</AValider></td></tr>
-                  <tr><td>Less than 48 hours before check-in</td><td><AValider>no refund of the nightly price, unless the host agrees</AValider></td></tr>
-                </tbody>
-              </table>
-              <p className="text-sm">The host may make this schedule more generous for their place; it is never less favourable.</p>
+              <p>Each host chooses one of the three policies below. It is shown on the listing and in the summary before payment.</p>
+              <AccommodationTable />
+              <ul>
+                <li><strong>Stays of 28 nights or more:</strong> the first month is non-refundable if cancelled less than 30 days before arrival; the following months are refunded if you give at least 30 days’ notice.</li>
+                <li><strong>No-show without cancellation:</strong> no refund.</li>
+                <li><strong>Cleaning fee:</strong> refunded if you have not arrived.</li>
+                <li><strong>Hotels:</strong> the hotel’s own policy applies if it is more favourable to you.</li>
+              </ul>
             </>
           ),
         },
         {
-          id: "hote-admin",
-          titre: "Cancellation by the host or by Kwa-Ba",
+          id: "mobilite",
+          titre: "Transfers, cars and drivers",
+          contenu: (
+            <>
+              <MobilityTable />
+              <p>In the event of late cancellation, the driver’s share is paid to them. If your flight is delayed, let the driver know; waiting beyond one hour may be charged as overtime (1,000 F CFA per hour).</p>
+              <p>The deposit for a car without driver, paid online, is always refunded in full if you cancel.</p>
+            </>
+          ),
+        },
+        {
+          id: "prestataire",
+          titre: "Cancellation by the host, the owner or Kwa-Ba",
           contenu: (
             <ul>
-              <li>If the host cancels, or if Kwa-Ba cancels a booking (place not as described, fraud, safety issue), you get a <strong>full refund</strong>, service fees included.</li>
-              <li>If the place does not match the listing when you arrive, report it within 24 hours with photos: <AValider>partial or full refund depending on the issue found.</AValider></li>
+              <li>If the provider cancels, or if Kwa-Ba cancels a booking (non-compliant listing, fraud, safety issue), you are <strong>fully refunded</strong>, service fee included, and Kwa-Ba helps you find an equivalent solution.</li>
+              <li>If the accommodation or vehicle does not match the listing, the <Link href="/cgv#garantie">Kwa-Ba Guarantee</Link> applies: report it within 24 hours of arrival (before departure for a vehicle), with photos.</li>
             </ul>
           ),
         },
         {
-          id: "transferts",
-          titre: "Airport transfers",
+          id: "exceptionnelles",
+          titre: "Exceptional circumstances",
           contenu: (
-            <ul>
-              <li>Cancellation by the traveller more than 24 hours before arrival: full refund.</li>
-              <li>Less than 24 hours before arrival: no refund, as the driver has reserved the ride.</li>
-              <li>If Kwa-Ba cannot provide a driver, or the driver does not show up: full refund.</li>
-            </ul>
+            <>
+              <p>
+                You are fully refunded, service fee included, if the service becomes impossible or prohibited for one of the following reasons,
+                occurring after booking and substantiated: natural disaster; epidemic declared with travel restrictions; border closure; official
+                travel ban; curfew or serious unrest in the area; death or serious hospitalisation of yourself or a close relative. You may choose
+                a credit instead.
+              </p>
+              <p>Not covered: ordinary flight delays or cancellations, visa difficulties known at booking, illnesses without hospitalisation, and events known at the booking date.</p>
+            </>
           ),
         },
         {
           id: "delais",
-          titre: "Refund timing and methods",
+          titre: "Refund times and methods",
           contenu: (
             <ul>
-              <li>Refunds go back to the payment method used: the Mobile Money number charged, the bank card or the PayPal account.</li>
+              <li>Refunds are made to the payment method used (Mobile Money, bank card or PayPal) within <strong>7 working days</strong>, plus any processing time of your operator or bank.</li>
+              <li>If this is not possible, they are made to a Mobile Money account in your name, with your agreement.</li>
               <li>A PayPal payment is refunded in euros, in proportion to the amount refunded.</li>
-              <li>Timing: <AValider>within 7 working days of cancellation</AValider>, plus any processing time at your operator or bank.</li>
-              <li>A question about a refund: <LienContact sujet="Refund" />.</li>
+              <li>Any question about a refund: <LienContact sujet="Refund" />.</li>
             </ul>
-          ),
-        },
-        {
-          id: "force-majeure",
-          titre: "Exceptional circumstances",
-          contenu: (
-            <p>
-              If a serious and unforeseeable event prevents the stay (natural disaster, official travel restriction, declared
-              epidemic), the booking can be cancelled free of charge for both the traveller and the host, with supporting evidence.
-            </p>
           ),
         },
       ]}

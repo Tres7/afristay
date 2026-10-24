@@ -1,18 +1,20 @@
-{% autoescape off %}{% if urgent %}URGENT : prise du véhicule dans moins de 48 heures et aucun loueur attribué.
+{% autoescape off %}{% if urgent %}URGENT : début dans moins de 48 heures et rien n'est attribué.
 
-{% endif %}Une location payée attend un loueur.
+{% endif %}Une location payée attend {% if chauffeur_seul %}un chauffeur{% elif avec_chauffeur %}son propriétaire et un chauffeur{% else %}son propriétaire{% endif %}.
 
   {{ reference }} · {{ categorie }}, {{ formule }}
-  Prise : {{ debut }}, {{ prise }}
-  Retour : {{ fin }}, {{ retour }} ({{ jours }} jour(s))
+  {% if chauffeur_seul %}Début{% else %}Prise{% endif %} : {{ debut }}, {{ prise }}
+  {% if chauffeur_seul %}Fin{% else %}Retour{% endif %} : {{ fin }}, {{ retour }} ({{ jours }} jour(s))
   Voyageur : {{ voyageur }}, {{ telephone_voyageur }} · {{ passagers }} personne(s)
 {% if conducteur %}  Conducteur : {{ conducteur }}, permis {{ permis }} ({{ permis_pays }})
+{% endif %}{% if jours_hors_lome or jours_hors_pays %}  Déplacements : {{ jours_hors_lome }} jour(s) hors de Lomé, {{ jours_hors_pays }} jour(s) hors du pays
+{% endif %}{% if chauffeur_demande %}  Chauffeur redemandé (« Mon chauffeur ») : {{ chauffeur_demande }}
 {% endif %}  Précisions du voyageur : « {{ precisions }} »
 
-Loueurs disponibles pour ce véhicule et ce lieu : {{ nb_partenaires }}
-Attribuer un loueur : {{ url_admin }}
+{% if not chauffeur_seul %}Propriétaires disponibles pour ce véhicule et ce lieu : {{ nb_partenaires }}
+{% endif %}Attribuer : {{ url_admin }}
 
-Le téléphone du voyageur reste chez Kwa-Ba : ne le transmettez pas au loueur, qui passe par nous pour le joindre.
+Le téléphone du voyageur reste chez Kwa-Ba : ne le transmettez ni au propriétaire ni au chauffeur, qui passent par nous pour le joindre.
 
 L'équipe Kwa-Ba
 {% endautoescape %}

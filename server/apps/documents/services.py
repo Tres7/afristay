@@ -42,10 +42,17 @@ def lignes_de(objet) -> list[dict]:
         return [{'libelle': f"Transfert aéroport {t.aeroport.ville}, {t.get_categorie_display()}{' (nuit)' if t.majoration_nuit else ''}, "
                             f"vol {t.numero_vol}", 'quantite': 1, 'prix_unitaire': t.prix}]
     loc = objet
-    lignes = [{'libelle': f"Location {loc.categorie.nom} ({loc.get_formule_display()}), {loc.lieu_prise.ville}",
-               'quantite': loc.jours, 'prix_unitaire': loc.prix_jour}]
-    if loc.prix - loc.jours * loc.prix_jour:
-        lignes.append({'libelle': 'Frais de remise et de retour', 'quantite': 1, 'prix_unitaire': loc.prix - loc.jours * loc.prix_jour})
+    lignes = []
+    if loc.prix_jour:
+        lignes.append({'libelle': f"Location {loc.libelle} ({loc.get_formule_display()}), {loc.lieu_prise.ville}",
+                       'quantite': loc.jours, 'prix_unitaire': loc.prix_jour})
+    if loc.prix_chauffeur:
+        lignes.append({'libelle': f"Chauffeur, {loc.lieu_prise.ville}", 'quantite': loc.jours, 'prix_unitaire': loc.prix_chauffeur // loc.jours})
+    if loc.primes:
+        lignes.append({'libelle': 'Primes de déplacement du chauffeur', 'quantite': 1, 'prix_unitaire': loc.primes})
+    reste = loc.prix - sum(ligne['quantite'] * ligne['prix_unitaire'] for ligne in lignes)
+    if reste:
+        lignes.append({'libelle': 'Frais de remise et de retour', 'quantite': 1, 'prix_unitaire': reste})
     return lignes
 
 

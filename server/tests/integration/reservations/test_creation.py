@@ -35,8 +35,8 @@ def test_total_price_includes_service_fee(client_for, make_user, make_hebergemen
                      status='cancelled', total_price=1)
 
     assert response.status_code == 201
-    # 3 nuits x 25 000 + 8 % ; le statut et le prix envoyés par le client sont ignorés
-    assert Decimal(str(response.data['total_price'])) == Decimal('81000')
+    # 3 nuits x 25 000 + 6 % ; le statut et le prix envoyés par le client sont ignorés
+    assert Decimal(str(response.data['total_price'])) == Decimal('79500')
     assert response.data['status'] == 'confirmed'
 
 

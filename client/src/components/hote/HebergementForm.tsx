@@ -1,17 +1,22 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import api, { firstErrorMessage } from "@/lib/api";
 import { AMENITIES } from "@/components/hebergement/AmenityBadge";
 import PhotoUploader from "@/components/hote/PhotoUploader";
+import EstimateurRevenus from "@/components/hote/EstimateurRevenus";
+import type { Revenus } from "@/types/api/paiement";
 import Select from "@/components/ui/Select";
 import Stepper from "@/components/ui/Stepper";
 import { cn, TYPE_LABELS } from "@/lib/utils";
-import type { Hebergement, HebergementType } from "@/types/api/models";
+import type { Hebergement, HebergementType, PolitiqueAnnulation } from "@/types/api/models";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 
 // Aide de chaque type de logement : messages annonce.types.<type>
+// Politiques d'annulation au choix de l'hôte (CGV, annexe 1) : messages politiqueAnnulation.<politique>
+const POLITIQUES: PolitiqueAnnulation[] = ["souple", "moderee", "ferme"];
 
 interface HebergementFormProps {
   initial?: Hebergement;
@@ -24,6 +29,12 @@ const labelClass = "block text-xs font-bold text-dark uppercase tracking-wide mb
 
 export default function HebergementForm({ initial, onSaved, onCancel }: HebergementFormProps) {
   const t = useTranslations("annonce");
+  const tp = useTranslations("politiqueAnnulation");
+  // Type de partenaire réglé par l'équipe (particulier, hôtel, fondateur) : la commission de l'aperçu est la sienne
+  const { data: revenus } = useQuery({
+    queryKey: ["paiements", "revenus"],
+    queryFn: async () => (await api.get<Revenus>("/v1/paiements/revenus/")).data,
+  });
   const [form, setForm] = useState({
     name: initial?.name ?? "",
     type: initial?.type ?? "appartement",
@@ -43,6 +54,7 @@ export default function HebergementForm({ initial, onSaved, onCancel }: Hebergem
     petit_dejeuner_prix: initial?.petit_dejeuner_prix ? String(initial.petit_dejeuner_prix) : "",
     arrivee_a_partir: initial?.arrivee_a_partir?.slice(0, 5) ?? "14:00",
     depart_avant: initial?.depart_avant?.slice(0, 5) ?? "11:00",
+    politique_annulation: initial?.politique_annulation ?? "moderee",
   });
   // Photos dans l'ordre d'affichage : la première est la couverture
   const [photos, setPhotos] = useState<string[]>(() => {
@@ -95,6 +107,7 @@ export default function HebergementForm({ initial, onSaved, onCancel }: Hebergem
       petit_dejeuner_prix: form.petit_dejeuner === "option" && form.petit_dejeuner_prix ? Number(form.petit_dejeuner_prix) : null,
       arrivee_a_partir: form.arrivee_a_partir || null,
       depart_avant: form.depart_avant || null,
+      politique_annulation: form.politique_annulation,
     };
     try {
       const res = initial
@@ -157,6 +170,9 @@ export default function HebergementForm({ initial, onSaved, onCancel }: Hebergem
           <label className={labelClass} htmlFor="h-price">{t("prix")}</label>
           <input id="h-price" type="number" min={1} step={1} inputMode="numeric" className={inputClass} value={form.price_per_night} onChange={set("price_per_night")} placeholder="35000" required />
           {err("price_per_night")}
+          {Number(form.price_per_night) > 0 && (
+            <EstimateurRevenus className="mt-3 bg-gray-50" partenaire={revenus?.partenaire ?? "particulier"} prix={Number(form.price_per_night)} />
+          )}
         </div>
       </div>
 
@@ -220,6 +236,16 @@ export default function HebergementForm({ initial, onSaved, onCancel }: Hebergem
             <label className={labelClass} htmlFor="h-depart">{t("depart")}</label>
             <input id="h-depart" type="time" className={inputClass} value={form.depart_avant} onChange={set("depart_avant")} />
           </div>
+        </div>
+        <div>
+          <label className={labelClass} htmlFor="h-politique">{t("politique")}</label>
+          <Select
+            id="h-politique" label={t("politique")} value={form.politique_annulation}
+            onChange={(v) => setForm((prev) => ({ ...prev, politique_annulation: v }))}
+            options={POLITIQUES.map((id) => ({ value: id, label: tp(`${id}.nom`), hint: tp(`${id}.regle`) }))}
+          />
+          <p className="text-xs text-gray-500 mt-1.5">{t("politiqueAide")}</p>
+          {err("politique_annulation")}
         </div>
       </fieldset>
 
