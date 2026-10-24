@@ -116,7 +116,7 @@ def page_html(texte: str, sujet: str) -> str:
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#FFFFFF;border-radius:18px;overflow:hidden;border:1px solid #ECE7DD">
     <tr><td align="center" style="padding:26px 24px 18px;border-bottom:1px solid #F0ECE4">
       <img src="cid:{CID_LOGO}" width="200" height="50" alt="KWA-BA" style="display:block;border:0;outline:none;font-family:Arial,sans-serif;font-size:26px;font-weight:800;color:{VERT}">
-      <div style="margin-top:8px;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:{GRIS}">Le monde vous accueille</div>
+      <div style="margin-top:8px;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:{GRIS}">L’Afrique vous accueille</div>
     </td></tr>
     <tr><td style="height:4px;background:{ORANGE};background-image:linear-gradient(90deg,{VERT},{ORANGE},{ORANGE_FONCE})"></td></tr>
     <tr><td style="padding:30px 32px 26px">
