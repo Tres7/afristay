@@ -60,13 +60,17 @@ export default function ContenuFr() {
           contenu: (
             <ul>
               <li>Photos d&apos;illustration des logements de démonstration et des pages de connexion : <a href="https://unsplash.com" target="_blank" rel="noopener noreferrer">Unsplash</a>, sous la <a href="https://unsplash.com/license" target="_blank" rel="noopener noreferrer">licence Unsplash</a>.</li>
-              <li>Photos de la page d&apos;accueil, sous la <a href="https://unsplash.com/license" target="_blank" rel="noopener noreferrer">licence Unsplash</a> (usage libre, y compris commercial) :
+              <li>Photos de la page d&apos;accueil : <a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer">Pexels</a>, sous la <a href="https://www.pexels.com/license/" target="_blank" rel="noopener noreferrer">licence Pexels</a> (usage libre, y compris commercial, sans attribution obligatoire) :
                 <ul>
-                  <li>Euphorbe au coucher du soleil : <a href="https://unsplash.com/photos/tall-cactus-trees-in-savanna-at-sunset-ZgzN3Zz6qNk" target="_blank" rel="noopener noreferrer">Wietse Jongsma</a></li>
-                  <li>Zèbres dans la savane (réserve de Mala Mala, Afrique du Sud) : <a href="https://unsplash.com/photos/zebras-walking-across-a-grassy-field-at-sunset-gloMjPyIzWo" target="_blank" rel="noopener noreferrer">Edmund Loh</a></li>
-                  <li>Éléphants au coucher du soleil : <a href="https://unsplash.com/photos/elephants-silhouetted-against-a-vibrant-african-savanna-sunset-DHx9_Sa8jpU" target="_blank" rel="noopener noreferrer">Edyta Michalska</a></li>
-                  <li>Véhicules de safari dans la savane : <a href="https://unsplash.com/photos/a-safari-vehicle-driving-through-a-dry-grass-field-rlr0oaz2nZQ" target="_blank" rel="noopener noreferrer">Denice Alex</a></li>
-                  <li>4x4 sous un acacia : <a href="https://unsplash.com/photos/grey-vehicle-parked-beside-tree-during-daytime-Wa1zZ70As9o" target="_blank" rel="noopener noreferrer">David Clode</a></li>
+                  <li>Cascade et falaise verdoyante</li>
+                  <li>Véhicule de safari dans la savane</li>
+                  <li>Éléphant dans les herbes dorées</li>
+                  <li>Famille d&apos;éléphants dans la savane</li>
+                  <li>Éléphant sous les acacias</li>
+                  <li>Girafes dans la savane</li>
+                  <li>Vue aérienne d&apos;une jetée et d&apos;une ville côtière</li>
+                  <li>Éléphant devant le Kilimandjaro</li>
+                  <li>Éléphants devant le Kilimandjaro</li>
                 </ul>
               </li>
               <li>Polices Montserrat et Inter : licence SIL Open Font License.</li>
