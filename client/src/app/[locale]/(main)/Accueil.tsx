@@ -226,7 +226,7 @@ export default function HomePage() {
         </section>
         )}
 
-        <section className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-3 md:gap-4" aria-label={t("typesHebergement")}>
+        <section className="grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-center items-center gap-3 md:gap-4" aria-label={t("typesHebergement")}>
           {CATEGORIES.map(({ type, label, icon: Icon }) => (
             <Link
               key={type}
