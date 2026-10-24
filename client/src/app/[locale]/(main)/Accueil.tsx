@@ -259,7 +259,7 @@ export default function HomePage() {
         </section>
         )}
 
-        <section className="py-12 bg-orange-50/60 rounded-[2rem] md:rounded-[3rem] px-6 md:px-8 text-center">
+        <section className="py-12 bg-white rounded-[2rem] md:rounded-[3rem] px-6 md:px-8 text-center">
           <h2 className="font-heading font-bold text-dark text-2xl md:text-3xl mb-3">{t("pourquoi")}</h2>
           <p className="text-gray-500 max-w-2xl mx-auto text-sm mb-10 md:mb-16">
             {t("pourquoiTexte")}
