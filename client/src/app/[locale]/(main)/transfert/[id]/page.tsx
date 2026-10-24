@@ -161,7 +161,7 @@ function TransfertDetail() {
             <div className="flex gap-3"><Users size={18} className="text-primary flex-shrink-0 mt-0.5" /><div><dt className="text-gray-600">{tT("passagersBagages")}</dt><dd className="font-semibold text-dark flex items-center gap-2">{t.passagers} <Luggage size={13} className="text-gray-500" /> {t.bagages}</dd></div></div>
           </dl>
           <div className="flex items-center justify-between mt-5 pt-4 border-t border-gray-100">
-            <span className="text-gray-600 text-sm">{t.paiement === "reussi" ? tr("paye") : tr("prix")}{t.majoration_nuit ? ` (${tT("tarifNuit")})` : ""}</span>
+            <span className="text-gray-600 text-sm">{t.paiement === "reussi" ? tr("paye") : tr("prix")}</span>
             <span className="font-heading font-bold text-xl text-dark">{formatPrice(t.prix)}</span>
           </div>
           {t.remboursement && (

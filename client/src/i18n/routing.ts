@@ -5,7 +5,7 @@ export const routing = defineRouting({
   locales: ["fr", "en"],
   defaultLocale: "fr",
   localePrefix: "as-needed",
-  // Cookie NEXT_LOCALE (langue choisie) : 1 an, déclaré dans la politique cookies
+  // Cookie NEXT_LOCALE (langue choisie) : 1 an, déclaré dans la politique de cookies
   localeCookie: { maxAge: 60 * 60 * 24 * 365 },
 });
 

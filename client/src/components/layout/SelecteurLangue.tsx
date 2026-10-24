@@ -1,7 +1,6 @@
 "use client";
 
 import { useTransition } from "react";
-import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Globe } from "lucide-react";
 import { usePathname, useRouter } from "@/i18n/navigation";
@@ -15,13 +14,14 @@ export default function SelecteurLangue({ className, complet = false }: { classN
   const locale = useLocale() as Langue;
   const t = useTranslations("langue");
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const router = useRouter();
   const [enCours, demarrer] = useTransition();
 
   const choisir = (langue: Langue) => {
     if (langue === locale) return;
-    const requete = searchParams.toString();
+    // Paramètres lus au clic plutôt qu'avec useSearchParams : le sélecteur est dans la barre et le pied de page de
+    // toutes les pages, et useSearchParams empêcherait leur génération statique au build
+    const requete = window.location.search.replace(/^\?/, "");
     demarrer(() => router.replace(requete ? `${pathname}?${requete}` : pathname, { locale: langue, scroll: false }));
   };
 

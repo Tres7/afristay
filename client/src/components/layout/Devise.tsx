@@ -52,7 +52,7 @@ export function SelecteurDevise({ className, complet = false }: { className?: st
     { valeur: "EUR", court: "€", long: t("euro") },
   ];
   return (
-    <div role="group" aria-label={t("choisir")} className={cn("inline-flex items-center gap-1 rounded-full border border-gray-200 p-0.5", className)}>
+    <div role="group" aria-label={t("choisir")} title={t("indicatif")} className={cn("inline-flex items-center gap-1 rounded-full border border-gray-200 p-0.5", className)}>
       {options.map((o) => (
         <button key={o.valeur} type="button" onClick={() => choisir(o.valeur)} aria-pressed={o.valeur === devise} title={o.long}
           className={cn("rounded-full px-2.5 py-1 text-xs font-bold transition-colors",
@@ -64,10 +64,21 @@ export function SelecteurDevise({ className, complet = false }: { className?: st
   );
 }
 
+/** À côté du sélecteur de devise : les euros ne sont qu'un équivalent, le débit se fait en FCFA. */
+export function MentionDevise({ className }: { className?: string }) {
+  const t = useTranslations("devise");
+  return <p className={cn("text-xs text-gray-500", className)}>{t("indicatif")}</p>;
+}
+
 /** Sous un total affiché en euros : le montant réellement débité, en FCFA (Mobile Money et carte). */
 export function MontantDebite({ montant }: { montant: number }) {
   const t = useTranslations("devise");
   const { devise } = useDevise();
   if (devise === "XOF") return null;
-  return <span className="block text-xs font-medium text-gray-500 mt-0.5">{t("debite", { montant: formatFcfa(montant) })}</span>;
+  return (
+    <>
+      <span className="block text-xs font-medium text-gray-500 mt-0.5">{t("debite", { montant: formatFcfa(montant) })}</span>
+      <span className="block text-xs text-gray-500">{t("indicatif")}</span>
+    </>
+  );
 }

@@ -105,14 +105,14 @@ class CycleTests(TestCase):
     def test_reservation_en_attente_puis_confirmee(self):
         resa = self.reserver()
         self.assertEqual(resa.status, 'pending')
-        self.assertEqual((resa.total_price, resa.prix_nuits, resa.commission_hote), (64800, 60000, 3000))
+        self.assertEqual((resa.total_price, resa.prix_nuits, resa.commission_hote), (63600, 60000, 4800))
         self.assertIsNotNone(resa.expire_le)
 
         r = self.payer(resa)
         self.assertEqual(r.data['reservation'], 'confirmed')
         self.assertEqual(r.data['paiement'], 'reussi')
         versement = resa.versement
-        self.assertEqual((versement.montant, versement.commission, versement.statut), (57000, 3000, 'planifie'))
+        self.assertEqual((versement.montant, versement.commission, versement.statut), (55200, 4800, 'planifie'))
         self.assertEqual(versement.date_prevue, tarifs.date_versement(resa))
         self.assertEqual(PaiementModel.objects.get(reservation=resa).telephone, '90000001')
 
@@ -150,21 +150,21 @@ class CycleTests(TestCase):
         services.synchroniser_paiement(PaiementModel.objects.get(reservation=resa))
         resa.refresh_from_db()
         self.assertEqual(resa.status, 'cancelled')
-        self.assertEqual(RemboursementModel.objects.get(reservation=resa).montant, 64800)
+        self.assertEqual(RemboursementModel.objects.get(reservation=resa).montant, 63600)
 
-    def test_annulation_voyageur_bareme_50(self):
+    def test_annulation_voyageur_moderee_50(self):
         resa = self.reserver(dans_jours=4)
         self.payer(resa)
         r = self.api.delete(f'/api/v1/reservations/{resa.id}/')
         self.assertEqual(r.status_code, 200, r.content)
-        self.assertEqual(r.data['rembourse'], 34800)
+        self.assertEqual(r.data['rembourse'], 30000)
         resa.versement.refresh_from_db()
-        self.assertEqual((resa.versement.montant, resa.versement.statut), (28500, 'planifie'))
+        self.assertEqual((resa.versement.montant, resa.versement.statut), (27600, 'planifie'))
 
     def test_annulation_plus_7_jours_tout_rembourse(self):
         resa = self.reserver(dans_jours=10)
         self.payer(resa)
-        self.assertEqual(self.api.delete(f'/api/v1/reservations/{resa.id}/').data['rembourse'], 64800)
+        self.assertEqual(self.api.delete(f'/api/v1/reservations/{resa.id}/').data['rembourse'], 63600)
         resa.versement.refresh_from_db()
         self.assertEqual(resa.versement.statut, 'annule')
 
@@ -187,7 +187,7 @@ class CycleTests(TestCase):
         self.assertEqual(r.data['numero'], '90000002')
 
         self.assertEqual(services.envoyer_versements_dus(), 1)
-        self.assertEqual(self.faux.payouts[0]['montant'], 57000)
+        self.assertEqual(self.faux.payouts[0]['montant'], 55200)
         self.assertEqual(self.faux.payouts[0]['mode'], 'moov_tg')
         self.faux.statut_payout = 'sent'
         services.passe()
@@ -195,8 +195,8 @@ class CycleTests(TestCase):
         self.assertEqual(v.statut, 'envoye')
 
         revenus = hote.get('/api/v1/paiements/revenus/').data
-        self.assertEqual(revenus['totaux']['verse'], 57000)
-        self.assertEqual(revenus['totaux']['commission'], 3000)
+        self.assertEqual(revenus['totaux']['verse'], 55200)
+        self.assertEqual(revenus['totaux']['commission'], 4800)
 
     def test_profil_versement_valide_operateur_et_numero(self):
         hote = APIClient()
@@ -236,7 +236,7 @@ class CycleTests(TestCase):
         r = self.api.post(f'/api/v1/paiements/reservations/{resa.id}/payer/', {'moyen': 'paypal'}, format='json')
         self.assertEqual(r.status_code, 200, r.content)
         self.assertIn('paypal.com', r.data['url'])
-        self.assertEqual(str(self.faux_paypal.commande['montant_eur']), '98.79')  # 64 800 FCFA
+        self.assertEqual(str(self.faux_paypal.commande['montant_eur']), '96.96')  # 63 600 FCFA
 
         self.faux_paypal.statut = 'APPROVED'  # le voyageur a validé chez PayPal
         statut = self.api.get(f'/api/v1/paiements/reservations/{resa.id}/statut/').data
@@ -245,11 +245,11 @@ class CycleTests(TestCase):
         self.assertEqual((paiement.prestataire, paiement.capture_id), ('paypal', 'CAP1'))
         resa.refresh_from_db()
         self.assertEqual(resa.payment_method, 'paypal')
-        self.assertEqual(resa.versement.montant, 57000)  # l'hôte est payé en FCFA comme les autres
+        self.assertEqual(resa.versement.montant, 55200)  # l'hôte est payé en FCFA comme les autres
 
         self.api.delete(f'/api/v1/reservations/{resa.id}/')
         services.envoyer_remboursements()
-        self.assertEqual(self.faux_paypal.remboursements, [('CAP1', paypal.en_euros(64800))])
+        self.assertEqual(self.faux_paypal.remboursements, [('CAP1', paypal.en_euros(63600))])
         self.assertEqual(RemboursementModel.objects.get(reservation=resa).statut, 'envoye')
 
     def test_carte_remboursement_manuel(self):
@@ -281,7 +281,7 @@ class CycleTests(TestCase):
         self.assertEqual(r.status_code, 200, r.content)
         self.assertEqual(services.envoyer_remboursements(), 1)
         envoi = self.faux.payouts[-1]
-        self.assertEqual((envoi['montant'], envoi['mode']), (64800, 'togocel'))
+        self.assertEqual((envoi['montant'], envoi['mode']), (63600, 'togocel'))
         self.assertEqual(envoi['client']['phone_number'], {'number': '90000003', 'country': 'tg'})
         self.assertEqual(self.api.put(url, {'pays': 'TG', 'operateur': 'togocel', 'numero': '90000003'}, format='json').status_code, 400)
 
@@ -313,7 +313,7 @@ class CycleTests(TestCase):
         services.passe()
         sujets = sorted(m.subject for m in mail.outbox)
         self.assertEqual(sujets, ['Nouvelle réservation payée : Villa test', 'Séjour confirmé : Villa test'])
-        self.assertIn('64 800 FCFA', [m for m in mail.outbox if m.to == ['voy@test.tg']][0].body)
+        self.assertIn('63 600 FCFA', [m for m in mail.outbox if m.to == ['voy@test.tg']][0].body)
         self.assertIn("pas encore indiqué où recevoir", [m for m in mail.outbox if m.to == ['hote@test.tg']][0].body)
         services.passe()
         self.assertEqual(len(mail.outbox), 2)  # pas de doublon

@@ -18,14 +18,20 @@ import PropertyCard from "@/components/hebergement/PropertyCard";
 import ChampDestination from "@/components/hebergement/ChampDestination";
 import type { City, Hebergement, Paginated } from "@/types/api/models";
 
-// Photos du diaporama : 960 px sur mobile, 1920 px à partir de la tablette (public/accueil). Classes écrites en
-// entier pour que Tailwind les génère ; le navigateur ne télécharge que l'image de la taille d'écran courante.
+// Photos du diaporama (public/accueil) : portrait 1240 × 1550 recadré sur le sujet pour les téléphones, 2560 px à partir
+// de la tablette, 3840 px sur les grands écrans (2xl). Classes écrites en entier pour que Tailwind les génère ; le
+// navigateur ne télécharge que l'image de la taille d'écran courante. ?v= : à augmenter quand une photo change de
+// contenu sous le même nom (les images sont gardées 7 jours en cache par les navigateurs).
 const heroImages = [
-  "bg-[url('/accueil/hero-1-mobile.jpg')] md:bg-[url('/accueil/hero-1.jpg')]",
-  "bg-[url('/accueil/hero-2-mobile.jpg')] md:bg-[url('/accueil/hero-2.jpg')]",
-  "bg-[url('/accueil/hero-3-mobile.jpg')] md:bg-[url('/accueil/hero-3.jpg')]",
-  "bg-[url('/accueil/hero-4-mobile.jpg')] md:bg-[url('/accueil/hero-4.jpg')]",
-  "bg-[url('/accueil/hero-5-mobile.jpg')] md:bg-[url('/accueil/hero-5.jpg')]",
+  "bg-[url('/accueil/hero-1-mobile.jpg?v=2')] md:bg-[url('/accueil/hero-1.jpg?v=2')] 2xl:bg-[url('/accueil/hero-1-4k.jpg?v=2')]",
+  "bg-[url('/accueil/hero-2-mobile.jpg?v=2')] md:bg-[url('/accueil/hero-2.jpg?v=2')] 2xl:bg-[url('/accueil/hero-2-4k.jpg?v=2')]",
+  "bg-[url('/accueil/hero-3-mobile.jpg?v=2')] md:bg-[url('/accueil/hero-3.jpg?v=2')] 2xl:bg-[url('/accueil/hero-3-4k.jpg?v=2')]",
+  "bg-[url('/accueil/hero-4-mobile.jpg?v=2')] md:bg-[url('/accueil/hero-4.jpg?v=2')] 2xl:bg-[url('/accueil/hero-4-4k.jpg?v=2')]",
+  "bg-[url('/accueil/hero-5-mobile.jpg?v=2')] md:bg-[url('/accueil/hero-5.jpg?v=2')] 2xl:bg-[url('/accueil/hero-5-4k.jpg?v=2')]",
+  "bg-[url('/accueil/hero-6-mobile.jpg?v=2')] md:bg-[url('/accueil/hero-6.jpg?v=2')] 2xl:bg-[url('/accueil/hero-6-4k.jpg?v=2')]",
+  "bg-[url('/accueil/hero-7-mobile.jpg?v=2')] md:bg-[url('/accueil/hero-7.jpg?v=2')] 2xl:bg-[url('/accueil/hero-7-4k.jpg?v=2')]",
+  "bg-[url('/accueil/hero-8-mobile.jpg?v=2')] md:bg-[url('/accueil/hero-8.jpg?v=2')] 2xl:bg-[url('/accueil/hero-8-4k.jpg?v=2')]",
+  "bg-[url('/accueil/hero-9-mobile.jpg?v=2')] md:bg-[url('/accueil/hero-9.jpg?v=2')] 2xl:bg-[url('/accueil/hero-9-4k.jpg?v=2')]",
 ];
 
 const CATEGORIES = [
@@ -183,6 +189,8 @@ export default function HomePage() {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-16 space-y-16 md:space-y-20 -mt-16 md:-mt-20 relative z-20">
+        {/* Masquée tant qu'aucune annonce n'est publiée (pas de bloc vide) ; réapparaît dès la première */}
+        {(citiesLoading || cities.length > 0) && (
         <section>
           <div className="flex items-end justify-between mb-6 md:mb-8 gap-4">
             <div>
@@ -216,8 +224,9 @@ export default function HomePage() {
             </motion.div>
           )}
         </section>
+        )}
 
-        <section className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-3 md:gap-4" aria-label={t("typesHebergement")}>
+        <section className="grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-center items-center gap-3 md:gap-4" aria-label={t("typesHebergement")}>
           {CATEGORIES.map(({ type, label, icon: Icon }) => (
             <Link
               key={type}
@@ -230,6 +239,7 @@ export default function HomePage() {
           ))}
         </section>
 
+        {(recoLoading || recommended.length > 0) && (
         <section>
           <div className="flex items-end justify-between mb-6 md:mb-8 gap-4">
             <h2 className="font-heading font-bold text-dark text-2xl md:text-3xl">{t("mieuxNotes")}</h2>
@@ -241,16 +251,15 @@ export default function HomePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {[0, 1, 2, 3].map((i) => <div key={i} className="h-72 rounded-2xl skeleton" />)}
             </div>
-          ) : recommended.length === 0 ? (
-            <p className="text-gray-500 bg-light-muted rounded-2xl p-8 text-center">{t("aucunHebergement")}</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {recommended.map((prop) => <PropertyCard key={prop.id} property={prop} />)}
             </div>
           )}
         </section>
+        )}
 
-        <section className="py-12 bg-orange-50/60 rounded-[2rem] md:rounded-[3rem] px-6 md:px-8 text-center">
+        <section className="py-12 bg-white rounded-[2rem] md:rounded-[3rem] px-6 md:px-8 text-center">
           <h2 className="font-heading font-bold text-dark text-2xl md:text-3xl mb-3">{t("pourquoi")}</h2>
           <p className="text-gray-500 max-w-2xl mx-auto text-sm mb-10 md:mb-16">
             {t("pourquoiTexte")}

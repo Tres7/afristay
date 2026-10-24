@@ -7,8 +7,9 @@ from django.db import models
 from apps.documents.models import stockage_prive
 
 TYPES = [
-    ('hote', 'Hôte'),
-    ('loueur', 'Loueur partenaire'),
+    ('hote', 'Hôte particulier'),
+    ('hotel', 'Hôtel ou résidence hôtelière'),
+    ('loueur', 'Propriétaire de véhicule'),
     ('chauffeur', 'Chauffeur partenaire'),
     ('ong', 'ONG partenaire'),
 ]
@@ -58,7 +59,7 @@ class ContratModel(models.Model):
     version_modele = models.PositiveIntegerField()
     statut = models.CharField(max_length=20, choices=STATUTS, default='a_signer')
 
-    # Partie : un seul de ces liens selon le type ; ses coordonnées sont copiées à l'émission
+    # Partie : un seul de ces liens selon le type (hôte et hôtel : le compte hôte) ; ses coordonnées sont copiées à l'émission
     hote = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT, related_name='contrats')
     chauffeur = models.ForeignKey('transferts.ChauffeurModel', null=True, blank=True, on_delete=models.PROTECT, related_name='contrats')
     loueur = models.ForeignKey('locations.PartenaireLocationModel', null=True, blank=True, on_delete=models.PROTECT, related_name='contrats')

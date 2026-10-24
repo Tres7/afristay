@@ -9,7 +9,7 @@ from django.utils import formats, timezone
 from apps.paiements.notifications import _admins, _documents, _envoyer, _fcfa, alerte_admin
 from apps.securite import coordonnees
 
-from .models import LocationModel, ParametresLocationModel, VersementPartenaireModel
+from .models import LocationModel, ParametresLocationModel, VersementChauffeurLocationModel, VersementPartenaireModel
 
 logger = logging.getLogger('apps.locations.notifications')
 
@@ -27,21 +27,26 @@ def _restitution_heures() -> int:
 
 def _location(loc: LocationModel) -> dict:
     return {
-        'reference': loc.reference, 'categorie': loc.categorie.nom, 'exemple': loc.categorie.exemple_modele,
-        'formule': loc.get_formule_display(), 'avec_chauffeur': loc.formule == 'avec_chauffeur',
+        'reference': loc.reference, 'categorie': loc.libelle, 'exemple': loc.categorie.exemple_modele if loc.categorie_id else '',
+        'formule': loc.get_formule_display(), 'avec_chauffeur': loc.avec_chauffeur,
+        'chauffeur_seul': loc.formule == 'chauffeur_seul', 'formule_sans_chauffeur': loc.formule == 'sans_chauffeur',
         'prise': f"{loc.lieu_prise.nom}{', ' + loc.adresse_prise if loc.adresse_prise else ''}",
         'retour': f"{loc.lieu_retour.nom}{', ' + loc.adresse_retour if loc.adresse_retour else ''}",
         'debut': _date(loc, loc.debut), 'fin': _date(loc, loc.fin), 'jours': loc.jours, 'passagers': loc.passagers,
+        'jours_hors_lome': loc.jours_hors_lome, 'jours_hors_pays': loc.jours_hors_pays,
+        'primes': _fcfa(loc.primes) if loc.primes else '',
         'precisions': loc.precisions, 'voyageur': f"{loc.voyageur.first_name} {loc.voyageur.last_name}".strip(),
         'telephone_voyageur': loc.telephone, 'conducteur': loc.conducteur, 'permis': loc.permis_numero,
         'permis_pays': loc.permis_pays, 'caution': _fcfa(loc.caution) if loc.caution else '',
         'caution_en_ligne': bool(loc.caution_gardee), 'restitution_heures': _restitution_heures(),
+        'chauffeur': loc.chauffeur_nom, 'telephone_chauffeur': loc.chauffeur_telephone,
+        'vehicule': loc.vehicule, 'immatriculation': loc.immatriculation,
         'url': f"{settings.FRONTEND_URL}/location/{loc.id}",
     }
 
 
 def confirmee(loc: LocationModel):
-    _envoyer('emails/locations/location_confirmee.txt', f"Location confirmée : {loc.lieu_prise.ville}", [loc.voyageur.email], {
+    _envoyer('emails/locations/location_confirmee.txt', f"Réservation confirmée : {loc.lieu_prise.ville}", [loc.voyageur.email], {
         **_location(loc), 'prenom': loc.voyageur.first_name, 'montant': _fcfa(loc.montant_a_payer),
     }, pieces_jointes=_documents(loc))
 
@@ -53,35 +58,50 @@ def a_attribuer(loc: LocationModel, urgent: bool = False):
         return
     from .services import partenaires_disponibles
 
-    sujet = f"[Kwa-Ba] {'URGENT : ' if urgent else ''}Loueur à attribuer : {loc.reference}"
+    demande = loc.chauffeur_demande
+    sujet = f"[Kwa-Ba] {'URGENT : ' if urgent else ''}Location à attribuer : {loc.reference}"
     _envoyer('emails/locations/a_attribuer.txt', sujet, destinataires, {
         **_location(loc), 'urgent': urgent, 'nb_partenaires': partenaires_disponibles(loc).count(),
+        'chauffeur_demande': f"{demande.prenom} {demande.nom}" if demande else '',
         'url_admin': f"{settings.BACKEND_URL}/admin/locations/locationmodel/{loc.id}/change/",
     })
 
 
 def partenaire_au_voyageur(loc: LocationModel):
     p = loc.partenaire
-    _envoyer('emails/locations/partenaire_assigne.txt', f"Votre véhicule à {loc.lieu_prise.ville}", [loc.voyageur.email], {
-        **_location(loc), 'prenom': loc.voyageur.first_name, 'partenaire': p.nom, 'contact': p.contact,
-        'telephone_partenaire': p.telephone, 'vehicule': loc.vehicule, 'immatriculation': loc.immatriculation,
-        'chauffeur': loc.chauffeur_nom, 'telephone_chauffeur': loc.chauffeur_telephone,
-        'assistance': settings.ASSISTANCE_CONTACT,
-    })
+    _envoyer('emails/locations/partenaire_assigne.txt', f"Votre {'chauffeur' if loc.formule == 'chauffeur_seul' else 'véhicule'} à {loc.lieu_prise.ville}",
+             [loc.voyageur.email], {
+                 **_location(loc), 'prenom': loc.voyageur.first_name, 'partenaire': p.nom if p else '',
+                 'contact': p.contact if p else '', 'telephone_partenaire': p.telephone if p else '',
+                 'assistance': settings.ASSISTANCE_CONTACT,
+             })
+
+
+def _sans_telephone_du_voyageur(loc: LocationModel) -> dict:
+    """Les partenaires ne reçoivent pas le téléphone du voyageur (ni ceux glissés dans ses précisions ou son adresse) :
+    pour le joindre, ils passent par Kwa-Ba."""
+    infos = _location(loc)
+    del infos['telephone_voyageur']
+    return {**infos, **{cle: coordonnees.analyser(infos[cle])[0] for cle in ('prise', 'retour', 'precisions')}}
 
 
 def location_au_partenaire(loc: LocationModel):
-    """Le loueur ne reçoit pas le téléphone du voyageur (ni ceux glissés dans ses précisions ou son adresse) : pour le joindre, il
-    passe par Kwa-Ba. Le voyageur reçoit, lui, les coordonnées du loueur par email (partenaire_au_voyageur)."""
     p = loc.partenaire
-    if not p.email:
-        return  # loueur prévenu par téléphone par l'équipe
-    infos = _location(loc)
-    del infos['telephone_voyageur']
-    sans_coordonnees = {cle: coordonnees.analyser(infos[cle])[0] for cle in ('prise', 'retour', 'precisions')}
+    if not p or not p.email:
+        return  # propriétaire prévenu par téléphone par l'équipe
     _envoyer('emails/locations/location_partenaire.txt', f"Nouvelle location Kwa-Ba : {_date(loc, loc.debut)}", [p.email], {
-        **infos, **sans_coordonnees, 'contact': p.contact,
+        **_sans_telephone_du_voyageur(loc), 'contact': p.contact,
         'montant': _fcfa(loc.montant_partenaire), 'assistance': settings.ASSISTANCE_CONTACT,
+    })
+
+
+def mission_au_chauffeur(loc: LocationModel):
+    c = loc.chauffeur_partenaire
+    if not c or not c.email:
+        return  # chauffeur prévenu par téléphone par l'équipe
+    _envoyer('emails/locations/mission_chauffeur.txt', f"Mission Kwa-Ba : {_date(loc, loc.debut)}", [c.email], {
+        **_sans_telephone_du_voyageur(loc), 'prenom_chauffeur': c.prenom,
+        'montant': _fcfa(loc.montant_chauffeur), 'assistance': settings.ASSISTANCE_CONTACT,
     })
 
 
@@ -91,7 +111,7 @@ def versement_au_partenaire(v: VersementPartenaireModel):
         return
     _envoyer('emails/locations/versement_partenaire.txt', f"Versement de {_fcfa(v.montant)} envoyé", [p.email], {
         'contact': p.contact, 'reference': loc.reference, 'debut': _date(loc, loc.debut), 'montant': _fcfa(v.montant),
-        'montant_brut': _fcfa(loc.prix), 'commission': _fcfa(v.commission),
+        'montant_brut': _fcfa(v.montant_brut), 'commission': _fcfa(v.commission),
         'retenue': _fcfa(loc.caution_retenue) if loc.caution_retenue else '', 'motif': loc.caution_motif,
     })
 
@@ -121,7 +141,8 @@ def _traiter(qs, fonction, drapeau):
 
 
 def envoyer_notifications() -> int:
-    qs = LocationModel.objects.select_related('voyageur', 'categorie', 'lieu_prise', 'lieu_retour', 'partenaire')
+    qs = LocationModel.objects.select_related('voyageur', 'categorie', 'lieu_prise', 'lieu_retour', 'partenaire',
+                                              'chauffeur_partenaire', 'chauffeur_demande')
     payees = qs.filter(statut__in=('confirmee', 'partenaire_assigne'))
     total = _traiter(payees.filter(confirmation_notifiee=False), confirmee, 'confirmation_notifiee')
     total += _traiter(payees.filter(admins_notifies=False), a_attribuer, 'admins_notifies')
@@ -132,6 +153,7 @@ def envoyer_notifications() -> int:
     assignees = qs.filter(statut='partenaire_assigne')
     total += _traiter(assignees.filter(partenaire_notifie=False), partenaire_au_voyageur, 'partenaire_notifie')
     total += _traiter(assignees.filter(location_envoyee_partenaire=False), location_au_partenaire, 'location_envoyee_partenaire')
+    total += _traiter(assignees.filter(mission_envoyee_chauffeur=False), mission_au_chauffeur, 'mission_envoyee_chauffeur')
     total += _traiter(
         qs.filter(statut__in=('partenaire_assigne', 'terminee'), caution_en_ligne=True, caution__gt=0,
                   caution_restituee_le__isnull=False, caution_notifiee=False),
@@ -143,7 +165,18 @@ def envoyer_notifications() -> int:
     total += _traiter(
         versements.filter(statut='echoue', notifie=False),
         lambda v: alerte_admin(
-            'Versement à un loueur', v, f"{v.partenaire} ({v.mode} {v.numero})",
+            'Versement à un propriétaire', v, f"{v.partenaire} ({v.mode} {v.numero})",
+            reference=v.location.reference, libelle=f"Location {v.location.lieu_prise.ville}", section='locations',
+        ),
+        'notifie',
+    )
+    chauffeurs = VersementChauffeurLocationModel.objects.select_related('chauffeur', 'location__lieu_prise')
+    # Versement envoyé : rien à annoncer au chauffeur (il le voit sur son Mobile Money) ; échec : alerte à l'équipe
+    total += _traiter(chauffeurs.filter(statut='envoye', notifie=False), lambda v: None, 'notifie')
+    total += _traiter(
+        chauffeurs.filter(statut='echoue', notifie=False),
+        lambda v: alerte_admin(
+            'Versement à un chauffeur (location)', v, f"{v.chauffeur} ({v.mode} {v.numero})",
             reference=v.location.reference, libelle=f"Location {v.location.lieu_prise.ville}", section='locations',
         ),
         'notifie',

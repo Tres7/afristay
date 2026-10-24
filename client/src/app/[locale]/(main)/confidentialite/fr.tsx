@@ -1,19 +1,20 @@
 import { Link } from "@/i18n/navigation";
 import LienContact from "@/components/legal/LienContact";
-import LegalPage, { AC, AValider } from "@/components/legal/LegalPage";
+import LegalPage, { AC } from "@/components/legal/LegalPage";
+import MentionSociete from "@/components/legal/MentionSociete";
 
 /** Version française. */
 export default function ContenuFr() {
   return (
     <LegalPage
-      titre="Politique de confidentialité (RGPD)"
-      miseAJour="7 octobre 2026"
+      titre="Politique de confidentialité"
+      miseAJour="23 octobre 2026"
       intro={
         <>
           <p>
             Cette politique explique quelles données personnelles Kwa-Ba collecte, pourquoi, combien de temps elles sont
-            conservées et comment exercer vos droits, conformément au Règlement général sur la protection des données (RGPD)
-            et aux lois applicables en matière de protection des données dans les pays où Kwa-Ba est proposé.
+            conservées et comment exercer vos droits, conformément à la loi togolaise n° 2019-014 du 29 octobre 2019 relative à la
+            protection des données à caractère personnel et à la loi n° 2017-07 relative aux transactions électroniques.
           </p>
           <p>Nous ne collectons que les données nécessaires au service. Nous ne vendons aucune donnée et n&apos;utilisons aucun outil publicitaire.</p>
         </>
@@ -24,9 +25,10 @@ export default function ContenuFr() {
           titre: "Responsable du traitement",
           contenu: (
             <ul>
-              <li>Responsable : <AC>raison sociale et forme juridique</AC>, <AC>adresse du siège</AC>.</li>
-              <li>Contact pour la protection des données : <LienContact sujet="Protection des données" />.</li>
-              <li>Délégué à la protection des données (si désigné) : <AC>nom ou « non désigné »</AC>.</li>
+              <li>Responsable : <strong>KWA-BA SARL</strong>, société à responsabilité limitée au capital de 100 000 F CFA, quartier Totsi Gblenkomé, rue 243, Lomé (Togo), RCCM <MentionSociete cle="rccm" libelle="RCCM" />.</li>
+              <li>Déclaration auprès de l&apos;Instance de protection des données à caractère personnel (IPDCP) : n° <MentionSociete cle="ipdcp" libelle="numéro de déclaration" />.</li>
+              <li>Contact pour vos données : <LienContact sujet="Protection des données" />, ou par WhatsApp au <MentionSociete cle="whatsapp" libelle="numéro WhatsApp" />.</li>
+              <li>Référent chargé des données au sein de KWA-BA : <AC>nom ou fonction</AC>.</li>
             </ul>
           ),
         },
@@ -69,7 +71,9 @@ export default function ContenuFr() {
             <ul>
               <li>Aucun numéro de carte bancaire ni code Mobile Money : le paiement est saisi directement sur les pages sécurisées de FedaPay ou de PayPal.</li>
               <li>Aucune mesure d&apos;audience, aucun traceur publicitaire, aucun profilage.</li>
-              <li>Aucune pièce d&apos;identité, aucune date de naissance, aucune donnée sensible.</li>
+              <li>Aucune donnée sensible (santé, opinions, religion, origine ethnique), sauf un justificatif que vous choisissez de fournir pour une annulation pour circonstances exceptionnelles (<Link href="/cgv#annulation">CGV, art. 11.4</Link>), utilisé uniquement à cette fin.</li>
+              <li>Aucune pièce d&apos;identité des voyageurs, sauf si Kwa-Ba la demande pour une location sans chauffeur ou en cas de soupçon de fraude (<Link href="/cgv#compte">CGV, art. 4.3</Link>).</li>
+              <li>Nous ne vendons jamais vos données.</li>
               <li>La répartition adultes / enfants saisie lors d&apos;une recherche n&apos;est pas enregistrée : seul le nombre total de voyageurs l&apos;est.</li>
             </ul>
           ),
@@ -85,14 +89,34 @@ export default function ContenuFr() {
               <li>Le <strong>loueur partenaire</strong> d&apos;une location de voiture reçoit votre nom, votre numéro de téléphone, le véhicule, les lieux et dates, le nombre de personnes, vos précisions et, si vous conduisez, le nom du conducteur et les références de son permis.</li>
               <li>Les <strong>membres d&apos;un voyage de groupe</strong> voient votre prénom et l&apos;initiale de votre nom, vos votes, vos propositions et les réservations que vous partagez avec eux (logement, dates, montant).</li>
               <li>Les <strong>administrateurs</strong> de Kwa-Ba, pour la modération et l&apos;assistance (accès restreint et tracé).</li>
-              <li>Hébergement du site et des données : <AC>nom, adresse et pays de l&apos;hébergeur</AC>.</li>
+              <li>Hébergement du site et des données : IONOS SE, Elgendorfer Straße 57, 56410 Montabaur (Allemagne).</li>
               <li>Envoi des emails (codes, notifications) : <strong>Brevo</strong> (Sendinblue SAS, Paris, France), données hébergées dans l&apos;Union européenne. Reçoit votre adresse email et le contenu des messages envoyés.</li>
               <li><strong>FedaPay</strong> (Bénin) : encaissement Mobile Money et carte, versements aux hôtes et remboursements. Reçoit votre nom, votre email, le montant et, pour les hôtes, le numéro de versement.</li>
-              <li><strong>Google</strong> (États-Unis), API Gemini : uniquement si vous utilisez le Concierge IA. Reçoit le contenu de vos messages pour générer les réponses et conserve l&apos;historique de la conversation jusqu&apos;à 55 jours pour pouvoir la poursuivre. <AValider>Service utilisé en offre payante : selon ses conditions, Google n&apos;utilise alors pas ces données pour améliorer ses produits.</AValider> N&apos;y indiquez pas de données sensibles.</li>
+              <li>
+                <strong>Google</strong> (États-Unis), pour trois usages, chacun seulement si vous y recourez :
+                <ul>
+                  <li>Concierge IA (API Gemini) : reçoit le contenu de vos messages pour générer les réponses et conserve l&apos;historique de la conversation jusqu&apos;à 55 jours pour pouvoir la poursuivre. Service utilisé en offre payante : selon ses conditions, Google n&apos;utilise alors pas ces données pour améliorer ses produits. N&apos;y indiquez pas de données sensibles.</li>
+                  <li>Connexion avec Google : lorsque vous choisissez « Continuer avec Google ».</li>
+                  <li>Carte des logements (Google Maps) : lorsque vous acceptez son affichage (voir la <Link href="/cookies">politique de cookies</Link>).</li>
+                </ul>
+                Google peut traiter des données hors de l&apos;Union européenne, dans le cadre du Data Privacy Framework UE–États-Unis.
+              </li>
               <li><strong>PayPal</strong> (Europe) : uniquement si vous choisissez ce moyen de paiement. Reçoit le montant et la référence de la réservation.</li>
-              <li>Google : uniquement si vous utilisez la connexion Google ou acceptez l&apos;affichage de la carte (voir la <Link href="/cookies">politique cookies</Link>). Google peut traiter des données hors de l&apos;Union européenne, dans le cadre du Data Privacy Framework UE–États-Unis.</li>
               <li>Unsplash : certaines photos d&apos;illustration sont chargées depuis ses serveurs, qui reçoivent alors votre adresse IP.</li>
             </ul>
+          ),
+        },
+        {
+          id: "transferts",
+          titre: "Transferts hors du Togo",
+          contenu: (
+            <p>
+              Certaines données sont hébergées ou consultées hors du Togo : par l&apos;hébergeur du site, par Brevo (Union européenne) pour
+              l&apos;envoi des emails, par les associés de KWA-BA établis en France pour le service client et la gestion, par Google (États-Unis)
+              pour le Concierge IA, et par le prestataire de paiement FedaPay, établi au Bénin. Ces transferts se font dans le respect des
+              conditions prévues par la loi n° 2019-014 et, le cas échéant, avec l&apos;autorisation de l&apos;IPDCP. Ils sont encadrés par des
+              engagements de confidentialité et de sécurité.
+            </p>
           ),
         },
         {
@@ -101,14 +125,16 @@ export default function ContenuFr() {
           contenu: (
             <ul>
               <li>Codes de vérification : 10 minutes. Choix de cookies : 6 mois. Choix de la langue : 1 an.</li>
-              <li>Compte : tant qu&apos;il est actif ; <AValider>supprimé ou anonymisé après 3 ans sans connexion.</AValider></li>
-              <li>Réservations : <AValider>durée de la relation, puis 5 ans (délai de prescription).</AValider></li>
-              <li>Paiements, versements, remboursements, dons et reversements aux ONG : <AValider>10 ans (pièces comptables).</AValider></li>
-              <li>Conversations avec le Concierge IA : jusqu&apos;à ce que vous les supprimiez (bouton dans la conversation), <AValider>et au plus 12 mois après le dernier message.</AValider></li>
-              <li>Messages : <AValider>3 ans après le dernier message de la conversation.</AValider></li>
-              <li>Avis : tant que le logement est publié, ou jusqu&apos;à leur suppression par modération.</li>
-              <li>Journaux techniques de sécurité : <AValider>1 an.</AValider></li>
-              <li>Copie de la pièce d&apos;identité d&apos;un hôte : supprimée dès que l&apos;agent a vérifié l&apos;identité (seuls le type de pièce et le résultat du contrôle sont conservés). Compte rendu et photos de la visite : <AValider>tant que l&apos;annonce est publiée, puis 3 ans.</AValider></li>
+              <li>Compte inactif : 3 ans après la dernière activité, puis suppression ou anonymisation.</li>
+              <li>Réservations et contrats conclus en ligne (acceptations, contrats signés) : 5 ans après leur exécution (<Link href="/cgv#preuve">CGV, art. 22.2</Link>).</li>
+              <li>Paiements, versements, remboursements, factures, dons et reversements aux ONG : 10 ans (pièces comptables).</li>
+              <li>Justificatifs des partenaires (papiers du véhicule, permis, casier judiciaire, contrats) : pendant la relation, puis 5 ans. La copie de la pièce d&apos;identité d&apos;un hôte est supprimée dès que l&apos;agent a vérifié l&apos;identité (seuls le type de pièce et le résultat du contrôle sont conservés).</li>
+              <li>Compte rendu et photos de la visite d&apos;un logement : tant que l&apos;annonce est publiée, puis 3 ans.</li>
+              <li>Conversations avec le Concierge IA : jusqu&apos;à ce que vous les supprimiez (bouton dans la conversation), et au plus 12 mois après le dernier message.</li>
+              <li>Messages : 3 ans après le dernier message de la conversation.</li>
+              <li>Avis : tant que l&apos;annonce existe, et au plus 3 ans.</li>
+              <li>Données de prospection (newsletter, liste d&apos;attente) : 3 ans après le dernier contact.</li>
+              <li>Journaux de connexion et de sécurité : 12 mois.</li>
             </ul>
           ),
         },
@@ -117,16 +143,20 @@ export default function ContenuFr() {
           titre: "Vos droits",
           contenu: (
             <>
-              <p>Vous disposez des droits d&apos;accès, de rectification, d&apos;effacement, de limitation, d&apos;opposition et de portabilité de vos données, ainsi que du droit de retirer votre consentement à tout moment.</p>
+              <p>
+                Dans les conditions de la loi n° 2019-014, vous avez le droit d&apos;être informé de l&apos;utilisation de vos données, d&apos;y
+                accéder et d&apos;en obtenir une copie, de les faire rectifier ou compléter, de les faire supprimer (sauf si leur conservation est
+                exigée par la loi), de vous opposer à leur utilisation pour un motif légitime et, sans motif et sans frais, à la prospection
+                commerciale, et de retirer votre consentement à tout moment, pour l&apos;avenir.
+              </p>
               <ul>
                 <li>Modifier vos informations : <Link href="/profil/edit">Mon profil → Mes informations</Link>.</li>
                 <li>Fermer votre compte : depuis la même page, rubrique « Fermer mon compte ».</li>
-                <li>Obtenir une copie de vos données ou leur effacement définitif : écrivez à <LienContact sujet="Mes données personnelles" />. Réponse sous un mois maximum.</li>
+                <li>Obtenir une copie de vos données ou leur effacement définitif : écrivez à <LienContact sujet="Mes données personnelles" />, en indiquant votre nom et l&apos;adresse de votre compte. Réponse sous un mois ; nous pouvons vous demander de justifier de votre identité.</li>
               </ul>
               <p>
-                Si vous estimez que vos droits ne sont pas respectés, vous pouvez saisir l&apos;autorité de protection des données
-                compétente : la CNIL en France (<a href="https://www.cnil.fr/fr/plaintes" target="_blank" rel="noopener noreferrer">cnil.fr</a>),
-                ou l&apos;autorité de votre pays (par exemple l&apos;ARTCI en Côte d&apos;Ivoire, la CDP au Sénégal, l&apos;IPDCP au Togo).
+                Vous pouvez aussi saisir l&apos;<strong>Instance de protection des données à caractère personnel (IPDCP)</strong> du Togo, ou
+                l&apos;autorité de votre pays de résidence (par exemple la CNIL en France).
               </p>
             </>
           ),
@@ -140,8 +170,20 @@ export default function ContenuFr() {
               <li>Session de connexion dans un cookie inaccessible aux scripts ; jeton d&apos;accès renouvelé toutes les heures.</li>
               <li>Limitation des tentatives sur les codes de vérification et sur l&apos;envoi de messages.</li>
               <li>Photos envoyées par les hôtes nettoyées de leurs métadonnées (dont la position GPS).</li>
+              <li>Connexion chiffrée (HTTPS), accès limité aux personnes qui en ont besoin, sauvegardes régulières ; paiements traités par un prestataire agréé.</li>
+              <li>En cas de violation de données présentant un risque pour vous, nous vous en informons et prévenons l&apos;IPDCP dans les conditions prévues par la loi.</li>
             </ul>
           ),
+        },
+        {
+          id: "mineurs",
+          titre: "Mineurs",
+          contenu: <p>La Plateforme est réservée aux personnes majeures. Nous ne collectons pas sciemment de données sur des mineurs, sauf leur nom et leur âge lorsqu&apos;un parent les déclare comme voyageurs.</p>,
+        },
+        {
+          id: "modification",
+          titre: "Modification de la politique",
+          contenu: <p>Nous pouvons modifier cette politique. Toute modification importante est annoncée sur la Plateforme et par message aux titulaires d&apos;un compte, au moins 30 jours avant son entrée en vigueur.</p>,
         },
       ]}
     />

@@ -1,4 +1,4 @@
-"""Back-office : location de voiture (règles, catégories et prix, lieux de remise, loueurs, suivi des locations)."""
+"""Back-office : location de voiture (règles, véhicules des propriétaires, lieux de remise, propriétaires, suivi)."""
 from django.db import transaction
 from django.db.models import Max, Q
 from django.shortcuts import get_object_or_404
@@ -13,6 +13,7 @@ from apps.locations.models import (
     PhotoVehiculeModel,
 )
 from apps.paiements.operateurs import operateurs_du_pays
+from apps.transferts.models import ChauffeurModel
 from apps.securite.audit import journaliser
 from apps.securite.permissions import EstAdministrateur
 
@@ -65,14 +66,21 @@ class CategorieSerializer(serializers.ModelSerializer):
     class Meta:
         model = CategorieVehiculeModel
         fields = ['id', 'nom', 'gamme', 'exemple_modele', 'description', 'places', 'bagages', 'boite', 'carburant',
-                  'climatisation', 'photos', 'prix_jour_sans_chauffeur', 'prix_jour_avec_chauffeur', 'caution', 'actif', 'ordre']
+                  'climatisation', 'photos', 'proprietaire', 'prix_jour', 'sans_chauffeur', 'avec_chauffeur', 'caution_jours',
+                  'caution', 'immatriculation', 'annee', 'assurance_fin', 'visite_technique_fin', 'actif', 'ordre']
+        read_only_fields = ['caution']
 
     def validate(self, data):
-        sans = data.get('prix_jour_sans_chauffeur', getattr(self.instance, 'prix_jour_sans_chauffeur', None))
-        avec = data.get('prix_jour_avec_chauffeur', getattr(self.instance, 'prix_jour_avec_chauffeur', None))
-        actif = data.get('actif', getattr(self.instance, 'actif', False))
-        if actif and not sans and not avec:
-            raise serializers.ValidationError({'actif': ["Indiquez au moins un prix par jour avant d'activer la catégorie."]})
+        def valeur(champ, defaut=None):
+            return data.get(champ, getattr(self.instance, champ, defaut))
+
+        if valeur('actif', False):
+            if not valeur('prix_jour'):
+                raise serializers.ValidationError({'actif': ["Indiquez le prix par jour du propriétaire avant d'activer le véhicule."]})
+            if not valeur('proprietaire'):
+                raise serializers.ValidationError({'actif': ["Indiquez le propriétaire avant d'activer le véhicule."]})
+            if not (valeur('sans_chauffeur', True) or valeur('avec_chauffeur', True)):
+                raise serializers.ValidationError({'actif': ['Proposez au moins une formule (avec ou sans chauffeur).']})
         return data
 
 
@@ -167,16 +175,27 @@ class LieuView(FicheAdmin):
 
 
 class PartenaireSerializer(serializers.ModelSerializer):
-    categories = serializers.PrimaryKeyRelatedField(many=True, queryset=CategorieVehiculeModel.objects.all())
+    categories = serializers.PrimaryKeyRelatedField(many=True, queryset=CategorieVehiculeModel.objects.all(), required=False)
     lieux = serializers.PrimaryKeyRelatedField(many=True, queryset=LieuRemiseModel.objects.all())
     nb_locations = serializers.IntegerField(source='locations.count', read_only=True)
+    nb_vehicules = serializers.IntegerField(source='vehicules.count', read_only=True)
+    commission_pourcent = serializers.SerializerMethodField()
 
     class Meta:
         model = PartenaireLocationModel
-        fields = ['id', 'nom', 'contact', 'telephone', 'email', 'categories', 'lieux', 'actif', 'pays_versement',
-                  'operateur_versement', 'numero_versement', 'nb_locations']
+        fields = ['id', 'nom', 'contact', 'telephone', 'email', 'categories', 'lieux', 'actif', 'fondateur_debut',
+                  'fondateur_fin', 'pays_versement', 'operateur_versement', 'numero_versement', 'nb_locations',
+                  'nb_vehicules', 'commission_pourcent']
+
+    def get_commission_pourcent(self, obj):
+        params = ParametresLocationModel.courants()
+        return float(services.taux_commission(params, obj)) if params else None
 
     def validate(self, data):
+        debut = data.get('fondateur_debut', getattr(self.instance, 'fondateur_debut', None))
+        fin = data.get('fondateur_fin', getattr(self.instance, 'fondateur_fin', None))
+        if bool(debut) != bool(fin) or (debut and fin <= debut):
+            raise serializers.ValidationError({'fondateur_fin': ['Indiquez le début et la fin du Programme Fondateurs (fin après le début).']})
         pays = data.get('pays_versement', getattr(self.instance, 'pays_versement', ''))
         operateur = data.get('operateur_versement', getattr(self.instance, 'operateur_versement', ''))
         if operateur not in operateurs_du_pays(pays):
@@ -202,7 +221,15 @@ def _location(loc: LocationModel) -> dict:
     return {
         'id': str(loc.id), 'reference': loc.reference, 'statut': loc.statut, 'statut_libelle': loc.get_statut_display(),
         'voyageur': {'nom': _nom(loc.voyageur), 'email': loc.voyageur.email}, 'telephone': loc.telephone,
-        'categorie': loc.categorie.nom, 'formule': loc.formule, 'formule_libelle': loc.get_formule_display(),
+        'categorie': loc.libelle, 'formule': loc.formule, 'formule_libelle': loc.get_formule_display(),
+        'proprietaire_vehicule': loc.categorie.proprietaire_id if loc.categorie_id else None,
+        'jours_hors_lome': loc.jours_hors_lome, 'jours_hors_pays': loc.jours_hors_pays,
+        'prix_vehicule': loc.prix_jour * loc.jours, 'prix_chauffeur': loc.prix_chauffeur, 'primes': loc.primes,
+        'commission': loc.commission, 'part_kwaba_chauffeur': loc.part_kwaba_chauffeur,
+        'chauffeur_demande': ({'id': loc.chauffeur_demande_id, 'nom': f"{loc.chauffeur_demande.prenom} {loc.chauffeur_demande.nom}"}
+                              if loc.chauffeur_demande_id else None),
+        'chauffeur_partenaire': ({'id': loc.chauffeur_partenaire_id, 'nom': f"{loc.chauffeur_partenaire.prenom} {loc.chauffeur_partenaire.nom}"}
+                                 if loc.chauffeur_partenaire_id else None),
         'lieu_prise': loc.lieu_prise.nom, 'adresse_prise': loc.adresse_prise,
         'lieu_retour': loc.lieu_retour.nom, 'adresse_retour': loc.adresse_retour,
         'debut': loc.debut, 'fin': loc.fin, 'jours': loc.jours, 'passagers': loc.passagers,
@@ -218,7 +245,8 @@ def _location(loc: LocationModel) -> dict:
 
 
 def _locations():
-    return LocationModel.objects.select_related('voyageur', 'categorie', 'lieu_prise', 'lieu_retour', 'partenaire')
+    return LocationModel.objects.select_related('voyageur', 'categorie', 'lieu_prise', 'lieu_retour', 'partenaire',
+                                                'chauffeur_partenaire', 'chauffeur_demande')
 
 
 class LocationsView(APIView):
@@ -238,26 +266,37 @@ class LocationsView(APIView):
 
 
 class LocationPartenairesView(APIView):
-    """Loueurs qui proposent cette catégorie à ce lieu de remise."""
+    """Propriétaires qui peuvent fournir ce véhicule à ce lieu de remise, et chauffeurs partenaires (le chauffeur
+    redemandé et les Excellence d'abord)."""
     permission_classes = [EstAdministrateur]
 
     def get(self, request, pk):
         loc = _locations().filter(pk=pk).first()
         if not loc:
             return Response({'detail': 'Location introuvable.'}, status=status.HTTP_404_NOT_FOUND)
-        return Response([{'id': p.id, 'nom': p.nom, 'telephone': p.telephone} for p in services.partenaires_disponibles(loc)])
+        partenaires = [{'id': p.id, 'nom': p.nom, 'telephone': p.telephone} for p in services.partenaires_disponibles(loc)]
+        if request.query_params.get('chauffeurs'):
+            return Response({
+                'partenaires': partenaires,
+                'chauffeurs': [{'id': c.id, 'nom': f"{c.prenom} {c.nom}", 'telephone': c.telephone, 'excellence': c.excellence,
+                                'demande': c.pk == loc.chauffeur_demande_id} for c in services.chauffeurs_disponibles(loc)]
+                if loc.avec_chauffeur else [],
+            })
+        return Response(partenaires)
 
 
 class AttributionSerializer(serializers.Serializer):
-    partenaire = serializers.PrimaryKeyRelatedField(queryset=PartenaireLocationModel.objects.filter(actif=True))
-    vehicule = serializers.CharField(max_length=120)
+    partenaire = serializers.PrimaryKeyRelatedField(queryset=PartenaireLocationModel.objects.filter(actif=True),
+                                                    required=False, allow_null=True, default=None)
+    chauffeur = serializers.PrimaryKeyRelatedField(queryset=ChauffeurModel.objects.filter(actif=True),
+                                                   required=False, allow_null=True, default=None)
+    vehicule = serializers.CharField(max_length=120, required=False, allow_blank=True, default='')
     immatriculation = serializers.CharField(max_length=20, required=False, allow_blank=True, default='')
-    chauffeur_nom = serializers.CharField(max_length=120, required=False, allow_blank=True, default='')
-    chauffeur_telephone = serializers.CharField(max_length=20, required=False, allow_blank=True, default='')
 
 
 class LocationAttribuerView(APIView):
-    """Attribue le loueur et le véhicule (et le chauffeur) : le voyageur reçoit leurs coordonnées."""
+    """Attribue le propriétaire (et le véhicule remis) et/ou le chauffeur partenaire : le voyageur reçoit leurs
+    coordonnées, eux le détail de la location."""
     permission_classes = [EstAdministrateur]
 
     def post(self, request, pk):
@@ -266,20 +305,14 @@ class LocationAttribuerView(APIView):
             return Response({'detail': 'Location introuvable.'}, status=status.HTTP_404_NOT_FOUND)
         donnees = AttributionSerializer(data=request.data)
         donnees.is_valid(raise_exception=True)
-        d = dict(donnees.validated_data)
-        partenaire = d.pop('partenaire')
-        if not services.partenaires_disponibles(loc).filter(pk=partenaire.pk).exists():
-            return Response({'partenaire': ["Ce loueur ne propose pas cette catégorie à ce lieu de remise."]},
-                            status=status.HTTP_400_BAD_REQUEST)
-        if loc.formule == 'avec_chauffeur' and not (d['chauffeur_nom'] and d['chauffeur_telephone']):
-            return Response({'chauffeur_nom': ["Formule avec chauffeur : indiquez le nom et le téléphone du chauffeur."]},
-                            status=status.HTTP_400_BAD_REQUEST)
+        d = donnees.validated_data
         try:
-            services.assigner_partenaire(loc, partenaire, **d)
+            services.attribuer(loc, **d)
         except services.LocationErreur as exc:
             return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
-        journaliser("backoffice_modification", request, utilisateur=request.user, objet="location",
-                    id=str(loc.pk), libelle=loc.reference, partenaire=partenaire.nom)
+        journaliser("backoffice_modification", request, utilisateur=request.user, objet="location", id=str(loc.pk),
+                    libelle=loc.reference, partenaire=getattr(d['partenaire'], 'nom', ''),
+                    chauffeur=str(d['chauffeur'] or ''))
         return Response(_location(_locations().get(pk=pk)))
 
 

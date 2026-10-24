@@ -1,4 +1,4 @@
-export type TypeContrat = "hote" | "loueur" | "chauffeur" | "ong";
+export type TypeContrat = "hote" | "hotel" | "loueur" | "chauffeur" | "ong";
 export type StatutContrat = "a_signer" | "signe" | "annule";
 
 export interface BlocContrat {

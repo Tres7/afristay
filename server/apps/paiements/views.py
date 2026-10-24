@@ -3,6 +3,7 @@ import logging
 
 from django.conf import settings
 from django.db.models import Sum
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import serializers, status
@@ -16,7 +17,7 @@ from apps.securite.audit import journaliser
 
 from . import fedapay, paypal, services, tarifs
 from .models import ProfilVersementModel, VersementModel
-from .operateurs import PAYS, operateurs_du_pays
+from .operateurs import PAYS, operateurs_ouverts, pays_ouverts
 
 logger = logging.getLogger('apps.paiements')
 
@@ -34,12 +35,15 @@ class ConfigView(APIView):
             'fcfa_par_euro': float(paypal.FCFA_PAR_EURO),
             'environnement': settings.FEDAPAY['ENV'],
             'frais_voyageur': float(tarifs.FRAIS_VOYAGEUR),
+            'frais_reduits': float(tarifs.FRAIS_REDUITS),
             'commission_hote': float(tarifs.COMMISSION_HOTE),
+            'commissions': {'particulier': float(tarifs.COMMISSION_PARTICULIER), 'hotel': float(tarifs.COMMISSION_HOTEL),
+                            'fondateur': float(tarifs.COMMISSION_FONDATEUR)},
             'delai_paiement_minutes': settings.FEDAPAY['EXPIRATION_MINUTES'],
             'pays': [
                 {'code': code, 'nom': p['nom'], 'indicatif': p['indicatif'], 'chiffres': p['chiffres'],
                  'operateurs': [{'code': c, 'nom': n} for c, n in p['operateurs']]}
-                for code, p in PAYS.items()
+                for code, p in pays_ouverts().items()
             ],
         })
 
@@ -126,7 +130,7 @@ class EstHote(IsAuthenticated):
 def _valider_compte(data):
     """Opérateur disponible dans le pays, numéro au bon nombre de chiffres."""
     pays = data['pays']
-    if data['operateur'] not in operateurs_du_pays(pays):
+    if data['operateur'] not in operateurs_ouverts(pays):
         raise serializers.ValidationError({'operateur': "Cet opérateur n'est pas disponible dans le pays choisi."})
     attendu = PAYS[pays]['chiffres']
     if len(data['numero']) != attendu:
@@ -208,6 +212,16 @@ class ProfilVersementView(APIView):
         return Response(serializer.data)
 
 
+def _type_partenaire(hote) -> str:
+    """particulier, hotel ou fondateur (Programme Fondateurs en cours) : réglé dans le back-office."""
+    conditions = tarifs.conditions(hote)
+    if conditions and conditions.categorie == 'hotel':
+        return 'hotel'
+    if conditions and conditions.fondateur_le(timezone.localdate()):
+        return 'fondateur'
+    return 'particulier'
+
+
 class RevenusView(APIView):
     permission_classes = [EstHote]
 
@@ -230,6 +244,11 @@ class RevenusView(APIView):
                 'commission': versements.aggregate(s=Sum('commission'))['s'] or 0,
             },
             'profil_complet': ProfilVersementModel.objects.filter(hote=request.user).exists(),
+            # Taux de commission de cet hôte aujourd'hui (8 %, 12 % pour un hôtel, 5 % pendant le Programme Fondateurs)
+            'commission_pourcent': float(tarifs.taux_commission(request.user) * 100),
+            # Type de partenaire enregistré par l'équipe (jamais modifiable par l'hôte) et taux des frais du voyageur
+            'partenaire': _type_partenaire(request.user),
+            'frais_voyageur_pourcent': float(tarifs.FRAIS_VOYAGEUR * 100),
             'versements': [
                 {
                     'id': str(v.id),

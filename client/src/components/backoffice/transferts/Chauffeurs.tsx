@@ -13,7 +13,7 @@ import type { AeroportAdmin, ChauffeurAdmin } from "@/types/api/admin";
 
 type Formulaire = Omit<ChauffeurAdmin, "id" | "nb_transferts">;
 const VIDE: Formulaire = { prenom: "", nom: "", telephone: "", email: "", aeroports: [], categorie: "berline", vehicule: "", immatriculation: "",
-  actif: true, pays_versement: "TG", operateur_versement: "", numero_versement: "" };
+  actif: true, excellence: false, pays_versement: "TG", operateur_versement: "", numero_versement: "" };
 
 export default function Chauffeurs() {
   const queryClient = useQueryClient();
@@ -112,7 +112,8 @@ export default function Chauffeurs() {
             options={[{ value: "", label: "Choisir" }, ...operateurs.map((o) => ({ value: o.code, label: o.nom }))]} /></Champ>
         </div>
         <Champ label="Numéro (sans l'indicatif)" erreur={erreurs.numero_versement}><Saisie inputMode="numeric" value={form.numero_versement} onChange={(e) => setForm({ ...form, numero_versement: e.target.value })} required /></Champ>
-        <Interrupteur label="Actif (reçoit des courses)" checked={form.actif} onChange={(v) => setForm({ ...form, actif: v })} />
+        <Interrupteur label="Actif (reçoit des courses et des missions)" checked={form.actif} onChange={(v) => setForm({ ...form, actif: v })} />
+        <Interrupteur label="Chauffeur Excellence (6 500 FCFA par jour au lieu de 6 000)" checked={form.excellence} onChange={(v) => setForm({ ...form, excellence: v })} />
       </Panneau>
     </div>
   );

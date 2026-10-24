@@ -11,6 +11,7 @@ import { Link } from "@/i18n/navigation";
 import api, { apiErrorMessage } from "@/lib/api";
 import { EVENEMENT, lireConsentement } from "@/lib/consentement";
 import { langue } from "@/lib/utils";
+import { filtrerLiens, useReglagesSite } from "@/lib/site";
 
 // Ancienne clé qui empêchait la fenêtre de revenir : effacée des navigateurs qui l'ont encore
 const ANCIENNE_CLE = "kwaba_bientot_ferme";
@@ -80,6 +81,7 @@ export default function BientotDisponible() {
   const t = useTranslations("bientot");
   const pathname = usePathname();
   const aucunLogement = useAucunLogement();
+  const modules = useReglagesSite().data?.modules;
   const [ouverte, setOuverte] = useState(false);
   // Rendu côté client seulement (portail) : pas d'écart avec le HTML du serveur
   const [monte, setMonte] = useState(false);
@@ -133,7 +135,7 @@ export default function BientotDisponible() {
     { href: "/transfert", icone: Plane, libelle: t("transfert") },
     { href: "/location", icone: Car, libelle: t("location") },
     { href: "/give", icone: HandHeart, libelle: t("give") },
-  ];
+  ].filter((s) => filtrerLiens([s], modules).length > 0);
 
   return createPortal(
     <AnimatePresence>

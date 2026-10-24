@@ -64,6 +64,7 @@ def reservation_payee_voyageur(paiement: PaiementModel):
         **_sejour(r), 'prenom': voyageur.first_name, 'montant': _fcfa(paiement.montant),
         'url': f"{settings.FRONTEND_URL}/reservation/confirmation/{r.id}",
         'url_remboursement': f"{settings.FRONTEND_URL}/remboursement",
+        'politique': tarifs.texte_politique(r),
     }, pieces_jointes=_documents(r))
 
 

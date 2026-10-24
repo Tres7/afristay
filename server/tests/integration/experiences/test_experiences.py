@@ -31,12 +31,13 @@ def _photo():
 
 
 def test_guide_repris_de_l_ancienne_page():
+    # Les 12 fiches du guide restent en base ; seules celles du Togo sont publiées (audit n° 3)
+    assert ExperienceModel.objects.filter(actif=True).count() == 12
     reponse = APIClient().get(PUBLIC)
-    assert reponse.status_code == 200 and len(reponse.data) == 12
-    ganvie = reponse.data[0]
-    assert ganvie['nom'] == 'Excursion à Ganvié' and ganvie['nom_en'] == 'Ganvié excursion'
-    assert ganvie['categorie'] == 'activites' and ganvie['prix'] == 15000 and ganvie['image'].startswith('https://images.unsplash.com/')
-    assert sum(e['gratuit'] for e in reponse.data) == 2
+    assert reponse.status_code == 200 and [e['ville'] for e in reponse.data] == ['Lomé']
+    fetiches = reponse.data[0]
+    assert fetiches['nom'] == 'Marché des fétiches' and fetiches['pays'] == 'Togo' and fetiches['prix'] == 3000
+    assert fetiches['image'].startswith('https://images.unsplash.com/')
 
 
 def test_reserve_aux_admins(make_user, client_for):

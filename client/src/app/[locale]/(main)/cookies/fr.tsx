@@ -6,8 +6,8 @@ import GererCookiesBouton from "@/components/legal/GererCookiesBouton";
 export default function ContenuFr() {
   return (
     <LegalPage
-      titre="Politique cookies"
-      miseAJour="7 octobre 2026"
+      titre="Politique de cookies"
+      miseAJour="23 octobre 2026"
       intro={
         <>
           <p>
@@ -36,10 +36,27 @@ export default function ContenuFr() {
                   <tr><td><code>authjs.session-token</code></td><td>Maintient votre connexion à votre compte (session chiffrée).</td><td>5 minutes après avoir quitté le site, ou jusqu&apos;à la déconnexion</td></tr>
                   <tr><td><code>authjs.csrf-token</code></td><td>Protège les formulaires de connexion contre les requêtes frauduleuses.</td><td>Fermeture du navigateur</td></tr>
                   <tr><td><code>authjs.callback-url</code></td><td>Vous ramène à la page consultée après la connexion.</td><td>Fermeture du navigateur</td></tr>
-                  <tr><td><code>NEXT_LOCALE</code></td><td>Mémorise la langue choisie (français ou anglais).</td><td>1 an</td></tr>
                 </tbody>
               </table>
               <p className="text-sm">En production, ces noms sont précédés de <code>__Secure-</code> ou <code>__Host-</code> (cookies transmis uniquement en HTTPS).</p>
+            </>
+          ),
+        },
+        {
+          id: "confort",
+          titre: "Cookie de confort",
+          contenu: (
+            <>
+              <p>
+                Il retient un choix que vous avez fait vous-même, sans servir à autre chose : il est exempté de consentement.
+                Le site le lit pour afficher la bonne langue (il n&apos;est donc pas « HttpOnly »).
+              </p>
+              <table>
+                <thead><tr><th>Nom</th><th>Rôle</th><th>Durée</th></tr></thead>
+                <tbody>
+                  <tr><td><code>NEXT_LOCALE</code></td><td>Mémorise la langue choisie (français ou anglais).</td><td>1 an</td></tr>
+                </tbody>
+              </table>
             </>
           ),
         },
@@ -51,11 +68,26 @@ export default function ContenuFr() {
               <thead><tr><th>Nom</th><th>Rôle</th><th>Durée</th></tr></thead>
               <tbody>
                 <tr><td><code>kwaba_consentement</code></td><td>Mémorise vos choix de cookies (date et préférences).</td><td>6 mois, puis le choix vous est redemandé</td></tr>
-                <tr><td><code>verify_email</code></td><td>Retient l&apos;adresse saisie à l&apos;inscription le temps de la vérification par code.</td><td>Effacé après la vérification ou à la fermeture de l&apos;onglet</td></tr>
-                <tr><td><code>splash_shown</code></td><td>Évite de réafficher l&apos;écran d&apos;accueil animé à chaque page.</td><td>Fermeture de l&apos;onglet</td></tr>
                 <tr><td><code>kwaba_devise</code></td><td>Retient la devise choisie pour l&apos;affichage des prix (FCFA ou euro).</td><td>Jusqu&apos;à suppression</td></tr>
               </tbody>
             </table>
+          ),
+        },
+        {
+          id: "session",
+          titre: "Stockage de session du navigateur",
+          contenu: (
+            <>
+              <p>Ces éléments s&apos;effacent d&apos;eux-mêmes à la fermeture de l&apos;onglet.</p>
+              <table>
+                <thead><tr><th>Nom</th><th>Rôle</th><th>Durée</th></tr></thead>
+                <tbody>
+                  <tr><td><code>verify_email</code></td><td>Retient l&apos;adresse saisie à l&apos;inscription le temps de la vérification par code.</td><td>Effacé après la vérification ou à la fermeture de l&apos;onglet</td></tr>
+                  <tr><td><code>splash_shown</code></td><td>Évite de réafficher l&apos;écran d&apos;accueil animé à chaque page.</td><td>Fermeture de l&apos;onglet</td></tr>
+                  <tr><td><code>kwaba_transfert_brouillon</code></td><td>Garde votre demande de transfert le temps de vous connecter pour payer.</td><td>Effacé au retour sur la page ou à la fermeture de l&apos;onglet</td></tr>
+                </tbody>
+              </table>
+            </>
           ),
         },
         {

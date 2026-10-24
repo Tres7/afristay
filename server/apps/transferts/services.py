@@ -35,16 +35,15 @@ def heure_locale(aeroport: AeroportModel, arrivee_naive: datetime) -> datetime:
 
 def devis(aeroport: AeroportModel, arrivee: datetime, passagers: int, bagages: int) -> list[dict]:
     """Options de véhicule avec leur prix, pour une arrivée donnée (datetime avec fuseau)."""
-    locale = arrivee.astimezone(ZoneInfo(aeroport.fuseau))
     options = []
     for t in TarifTransfertModel.objects.filter(aeroport=aeroport, actif=True):
         cat = tarifs.CATEGORIES[t.categorie]
-        prix = tarifs.calculer(t.prix, locale)
+        prix = tarifs.calculer(t.prix)
         motif = tarifs.capacite_suffisante(t.categorie, passagers, bagages)
         options.append({
             'categorie': t.categorie, 'nom': cat['nom'], 'description': cat['description'],
             'passagers': cat['passagers'], 'bagages': cat['bagages'],
-            'prix': prix.prix, 'nuit': prix.nuit, 'disponible': motif is None, 'motif': motif or '',
+            'prix': prix.prix, 'disponible': motif is None, 'motif': motif or '',
         })
     return sorted(options, key=lambda o: o['prix'])
 
@@ -63,11 +62,11 @@ def creer(*, voyageur, aeroport: AeroportModel, arrivee: datetime, categorie: st
 
     if not paiements.reservation_possible():
         raise TransfertErreur(paiements.INDISPONIBLE)
-    prix = tarifs.calculer(tarif.prix, arrivee.astimezone(ZoneInfo(aeroport.fuseau)))
+    prix = tarifs.calculer(tarif.prix)
     en_ligne = paiements.paiement_actif()
     return TransfertModel.objects.create(
         voyageur=voyageur, aeroport=aeroport, arrivee=arrivee, categorie=categorie, passagers=passagers,
-        bagages=bagages, prix=prix.prix, commission=prix.commission, majoration_nuit=prix.nuit,
+        bagages=bagages, prix=prix.prix, commission=prix.commission,
         statut='en_attente_paiement' if en_ligne else 'confirme',
         expire_le=timezone.now() + paiements.delai_paiement() if en_ligne else None,
         **champs,

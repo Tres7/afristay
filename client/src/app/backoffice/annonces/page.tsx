@@ -22,8 +22,9 @@ const VISIBILITE = [
 ];
 const VERIFICATION = [
   { value: "", label: "Toutes" },
-  { value: "true", label: "Vérifiées" },
-  { value: "false", label: "Non vérifiées" },
+  { value: "verifiee", label: "Vérifiées" },
+  { value: "en_attente", label: "À vérifier" },
+  { value: "refusee", label: "Refusées" },
 ];
 
 function Annonces() {
@@ -31,11 +32,11 @@ function Annonces() {
   const queryClient = useQueryClient();
   const [q, setQ] = useState(searchParams.get("q") ?? "");
   const [visible, setVisible] = useState(searchParams.get("visible") ?? "");
-  const [verifie, setVerifie] = useState(searchParams.get("verifie") ?? "");
+  const [statut, setStatut] = useState(searchParams.get("statut") ?? "");
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
   const recherche = useDebounced(q);
 
-  const { data, isLoading, isFetching, isError, refetch, page, setPage } = useAdminList<AdminHebergement>("hebergements", { q: recherche, visible, verifie });
+  const { data, isLoading, isFetching, isError, refetch, page, setPage } = useAdminList<AdminHebergement>("hebergements", { q: recherche, visible, statut });
 
   const executer = async (requete: Promise<unknown>, succes: string) => {
     try {
@@ -119,7 +120,7 @@ function Annonces() {
       <div className="flex flex-col sm:flex-row gap-3">
         <SearchInput value={q} onChange={setQ} placeholder="Nom, ville, quartier ou email de l'hôte" />
         <Select label="Visibilité" value={visible} onChange={setVisible} options={VISIBILITE} className="sm:w-44" icon={<span className="text-xs text-muted flex-shrink-0">Visibilité</span>} />
-        <Select label="Vérification" value={verifie} onChange={setVerifie} options={VERIFICATION} className="sm:w-48" icon={<span className="text-xs text-muted flex-shrink-0">Vérification</span>} />
+        <Select label="Vérification" value={statut} onChange={setStatut} options={VERIFICATION} className="sm:w-48" icon={<span className="text-xs text-muted flex-shrink-0">Vérification</span>} />
       </div>
 
       <AdminTable
