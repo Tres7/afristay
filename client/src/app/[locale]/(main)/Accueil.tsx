@@ -20,17 +20,18 @@ import type { City, Hebergement, Paginated } from "@/types/api/models";
 
 // Photos du diaporama (public/accueil) : portrait 1240 × 1550 recadré sur le sujet pour les téléphones, 2560 px à partir
 // de la tablette, 3840 px sur les grands écrans (2xl). Classes écrites en entier pour que Tailwind les génère ; le
-// navigateur ne télécharge que l'image de la taille d'écran courante.
+// navigateur ne télécharge que l'image de la taille d'écran courante. ?v= : à augmenter quand une photo change de
+// contenu sous le même nom (les images sont gardées 7 jours en cache par les navigateurs).
 const heroImages = [
-  "bg-[url('/accueil/hero-1-mobile.jpg')] md:bg-[url('/accueil/hero-1.jpg')] 2xl:bg-[url('/accueil/hero-1-4k.jpg')]",
-  "bg-[url('/accueil/hero-2-mobile.jpg')] md:bg-[url('/accueil/hero-2.jpg')] 2xl:bg-[url('/accueil/hero-2-4k.jpg')]",
-  "bg-[url('/accueil/hero-3-mobile.jpg')] md:bg-[url('/accueil/hero-3.jpg')] 2xl:bg-[url('/accueil/hero-3-4k.jpg')]",
-  "bg-[url('/accueil/hero-4-mobile.jpg')] md:bg-[url('/accueil/hero-4.jpg')] 2xl:bg-[url('/accueil/hero-4-4k.jpg')]",
-  "bg-[url('/accueil/hero-5-mobile.jpg')] md:bg-[url('/accueil/hero-5.jpg')] 2xl:bg-[url('/accueil/hero-5-4k.jpg')]",
-  "bg-[url('/accueil/hero-6-mobile.jpg')] md:bg-[url('/accueil/hero-6.jpg')] 2xl:bg-[url('/accueil/hero-6-4k.jpg')]",
-  "bg-[url('/accueil/hero-7-mobile.jpg')] md:bg-[url('/accueil/hero-7.jpg')] 2xl:bg-[url('/accueil/hero-7-4k.jpg')]",
-  "bg-[url('/accueil/hero-8-mobile.jpg')] md:bg-[url('/accueil/hero-8.jpg')] 2xl:bg-[url('/accueil/hero-8-4k.jpg')]",
-  "bg-[url('/accueil/hero-9-mobile.jpg')] md:bg-[url('/accueil/hero-9.jpg')] 2xl:bg-[url('/accueil/hero-9-4k.jpg')]",
+  "bg-[url('/accueil/hero-1-mobile.jpg?v=2')] md:bg-[url('/accueil/hero-1.jpg?v=2')] 2xl:bg-[url('/accueil/hero-1-4k.jpg?v=2')]",
+  "bg-[url('/accueil/hero-2-mobile.jpg?v=2')] md:bg-[url('/accueil/hero-2.jpg?v=2')] 2xl:bg-[url('/accueil/hero-2-4k.jpg?v=2')]",
+  "bg-[url('/accueil/hero-3-mobile.jpg?v=2')] md:bg-[url('/accueil/hero-3.jpg?v=2')] 2xl:bg-[url('/accueil/hero-3-4k.jpg?v=2')]",
+  "bg-[url('/accueil/hero-4-mobile.jpg?v=2')] md:bg-[url('/accueil/hero-4.jpg?v=2')] 2xl:bg-[url('/accueil/hero-4-4k.jpg?v=2')]",
+  "bg-[url('/accueil/hero-5-mobile.jpg?v=2')] md:bg-[url('/accueil/hero-5.jpg?v=2')] 2xl:bg-[url('/accueil/hero-5-4k.jpg?v=2')]",
+  "bg-[url('/accueil/hero-6-mobile.jpg?v=2')] md:bg-[url('/accueil/hero-6.jpg?v=2')] 2xl:bg-[url('/accueil/hero-6-4k.jpg?v=2')]",
+  "bg-[url('/accueil/hero-7-mobile.jpg?v=2')] md:bg-[url('/accueil/hero-7.jpg?v=2')] 2xl:bg-[url('/accueil/hero-7-4k.jpg?v=2')]",
+  "bg-[url('/accueil/hero-8-mobile.jpg?v=2')] md:bg-[url('/accueil/hero-8.jpg?v=2')] 2xl:bg-[url('/accueil/hero-8-4k.jpg?v=2')]",
+  "bg-[url('/accueil/hero-9-mobile.jpg?v=2')] md:bg-[url('/accueil/hero-9.jpg?v=2')] 2xl:bg-[url('/accueil/hero-9-4k.jpg?v=2')]",
 ];
 
 const CATEGORIES = [
